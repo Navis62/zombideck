@@ -1,17 +1,18 @@
 {
   "expo": {
-    "name": "ZombiDeck",
-    "slug": "zombideck",
-    "scheme": "zombideck",
+    "name": "Zombie Deck",
+    "slug": "zombie-deck",
+    "scheme": "zombiedeck",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "landscape",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "experiments": {
       "typedRoutes": true
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "requireFullScreen": true
     },
     "android": {
       "adaptiveIcon": {

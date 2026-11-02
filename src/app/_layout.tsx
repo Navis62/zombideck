@@ -14,8 +14,9 @@ function Navigator() {
         contentStyle: { backgroundColor: COLORS.background },
       }}
     >
-      <Stack.Screen name="index" options={{ title: t('appName') }} />
+      <Stack.Screen name="index" options={{ title: t('appName'), headerShown: false }} />
       <Stack.Screen name="game" options={{ title: t('game.title') }} />
+      <Stack.Screen name="options" options={{ title: t('options.title') }} />
     </Stack>
   );
 }
@@ -23,7 +24,7 @@ function Navigator() {
 export default function RootLayout() {
   return (
     <AppProvider>
-      <StatusBar style="light" />
+      <StatusBar hidden />
       <Navigator />
     </AppProvider>
   );

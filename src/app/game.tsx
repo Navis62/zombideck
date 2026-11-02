@@ -1,174 +1,95 @@
 import { Redirect } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CardBack } from '@/components/card-back';
+import { CardFace } from '@/components/card-face';
 import { CARD_SETS, CARDS_BY_ID } from '@/data/decks';
-import {
-  addSurvivor,
-  changeXp,
-  DANGER_LEVELS,
-  dangerForXp,
-  drawCard,
-  partyDanger,
-  removeSurvivor,
-  renameSurvivor,
-  reshuffleAll,
-  undo,
-} from '@/game/engine';
+import { DANGER_LEVELS, drawCard, reshuffleAll, setDanger, undo } from '@/game/engine';
 import { useApp } from '@/game/store';
-import type { DangerLevel, GameState, Survivor, ZombieCard } from '@/game/types';
+import type { GameState } from '@/game/types';
 import { COLORS, DANGER_COLORS } from '@/theme';
+
+const CARD_RATIO = 63 / 88;
 
 export default function GameScreen() {
   const { game, setGame, t } = useApp();
+  const currentId = game?.piles.current ?? null;
+
+  const [flip] = useState(() => new Animated.Value(1));
+  useEffect(() => {
+    flip.setValue(0);
+    Animated.timing(flip, { toValue: 1, duration: 260, useNativeDriver: Platform.OS !== 'web' }).start();
+  }, [currentId, flip]);
+
   if (!game) return <Redirect href="/" />;
 
   const update = (change: (state: GameState) => GameState) =>
     setGame((state) => (state ? change(state) : state));
 
-  const danger = partyDanger(game.survivors);
-  const card = game.piles.current ? CARDS_BY_ID.get(game.piles.current) : undefined;
+  const { danger } = game;
+  const card = currentId ? CARDS_BY_ID.get(currentId) : undefined;
   const isDemo = CARD_SETS.some((set) => game.setIds.includes(set.id) && !set.verified);
+  const rotateY = flip.interpolate({ inputRange: [0, 1], outputRange: ['90deg', '0deg'] });
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
-      {isDemo && <Text style={styles.warning}>{t('demoWarning')}</Text>}
-
-      <View style={[styles.danger, { backgroundColor: DANGER_COLORS[danger].background }]}>
-        <Text style={[styles.dangerText, { color: DANGER_COLORS[danger].text }]}>
-          {t('danger.current', { level: t(`danger.${danger}`) })}
-        </Text>
-      </View>
-
-      <View style={styles.card}>
-        {card ? (
-          <CardView card={card} danger={danger} />
-        ) : (
-          <Text style={styles.muted}>{t('game.noCard')}</Text>
-        )}
-      </View>
-      {game.piles.reshuffled && <Text style={styles.notice}>{t('game.reshuffled')}</Text>}
-
-      <Pressable style={styles.draw} onPress={() => update((state) => drawCard(state))}>
-        <Text style={styles.drawText}>{t('game.draw')}</Text>
-      </Pressable>
-
-      <View style={styles.piles}>
-        <Text style={styles.muted}>{t('game.deck', { n: game.piles.draw.length })}</Text>
-        <Text style={styles.muted}>{t('game.discard', { n: game.piles.discard.length })}</Text>
-      </View>
-      <View style={styles.actions}>
-        <SmallButton label={t('game.undo')} disabled={!game.previous} onPress={() => update(undo)} />
-        <SmallButton label={t('game.shuffle')} onPress={() => update((state) => reshuffleAll(state))} />
-      </View>
-
-      <Text style={styles.heading}>{t('game.survivors')}</Text>
-      {game.survivors.map((survivor, index) => (
-        <SurvivorRow
-          key={survivor.id}
-          survivor={survivor}
-          position={index + 1}
-          onXp={(delta) => update((state) => changeXp(state, survivor.id, delta))}
-          onRename={(name) => update((state) => renameSurvivor(state, survivor.id, name))}
-          onRemove={() => update((state) => removeSurvivor(state, survivor.id))}
-        />
-      ))}
-      <SmallButton label={t('game.addSurvivor')} onPress={() => update(addSurvivor)} />
-    </ScrollView>
-  );
-}
-
-function CardView({ card, danger }: { card: ZombieCard; danger: DangerLevel }) {
-  const { t } = useApp();
-
-  if (card.kind === 'extra') {
-    const zombies = t(`zombie.${card.zombie}.other`);
-    return (
-      <>
-        <Text style={[styles.kind, styles.kindExtra]}>{t('card.extra')}</Text>
-        <Text style={styles.result}>{zombies}</Text>
-        <Text style={styles.rule}>
-          {danger === 'blue' ? t('card.extraBlue') : t('card.extraRule', { zombies })}
-        </Text>
-      </>
-    );
-  }
-
-  const label = (count: number) =>
-    count === 0
-      ? t('card.none')
-      : `${count} ${t(`zombie.${card.zombie}.${count === 1 ? 'one' : 'other'}`)}`;
-
-  return (
-    <>
-      <Text style={[styles.kind, card.kind === 'rush' && styles.kindRush]}>
-        {t(card.kind === 'rush' ? 'card.rush' : 'card.spawn')}
-      </Text>
-      <Text style={styles.result}>{label(card.counts[DANGER_LEVELS.indexOf(danger)])}</Text>
-      {card.kind === 'rush' && <Text style={styles.rule}>{t('card.rushRule')}</Text>}
-      <View style={styles.lines}>
-        {DANGER_LEVELS.map((level, index) => (
-          <View
-            key={level}
-            style={[
-              styles.line,
-              { backgroundColor: DANGER_COLORS[level].background },
-              level !== danger && styles.lineInactive,
-            ]}
-          >
-            <Text style={[styles.lineText, { color: DANGER_COLORS[level].text }]}>
-              {card.counts[index]}
-            </Text>
+    <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
+      <View style={styles.columns}>
+        <View style={styles.table}>
+          <View style={styles.slot}>
+            <CardBack
+              count={game.piles.draw.length}
+              label={t('game.draw')}
+              onPress={() => update((state) => drawCard(state))}
+            />
           </View>
-        ))}
-      </View>
-    </>
-  );
-}
-
-function SurvivorRow(props: {
-  survivor: Survivor;
-  position: number;
-  onXp: (delta: number) => void;
-  onRename: (name: string) => void;
-  onRemove: () => void;
-}) {
-  const { t } = useApp();
-  const { survivor } = props;
-  const level = dangerForXp(survivor.xp);
-  const placeholder = t('game.survivorName', { n: props.position });
-
-  return (
-    <View style={styles.survivor}>
-      <View style={styles.survivorHeader}>
-        <TextInput
-          style={styles.name}
-          value={survivor.name}
-          onChangeText={props.onRename}
-          placeholder={placeholder}
-          placeholderTextColor={COLORS.muted}
-          accessibilityLabel={placeholder}
-        />
-        <Pressable onPress={props.onRemove} hitSlop={8} accessibilityRole="button">
-          <Text style={styles.muted}>{t('game.removeSurvivor')}</Text>
-        </Pressable>
-      </View>
-      <View style={styles.xpRow}>
-        <XpButton label="-1" onPress={() => props.onXp(-1)} />
-        <View style={[styles.xp, { backgroundColor: DANGER_COLORS[level].background }]}>
-          <Text style={[styles.xpText, { color: DANGER_COLORS[level].text }]}>{survivor.xp} XP</Text>
+          <View style={styles.slot}>
+            {card ? (
+              <Animated.View style={[styles.drawn, { transform: [{ perspective: 800 }, { rotateY }] }]}>
+                <CardFace card={card} danger={danger} />
+              </Animated.View>
+            ) : (
+              <View style={styles.empty}>
+                <Text style={styles.emptyText}>{t('game.noCard')}</Text>
+              </View>
+            )}
+          </View>
         </View>
-        <XpButton label="+1" onPress={() => props.onXp(1)} />
-        <XpButton label="+5" onPress={() => props.onXp(5)} />
-      </View>
-    </View>
-  );
-}
 
-function XpButton(props: { label: string; onPress: () => void }) {
-  return (
-    <Pressable style={styles.xpButton} onPress={props.onPress} accessibilityRole="button">
-      <Text style={styles.xpButtonText}>{props.label}</Text>
-    </Pressable>
+        <View style={styles.controls}>
+          <Text style={styles.heading}>{t('danger.title')}</Text>
+          <View style={styles.levels}>
+            {DANGER_LEVELS.map((level) => (
+              <Pressable
+                key={level}
+                style={[
+                  styles.level,
+                  { backgroundColor: DANGER_COLORS[level].background },
+                  level === danger && styles.levelActive,
+                ]}
+                onPress={() => update((state) => setDanger(state, level))}
+                accessibilityRole="button"
+                accessibilityState={{ selected: level === danger }}
+              >
+                <Text style={[styles.levelText, { color: DANGER_COLORS[level].text }]}>
+                  {t(`danger.${level}`)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <View style={styles.spacer}>
+            {isDemo && <Text style={styles.notice}>{t('demoWarning')}</Text>}
+            {game.piles.reshuffled && <Text style={styles.notice}>{t('game.reshuffled')}</Text>}
+          </View>
+
+          <SmallButton label={t('game.undo')} disabled={game.history.length === 0} onPress={() => update(undo)} />
+          <SmallButton label={t('game.shuffle')} onPress={() => update((state) => reshuffleAll(state))} />
+          <Text style={styles.muted}>{t('game.discard', { n: game.piles.discard.length })}</Text>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -186,62 +107,39 @@ function SmallButton(props: { label: string; onPress: () => void; disabled?: boo
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 16, gap: 12 },
-  warning: { color: COLORS.warning, fontSize: 13 },
-  notice: { color: COLORS.warning, fontSize: 14, textAlign: 'center' },
-  muted: { color: COLORS.muted, fontSize: 14 },
-  heading: { color: COLORS.muted, fontSize: 14, fontWeight: '700', marginTop: 12, textTransform: 'uppercase' },
-  danger: { borderRadius: 8, padding: 12, alignItems: 'center' },
-  dangerText: { fontSize: 17, fontWeight: '700' },
-  card: {
-    backgroundColor: COLORS.surface,
-    borderColor: COLORS.border,
-    borderWidth: 1,
+  screen: { flex: 1 },
+  columns: { flex: 1, flexDirection: 'row', padding: 12, gap: 16 },
+  table: { flex: 1, flexDirection: 'row', justifyContent: 'center', gap: 16 },
+  slot: { height: '100%', aspectRatio: CARD_RATIO },
+  drawn: { flex: 1 },
+  empty: {
+    flex: 1,
     borderRadius: 12,
-    padding: 20,
-    minHeight: 220,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    padding: 12,
   },
-  kind: { color: COLORS.muted, fontSize: 15, fontWeight: '700', textTransform: 'uppercase' },
-  kindRush: { color: COLORS.warning },
-  kindExtra: { color: '#ef6a5f' },
-  result: { color: COLORS.text, fontSize: 34, fontWeight: '800', textAlign: 'center' },
-  rule: { color: COLORS.text, fontSize: 15, textAlign: 'center' },
-  lines: { flexDirection: 'row', gap: 8, marginTop: 8 },
-  line: { width: 48, height: 36, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
-  lineInactive: { opacity: 0.3 },
-  lineText: { fontSize: 16, fontWeight: '700' },
-  draw: { backgroundColor: COLORS.accent, borderRadius: 10, padding: 20, alignItems: 'center' },
-  drawText: { color: '#ffffff', fontSize: 20, fontWeight: '800' },
-  piles: { flexDirection: 'row', justifyContent: 'space-between' },
-  actions: { flexDirection: 'row', gap: 8 },
+  emptyText: { color: COLORS.muted, fontSize: 14, textAlign: 'center' },
+  controls: { width: 200, gap: 8 },
+  heading: { color: COLORS.muted, fontSize: 13, fontWeight: '700', textTransform: 'uppercase' },
+  levels: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  level: { width: 97, height: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center', opacity: 0.75 },
+  levelActive: { opacity: 1, borderWidth: 3, borderColor: '#ffffff' },
+  levelText: { fontSize: 14, fontWeight: '800' },
+  spacer: { flex: 1, justifyContent: 'center', gap: 4 },
+  notice: { color: COLORS.warning, fontSize: 13, textAlign: 'center' },
+  muted: { color: COLORS.muted, fontSize: 13, textAlign: 'center' },
   small: {
-    flexGrow: 1,
     backgroundColor: COLORS.surface,
     borderColor: COLORS.border,
     borderWidth: 1,
     borderRadius: 8,
-    padding: 12,
+    padding: 10,
     alignItems: 'center',
   },
   smallText: { color: COLORS.text, fontSize: 15 },
   disabled: { opacity: 0.4 },
-  survivor: { backgroundColor: COLORS.surface, borderRadius: 8, padding: 12, gap: 8 },
-  survivorHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  name: { flex: 1, color: COLORS.text, fontSize: 16, paddingVertical: 4 },
-  xpRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  xp: { flex: 1, height: 44, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
-  xpText: { fontSize: 16, fontWeight: '700' },
-  xpButton: {
-    width: 48,
-    height: 44,
-    borderRadius: 6,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  xpButtonText: { color: COLORS.text, fontSize: 16, fontWeight: '700' },
 });
