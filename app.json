@@ -1,11 +1,15 @@
 {
   "expo": {
-    "name": "zombideck",
+    "name": "ZombiDeck",
     "slug": "zombideck",
+    "scheme": "zombideck",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
+    "experiments": {
+      "typedRoutes": true
+    },
     "ios": {
       "supportsTablet": true
     },
@@ -20,6 +24,10 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-localization",
+      "expo-router"
+    ]
   }
 }
