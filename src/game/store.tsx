@@ -95,11 +95,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!loaded) return;
-    const saving = game
-      ? AsyncStorage.setItem(GAME_KEY, JSON.stringify(game))
-      : AsyncStorage.removeItem(GAME_KEY);
-    saving.catch((error) => console.warn('Could not save the game', error));
+    // No game can mean the save failed to load: leave it in storage until a new game replaces it.
+    if (!loaded || !game) return;
+    AsyncStorage.setItem(GAME_KEY, JSON.stringify(game)).catch((error) =>
+      console.warn('Could not save the game', error),
+    );
   }, [game, loaded]);
 
   const chooseLanguage = useCallback((next: Language) => {

@@ -137,6 +137,17 @@ test('save validation', () => {
   assert.equal(isValidSave({ ...state, danger: 'purple' }, known), false);
 });
 
+test('save validation also checks the set ids and the undo history', () => {
+  const state = drawCard(newGame(sets, ['a']));
+  const known = new Set(['a1', 'a2', 'a3']);
+  const { setIds: _setIds, ...withoutSetIds } = state;
+  assert.equal(isValidSave(withoutSetIds, known), false);
+  assert.equal(isValidSave({ ...state, history: [null] }, known), false);
+  assert.equal(isValidSave({ ...state, history: [{ ...state.piles, draw: ['gone'] }] }, known), false);
+  assert.equal(isValidSave({ ...state, history: [{ ...state.piles, current: 'gone' }] }, known), false);
+  assert.equal(isValidSave({ ...state, piles: { ...state.piles, current: 42 } }, known), false);
+});
+
 test('card ids are unique and belong to their set', () => {
   const cards = CARD_SETS.flatMap((set) => set.cards.map((card) => ({ card, set })));
   assert.equal(new Set(cards.map(({ card }) => card.id)).size, cards.length);

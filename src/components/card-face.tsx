@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, Line, Path, Polygon } from 'react-native-svg';
+import Svg, { Line, Path, Polygon } from 'react-native-svg';
 
 import { artSubject, Scene, ZombieFigure } from '@/components/zombie-art';
 import { DANGER_LEVELS } from '@/game/engine';
@@ -151,27 +151,8 @@ function LevelSymbol({ symbol }: { symbol: SymbolDef | null }) {
   );
 }
 
-function SpecialIcon({ kind }: { kind: SymbolKind }) {
+function SpecialIcon({ kind }: { kind: 'vip' | 'sillyWalker' | 'inquisitor' }) {
   switch (kind) {
-    case 'toxic':
-      return (
-        <>
-          <Circle cx="12" cy="12" r="2.4" fill="#2f9e44" />
-          <Path d="M11 4.3a4.6 4.6 0 0 1 2 0l2.4 4.5a3.5 3.5 0 0 0-6.8 0Z" fill="#2f9e44" />
-          <Path d="M4.5 14.8a4.6 4.6 0 0 1 1-1.8l5.1-.1a3.5 3.5 0 0 0-3.4 5.8Z" fill="#2f9e44" />
-          <Path d="M19.5 14.8a4.6 4.6 0 0 0-1-1.8l-5.1-.1a3.5 3.5 0 0 1 3.4 5.8Z" fill="#2f9e44" />
-        </>
-      );
-    case 'berserker':
-      return null;
-    case 'skinner':
-      return null;
-    case 'dog':
-      return null;
-    case 'crow':
-      return null;
-    case 'seeker':
-      return null;
     case 'vip':
       return (
         <Path
@@ -180,8 +161,6 @@ function SpecialIcon({ kind }: { kind: SymbolKind }) {
           transform="rotate(-20 12 12)"
         />
       );
-    case 'lostZombivor':
-      return null;
     case 'sillyWalker':
       return <Path d="M5.5 13.2c0-4 3.2-7.2 7.1-7.2 3.3 0 5.9 2.7 5.9 5.9 0 2.7-2.2 4.9-4.9 4.9-2.1 0-3.8-1.7-3.8-3.8 0-1.6 1.3-2.9 2.9-2.9 1.2 0 2.2 1 2.2 2.2" fill="none" stroke="#1b1a15" strokeWidth="2.4" strokeLinecap="round" />;
     case 'inquisitor':

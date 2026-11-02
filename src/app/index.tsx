@@ -53,7 +53,14 @@ export default function MenuScreen() {
 
         <View style={styles.menu}>
           {game && (
-            <Pressable style={styles.primary} onPress={() => router.push('/game')} accessibilityRole="button">
+            <Pressable
+              style={styles.primary}
+              onPress={() => {
+                setConfirming(false);
+                router.push('/game');
+              }}
+              accessibilityRole="button"
+            >
               <Text style={styles.primaryText}>{t('menu.resume')}</Text>
               <Text style={styles.primaryDetail}>
                 {t('menu.resumeDetail', { n: game.piles.draw.length, level: t(`danger.${game.danger}`) })}
@@ -76,13 +83,10 @@ export default function MenuScreen() {
           </Pressable>
           <Pressable
             style={styles.secondary}
-            onPress={() => {
-              setConfirming(false);
-              router.push('/options');
-            }}
+            onPress={() => (confirming ? setConfirming(false) : router.push('/options'))}
             accessibilityRole="button"
           >
-            <Text style={styles.secondaryText}>{t('options.title')}</Text>
+            <Text style={styles.secondaryText}>{t(confirming ? 'menu.cancel' : 'options.title')}</Text>
           </Pressable>
         </View>
       </SafeAreaView>

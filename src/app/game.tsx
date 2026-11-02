@@ -12,11 +12,13 @@ import type { GameState } from '@/game/types';
 import { COLORS, DANGER_COLORS } from '@/theme';
 
 const CARD_RATIO = 63 / 88;
+const TABLE_GAP = 16;
 
 export default function GameScreen() {
   const { game, setGame, t } = useApp();
   const currentId = game?.piles.current ?? null;
 
+  const [table, setTable] = useState({ width: 0, height: 0 });
   const [flip] = useState(() => new Animated.Value(1));
   useEffect(() => {
     flip.setValue(0);
@@ -32,19 +34,27 @@ export default function GameScreen() {
   const card = currentId ? CARDS_BY_ID.get(currentId) : undefined;
   const isDemo = CARD_SETS.some((set) => game.setIds.includes(set.id) && !set.verified);
   const rotateY = flip.interpolate({ inputRange: [0, 1], outputRange: ['90deg', '0deg'] });
+  // Both cards must fit side by side, whichever of the width or height runs out first.
+  const slot = {
+    width: Math.max(0, Math.min((table.width - TABLE_GAP) / 2, table.height * CARD_RATIO)),
+    aspectRatio: CARD_RATIO,
+  };
 
   return (
     <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
       <View style={styles.columns}>
-        <View style={styles.table}>
-          <View style={styles.slot}>
+        <View
+          style={styles.table}
+          onLayout={({ nativeEvent: { layout } }) => setTable({ width: layout.width, height: layout.height })}
+        >
+          <View style={slot}>
             <CardBack
               count={game.piles.draw.length}
               label={t('game.draw')}
               onPress={() => update((state) => drawCard(state))}
             />
           </View>
-          <View style={styles.slot}>
+          <View style={slot}>
             {card ? (
               <Animated.View style={[styles.drawn, { transform: [{ perspective: 800 }, { rotateY }] }]}>
                 <CardFace card={card} danger={danger} />
@@ -109,8 +119,7 @@ function SmallButton(props: { label: string; onPress: () => void; disabled?: boo
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   columns: { flex: 1, flexDirection: 'row', padding: 12, gap: 16 },
-  table: { flex: 1, flexDirection: 'row', justifyContent: 'center', gap: 16 },
-  slot: { height: '100%', aspectRatio: CARD_RATIO },
+  table: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: TABLE_GAP },
   drawn: { flex: 1 },
   empty: {
     flex: 1,

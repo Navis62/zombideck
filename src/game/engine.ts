@@ -1,4 +1,4 @@
-import type { CardSet, DangerLevel, GameState, ZombieCard } from './types';
+import type { CardSet, DangerLevel, GameState, Piles, ZombieCard } from './types';
 
 export type Rng = () => number;
 
@@ -80,10 +80,15 @@ export function setDanger(state: GameState, danger: DangerLevel): GameState {
 /** Rejects saves that are malformed or refer to cards that no longer exist. */
 export function isValidSave(value: unknown, knownCardIds: ReadonlySet<string>): value is GameState {
   const state = value as GameState | null;
-  if (state?.version !== 1 || !DANGER_LEVELS.includes(state.danger) || !state.piles) return false;
+  if (state?.version !== 1 || !DANGER_LEVELS.includes(state.danger)) return false;
+  if (!Array.isArray(state.setIds) || !state.setIds.every((id) => typeof id === 'string')) return false;
   if (!Array.isArray(state.history)) return false;
-  const { draw, discard, current } = state.piles;
-  if (!Array.isArray(draw) || !Array.isArray(discard)) return false;
-  const ids = current ? [...draw, ...discard, current] : [...draw, ...discard];
-  return ids.every((id) => knownCardIds.has(id));
+  return [state.piles, ...state.history].every((piles) => isValidPiles(piles, knownCardIds));
+}
+
+function isValidPiles(piles: Piles | null | undefined, knownCardIds: ReadonlySet<string>): boolean {
+  if (!piles || !Array.isArray(piles.draw) || !Array.isArray(piles.discard)) return false;
+  const { draw, discard, current } = piles;
+  if (current !== null && !knownCardIds.has(current)) return false;
+  return [...draw, ...discard].every((id) => knownCardIds.has(id));
 }

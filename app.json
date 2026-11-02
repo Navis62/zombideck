@@ -11,10 +11,12 @@
       "typedRoutes": true
     },
     "ios": {
+      "bundleIdentifier": "com.navis62.zombiedeck",
       "supportsTablet": true,
       "requireFullScreen": true
     },
     "android": {
+      "package": "com.navis62.zombiedeck",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -28,7 +30,15 @@
     },
     "plugins": [
       "expo-localization",
-      "expo-router"
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#14130f",
+          "image": "./assets/cards/back.jpg",
+          "imageWidth": 200
+        }
+      ]
     ]
   }
 }
