@@ -14,6 +14,9 @@ const SKINNER_RAZOR_SYMBOL = require('../../assets/icons/skinner-razor-symbol.pn
 const CROW_REAL_SYMBOL = require('../../assets/icons/crow-real-symbol.png');
 const LOST_ZOMBIVOR_CHAIN_SYMBOL = require('../../assets/icons/lost-zombivor-chain-symbol.png');
 const BERSERKER_BOWIE_SYMBOL = require('../../assets/icons/berserker-bowie-symbol.png');
+const TOXIC_BIOHAZARD_SYMBOL = require('../../assets/icons/toxic-biohazard-symbol.png');
+const SEEKER_EYE_SYMBOL = require('../../assets/icons/seeker-eye-symbol.png');
+const DOG_PAW_SYMBOL = require('../../assets/icons/dog-paw-symbol.png');
 
 export function CardFace({ card, danger }: { card: ZombieCard; danger: DangerLevel }) {
   const { tCard } = useApp();
@@ -124,10 +127,16 @@ function LevelSymbol({ symbol }: { symbol: SymbolDef | null }) {
   return (
     <View style={styles.levelSymbolWrap}>
       <View style={styles.levelSymbolBadge}>
-        {symbol.kind === 'skinner' ? (
+        {symbol.kind === 'toxic' ? (
+          <Image source={TOXIC_BIOHAZARD_SYMBOL} style={styles.toxicSymbolImage} resizeMode="contain" />
+        ) : symbol.kind === 'skinner' ? (
           <Image source={SKINNER_RAZOR_SYMBOL} style={styles.skinnerSymbolImage} resizeMode="contain" />
         ) : symbol.kind === 'berserker' ? (
           <Image source={BERSERKER_BOWIE_SYMBOL} style={styles.berserkerSymbolImage} resizeMode="contain" />
+        ) : symbol.kind === 'seeker' ? (
+          <Image source={SEEKER_EYE_SYMBOL} style={styles.seekerSymbolImage} resizeMode="contain" />
+        ) : symbol.kind === 'dog' ? (
+          <Image source={DOG_PAW_SYMBOL} style={styles.dogSymbolImage} resizeMode="contain" />
         ) : symbol.kind === 'crow' ? (
           <Image source={CROW_REAL_SYMBOL} style={styles.crowSymbolImage} resizeMode="contain" />
         ) : symbol.kind === 'lostZombivor' ? (
@@ -147,10 +156,10 @@ function SpecialIcon({ kind }: { kind: SymbolKind }) {
     case 'toxic':
       return (
         <>
-          <Circle cx="12" cy="12" r="2.4" fill="#1b1a15" />
-          <Path d="M11 4.3a4.6 4.6 0 0 1 2 0l2.4 4.5a3.5 3.5 0 0 0-6.8 0Z" fill="#1b1a15" />
-          <Path d="M4.5 14.8a4.6 4.6 0 0 1 1-1.8l5.1-.1a3.5 3.5 0 0 0-3.4 5.8Z" fill="#1b1a15" />
-          <Path d="M19.5 14.8a4.6 4.6 0 0 0-1-1.8l-5.1-.1a3.5 3.5 0 0 1 3.4 5.8Z" fill="#1b1a15" />
+          <Circle cx="12" cy="12" r="2.4" fill="#2f9e44" />
+          <Path d="M11 4.3a4.6 4.6 0 0 1 2 0l2.4 4.5a3.5 3.5 0 0 0-6.8 0Z" fill="#2f9e44" />
+          <Path d="M4.5 14.8a4.6 4.6 0 0 1 1-1.8l5.1-.1a3.5 3.5 0 0 0-3.4 5.8Z" fill="#2f9e44" />
+          <Path d="M19.5 14.8a4.6 4.6 0 0 0-1-1.8l-5.1-.1a3.5 3.5 0 0 1 3.4 5.8Z" fill="#2f9e44" />
         </>
       );
     case 'berserker':
@@ -158,28 +167,11 @@ function SpecialIcon({ kind }: { kind: SymbolKind }) {
     case 'skinner':
       return null;
     case 'dog':
-      return (
-        <>
-          <Circle cx="12" cy="14" r="4.2" fill="#1b1a15" />
-          <Circle cx="7.4" cy="8.2" r="2.2" fill="#1b1a15" />
-          <Circle cx="10.6" cy="6.7" r="2.1" fill="#1b1a15" />
-          <Circle cx="13.8" cy="6.7" r="2.1" fill="#1b1a15" />
-          <Circle cx="17" cy="8.2" r="2.2" fill="#1b1a15" />
-        </>
-      );
+      return null;
     case 'crow':
       return null;
     case 'seeker':
-      return (
-        <>
-          <Circle cx="12" cy="12" r="7" fill="none" stroke="#1b1a15" strokeWidth="2.2" />
-          <Circle cx="12" cy="12" r="2.1" fill="#1b1a15" />
-          <Line x1="12" y1="3" x2="12" y2="7" stroke="#1b1a15" strokeWidth="2" />
-          <Line x1="12" y1="17" x2="12" y2="21" stroke="#1b1a15" strokeWidth="2" />
-          <Line x1="3" y1="12" x2="7" y2="12" stroke="#1b1a15" strokeWidth="2" />
-          <Line x1="17" y1="12" x2="21" y2="12" stroke="#1b1a15" strokeWidth="2" />
-        </>
-      );
+      return null;
     case 'vip':
       return (
         <Path
@@ -303,6 +295,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#f2efe6',
@@ -315,6 +308,9 @@ const styles = StyleSheet.create({
   },
   skinnerSymbolImage: { width: 44, height: 44, transform: [{ rotate: '-90deg' }, { scaleX: -1 }] },
   berserkerSymbolImage: { width: 48, height: 48, marginTop: -1 },
+  toxicSymbolImage: { width: 48, height: 48 },
+  seekerSymbolImage: { width: 50, height: 50 },
+  dogSymbolImage: { width: 50, height: 50 },
   crowSymbolImage: { width: 62, height: 62, marginTop: -2 },
   lostZombivorSymbolImage: { width: 62, height: 62, tintColor: '#6a2c91', transform: [{ rotate: '-45deg' }] },
   number: { fontSize: 10, fontWeight: '700', opacity: 0.8 },
