@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getLocales } from 'expo-localization';
 import {
   createContext,
   useCallback,
@@ -18,6 +17,11 @@ import type { GameState } from './types';
 const GAME_KEY = 'zombideck.game';
 const LANGUAGE_KEY = 'zombideck.language';
 const EXPANSIONS_KEY = 'zombideck.expansions';
+const CARD_DISPLAY_KEY = 'zombideck.cardDisplay';
+
+/** Spawn cards show every Danger Level, or only the current one. */
+export type CardDisplay = 'all' | 'current';
+const isCardDisplay = (value: string | null): value is CardDisplay => value === 'all' || value === 'current';
 
 type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
 
@@ -36,6 +40,8 @@ type AppContextValue = {
   setLanguage: (language: Language) => void;
   expansions: string[];
   setExpansions: (expansions: string[]) => void;
+  cardDisplay: CardDisplay;
+  setCardDisplay: (cardDisplay: CardDisplay) => void;
   /** Translates the interface and what is printed on the cards alike. */
   t: Translate;
 };
@@ -44,11 +50,6 @@ const AppContext = createContext<AppContextValue | null>(null);
 
 const isLanguage = (value: string | null | undefined): value is Language =>
   !!value && value in LANGUAGE_NAMES;
-
-function deviceLanguage(): Language {
-  const code = getLocales()[0].languageCode;
-  return isLanguage(code) ? code : 'en';
-}
 
 function parseSave(raw: string | null): GameState | null {
   if (!raw) return null;
@@ -73,15 +74,17 @@ function parseExpansions(raw: string | null): string[] {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [loaded, setLoaded] = useState(false);
   const [game, setGame] = useState<GameState | null>(null);
-  const [language, setLanguage] = useState<Language>(deviceLanguage);
+  const [language, setLanguage] = useState<Language>('en');
   const [expansions, setExpansions] = useState<string[]>([]);
+  const [cardDisplay, setCardDisplay] = useState<CardDisplay>('current');
 
   useEffect(() => {
-    AsyncStorage.multiGet([GAME_KEY, LANGUAGE_KEY, EXPANSIONS_KEY])
-      .then(([[, savedGame], [, savedLanguage], [, savedExpansions]]) => {
+    AsyncStorage.multiGet([GAME_KEY, LANGUAGE_KEY, EXPANSIONS_KEY, CARD_DISPLAY_KEY])
+      .then(([[, savedGame], [, savedLanguage], [, savedExpansions], [, savedCardDisplay]]) => {
         setGame(parseSave(savedGame));
         if (isLanguage(savedLanguage)) setLanguage(savedLanguage);
         setExpansions(parseExpansions(savedExpansions));
+        if (isCardDisplay(savedCardDisplay)) setCardDisplay(savedCardDisplay);
       })
       .catch((error) => console.warn('Could not load the saved game', error))
       .finally(() => setLoaded(true));
@@ -109,6 +112,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const chooseCardDisplay = useCallback((next: CardDisplay) => {
+    setCardDisplay(next);
+    AsyncStorage.setItem(CARD_DISPLAY_KEY, next).catch((error) =>
+      console.warn('Could not save the card display', error),
+    );
+  }, []);
+
   const value = useMemo(
     () => ({
       game,
@@ -117,9 +127,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setLanguage: chooseLanguage,
       expansions,
       setExpansions: chooseExpansions,
+      cardDisplay,
+      setCardDisplay: chooseCardDisplay,
       t: translator(language),
     }),
-    [game, language, chooseLanguage, expansions, chooseExpansions],
+    [game, language, chooseLanguage, expansions, chooseExpansions, cardDisplay, chooseCardDisplay],
   );
 
   if (!loaded) return null;

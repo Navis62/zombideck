@@ -20,7 +20,7 @@ const DOG_PAW_SYMBOL = require('../../assets/icons/dog-paw-symbol.png');
 const SHOOTER_M4A1_SYMBOL = require('../../assets/icons/shooter-m4a1-symbol.png');
 
 export function CardFace({ card, danger }: { card: ZombieCard; danger: DangerLevel }) {
-  const { t } = useApp();
+  const { t, cardDisplay } = useApp();
 
   if (card.kind === 'trejo' || card.kind === 'trejoRush') {
     const isRush = card.kind === 'trejoRush';
@@ -65,8 +65,8 @@ export function CardFace({ card, danger }: { card: ZombieCard; danger: DangerLev
           <Art card={card} />
           <View style={styles.levels}>
             <LevelSymbol symbol={symbol} />
-            {PRINTED_LEVELS.map((level) => (
-              <Level key={level} level={level} active={level === danger} wide>
+            {(cardDisplay === 'current' ? [danger] : PRINTED_LEVELS).map((level) => (
+              <Level key={level} level={level} active={level === danger} wide large={cardDisplay === 'current'}>
                 {level === 'blue' ? t('card.extraNobody') : t('card.extraAll', { zombies })}
               </Level>
             ))}
@@ -89,11 +89,17 @@ export function CardFace({ card, danger }: { card: ZombieCard; danger: DangerLev
         <Art card={card} />
         <View style={styles.levels}>
           <LevelSymbol symbol={symbol} />
-          {PRINTED_LEVELS.map((level) => (
-            <Level key={level} level={level} active={level === danger}>
-              ×{counts[DANGER_LEVELS.indexOf(level)]}
+          {cardDisplay === 'current' ? (
+            <Level level={danger} active large>
+              ×{counts[DANGER_LEVELS.indexOf(danger)]}
             </Level>
-          ))}
+          ) : (
+            PRINTED_LEVELS.map((level) => (
+              <Level key={level} level={level} active={level === danger}>
+                ×{counts[DANGER_LEVELS.indexOf(level)]}
+              </Level>
+            ))
+          )}
         </View>
       </View>
     </Frame>
@@ -244,21 +250,29 @@ function Frame(props: {
   );
 }
 
-function Level(props: { level: DangerLevel; active: boolean; wide?: boolean; children: React.ReactNode }) {
+function Level(props: {
+  level: DangerLevel;
+  active: boolean;
+  wide?: boolean;
+  /** Alone on the card, when only the current Danger Level is shown. */
+  large?: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <View style={[styles.level, props.active && styles.levelActive]}>
+    <View style={[styles.level, props.active && styles.levelActive, props.large && styles.levelLarge]}>
       <View style={styles.levelValue}>
         <Text
           style={[
             props.wide ? styles.levelTextWide : styles.levelText,
             props.active && (props.wide ? styles.levelTextWideActive : styles.levelTextActive),
+            props.large && (props.wide ? styles.levelTextWideLarge : styles.levelTextLarge),
           ]}
         >
           {props.children}
         </Text>
       </View>
       {/* Torn paint stripe, as if sprayed on the card. */}
-      <Svg width={20} height="100%" viewBox="0 0 20 34" preserveAspectRatio="none">
+      <Svg width={props.large ? 34 : 20} height="100%" viewBox="0 0 20 34" preserveAspectRatio="none">
         <Polygon
           points="7,0 20,0 20,34 4,34 8,27 3,20 9,13 4,6"
           fill={DANGER_COLORS[props.level].background}
@@ -314,8 +328,11 @@ const styles = StyleSheet.create({
   level: { flexDirection: 'row', height: 32, backgroundColor: '#ffffff', borderTopLeftRadius: 3, borderBottomLeftRadius: 3, borderWidth: 1, borderRightWidth: 0, borderColor: CARD_COLORS.ink },
   levelActive: { height: 46, marginLeft: -12, borderWidth: 3, borderRightWidth: 0 },
   levelValue: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
+  levelLarge: { height: 110 },
   levelText: { color: CARD_COLORS.ink, fontSize: 15, fontWeight: '700' },
   levelTextActive: { fontSize: 26, fontWeight: '900' },
+  levelTextLarge: { fontSize: 56 },
+  levelTextWideLarge: { fontSize: 15, lineHeight: 18 },
   levelTextWide: { color: CARD_COLORS.ink, fontSize: 10, lineHeight: 12, fontWeight: '600', textAlign: 'center' },
   levelTextWideActive: { fontSize: 11, fontWeight: '900' },
   footer: { paddingHorizontal: 8, paddingVertical: 5 },

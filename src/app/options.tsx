@@ -2,12 +2,17 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CARD_SETS } from '@/data/decks';
-import { useApp } from '@/game/store';
+import { type CardDisplay, useApp } from '@/game/store';
 import { LANGUAGE_NAMES, type Language, type TranslationKey } from '@/i18n/translations';
 import { COLORS } from '@/theme';
 
+const CARD_DISPLAYS: { value: CardDisplay; label: TranslationKey }[] = [
+  { value: 'all', label: 'options.displayAll' },
+  { value: 'current', label: 'options.displayCurrent' },
+];
+
 export default function OptionsScreen() {
-  const { expansions, setExpansions, language, setLanguage, t } = useApp();
+  const { expansions, setExpansions, language, setLanguage, cardDisplay, setCardDisplay, t } = useApp();
   const optionalSets = CARD_SETS.filter((set) => set.optional);
   const allEnabled = optionalSets.every((set) => expansions.includes(set.id));
 
@@ -26,6 +31,20 @@ export default function OptionsScreen() {
                 accessibilityState={{ selected: code === language }}
               >
                 <Text style={styles.rowText}>{LANGUAGE_NAMES[code]}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <Text style={styles.heading}>{t('options.cardDisplay')}</Text>
+          <View style={styles.languages}>
+            {CARD_DISPLAYS.map(({ value, label }) => (
+              <Pressable
+                key={value}
+                style={[styles.language, value === cardDisplay && styles.languageActive]}
+                onPress={() => setCardDisplay(value)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: value === cardDisplay }}
+              >
+                <Text style={styles.rowText}>{t(label)}</Text>
               </Pressable>
             ))}
           </View>
