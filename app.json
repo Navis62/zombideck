@@ -18,10 +18,9 @@
     "android": {
       "package": "com.navis62.zombiedeck",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#14130f",
+        "foregroundImage": "./assets/zombie-icon-foreground.png",
+        "monochromeImage": "./assets/zombie-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
     },
