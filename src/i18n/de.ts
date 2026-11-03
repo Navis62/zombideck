@@ -1,8 +1,5 @@
 import type { TranslationKey } from './fr';
 
-// Official terms from the Asmodee DE 2nd Edition rulebook (Zombicide: Zweite Edition), the Prison Outbreak
-// box and the cards of the "Zombies & Begleiter" upgrade kit (photo on BoardGameGeek).
-// Translated by us: the interface, Silly Walkers, the Spanish Inquisition, Trejo and SPAM.
 export const de: Record<TranslationKey, string> = {
   appName: 'Zombie Deck',
   'menu.resume': 'Partie fortsetzen',
@@ -18,6 +15,7 @@ export const de: Record<TranslationKey, string> = {
   'options.noContent': 'Noch keine Erweiterungen oder Promos verfügbar.',
   'options.contentHint': 'Gilt ab der nächsten Partie.',
   'options.replaces': 'Ersetzt den Grundspiel-Stapel',
+  'options.abominationHint': 'Mit Erweiterungen hinzufügen, um den Anteil der Monstren zu halten',
   'options.cardDisplay': 'Kartenanzeige',
   'options.displayAll': 'Alle Stufen',
   'options.displayCurrent': 'Aktuelle Stufe',
@@ -40,7 +38,6 @@ export const de: Record<TranslationKey, string> = {
   'card.rushRule': 'Zombies erscheinen und werden sofort aktiviert.',
   'card.extra': 'Extra-Aktivierung',
   'card.extraRule': '1 Extra-Aktivierung.',
-  'card.extraAll': 'Alle {zombies}',
   'card.extraNobody': 'Keine',
   'card.trejoChoice': 'Führt eine der folgenden Aktionen aus:',
   'card.trejo1': 'Trejomonstrum im Spiel: 1 Extra-Aktivierung.',
@@ -57,7 +54,7 @@ export const de: Record<TranslationKey, string> = {
   'set.crowz': 'Murder of Crowz',
   'set.vip': 'VIP: Very Infected People',
   'set.zombivor': 'Lost Zombivors',
-  'set.abomination': 'Zusätzliche Monstren',
+  'set.abomination': 'Monstren',
   'set.python': "Monty Python's Flying Circus",
   'card.seekerRule': '1. Alle Sucher werden aktiviert. 2. Neue Sucher erscheinen.',
   'card.spam1': 'Bis zum Beginn der nächsten Zombiephase müssen die Spieler jedes Substantiv durch „SPAM“ ersetzen. Sonst werden alle Schlurfer aktiviert.',
@@ -90,4 +87,10 @@ export const de: Record<TranslationKey, string> = {
   'zombie.berserkerFatty.rush': 'Berserker-Fettbrocken',
   'zombie.skinnerWalker.rush': 'Dürre-Schlurfer',
   'zombie.skinnerFatty.rush': 'Dürre-Fettbrocken',
+  'zombie.walker.all': 'Alle Schlurfer',
+  'zombie.runner.all': 'Alle Läufer',
+  'zombie.fatty.all': 'Alle Fettbrocken',
+  'zombie.skinnerWalker.all': 'Alle Dürre-Schlurfer',
+  'zombie.skinnerRunner.all': 'Alle Dürre-Läufer',
+  'zombie.skinnerFatty.all': 'Alle Dürre-Fettbrocken',
 };

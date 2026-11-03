@@ -56,6 +56,7 @@ export default function OptionsScreen() {
                 <View style={styles.rowLabel}>
                   <Text style={styles.rowText}>{label}</Text>
                   {set.replaces && <Text style={styles.rowDetail}>{t('options.replaces')}</Text>}
+                  {set.id === 'abomination' && <Text style={styles.rowDetail}>{t('options.abominationHint')}</Text>}
                 </View>
                 <Switch
                   value={expansions.includes(set.id)}

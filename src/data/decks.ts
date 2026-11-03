@@ -1,4 +1,4 @@
-import type { CardSet, RushZombie, SpawnCounts, ZombieCard, ZombieType } from '../game/types';
+import type { CardSet, ExtraZombie, RushZombie, SpawnCounts, ZombieCard, ZombieType } from '../game/types';
 
 // Transcribed from the physical cards; ids follow the numbers printed on them.
 // Counts are in Danger Level order: blue, yellow, orange, red (the cards print them top-down, red first).
@@ -19,7 +19,7 @@ const rush = (setId: string, id: string, zombie: RushZombie, counts: SpawnCounts
   counts,
 });
 
-const extra = (setId: string, id: string, zombie: ZombieType): ZombieCard => ({
+const extra = (setId: string, id: string, zombie: ExtraZombie): ZombieCard => ({
   id: `${setId}-${id}`,
   setId,
   kind: 'extra',

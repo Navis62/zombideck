@@ -1,7 +1,7 @@
 import type { TranslationKey } from './fr';
 
-// Official terms from the Portal Games 2nd Edition rulebook (Zombicide 2. edycja).
-// Translated by us, not found there: the interface, the expansion zombies, Trejo, Seekers and SPAM, and the printed lines of the Rush and Extra Activation cards.
+// Translated by us: the expansion zombies other than Zombie Psy, the Seeker text and the Extra Activation card
+// texts other than "Wszyscy Szwendacze".
 export const pl: Record<TranslationKey, string> = {
   appName: 'Zombie Deck',
   'menu.resume': 'Wznów grę',
@@ -17,6 +17,7 @@ export const pl: Record<TranslationKey, string> = {
   'options.noContent': 'Brak dostępnych dodatków i promo.',
   'options.contentHint': 'Obowiązuje od następnej gry.',
   'options.replaces': 'Zastępuje talię z gry podstawowej',
+  'options.abominationHint': 'Dodaj z dodatkami, aby zachować udział Abominacji',
   'options.cardDisplay': 'Wyświetlanie kart',
   'options.displayAll': 'Wszystkie poziomy',
   'options.displayCurrent': 'Bieżący poziom',
@@ -36,10 +37,9 @@ export const pl: Record<TranslationKey, string> = {
   'danger.orange': 'Pomarańczowy',
   'danger.red': 'Czerwony',
   'card.rushTitle': 'Zryw {zombies}!',
-  'card.rushRule': 'Namnóżcie, a następnie aktywujcie.',
+  'card.rushRule': 'Namnóż, a następnie Aktywuj.',
   'card.extra': 'Dodatkowa Aktywacja',
   'card.extraRule': 'Jedna dodatkowa Aktywacja.',
-  'card.extraAll': 'Wszystkie {zombies}',
   'card.extraNobody': 'Nikt',
   'card.trejoChoice': 'Wykonajcie jedną z poniższych akcji:',
   'card.trejo1': 'Trejominacja w grze: 1 dodatkowa Aktywacja.',
@@ -50,13 +50,13 @@ export const pl: Record<TranslationKey, string> = {
   'set.trejo': 'Danny Trejo',
   'set.toxic': 'Toxic City Mall',
   'set.berserker': 'Prison Outbreak',
-  'set.dogz': 'Zombie Dogz',
+  'set.dogz': 'Zombie psy',
   'set.skinner': 'Rue Morgue',
   'set.seeker': 'Angry Neighbors',
   'set.crowz': 'Murder of Crowz',
   'set.vip': 'VIP: Very Infected People',
   'set.zombivor': 'Lost Zombivors',
-  'set.abomination': 'Dodatkowe Abominacje',
+  'set.abomination': 'Abominacje',
   'set.python': "Monty Python's Flying Circus",
   'card.seekerRule': 'Najpierw aktywujcie wszystkich Poszukiwaczy, potem namnóżcie.',
   'card.spam1': 'Do początku następnej Fazy Zombie gracze muszą zastępować każdy rzeczownik słowem „SPAM”. W przeciwnym razie aktywują się wszystkie Szwendacze.',
@@ -66,7 +66,7 @@ export const pl: Record<TranslationKey, string> = {
   'zombie.skinnerWalker.other': 'Obdarte Szwendacze',
   'zombie.skinnerRunner.other': 'Obdarci Biegacze',
   'zombie.skinnerFatty.other': 'Obdarte Spaślaki',
-  'zombie.dog.other': 'Psy Zombie',
+  'zombie.dog.other': 'Zombie Psy',
   'zombie.crow.other': 'Wrony',
   'zombie.seeker.other': 'Poszukiwacze',
   'zombie.vip.other': 'Zgniłe VIP-y',
@@ -89,4 +89,10 @@ export const pl: Record<TranslationKey, string> = {
   'zombie.berserkerFatty.rush': 'Spaślaków Berserkerów',
   'zombie.skinnerWalker.rush': 'Obdartych Szwendaczy',
   'zombie.skinnerFatty.rush': 'Obdartych Spaślaków',
+  'zombie.walker.all': 'Wszyscy Szwendacze',
+  'zombie.runner.all': 'Wszyscy Biegacze',
+  'zombie.fatty.all': 'Wszystkie Spaślaki',
+  'zombie.skinnerWalker.all': 'Wszystkie Obdarte Szwendacze',
+  'zombie.skinnerRunner.all': 'Wszyscy Obdarci Biegacze',
+  'zombie.skinnerFatty.all': 'Wszystkie Obdarte Spaślaki',
 };

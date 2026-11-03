@@ -53,7 +53,7 @@ export function CardFace({ card, danger }: { card: ZombieCard; danger: DangerLev
   const symbol = specialSymbol(card);
 
   if (card.kind === 'extra') {
-    const extraLine = (at: DangerLevel) => (at === 'blue' ? t('card.extraNobody') : t('card.extraAll', { zombies }));
+    const extraLine = (at: DangerLevel) => (at === 'blue' ? t('card.extraNobody') : t(`zombie.${card.zombie}.all`));
     return (
       <Frame
         card={card}

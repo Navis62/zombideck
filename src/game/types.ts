@@ -29,6 +29,8 @@ export type RushZombie =
   | 'berserkerFatty'
   | 'skinnerWalker'
   | 'skinnerFatty';
+/** Zombie types printed on Extra Activation cards; "All Walkers" takes its own form in some languages. */
+export type ExtraZombie = 'walker' | 'runner' | 'fatty' | 'skinnerWalker' | 'skinnerRunner' | 'skinnerFatty';
 export type DangerLevel = 'blue' | 'yellow' | 'orange' | 'red';
 
 /** Zombie counts, in Danger Level order: blue, yellow, orange, red. */
@@ -47,7 +49,7 @@ type SpawnCard<Kind, Zombie> = {
 export type ZombieCard =
   | SpawnCard<'spawn', ZombieType>
   | SpawnCard<'rush', RushZombie>
-  | { id: string; setId: string; kind: 'extra'; zombie: ZombieType }
+  | { id: string; setId: string; kind: 'extra'; zombie: ExtraZombie }
   | { id: string; setId: string; kind: 'trejo' }
   | { id: string; setId: string; kind: 'trejoRush' }
   | { id: string; setId: string; kind: 'spam' };

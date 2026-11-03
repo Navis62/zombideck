@@ -13,6 +13,7 @@ export const fr = {
   'options.noContent': 'Aucune extension ni promo disponible pour le moment.',
   'options.contentHint': "S'applique à la prochaine partie.",
   'options.replaces': 'Remplace le paquet de base',
+  'options.abominationHint': 'À ajouter avec les extensions pour garder la proportion d’Abominations',
   'options.cardDisplay': 'Affichage des cartes',
   'options.displayAll': 'Tous les niveaux',
   'options.displayCurrent': 'Niveau en cours',
@@ -35,7 +36,6 @@ export const fr = {
   'card.rushRule': 'Générez, puis activez.',
   'card.extra': 'Activation supplémentaire',
   'card.extraRule': 'Une activation supplémentaire.',
-  'card.extraAll': 'Tous les {zombies}',
   'card.extraNobody': 'Personne',
   'card.trejoChoice': "Effectuez l'une des actions suivantes :",
   'card.trejo1': 'Trejobomination en jeu : 1 activation supplémentaire.',
@@ -52,7 +52,7 @@ export const fr = {
   'set.crowz': 'Murder of Crowz',
   'set.vip': 'VIP: Very Infected People',
   'set.zombivor': 'Lost Zombivors',
-  'set.abomination': 'Abominations supplémentaires',
+  'set.abomination': 'Abominations',
   'set.python': "Monty Python's Flying Circus",
   'card.seekerRule': "D'abord, activez tous les Traqueurs, puis générez.",
   'card.spam1': "Jusqu'au début de la prochaine phase des zombies, les joueurs doivent remplacer chaque nom par « SPAM ». Sinon, tous les Rôdeurs s'activent.",
@@ -86,6 +86,13 @@ export const fr = {
   'zombie.berserkerFatty.rush': 'Balèzes berserkers',
   'zombie.skinnerWalker.rush': 'Rôdeurs décharnés',
   'zombie.skinnerFatty.rush': 'Balèzes décharnés',
+  // "All Walkers" on Extra Activation cards; the word for "all" agrees with the zombie name ("Wszyscy Szwendacze").
+  'zombie.walker.all': 'Tous les Rôdeurs',
+  'zombie.runner.all': 'Tous les Coureurs',
+  'zombie.fatty.all': 'Tous les Balèzes',
+  'zombie.skinnerWalker.all': 'Tous les Rôdeurs décharnés',
+  'zombie.skinnerRunner.all': 'Tous les Coureurs décharnés',
+  'zombie.skinnerFatty.all': 'Tous les Balèzes décharnés',
 };
 
 export type TranslationKey = keyof typeof fr;

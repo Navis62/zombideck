@@ -1,10 +1,5 @@
 import type { TranslationKey } from './fr';
 
-// Official zombie names from the Spanish rulebooks by Edge (1st edition: Caminante, Gordo, Corredor, Abominación)
-// and the contents of the "Clásicos Renovados" upgrade kit (Tóxico, Bersérker, Descarnado, Rastreador, Perros
-// zombi, Bandada de cuervos, Zombi VIP, Zombiviente Perdido). Silly Walkers, Trejo and SPAM stay as printed.
-// Rush, Extra Activation and Seeker card texts from Spanish 2nd Edition cards (#141, #157 and a Skinner Extra
-// Activation). Translated by us: the interface, the Spanish Inquisition and the Trejo and SPAM texts.
 export const es: Record<TranslationKey, string> = {
   appName: 'Zombie Deck',
   'menu.resume': 'Continuar partida',
@@ -20,6 +15,7 @@ export const es: Record<TranslationKey, string> = {
   'options.noContent': 'Todavía no hay expansiones ni promos disponibles.',
   'options.contentHint': 'Se aplica a la próxima partida.',
   'options.replaces': 'Sustituye el mazo básico',
+  'options.abominationHint': 'Añádelas con expansiones para mantener la proporción de Abominaciones',
   'options.cardDisplay': 'Visualización de las cartas',
   'options.displayAll': 'Todos los niveles',
   'options.displayCurrent': 'Nivel actual',
@@ -42,7 +38,6 @@ export const es: Record<TranslationKey, string> = {
   'card.rushRule': 'Aparecen y luego se activan.',
   'card.extra': 'Activación adicional',
   'card.extraRule': 'Una activación adicional.',
-  'card.extraAll': 'Todos los {zombies}',
   'card.extraNobody': 'Sin efecto',
   'card.trejoChoice': 'Realizad una de las siguientes acciones:',
   'card.trejo1': 'Trejobominación en juego: 1 activación adicional.',
@@ -59,7 +54,7 @@ export const es: Record<TranslationKey, string> = {
   'set.crowz': 'Murder of Crowz',
   'set.vip': 'VIP: Very Infected People',
   'set.zombivor': 'Lost Zombivors',
-  'set.abomination': 'Abominaciones adicionales',
+  'set.abomination': 'Abominaciones',
   'set.python': "Monty Python's Flying Circus",
   'card.seekerRule': 'Primero se activan todos los Rastreadores. Luego aparecen zombis.',
   'card.spam1': 'Hasta el inicio de la próxima Fase de Zombis, los jugadores deben sustituir cada sustantivo por «SPAM». Si no, todos los Caminantes se activan.',
@@ -92,4 +87,10 @@ export const es: Record<TranslationKey, string> = {
   'zombie.berserkerFatty.rush': 'Gordos bersérker',
   'zombie.skinnerWalker.rush': 'Caminantes descarnados',
   'zombie.skinnerFatty.rush': 'Gordos descarnados',
+  'zombie.walker.all': 'Todos los Caminantes',
+  'zombie.runner.all': 'Todos los Corredores',
+  'zombie.fatty.all': 'Todos los Gordos',
+  'zombie.skinnerWalker.all': 'Todos los Caminantes descarnados',
+  'zombie.skinnerRunner.all': 'Todos los Corredores descarnados',
+  'zombie.skinnerFatty.all': 'Todos los Gordos descarnados',
 };

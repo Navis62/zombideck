@@ -1,8 +1,5 @@
 import type { TranslationKey } from './fr';
 
-// Official terms from the Galápagos 2nd Edition rulebook (Zombicide 2ª Edição); expansion zombie names from the
-// contents of the Galápagos "Zumbis e Companheiros" upgrade kit, combined with the core names (Lerdos...).
-// Translated by us: the interface, VIPs, Silly Walkers, the Spanish Inquisition, Trejo, SPAM and the Seeker text.
 export const pt: Record<TranslationKey, string> = {
   appName: 'Zombie Deck',
   'menu.resume': 'Continuar partida',
@@ -18,6 +15,7 @@ export const pt: Record<TranslationKey, string> = {
   'options.noContent': 'Nenhuma expansão ou promo disponível por enquanto.',
   'options.contentHint': 'Vale a partir da próxima partida.',
   'options.replaces': 'Substitui o baralho básico',
+  'options.abominationHint': 'Adicione com expansões para manter a proporção de Abominações',
   'options.cardDisplay': 'Exibição das cartas',
   'options.displayAll': 'Todos os níveis',
   'options.displayCurrent': 'Nível atual',
@@ -40,7 +38,6 @@ export const pt: Record<TranslationKey, string> = {
   'card.rushRule': 'Realize a entrada e, em seguida, ative-os.',
   'card.extra': 'Ativação Extra',
   'card.extraRule': 'Uma Ativação Extra.',
-  'card.extraAll': 'Todos os {zombies}',
   'card.extraNobody': 'Nenhum',
   'card.trejoChoice': 'Realize uma das ações a seguir:',
   'card.trejo1': 'Trejobominação em jogo: 1 Ativação extra.',
@@ -57,9 +54,9 @@ export const pt: Record<TranslationKey, string> = {
   'set.crowz': 'Murder of Crowz',
   'set.vip': 'VIP: Very Infected People',
   'set.zombivor': 'Lost Zombivors',
-  'set.abomination': 'Abominações extras',
+  'set.abomination': 'Abominações',
   'set.python': "Monty Python's Flying Circus",
-  'card.seekerRule': 'Primeiro, ative todos os Caçadores; depois, realize a entrada.',
+  'card.seekerRule': 'Primeiro, todos os Caçadores são ativados. Depois, realize a entrada.',
   'card.spam1': 'Até o início da próxima Fase dos Zumbis, os jogadores devem substituir todo substantivo por "SPAM". Caso contrário, todos os Lerdos são ativados.',
   'card.spam2': 'Compre a carta seguinte.',
   'zombie.berserkerRunner.other': 'Corredores Enfurecidos',
@@ -90,4 +87,10 @@ export const pt: Record<TranslationKey, string> = {
   'zombie.berserkerFatty.rush': 'Balofos Enfurecidos',
   'zombie.skinnerWalker.rush': 'Lerdos Esfoladores',
   'zombie.skinnerFatty.rush': 'Balofos Esfoladores',
+  'zombie.walker.all': 'Todos os Lerdos',
+  'zombie.runner.all': 'Todos os Corredores',
+  'zombie.fatty.all': 'Todos os Balofos',
+  'zombie.skinnerWalker.all': 'Todos os Lerdos Esfoladores',
+  'zombie.skinnerRunner.all': 'Todos os Corredores Esfoladores',
+  'zombie.skinnerFatty.all': 'Todos os Balofos Esfoladores',
 };

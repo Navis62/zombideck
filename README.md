@@ -7,7 +7,7 @@ Unofficial companion app for Zombicide 2nd Edition: it replaces the physical zom
 - Draw, undo, shuffle the deck or reshuffle everything; the discard is reshuffled automatically when the deck runs out.
 - Danger Level chosen by the players; cards show only the current level, or all four.
 - Core box, Fort Hendrix (replaces the core deck) and expansions or promos switched on in the options; they apply to the next game.
-- English (default), French, German, Spanish, Italian, Polish and Brazilian Portuguese; the cards follow the app language.
+- English (default), French, German, Spanish, Italian, Polish, Brazilian Portuguese and Russian; the cards follow the app language.
 - The game is saved on the device and can be resumed.
 - The drawn card is read out by screen readers (TalkBack, VoiceOver).
 
@@ -34,7 +34,7 @@ npm run lint
 ## Adding content
 
 - **Cards:** add a set to `CARD_SETS` in `src/data/decks.ts` (`optional: true` for an expansion, `replaces` if it swaps out another set), then its `set.<id>` name in every file of `src/i18n/`. The tests check that every expansion has a name in every language.
-- **Zombie type:** add it to `ZombieType` in `src/game/types.ts`, its `zombie.<type>.other` name in every language, its illustration in `ART` (`src/components/zombie-art.tsx`) and, if the cards print one, its symbol in `ZOMBIE_SYMBOLS` (`src/components/card-face.tsx`).
+- **Zombie type:** add it to `ZombieType` in `src/game/types.ts`, its `zombie.<type>.other` name in every language (plus `zombie.<type>.rush` if it has Rush cards and `zombie.<type>.all` if it has Extra Activation cards), its illustration in `ART` (`src/components/zombie-art.tsx`) and, if the cards print one, its symbol in `ZOMBIE_SYMBOLS` (`src/components/card-face.tsx`).
 - **Language:** copy `src/i18n/en.ts`, translate it, then add it to `TRANSLATIONS` and `LANGUAGE_NAMES` in `src/i18n/translations.ts`.
 
 ## Disclaimer
@@ -44,3 +44,7 @@ Fan-made and unofficial. Zombicide is a trademark of CMON Global Limited; this a
 ## License
 
 The source code is released under the MIT License (see `LICENSE`). It does not cover the Zombicide name, rules or card contents, which belong to CMON.
+
+## Support
+
+If this app is useful at your table, you can [buy me a coffee](https://buymeacoffee.com/navis62) to help me keep building and improving apps.

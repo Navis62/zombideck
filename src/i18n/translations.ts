@@ -5,11 +5,12 @@ import { fr } from './fr.ts';
 import { it } from './it.ts';
 import { pl } from './pl.ts';
 import { pt } from './pt.ts';
+import { ru } from './ru.ts';
 
 export type { TranslationKey } from './fr.ts';
 
 // To add a language: add its file in this folder, then add it to TRANSLATIONS and LANGUAGE_NAMES.
-export const TRANSLATIONS = { fr, en, de, es, it, pl, pt };
+export const TRANSLATIONS = { fr, en, de, es, it, pl, pt, ru };
 export type Language = keyof typeof TRANSLATIONS;
 export const LANGUAGE_NAMES: Record<Language, string> = {
   fr: 'Français',
@@ -19,4 +20,5 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   it: 'Italiano',
   pl: 'Polski',
   pt: 'Português (BR)',
+  ru: 'Русский',
 };
