@@ -1,7 +1,8 @@
 import type { TranslationKey } from './fr';
 
-// Official terms from the Asmodee DE 2nd Edition rulebook (Zombicide: Zweite Edition).
-// Translated by us, not found there: the interface, the expansion zombies, Trejo, Seekers and SPAM.
+// Official terms from the Asmodee DE 2nd Edition rulebook (Zombicide: Zweite Edition), the Prison Outbreak
+// box and the cards of the "Zombies & Begleiter" upgrade kit (photo on BoardGameGeek).
+// Translated by us: the interface, Silly Walkers, the Spanish Inquisition, Trejo and SPAM.
 export const de: Record<TranslationKey, string> = {
   appName: 'Zombie Deck',
   'menu.resume': 'Partie fortsetzen',
@@ -58,19 +59,19 @@ export const de: Record<TranslationKey, string> = {
   'set.zombivor': 'Lost Zombivors',
   'set.abomination': 'Zusätzliche Monstren',
   'set.python': "Monty Python's Flying Circus",
-  'card.seekerRule': 'Aktiviert zuerst alle Sucher, dann erscheinen die Zombies.',
+  'card.seekerRule': '1. Alle Sucher werden aktiviert. 2. Neue Sucher erscheinen.',
   'card.spam1': 'Bis zum Beginn der nächsten Zombiephase müssen die Spieler jedes Substantiv durch „SPAM“ ersetzen. Sonst werden alle Schlurfer aktiviert.',
   'card.spam2': 'Zieht die nächste Karte.',
   'zombie.berserkerRunner.other': 'Berserker-Läufer',
   'zombie.berserkerFatty.other': 'Berserker-Fettbrocken',
-  'zombie.skinnerWalker.other': 'Skinner-Schlurfer',
-  'zombie.skinnerRunner.other': 'Skinner-Läufer',
-  'zombie.skinnerFatty.other': 'Skinner-Fettbrocken',
-  'zombie.dog.other': 'Dogz',
-  'zombie.crow.other': 'Crowz',
+  'zombie.skinnerWalker.other': 'Dürre-Schlurfer',
+  'zombie.skinnerRunner.other': 'Dürre-Läufer',
+  'zombie.skinnerFatty.other': 'Dürre-Fettbrocken',
+  'zombie.dog.other': 'Zombiehunde',
+  'zombie.crow.other': 'Mordskrähen',
   'zombie.seeker.other': 'Sucher',
-  'zombie.vip.other': 'Verfaulte VIPs',
-  'zombie.lostZombivor.other': 'Verlorene Zombivors',
+  'zombie.vip.other': 'Very Infected People',
+  'zombie.lostZombivor.other': 'Verlorener Überzombie',
   'zombie.sillyWalker.other': 'Silly Walkers',
   'zombie.inquisitor.other': 'Spanische Inquisition',
   'zombie.toxicWalker.other': 'Gift-Schlurfer',

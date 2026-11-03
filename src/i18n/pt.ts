@@ -1,7 +1,8 @@
 import type { TranslationKey } from './fr';
 
-// Official terms from the Galápagos 2nd Edition rulebook (Zombicide 2ª Edição).
-// Translated by us, not found there: the interface, the expansion zombies, Trejo, Seekers and SPAM.
+// Official terms from the Galápagos 2nd Edition rulebook (Zombicide 2ª Edição); expansion zombie names from the
+// contents of the Galápagos "Zumbis e Companheiros" upgrade kit, combined with the core names (Lerdos...).
+// Translated by us: the interface, VIPs, Silly Walkers, the Spanish Inquisition, Trejo, SPAM and the Seeker text.
 export const pt: Record<TranslationKey, string> = {
   appName: 'Zombie Deck',
   'menu.resume': 'Continuar partida',
@@ -58,25 +59,25 @@ export const pt: Record<TranslationKey, string> = {
   'set.zombivor': 'Lost Zombivors',
   'set.abomination': 'Abominações extras',
   'set.python': "Monty Python's Flying Circus",
-  'card.seekerRule': 'Primeiro, ative todos os Rastreadores; depois, realize a entrada.',
+  'card.seekerRule': 'Primeiro, ative todos os Caçadores; depois, realize a entrada.',
   'card.spam1': 'Até o início da próxima Fase dos Zumbis, os jogadores devem substituir todo substantivo por "SPAM". Caso contrário, todos os Lerdos são ativados.',
   'card.spam2': 'Compre a carta seguinte.',
-  'zombie.berserkerRunner.other': 'Corredores Berserker',
-  'zombie.berserkerFatty.other': 'Balofos Berserker',
-  'zombie.skinnerWalker.other': 'Lerdos Esfolados',
-  'zombie.skinnerRunner.other': 'Corredores Esfolados',
-  'zombie.skinnerFatty.other': 'Balofos Esfolados',
-  'zombie.dog.other': 'Cãez',
+  'zombie.berserkerRunner.other': 'Corredores Enfurecidos',
+  'zombie.berserkerFatty.other': 'Balofos Enfurecidos',
+  'zombie.skinnerWalker.other': 'Lerdos Esfoladores',
+  'zombie.skinnerRunner.other': 'Corredores Esfoladores',
+  'zombie.skinnerFatty.other': 'Balofos Esfoladores',
+  'zombie.dog.other': 'Cães',
   'zombie.crow.other': 'Corvoz',
-  'zombie.seeker.other': 'Rastreadores',
-  'zombie.vip.other': 'VIPs Podres',
+  'zombie.seeker.other': 'Caçadores',
+  'zombie.vip.other': 'Pessoas Muito Infectadas',
   'zombie.lostZombivor.other': 'Zumbiviventes Perdidos',
   'zombie.sillyWalker.other': 'Silly Walkers',
   'zombie.inquisitor.other': 'Inquisição Espanhola',
   'zombie.toxicWalker.other': 'Lerdos Tóxicos',
   'zombie.toxicRunner.other': 'Corredores Tóxicos',
   'zombie.toxicFatty.other': 'Balofos Tóxicos',
-  'zombie.berserkerWalker.other': 'Lerdos Berserker',
+  'zombie.berserkerWalker.other': 'Lerdos Enfurecidos',
   'zombie.walker.other': 'Lerdos',
   'zombie.runner.other': 'Corredores',
   'zombie.fatty.other': 'Balofos',
