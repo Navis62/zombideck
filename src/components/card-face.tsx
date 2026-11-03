@@ -82,7 +82,7 @@ export function CardFace({ card, danger }: { card: ZombieCard; danger: DangerLev
   return (
     <Frame
       card={card}
-      title={isRush ? t('card.rushTitle', { zombies }) : zombies}
+      title={card.kind === 'rush' ? t('card.rushTitle', { zombies: t(`zombie.${card.zombie}.rush`) }) : zombies}
       headerColor={isRush ? CARD_COLORS.rush : CARD_COLORS.spawn}
       footer={isRush ? t('card.rushRule') : card.zombie === 'seeker' ? t('card.seekerRule') : undefined}
       spoken={`${level}: ${counts[DANGER_LEVELS.indexOf(danger)]} ${zombies}`}

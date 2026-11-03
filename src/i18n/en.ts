@@ -79,4 +79,12 @@ export const en: Record<TranslationKey, string> = {
   'zombie.runner.other': 'Runners',
   'zombie.fatty.other': 'Fatties',
   'zombie.abomination.other': 'Abominations',
+  'zombie.walker.rush': 'Walker',
+  'zombie.fatty.rush': 'Fatty',
+  'zombie.toxicWalker.rush': 'Toxic Walker',
+  'zombie.toxicFatty.rush': 'Toxic Fatty',
+  'zombie.berserkerWalker.rush': 'Berserker Walker',
+  'zombie.berserkerFatty.rush': 'Berserker Fatty',
+  'zombie.skinnerWalker.rush': 'Skinner Walker',
+  'zombie.skinnerFatty.rush': 'Skinner Fatty',
 };

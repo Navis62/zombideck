@@ -7,7 +7,7 @@ Unofficial companion app for Zombicide 2nd Edition: it replaces the physical zom
 - Draw, undo, shuffle the deck or reshuffle everything; the discard is reshuffled automatically when the deck runs out.
 - Danger Level chosen by the players; cards show only the current level, or all four.
 - Core box, Fort Hendrix (replaces the core deck) and expansions or promos switched on in the options; they apply to the next game.
-- English (default), French, German, Italian, Polish and Brazilian Portuguese; the cards follow the app language.
+- English (default), French, German, Spanish, Italian, Polish and Brazilian Portuguese; the cards follow the app language.
 - The game is saved on the device and can be resumed.
 - The drawn card is read out by screen readers (TalkBack, VoiceOver).
 

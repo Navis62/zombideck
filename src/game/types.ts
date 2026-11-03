@@ -19,21 +19,34 @@ export type ZombieType =
   | 'lostZombivor'
   | 'sillyWalker'
   | 'inquisitor';
+/** Zombie types printed on Rush cards; their name takes its own form in the Rush title ("Walker Rush!"). */
+export type RushZombie =
+  | 'walker'
+  | 'fatty'
+  | 'toxicWalker'
+  | 'toxicFatty'
+  | 'berserkerWalker'
+  | 'berserkerFatty'
+  | 'skinnerWalker'
+  | 'skinnerFatty';
 export type DangerLevel = 'blue' | 'yellow' | 'orange' | 'red';
 
 /** Zombie counts, in Danger Level order: blue, yellow, orange, red. */
 export type SpawnCounts = readonly [number, number, number, number];
 
+type SpawnCard<Kind, Zombie> = {
+  id: string;
+  setId: string;
+  kind: Kind;
+  zombie: Zombie;
+  counts: SpawnCounts;
+  /** Shooters symbol (M4A1 barrel in a red circle) printed on some Fort Hendrix cards. */
+  shooter?: true;
+};
+
 export type ZombieCard =
-  | {
-      id: string;
-      setId: string;
-      kind: 'spawn' | 'rush';
-      zombie: ZombieType;
-      counts: SpawnCounts;
-      /** Shooters symbol (M4A1 barrel in a red circle) printed on some Fort Hendrix cards. */
-      shooter?: true;
-    }
+  | SpawnCard<'spawn', ZombieType>
+  | SpawnCard<'rush', RushZombie>
   | { id: string; setId: string; kind: 'extra'; zombie: ZombieType }
   | { id: string; setId: string; kind: 'trejo' }
   | { id: string; setId: string; kind: 'trejoRush' }

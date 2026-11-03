@@ -22,7 +22,7 @@ const sets: CardSet[] = [
     optional: false,
     cards: [
       { id: 'a1', setId: 'a', kind: 'spawn', zombie: 'walker', counts: [1, 2, 3, 4] },
-      { id: 'a2', setId: 'a', kind: 'rush', zombie: 'runner', counts: [1, 1, 2, 2] },
+      { id: 'a2', setId: 'a', kind: 'rush', zombie: 'fatty', counts: [1, 1, 2, 2] },
       { id: 'a3', setId: 'a', kind: 'extra', zombie: 'fatty' },
     ],
   },
@@ -177,7 +177,7 @@ test('the core deck matches the rulebook', () => {
   assert.deepEqual(cards.filter((c) => c.kind === 'extra').map((c) => c.id), [
     'core2e-037', 'core2e-038', 'core2e-039', 'core2e-040',
   ]);
-  assert.ok(!cards.some((c) => c.kind === 'rush' && c.zombie === 'runner'));
+  assert.ok(cards.every((c) => c.kind !== 'rush' || c.zombie === 'walker' || c.zombie === 'fatty'));
 });
 
 test('shuffling the deck leaves the discard and the card on display alone, and can be undone', () => {

@@ -82,4 +82,12 @@ export const pt: Record<TranslationKey, string> = {
   'zombie.runner.other': 'Corredores',
   'zombie.fatty.other': 'Balofos',
   'zombie.abomination.other': 'Abominações',
+  'zombie.walker.rush': 'Lerdos',
+  'zombie.fatty.rush': 'Balofos',
+  'zombie.toxicWalker.rush': 'Lerdos Tóxicos',
+  'zombie.toxicFatty.rush': 'Balofos Tóxicos',
+  'zombie.berserkerWalker.rush': 'Lerdos Enfurecidos',
+  'zombie.berserkerFatty.rush': 'Balofos Enfurecidos',
+  'zombie.skinnerWalker.rush': 'Lerdos Esfoladores',
+  'zombie.skinnerFatty.rush': 'Balofos Esfoladores',
 };

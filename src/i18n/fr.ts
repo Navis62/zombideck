@@ -77,6 +77,15 @@ export const fr = {
   'zombie.runner.other': 'Forcenés',
   'zombie.fatty.other': 'Balèzes',
   'zombie.abomination.other': 'Abominations',
+  // The zombie names in a Rush title, as printed ("Walker Rush!", "Zryw Szwendaczy").
+  'zombie.walker.rush': 'Rôdeurs',
+  'zombie.fatty.rush': 'Balèzes',
+  'zombie.toxicWalker.rush': 'Rôdeurs toxiques',
+  'zombie.toxicFatty.rush': 'Balèzes toxiques',
+  'zombie.berserkerWalker.rush': 'Rôdeurs berserkers',
+  'zombie.berserkerFatty.rush': 'Balèzes berserkers',
+  'zombie.skinnerWalker.rush': 'Rôdeurs décharnés',
+  'zombie.skinnerFatty.rush': 'Balèzes décharnés',
 };
 
 export type TranslationKey = keyof typeof fr;
