@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { CardBack } from '@/components/card-back';
 import { AppBackground } from '@/components/app-background';
+import { CardBack } from '@/components/card-back';
 import { CardFace } from '@/components/card-face';
-import { CARD_SETS, CARDS_BY_ID } from '@/data/decks';
-import { DANGER_LEVELS, drawCard, reshuffleAll, setDanger, undo } from '@/game/engine';
+import { CARDS_BY_ID } from '@/data/decks';
+import { DANGER_LEVELS, drawCard, reshuffleAll, setDanger, shuffleDeck, undo } from '@/game/engine';
 import { useApp } from '@/game/store';
 import type { GameState } from '@/game/types';
 import { COLORS, DANGER_COLORS } from '@/theme';
@@ -26,6 +26,15 @@ export default function GameScreen() {
     Animated.timing(flip, { toValue: 1, duration: 260, useNativeDriver: Platform.OS !== 'web' }).start();
   }, [currentId, flip]);
 
+  // Shakes the deck for a moment each time it is shuffled.
+  const [shuffles, setShuffles] = useState(0);
+  const [shake] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    if (shuffles === 0) return;
+    shake.setValue(0);
+    Animated.timing(shake, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }).start();
+  }, [shuffles, shake]);
+
   if (!game) return <Redirect href="/" />;
 
   const update = (change: (state: GameState) => GameState) =>
@@ -33,8 +42,18 @@ export default function GameScreen() {
 
   const { danger } = game;
   const card = currentId ? CARDS_BY_ID.get(currentId) : undefined;
-  const isDemo = CARD_SETS.some((set) => game.setIds.includes(set.id) && !set.verified);
   const rotateY = flip.interpolate({ inputRange: [0, 1], outputRange: ['90deg', '0deg'] });
+  const shakeSteps = [0, 0.2, 0.4, 0.6, 0.8, 1];
+  const deckShake = {
+    transform: [
+      { translateX: shake.interpolate({ inputRange: shakeSteps, outputRange: [0, -10, 10, -6, 6, 0] }) },
+      { rotate: shake.interpolate({ inputRange: shakeSteps, outputRange: ['0deg', '-4deg', '4deg', '-2deg', '2deg', '0deg'] }) },
+    ],
+  };
+  const shuffleWith = (change: (state: GameState) => GameState) => {
+    update(change);
+    setShuffles((count) => count + 1);
+  };
   // Both cards must fit side by side, whichever of the width or height runs out first.
   const slot = {
     width: Math.max(0, Math.min((table.width - TABLE_GAP) / 2, table.height * CARD_RATIO)),
@@ -49,13 +68,13 @@ export default function GameScreen() {
           style={styles.table}
           onLayout={({ nativeEvent: { layout } }) => setTable({ width: layout.width, height: layout.height })}
         >
-          <View style={slot}>
+          <Animated.View style={[slot, deckShake]}>
             <CardBack
               count={game.piles.draw.length}
               label={t('game.draw')}
               onPress={() => update((state) => drawCard(state))}
             />
-          </View>
+          </Animated.View>
           <View style={slot}>
             {card ? (
               <Animated.View style={[styles.drawn, { transform: [{ perspective: 800 }, { rotateY }] }]}>
@@ -92,12 +111,16 @@ export default function GameScreen() {
           </View>
 
           <View style={styles.spacer}>
-            {isDemo && <Text style={styles.notice}>{t('demoWarning')}</Text>}
             {game.piles.reshuffled && <Text style={styles.notice}>{t('game.reshuffled')}</Text>}
           </View>
 
           <SmallButton label={t('game.undo')} disabled={game.history.length === 0} onPress={() => update(undo)} />
-          <SmallButton label={t('game.shuffle')} onPress={() => update((state) => reshuffleAll(state))} />
+          <SmallButton
+            label={t('game.shuffleDeck')}
+            disabled={game.piles.draw.length < 2}
+            onPress={() => shuffleWith((state) => shuffleDeck(state))}
+          />
+          <SmallButton label={t('game.shuffle')} onPress={() => shuffleWith((state) => reshuffleAll(state))} />
           <Text style={styles.muted}>{t('game.discard', { n: game.piles.discard.length })}</Text>
         </View>
       </View>

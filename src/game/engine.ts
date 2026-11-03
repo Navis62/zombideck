@@ -68,6 +68,15 @@ export function reshuffleAll(state: GameState, rng: Rng = Math.random): GameStat
   };
 }
 
+/** Shuffles the cards left in the deck; the discard and the card on display stay put. */
+export function shuffleDeck(state: GameState, rng: Rng = Math.random): GameState {
+  return {
+    ...state,
+    history: remember(state),
+    piles: { ...state.piles, draw: shuffle(state.piles.draw, rng), reshuffled: false },
+  };
+}
+
 export function undo(state: GameState): GameState {
   const piles = state.history.at(-1);
   return piles ? { ...state, piles, history: state.history.slice(0, -1) } : state;

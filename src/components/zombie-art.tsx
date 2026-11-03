@@ -5,8 +5,8 @@ import type { ZombieCard, ZombieType } from '@/game/types';
 
 export type ArtSubject = ZombieType | 'trejo' | 'spam';
 
-// One illustration per subject, compressed to JPEG; the source PNGs stay in assets/zombies/originals.
-// Full illustrations in a tall 1:2 format, shown in the panel beside the Danger Levels.
+// One illustration per subject, upscaled to 1280 px tall and compressed to JPEG.
+// Tall portrait illustrations, shown in the panel beside the Danger Levels.
 const ART: Partial<Record<ArtSubject, ImageSourcePropType>> = {
   walker: require('../../assets/zombies/walker-cartoon.jpg'),
   fatty: require('../../assets/zombies/fatty-cartoon.jpg'),
@@ -37,7 +37,7 @@ export const hasArt = (subject: ArtSubject) => subject in ART;
 export const artSubject = (card: ZombieCard): ArtSubject =>
   card.kind === 'trejo' || card.kind === 'trejoRush' ? 'trejo' : card.kind === 'spam' ? 'spam' : card.zombie;
 
-// Height over width of the illustrations.
+// Height over width of the Trejo and SPAM illustrations, the only ones shown top-anchored.
 const ART_RATIO = 2.25;
 
 /** Fills its panel; `top` keeps the head in view when the panel is wider than the illustration. */

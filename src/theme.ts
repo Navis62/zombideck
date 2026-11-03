@@ -19,7 +19,7 @@ export const CARD_COLORS = {
   extra: { background: '#e5261f', text: '#1b1a15' },
 };
 
-export const DANGER_COLORS:Record<DangerLevel, { background: string; text: string }> = {
+export const DANGER_COLORS: Record<DangerLevel, { background: string; text: string }> = {
   blue: { background: '#2f6fb5', text: '#ffffff' },
   yellow: { background: '#e8c53a', text: '#1b1a15' },
   orange: { background: '#e5822b', text: '#1b1a15' },

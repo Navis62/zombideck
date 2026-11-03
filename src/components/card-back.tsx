@@ -18,14 +18,6 @@ export function CardBack(props: { count: number; label: string; onPress: () => v
   );
 }
 
-export function Hazard({ stripes }: { stripes: number }) {
-  return (
-    <View style={styles.hazard}>
-      {Array.from({ length: stripes }, (_, index) => <View key={index} style={styles.stripe} />)}
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   pile: { flex: 1, marginRight: 6, marginBottom: 6 },
   edge: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 12, backgroundColor: '#3a372c', borderWidth: 1, borderColor: '#000000' },
@@ -35,6 +27,4 @@ const styles = StyleSheet.create({
   image: { width: '100%', height: '100%' },
   badge: { position: 'absolute', top: 8, right: 8, minWidth: 36, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, alignItems: 'center', backgroundColor: CARD_COLORS.back, borderWidth: 2, borderColor: CARD_COLORS.rush.background },
   count: { color: '#ffffff', fontSize: 16, fontWeight: '900' },
-  hazard: { height: 18, flexDirection: 'row', overflow: 'hidden', backgroundColor: CARD_COLORS.rush.background },
-  stripe: { flex: 1, marginHorizontal: 6, backgroundColor: CARD_COLORS.back, transform: [{ skewX: '-30deg' }] },
 });

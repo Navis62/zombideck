@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Hazard } from '@/components/card-back';
 import { AppBackground } from '@/components/app-background';
+import { Hazard } from '@/components/hazard';
 import { type ArtSubject, hasArt, ZombieFigure } from '@/components/zombie-art';
 import { CARD_SETS } from '@/data/decks';
 import { activeSetIds, newGame, selectCards } from '@/game/engine';

@@ -51,6 +51,10 @@ const AppContext = createContext<AppContextValue | null>(null);
 const isLanguage = (value: string | null | undefined): value is Language =>
   !!value && value in LANGUAGE_NAMES;
 
+function save(key: string, value: string, what: string) {
+  AsyncStorage.setItem(key, value).catch((error) => console.warn(`Could not save the ${what}`, error));
+}
+
 function parseSave(raw: string | null): GameState | null {
   if (!raw) return null;
   try {
@@ -93,30 +97,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // No game can mean the save failed to load: leave it in storage until a new game replaces it.
     if (!loaded || !game) return;
-    AsyncStorage.setItem(GAME_KEY, JSON.stringify(game)).catch((error) =>
-      console.warn('Could not save the game', error),
-    );
+    save(GAME_KEY, JSON.stringify(game), 'game');
   }, [game, loaded]);
 
   const chooseLanguage = useCallback((next: Language) => {
     setLanguage(next);
-    AsyncStorage.setItem(LANGUAGE_KEY, next).catch((error) =>
-      console.warn('Could not save the language', error),
-    );
+    save(LANGUAGE_KEY, next, 'language');
   }, []);
 
   const chooseExpansions = useCallback((next: string[]) => {
     setExpansions(next);
-    AsyncStorage.setItem(EXPANSIONS_KEY, JSON.stringify(next)).catch((error) =>
-      console.warn('Could not save the expansions', error),
-    );
+    save(EXPANSIONS_KEY, JSON.stringify(next), 'expansions');
   }, []);
 
   const chooseCardDisplay = useCallback((next: CardDisplay) => {
     setCardDisplay(next);
-    AsyncStorage.setItem(CARD_DISPLAY_KEY, next).catch((error) =>
-      console.warn('Could not save the card display', error),
-    );
+    save(CARD_DISPLAY_KEY, next, 'card display');
   }, []);
 
   const value = useMemo(

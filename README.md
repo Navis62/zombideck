@@ -4,10 +4,10 @@ Unofficial companion app for Zombicide 2nd Edition: it replaces the physical zom
 
 ## Features
 
-- Draw, undo and reshuffle; the discard is reshuffled automatically when the deck runs out.
-- Danger Level chosen by the players, highlighted on each card.
-- Expansions and promos switched on in the options; they apply to the next game.
-- Interface and card language (French or English) set separately.
+- Draw, undo, shuffle the deck or reshuffle everything; the discard is reshuffled automatically when the deck runs out.
+- Danger Level chosen by the players; cards show only the current level, or all four.
+- Core box, Fort Hendrix (replaces the core deck) and expansions or promos switched on in the options; they apply to the next game.
+- English (default), French, German, Italian, Polish and Brazilian Portuguese; the cards follow the app language.
 - The game is saved on the device and can be resumed.
 
 ## Development
@@ -23,8 +23,7 @@ npm run lint
 ## Project layout
 
 - `src/app/`: screens (Expo Router routes)
-- `src/components/`: card faces, card back and artwork
+- `src/components/`: card faces, card back, artwork, background and hazard stripes
 - `src/data/decks.ts`: cards transcribed from the physical decks
 - `src/game/`: game engine, types and saved state
-- `src/i18n/translations.ts`: French and English text
-- `assets/zombies/originals/`: source PNGs of the illustrations, not bundled in the app
+- `src/i18n/`: one file per language; `fr.ts` defines the keys every language must provide

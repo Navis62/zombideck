@@ -12,6 +12,11 @@ const CARD_DISPLAYS: { value: CardDisplay; label: TranslationKey }[] = [
   { value: 'current', label: 'options.displayCurrent' },
 ];
 
+const LANGUAGES = (Object.keys(LANGUAGE_NAMES) as Language[]).map((code) => ({
+  value: code,
+  label: LANGUAGE_NAMES[code],
+}));
+
 export default function OptionsScreen() {
   const { expansions, setExpansions, language, setLanguage, cardDisplay, setCardDisplay, t } = useApp();
   const optionalSets = CARD_SETS.filter((set) => set.optional);
@@ -23,33 +28,13 @@ export default function OptionsScreen() {
       <View style={styles.columns}>
         <View style={styles.column}>
           <Text style={styles.heading}>{t('options.language')}</Text>
-          <View style={styles.languages}>
-            {(Object.keys(LANGUAGE_NAMES) as Language[]).map((code) => (
-              <Pressable
-                key={code}
-                style={[styles.language, code === language && styles.languageActive]}
-                onPress={() => setLanguage(code)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: code === language }}
-              >
-                <Text style={styles.rowText}>{LANGUAGE_NAMES[code]}</Text>
-              </Pressable>
-            ))}
-          </View>
+          <Choices options={LANGUAGES} selected={language} onSelect={setLanguage} />
           <Text style={styles.heading}>{t('options.cardDisplay')}</Text>
-          <View style={styles.languages}>
-            {CARD_DISPLAYS.map(({ value, label }) => (
-              <Pressable
-                key={value}
-                style={[styles.language, value === cardDisplay && styles.languageActive]}
-                onPress={() => setCardDisplay(value)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: value === cardDisplay }}
-              >
-                <Text style={styles.rowText}>{t(label)}</Text>
-              </Pressable>
-            ))}
-          </View>
+          <Choices
+            options={CARD_DISPLAYS.map(({ value, label }) => ({ value, label: t(label) }))}
+            selected={cardDisplay}
+            onSelect={setCardDisplay}
+          />
         </View>
 
         <ScrollView style={styles.column} contentContainerStyle={styles.content}>
@@ -89,6 +74,28 @@ export default function OptionsScreen() {
   );
 }
 
+function Choices<T extends string>(props: {
+  options: { value: T; label: string }[];
+  selected: T;
+  onSelect: (value: T) => void;
+}) {
+  return (
+    <View style={styles.choices}>
+      {props.options.map(({ value, label }) => (
+        <Pressable
+          key={value}
+          style={[styles.choice, value === props.selected && styles.choiceActive]}
+          onPress={() => props.onSelect(value)}
+          accessibilityRole="button"
+          accessibilityState={{ selected: value === props.selected }}
+        >
+          <Text style={styles.rowText}>{label}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   columns: { flex: 1, flexDirection: 'row', padding: 12, gap: 16 },
@@ -110,8 +117,8 @@ const styles = StyleSheet.create({
   rowDetail: { color: COLORS.muted, fontSize: 12 },
   toggleAll: { alignItems: 'center', backgroundColor: COLORS.accent, borderRadius: 8, padding: 12 },
   toggleAllText: { color: '#ffffff', fontSize: 16, fontWeight: '800', textTransform: 'uppercase' },
-  languages: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  language: {
+  choices: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  choice: {
     flexGrow: 1,
     flexBasis: '40%',
     alignItems: 'center',
@@ -121,5 +128,5 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
   },
-  languageActive: { borderColor: COLORS.text },
+  choiceActive: { borderColor: COLORS.text },
 });

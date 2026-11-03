@@ -11,6 +11,7 @@ import {
   reshuffleAll,
   selectCards,
   setDanger,
+  shuffleDeck,
   undo,
 } from './engine.ts';
 import type { CardSet, GameState, ZombieCard } from './types.ts';
@@ -18,7 +19,6 @@ import type { CardSet, GameState, ZombieCard } from './types.ts';
 const sets: CardSet[] = [
   {
     id: 'a',
-    verified: true,
     optional: false,
     cards: [
       { id: 'a1', setId: 'a', kind: 'spawn', zombie: 'walker', counts: [1, 2, 3, 4] },
@@ -28,7 +28,6 @@ const sets: CardSet[] = [
   },
   {
     id: 'b',
-    verified: true,
     optional: true,
     cards: [{ id: 'b1', setId: 'b', kind: 'spawn', zombie: 'abomination', counts: [0, 0, 1, 1] }],
   },
@@ -51,7 +50,7 @@ test('non-optional sets are always active, optional ones only when enabled', () 
 });
 
 test('a set that replaces another takes it out of the deck only when switched on', () => {
-  const withReplacement: CardSet[] = [...sets, { id: 'c', verified: true, optional: true, replaces: 'a', cards: [] }];
+  const withReplacement: CardSet[] = [...sets, { id: 'c', optional: true, replaces: 'a', cards: [] }];
   assert.deepEqual(activeSetIds(withReplacement, []), ['a']);
   assert.deepEqual(activeSetIds(withReplacement, ['c']), ['c']);
   assert.deepEqual(activeSetIds(withReplacement, ['b', 'c']), ['b', 'c']);
@@ -179,4 +178,22 @@ test('the core deck matches the rulebook', () => {
     'core2e-037', 'core2e-038', 'core2e-039', 'core2e-040',
   ]);
   assert.ok(!cards.some((c) => c.kind === 'rush' && c.zombie === 'runner'));
+});
+
+test('shuffling the deck leaves the discard and the card on display alone, and can be undone', () => {
+  const drawn = drawCard(drawCard(newGame(sets, ['a', 'b'], () => 0), () => 0), () => 0);
+  const reversed = shuffleDeck(drawn, () => 0.999);
+  assert.equal(reversed.piles.current, drawn.piles.current);
+  assert.deepEqual(reversed.piles.discard, drawn.piles.discard);
+  assert.deepEqual([...reversed.piles.draw].sort(), [...drawn.piles.draw].sort());
+  assert.deepEqual(undo(reversed).piles, drawn.piles);
+});
+
+test('every expansion has a name in every language', async () => {
+  const { TRANSLATIONS } = await import('../i18n/translations.ts');
+  for (const [language, texts] of Object.entries(TRANSLATIONS)) {
+    for (const set of CARD_SETS.filter((s) => s.optional)) {
+      assert.ok((texts as Record<string, string>)[`set.${set.id}`], `${language}: set.${set.id}`);
+    }
+  }
 });

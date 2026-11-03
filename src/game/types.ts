@@ -41,8 +41,6 @@ export type ZombieCard =
 
 export type CardSet = {
   id: string;
-  /** False while the cards have not been checked against the physical deck. */
-  verified: boolean;
   /** Expansions and promos are switched on in the options; the rest is always in the deck. */
   optional: boolean;
   /** Set taken out of the deck while this one is switched on. */

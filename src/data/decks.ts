@@ -52,7 +52,6 @@ const PYTHON = 'python';
 export const CARD_SETS: readonly CardSet[] = [
   {
     id: CORE,
-    verified: true,
     optional: false,
     cards: [
       spawn(CORE, '001', 'walker', [1, 2, 4, 6]),
@@ -100,7 +99,6 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     // Same counts as the core deck, new art; it replaces the core deck when switched on.
     id: FORT_HENDRIX,
-    verified: true,
     optional: true,
     replaces: CORE,
     cards: [
@@ -148,7 +146,6 @@ export const CARD_SETS: readonly CardSet[] = [
   },
   {
     id: TREJO,
-    verified: true,
     optional: true,
     cards: [
       special(TREJO, '081', 'trejo'),
@@ -161,7 +158,6 @@ export const CARD_SETS: readonly CardSet[] = [
   },
   {
     id: TOXIC,
-    verified: true,
     optional: true,
     cards: [
       spawn(TOXIC, '087', 'toxicWalker', [1, 2, 4, 6]),
@@ -179,7 +175,6 @@ export const CARD_SETS: readonly CardSet[] = [
   },
   {
     id: BERSERKER,
-    verified: true,
     optional: true,
     cards: [
       spawn(BERSERKER, '098', 'berserkerWalker', [1, 2, 4, 6]),
@@ -197,7 +192,6 @@ export const CARD_SETS: readonly CardSet[] = [
   },
   {
     id: DOGZ,
-    verified: true,
     optional: true,
     cards: [
       spawn(DOGZ, '109', 'dog', [1, 2, 4, 6]),
@@ -216,7 +210,6 @@ export const CARD_SETS: readonly CardSet[] = [
   },
   {
     id: SKINNER,
-    verified: true,
     optional: true,
     cards: [
       spawn(SKINNER, '121', 'skinnerWalker', [1, 2, 4, 6]),
@@ -259,7 +252,6 @@ export const CARD_SETS: readonly CardSet[] = [
   },
   {
     id: SEEKER,
-    verified: true,
     optional: true,
     cards: [
       spawn(SEEKER, '157', 'seeker', [1, 2, 4, 6]),
@@ -278,7 +270,6 @@ export const CARD_SETS: readonly CardSet[] = [
   },
   {
     id: CROWZ,
-    verified: true,
     optional: true,
     cards: [
       spawn(CROWZ, '169', 'crow', [1, 2, 4, 6]),
@@ -297,7 +288,6 @@ export const CARD_SETS: readonly CardSet[] = [
   },
   {
     id: VIP,
-    verified: true,
     optional: true,
     cards: [
       spawn(VIP, '181', 'vip', [1, 2, 4, 6]),
@@ -316,7 +306,6 @@ export const CARD_SETS: readonly CardSet[] = [
   },
   {
     id: ZOMBIVOR,
-    verified: true,
     optional: true,
     cards: [
       spawn(ZOMBIVOR, '193', 'lostZombivor', [1, 1, 1, 1]),
@@ -329,7 +318,6 @@ export const CARD_SETS: readonly CardSet[] = [
   },
   {
     id: ABOMINATION,
-    verified: true,
     optional: true,
     cards: [
       spawn(ABOMINATION, '199', 'abomination', [0, 1, 1, 1]),
@@ -342,7 +330,6 @@ export const CARD_SETS: readonly CardSet[] = [
   },
   {
     id: PYTHON,
-    verified: true,
     optional: true,
     cards: [
       spawn(PYTHON, '205', 'sillyWalker', [1, 2, 3, 4]),
