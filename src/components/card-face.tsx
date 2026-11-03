@@ -17,24 +17,25 @@ const BERSERKER_BOWIE_SYMBOL = require('../../assets/icons/berserker-bowie-symbo
 const TOXIC_BIOHAZARD_SYMBOL = require('../../assets/icons/toxic-biohazard-symbol.png');
 const SEEKER_EYE_SYMBOL = require('../../assets/icons/seeker-eye-symbol.png');
 const DOG_PAW_SYMBOL = require('../../assets/icons/dog-paw-symbol.png');
+const SHOOTER_M4A1_SYMBOL = require('../../assets/icons/shooter-m4a1-symbol.png');
 
 export function CardFace({ card, danger }: { card: ZombieCard; danger: DangerLevel }) {
-  const { tCard } = useApp();
+  const { t } = useApp();
 
   if (card.kind === 'trejo' || card.kind === 'trejoRush') {
     const isRush = card.kind === 'trejoRush';
     return (
       <Frame
         card={card}
-        title={isRush ? tCard('card.rushTitle', { zombies: 'Trejo' }) : 'Trejo'}
+        title={isRush ? t('card.rushTitle', { zombies: 'Trejo' }) : 'Trejo'}
         headerColor={isRush ? CARD_COLORS.rush : CARD_COLORS.spawn}
       >
         <Art card={card} short />
         <View style={[styles.textBody, { backgroundColor: isRush ? CARD_COLORS.rush.background : CARD_COLORS.spawn.background }]}>
-          <Text style={[styles.bodyHeading, { color: isRush ? CARD_COLORS.ink : '#ffffff' }]}>{tCard('card.trejoChoice')}</Text>
+          <Text style={[styles.bodyHeading, { color: isRush ? CARD_COLORS.ink : '#ffffff' }]}>{t('card.trejoChoice')}</Text>
           {(['card.trejo1', 'card.trejo2', isRush ? 'card.trejo3Rush' : 'card.trejo3'] as const).map((key, index) => (
             <Text key={key} style={[styles.bodyText, { color: isRush ? CARD_COLORS.ink : '#ffffff' }]}>
-              {index + 1}. {tCard(key)}
+              {index + 1}. {t(key)}
             </Text>
           ))}
         </View>
@@ -47,26 +48,26 @@ export function CardFace({ card, danger }: { card: ZombieCard; danger: DangerLev
       <Frame card={card} title="Spam" headerColor={CARD_COLORS.spawn}>
         <Art card={card} short />
         <View style={[styles.textBody, { backgroundColor: CARD_COLORS.spawn.background }]}>
-          <Text style={[styles.bodyText, { color: '#ffffff' }]}>{tCard('card.spam1')}</Text>
-          <Text style={[styles.bodyText, { color: '#ffffff' }]}>{tCard('card.spam2')}</Text>
+          <Text style={[styles.bodyText, { color: '#ffffff' }]}>{t('card.spam1')}</Text>
+          <Text style={[styles.bodyText, { color: '#ffffff' }]}>{t('card.spam2')}</Text>
         </View>
       </Frame>
     );
   }
 
-  const zombies = tCard(`zombie.${card.zombie}.other`);
+  const zombies = t(`zombie.${card.zombie}.other`);
   const symbol = specialSymbol(card);
 
   if (card.kind === 'extra') {
     return (
-      <Frame card={card} title={tCard('card.extra')} headerColor={CARD_COLORS.extra} footer={tCard('card.extraRule')}>
+      <Frame card={card} title={t('card.extra')} headerColor={CARD_COLORS.extra} footer={t('card.extraRule')}>
         <View style={styles.spawnBody}>
           <Art card={card} />
           <View style={styles.levels}>
             <LevelSymbol symbol={symbol} />
             {PRINTED_LEVELS.map((level) => (
               <Level key={level} level={level} active={level === danger} wide>
-                {level === 'blue' ? tCard('card.extraNobody') : tCard('card.extraAll', { zombies })}
+                {level === 'blue' ? t('card.extraNobody') : t('card.extraAll', { zombies })}
               </Level>
             ))}
           </View>
@@ -80,9 +81,9 @@ export function CardFace({ card, danger }: { card: ZombieCard; danger: DangerLev
   return (
     <Frame
       card={card}
-      title={isRush ? tCard('card.rushTitle', { zombies }) : zombies}
+      title={isRush ? t('card.rushTitle', { zombies }) : zombies}
       headerColor={isRush ? CARD_COLORS.rush : CARD_COLORS.spawn}
-      footer={isRush ? tCard('card.rushRule') : card.zombie === 'seeker' ? tCard('card.seekerRule') : undefined}
+      footer={isRush ? t('card.rushRule') : card.zombie === 'seeker' ? t('card.seekerRule') : undefined}
     >
       <View style={styles.spawnBody}>
         <Art card={card} />
@@ -118,7 +119,8 @@ type SymbolKind =
   | 'vip'
   | 'lostZombivor'
   | 'sillyWalker'
-  | 'inquisitor';
+  | 'inquisitor'
+  | 'shooter';
 
 type SymbolDef = { kind: SymbolKind };
 
@@ -126,7 +128,7 @@ function LevelSymbol({ symbol }: { symbol: SymbolDef | null }) {
   if (!symbol) return null;
   return (
     <View style={styles.levelSymbolWrap}>
-      <View style={styles.levelSymbolBadge}>
+      <View style={[styles.levelSymbolBadge, symbol.kind === 'shooter' && styles.shooterSymbolBadge]}>
         {symbol.kind === 'toxic' ? (
           <Image source={TOXIC_BIOHAZARD_SYMBOL} style={styles.toxicSymbolImage} resizeMode="contain" />
         ) : symbol.kind === 'skinner' ? (
@@ -141,6 +143,8 @@ function LevelSymbol({ symbol }: { symbol: SymbolDef | null }) {
           <Image source={CROW_REAL_SYMBOL} style={styles.crowSymbolImage} resizeMode="contain" />
         ) : symbol.kind === 'lostZombivor' ? (
           <Image source={LOST_ZOMBIVOR_CHAIN_SYMBOL} style={styles.lostZombivorSymbolImage} resizeMode="contain" />
+        ) : symbol.kind === 'shooter' ? (
+          <Image source={SHOOTER_M4A1_SYMBOL} style={styles.shooterSymbolImage} resizeMode="contain" />
         ) : (
           <Svg width={44} height={44} viewBox="0 0 24 24">
             <SpecialIcon kind={symbol.kind} />
@@ -205,7 +209,7 @@ function specialSymbol(card: ZombieCard): SymbolDef | null {
     case 'inquisitor':
       return { kind: 'inquisitor' };
     default:
-      return null;
+      return card.kind !== 'extra' && card.shooter ? { kind: 'shooter' } : null;
   }
 }
 
@@ -216,7 +220,7 @@ function Frame(props: {
   footer?: string;
   children: React.ReactNode;
 }) {
-  const { cardLanguage } = useApp();
+  const { language } = useApp();
   return (
     <View style={styles.face}>
       <View style={[styles.header, { backgroundColor: props.headerColor.background }]}>
@@ -225,8 +229,8 @@ function Frame(props: {
         </Text>
         <View style={styles.meta}>
           <Text style={[styles.number, { color: props.headerColor.text }]}>#{props.card.id.slice(-3)}</Text>
-          <Text style={[styles.edition, cardLanguage === 'fr' ? styles.editionVf : styles.editionVo]}>
-            {CARD_LANGUAGE_NAMES[cardLanguage]}
+          <Text style={[styles.edition, language === 'en' ? styles.editionVo : styles.editionVf]}>
+            {CARD_LANGUAGE_NAMES[language]}
           </Text>
         </View>
       </View>
@@ -291,6 +295,9 @@ const styles = StyleSheet.create({
   seekerSymbolImage: { width: 50, height: 50 },
   dogSymbolImage: { width: 50, height: 50 },
   crowSymbolImage: { width: 62, height: 62, marginTop: -2 },
+  // Printed on the Fort Hendrix cards as an M4A1 in a red circle, barrel up-left.
+  shooterSymbolBadge: { backgroundColor: '#ffffff', borderColor: '#d8352a', borderWidth: 4 },
+  shooterSymbolImage: { width: 46, height: 46, transform: [{ rotate: '20deg' }] },
   lostZombivorSymbolImage: { width: 62, height: 62, tintColor: '#6a2c91', transform: [{ rotate: '-45deg' }] },
   number: { fontSize: 10, fontWeight: '700', opacity: 0.8 },
   edition: { fontSize: 9, fontWeight: '900', color: '#ffffff', paddingHorizontal: 4, borderRadius: 3, overflow: 'hidden' },

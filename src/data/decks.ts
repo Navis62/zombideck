@@ -26,6 +26,9 @@ const extra = (setId: string, id: string, zombie: ZombieType): ZombieCard => ({
   zombie,
 });
 
+const shooter = (card: ZombieCard): ZombieCard =>
+  card.kind === 'spawn' || card.kind === 'rush' ? { ...card, shooter: true } : card;
+
 const special = (setId: string, id: string, kind: 'trejo' | 'trejoRush' | 'spam'): ZombieCard => ({
   id: `${setId}-${id}`,
   setId,
@@ -33,6 +36,7 @@ const special = (setId: string, id: string, kind: 'trejo' | 'trejoRush' | 'spam'
 });
 
 const CORE = 'core2e';
+const FORT_HENDRIX = 'fortHendrix';
 const TREJO = 'trejo';
 const TOXIC = 'toxic';
 const BERSERKER = 'berserker';
@@ -91,6 +95,55 @@ export const CARD_SETS: readonly CardSet[] = [
       extra(CORE, '038', 'walker'),
       extra(CORE, '039', 'fatty'),
       extra(CORE, '040', 'runner'),
+    ],
+  },
+  {
+    // Same counts as the core deck, new art; it replaces the core deck when switched on.
+    id: FORT_HENDRIX,
+    verified: true,
+    optional: true,
+    replaces: CORE,
+    cards: [
+      shooter(spawn(FORT_HENDRIX, '041', 'walker', [1, 2, 4, 6])),
+      shooter(spawn(FORT_HENDRIX, '042', 'walker', [2, 3, 5, 7])),
+      spawn(FORT_HENDRIX, '043', 'walker', [3, 5, 7, 9]),
+      spawn(FORT_HENDRIX, '044', 'walker', [4, 6, 8, 10]),
+      shooter(rush(FORT_HENDRIX, '045', 'walker', [1, 2, 4, 6])),
+      shooter(rush(FORT_HENDRIX, '046', 'walker', [2, 3, 5, 7])),
+      rush(FORT_HENDRIX, '047', 'walker', [3, 5, 7, 9]),
+      rush(FORT_HENDRIX, '048', 'walker', [4, 6, 8, 10]),
+      spawn(FORT_HENDRIX, '049', 'fatty', [1, 1, 2, 3]),
+      spawn(FORT_HENDRIX, '050', 'fatty', [2, 3, 4, 4]),
+      rush(FORT_HENDRIX, '051', 'fatty', [0, 1, 2, 3]),
+      rush(FORT_HENDRIX, '052', 'fatty', [1, 2, 3, 4]),
+      shooter(spawn(FORT_HENDRIX, '053', 'runner', [0, 1, 2, 3])),
+      spawn(FORT_HENDRIX, '054', 'runner', [1, 1, 2, 3]),
+      spawn(FORT_HENDRIX, '055', 'runner', [1, 2, 3, 4]),
+      spawn(FORT_HENDRIX, '056', 'runner', [2, 3, 4, 4]),
+      spawn(FORT_HENDRIX, '057', 'abomination', [0, 1, 1, 1]),
+      spawn(FORT_HENDRIX, '058', 'abomination', [0, 1, 1, 1]),
+      shooter(spawn(FORT_HENDRIX, '059', 'walker', [2, 4, 6, 8])),
+      shooter(spawn(FORT_HENDRIX, '060', 'walker', [3, 5, 7, 9])),
+      spawn(FORT_HENDRIX, '061', 'walker', [4, 6, 8, 10]),
+      spawn(FORT_HENDRIX, '062', 'walker', [6, 8, 10, 12]),
+      rush(FORT_HENDRIX, '063', 'walker', [2, 4, 6, 8]),
+      rush(FORT_HENDRIX, '064', 'walker', [3, 5, 7, 9]),
+      rush(FORT_HENDRIX, '065', 'walker', [4, 6, 8, 10]),
+      rush(FORT_HENDRIX, '066', 'walker', [6, 8, 10, 12]),
+      shooter(spawn(FORT_HENDRIX, '067', 'fatty', [1, 2, 3, 4])),
+      spawn(FORT_HENDRIX, '068', 'fatty', [3, 4, 5, 6]),
+      shooter(rush(FORT_HENDRIX, '069', 'fatty', [1, 2, 3, 4])),
+      rush(FORT_HENDRIX, '070', 'fatty', [2, 3, 4, 5]),
+      spawn(FORT_HENDRIX, '071', 'runner', [1, 2, 3, 4]),
+      shooter(spawn(FORT_HENDRIX, '072', 'runner', [1, 2, 3, 4])),
+      spawn(FORT_HENDRIX, '073', 'runner', [2, 3, 4, 5]),
+      spawn(FORT_HENDRIX, '074', 'runner', [3, 4, 5, 6]),
+      spawn(FORT_HENDRIX, '075', 'abomination', [1, 1, 1, 1]),
+      spawn(FORT_HENDRIX, '076', 'abomination', [1, 1, 1, 1]),
+      extra(FORT_HENDRIX, '077', 'walker'),
+      extra(FORT_HENDRIX, '078', 'walker'),
+      extra(FORT_HENDRIX, '079', 'fatty'),
+      extra(FORT_HENDRIX, '080', 'runner'),
     ],
   },
   {

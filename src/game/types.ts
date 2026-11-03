@@ -25,7 +25,15 @@ export type DangerLevel = 'blue' | 'yellow' | 'orange' | 'red';
 export type SpawnCounts = readonly [number, number, number, number];
 
 export type ZombieCard =
-  | { id: string; setId: string; kind: 'spawn' | 'rush'; zombie: ZombieType; counts: SpawnCounts }
+  | {
+      id: string;
+      setId: string;
+      kind: 'spawn' | 'rush';
+      zombie: ZombieType;
+      counts: SpawnCounts;
+      /** Shooters symbol (M4A1 barrel in a red circle) printed on some Fort Hendrix cards. */
+      shooter?: true;
+    }
   | { id: string; setId: string; kind: 'extra'; zombie: ZombieType }
   | { id: string; setId: string; kind: 'trejo' }
   | { id: string; setId: string; kind: 'trejoRush' }

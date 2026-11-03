@@ -3,11 +3,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CARD_SETS } from '@/data/decks';
 import { useApp } from '@/game/store';
-import { CARD_LANGUAGE_NAMES, LANGUAGE_NAMES, type Language, type TranslationKey } from '@/i18n/translations';
+import { LANGUAGE_NAMES, type Language, type TranslationKey } from '@/i18n/translations';
 import { COLORS } from '@/theme';
 
 export default function OptionsScreen() {
-  const { expansions, setExpansions, language, setLanguage, cardLanguage, setCardLanguage, t } = useApp();
+  const { expansions, setExpansions, language, setLanguage, t } = useApp();
   const optionalSets = CARD_SETS.filter((set) => set.optional);
   const allEnabled = optionalSets.every((set) => expansions.includes(set.id));
 
@@ -29,20 +29,6 @@ export default function OptionsScreen() {
               </Pressable>
             ))}
           </View>
-          <Text style={styles.heading}>{t('options.cardLanguage')}</Text>
-          <View style={styles.languages}>
-            {(Object.keys(CARD_LANGUAGE_NAMES) as Language[]).map((code) => (
-              <Pressable
-                key={code}
-                style={[styles.language, code === cardLanguage && styles.languageActive]}
-                onPress={() => setCardLanguage(code)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: code === cardLanguage }}
-              >
-                <Text style={styles.rowText}>{CARD_LANGUAGE_NAMES[code]}</Text>
-              </Pressable>
-            ))}
-          </View>
         </View>
 
         <ScrollView style={styles.column} contentContainerStyle={styles.content}>
@@ -61,7 +47,10 @@ export default function OptionsScreen() {
             const label = t(`set.${set.id}` as TranslationKey);
             return (
               <View key={set.id} style={styles.row}>
-                <Text style={styles.rowText}>{label}</Text>
+                <View style={styles.rowLabel}>
+                  <Text style={styles.rowText}>{label}</Text>
+                  {set.replaces && <Text style={styles.rowDetail}>{t('options.replaces')}</Text>}
+                </View>
                 <Switch
                   value={expansions.includes(set.id)}
                   onValueChange={(on) =>
@@ -95,7 +84,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     minHeight: 52,
   },
+  rowLabel: { flex: 1, paddingVertical: 8 },
   rowText: { color: COLORS.text, fontSize: 16 },
+  rowDetail: { color: COLORS.muted, fontSize: 12 },
   toggleAll: {
     alignItems: 'center',
     borderColor: COLORS.border,
@@ -103,9 +94,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
   },
-  languages: { flexDirection: 'row', gap: 8 },
+  languages: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   language: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: '40%',
     alignItems: 'center',
     backgroundColor: COLORS.surface,
     borderColor: COLORS.border,

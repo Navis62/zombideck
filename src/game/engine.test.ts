@@ -13,7 +13,7 @@ import {
   setDanger,
   undo,
 } from './engine.ts';
-import type { CardSet, GameState } from './types.ts';
+import type { CardSet, GameState, ZombieCard } from './types.ts';
 
 const sets: CardSet[] = [
   {
@@ -163,7 +163,13 @@ test('expansion cards stay out of the deck until switched on', () => {
 test('expansion cards follow the printed numbers without gaps', () => {
   const numbers = CARD_SETS.filter((set) => set.optional)
     .flatMap((set) => set.cards.map((card) => Number(card.id.slice(-3))));
-  assert.deepEqual(numbers, Array.from({ length: 134 }, (_, index) => index + 81));
+  assert.deepEqual(numbers, Array.from({ length: 174 }, (_, index) => index + 41));
+});
+
+test('Fort Hendrix replaces the core deck card for card', () => {
+  assert.deepEqual(activeSetIds(CARD_SETS, ['fortHendrix']), ['fortHendrix']);
+  const counts = ({ id, setId, ...card }: ZombieCard) => ({ ...card, shooter: undefined });
+  assert.deepEqual(selectCards(CARD_SETS, ['fortHendrix']).map(counts), selectCards(CARD_SETS, ['core2e']).map(counts));
 });
 
 test('the core deck matches the rulebook', () => {

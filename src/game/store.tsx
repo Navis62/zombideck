@@ -18,7 +18,6 @@ import type { GameState } from './types';
 const GAME_KEY = 'zombideck.game';
 const LANGUAGE_KEY = 'zombideck.language';
 const EXPANSIONS_KEY = 'zombideck.expansions';
-const CARD_LANGUAGE_KEY = 'zombideck.cardLanguage';
 
 type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
 
@@ -35,14 +34,10 @@ type AppContextValue = {
   setGame: (update: (game: GameState | null) => GameState | null) => void;
   language: Language;
   setLanguage: (language: Language) => void;
-  /** Language printed on the cards (VF or VO), independent from the interface. */
-  cardLanguage: Language;
-  setCardLanguage: (language: Language) => void;
   expansions: string[];
   setExpansions: (expansions: string[]) => void;
+  /** Translates the interface and what is printed on the cards alike. */
   t: Translate;
-  /** Translates what is printed on the cards. */
-  tCard: Translate;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -79,15 +74,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loaded, setLoaded] = useState(false);
   const [game, setGame] = useState<GameState | null>(null);
   const [language, setLanguage] = useState<Language>(deviceLanguage);
-  const [cardLanguage, setCardLanguage] = useState<Language>(deviceLanguage);
   const [expansions, setExpansions] = useState<string[]>([]);
 
   useEffect(() => {
-    AsyncStorage.multiGet([GAME_KEY, LANGUAGE_KEY, EXPANSIONS_KEY, CARD_LANGUAGE_KEY])
-      .then(([[, savedGame], [, savedLanguage], [, savedExpansions], [, savedCardLanguage]]) => {
+    AsyncStorage.multiGet([GAME_KEY, LANGUAGE_KEY, EXPANSIONS_KEY])
+      .then(([[, savedGame], [, savedLanguage], [, savedExpansions]]) => {
         setGame(parseSave(savedGame));
         if (isLanguage(savedLanguage)) setLanguage(savedLanguage);
-        if (isLanguage(savedCardLanguage)) setCardLanguage(savedCardLanguage);
         setExpansions(parseExpansions(savedExpansions));
       })
       .catch((error) => console.warn('Could not load the saved game', error))
@@ -109,13 +102,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
-  const chooseCardLanguage = useCallback((next: Language) => {
-    setCardLanguage(next);
-    AsyncStorage.setItem(CARD_LANGUAGE_KEY, next).catch((error) =>
-      console.warn('Could not save the card language', error),
-    );
-  }, []);
-
   const chooseExpansions = useCallback((next: string[]) => {
     setExpansions(next);
     AsyncStorage.setItem(EXPANSIONS_KEY, JSON.stringify(next)).catch((error) =>
@@ -129,14 +115,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setGame,
       language,
       setLanguage: chooseLanguage,
-      cardLanguage,
-      setCardLanguage: chooseCardLanguage,
       expansions,
       setExpansions: chooseExpansions,
       t: translator(language),
-      tCard: translator(cardLanguage),
     }),
-    [game, language, chooseLanguage, cardLanguage, chooseCardLanguage, expansions, chooseExpansions],
+    [game, language, chooseLanguage, expansions, chooseExpansions],
   );
 
   if (!loaded) return null;
