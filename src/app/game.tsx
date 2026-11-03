@@ -1,3 +1,4 @@
+import { useKeepAwake } from 'expo-keep-awake';
 import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -18,6 +19,8 @@ const TABLE_GAP = 16;
 export default function GameScreen() {
   const { game, setGame, t } = useApp();
   const currentId = game?.piles.current ?? null;
+  // The phone lies on the table for the whole game: keep the screen on.
+  useKeepAwake();
 
   const [table, setTable] = useState({ width: 0, height: 0 });
   const [flip] = useState(() => new Animated.Value(1));

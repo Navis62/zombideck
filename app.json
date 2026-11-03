@@ -13,7 +13,10 @@
     "ios": {
       "bundleIdentifier": "com.navis62.zombiedeck",
       "supportsTablet": true,
-      "requireFullScreen": true
+      "requireFullScreen": true,
+      "infoPlist": {
+        "CFBundleLocalizations": ["en", "fr", "de", "es", "it", "pl", "pt-BR", "ru"]
+      }
     },
     "android": {
       "package": "com.navis62.zombiedeck",
