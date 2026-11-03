@@ -4,6 +4,8 @@ import { test } from 'node:test';
 import { CARD_SETS } from '../data/decks.ts';
 import {
   activeSetIds,
+  ALL_PARTS,
+  cardPart,
   drawCard,
   isValidSave,
   MAX_UNDO,
@@ -20,6 +22,7 @@ const sets: CardSet[] = [
   {
     id: 'a',
     optional: false,
+    isHard: () => false,
     cards: [
       { id: 'a1', setId: 'a', kind: 'spawn', zombie: 'walker', counts: [1, 2, 3, 4] },
       { id: 'a2', setId: 'a', kind: 'rush', zombie: 'fatty', counts: [1, 1, 2, 2] },
@@ -29,6 +32,7 @@ const sets: CardSet[] = [
   {
     id: 'b',
     optional: true,
+    isHard: () => false,
     cards: [{ id: 'b1', setId: 'b', kind: 'spawn', zombie: 'abomination', counts: [0, 0, 1, 1] }],
   },
 ];
@@ -50,7 +54,7 @@ test('non-optional sets are always active, optional ones only when enabled', () 
 });
 
 test('a set that replaces another takes it out of the deck only when switched on', () => {
-  const withReplacement: CardSet[] = [...sets, { id: 'c', optional: true, replaces: 'a', cards: [] }];
+  const withReplacement: CardSet[] = [...sets, { id: 'c', optional: true, replaces: 'a', isHard: () => false, cards: [] }];
   assert.deepEqual(activeSetIds(withReplacement, []), ['a']);
   assert.deepEqual(activeSetIds(withReplacement, ['c']), ['c']);
   assert.deepEqual(activeSetIds(withReplacement, ['b', 'c']), ['b', 'c']);
@@ -181,7 +185,7 @@ test('the core deck matches the rulebook', () => {
 });
 
 test('shuffling the deck leaves the discard and the card on display alone, and can be undone', () => {
-  const drawn = drawCard(drawCard(newGame(sets, ['a', 'b'], () => 0), () => 0), () => 0);
+  const drawn = drawCard(drawCard(newGame(sets, ['a', 'b'], ALL_PARTS, () => 0), () => 0), () => 0);
   const reversed = shuffleDeck(drawn, () => 0.999);
   assert.equal(reversed.piles.current, drawn.piles.current);
   assert.deepEqual(reversed.piles.discard, drawn.piles.discard);
@@ -196,4 +200,34 @@ test('every expansion has a name in every language', async () => {
       assert.ok((texts as Record<string, string>)[`set.${set.id}`], `${language}: set.${set.id}`);
     }
   }
+});
+
+test('every set splits into easier and harder cards, Extra Activations apart', () => {
+  const tally = (setId: string) => {
+    const set = CARD_SETS.find((s) => s.id === setId)!;
+    const result: Record<string, number> = {};
+    for (const card of set.cards) result[cardPart(set, card)] = (result[cardPart(set, card)] ?? 0) + 1;
+    return result;
+  };
+  assert.deepEqual(tally('core2e'), { easy: 18, hard: 18, extra: 4 });
+  assert.deepEqual(tally('fortHendrix'), { easy: 18, hard: 18, extra: 4 });
+  assert.deepEqual(tally('skinner'), { easy: 16, hard: 16, extra: 4 });
+  assert.deepEqual(tally('trejo'), { easy: 4, hard: 2 });
+  assert.deepEqual(tally('toxic'), { easy: 8, hard: 3 });
+  assert.deepEqual(tally('berserker'), { easy: 8, hard: 3 });
+  assert.deepEqual(tally('seeker'), { easy: 8, hard: 4 });
+  assert.deepEqual(tally('dogz'), { easy: 6, hard: 6 });
+  assert.deepEqual(tally('vip'), { easy: 6, hard: 6 });
+  assert.deepEqual(tally('crowz'), { easy: 6, hard: 6 });
+  assert.deepEqual(tally('zombivor'), { easy: 4, hard: 2 });
+  assert.deepEqual(tally('abomination'), { easy: 3, hard: 3 });
+  assert.deepEqual(tally('python'), { easy: 6, hard: 4 });
+});
+
+test('the deck keeps only the chosen parts', () => {
+  const size = (parts: Parameters<typeof selectCards>[2]) => selectCards(CARD_SETS, ['core2e', 'zombivor'], parts).length;
+  assert.equal(size(ALL_PARTS), 46);
+  assert.equal(size({ easy: true, hard: false, extra: true }), 18 + 4 + 4);
+  assert.equal(size({ easy: false, hard: true, extra: false }), 18 + 2);
+  assert.equal(size({ easy: false, hard: false, extra: true }), 4);
 });

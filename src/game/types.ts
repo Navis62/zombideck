@@ -60,8 +60,14 @@ export type CardSet = {
   optional: boolean;
   /** Set taken out of the deck while this one is switched on. */
   replaces?: string;
+  /** Harder part of the set, as the core rulebook sorts its deck; the other cards are the easier part. */
+  isHard: (card: ZombieCard) => boolean;
   cards: readonly ZombieCard[];
 };
+
+/** Which part of the deck a card belongs to: the easier or harder spawn cards, or the Extra Activations. */
+export type CardPart = 'easy' | 'hard' | 'extra';
+export type DeckParts = { easy: boolean; hard: boolean; extra: boolean };
 
 export type Piles = {
   draw: string[];

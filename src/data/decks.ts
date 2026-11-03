@@ -26,6 +26,17 @@ const extra = (setId: string, id: string, zombie: ExtraZombie): ZombieCard => ({
   zombie,
 });
 
+// Harder part of each set (see the core rulebook: "Zombie cards #019 to #036 are the harder part").
+const numberOf = (card: ZombieCard) => Number(card.id.slice(-3));
+const hardBetween = (from: number, to: number) => (card: ZombieCard) => numberOf(card) >= from && numberOf(card) <= to;
+const hardNumbers =
+  (...numbers: number[]) =>
+  (card: ZombieCard) =>
+    numbers.includes(numberOf(card));
+/** Hard from this many zombies at the Blue Danger Level. */
+const hardFromBlue = (count: number) => (card: ZombieCard) =>
+  (card.kind === 'spawn' || card.kind === 'rush') && card.counts[0] >= count;
+
 const shooter = (card: ZombieCard): ZombieCard =>
   card.kind === 'spawn' || card.kind === 'rush' ? { ...card, shooter: true } : card;
 
@@ -53,6 +64,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: CORE,
     optional: false,
+    isHard: hardBetween(19, 36),
     cards: [
       spawn(CORE, '001', 'walker', [1, 2, 4, 6]),
       spawn(CORE, '002', 'walker', [2, 3, 5, 7]),
@@ -101,6 +113,7 @@ export const CARD_SETS: readonly CardSet[] = [
     id: FORT_HENDRIX,
     optional: true,
     replaces: CORE,
+    isHard: hardBetween(59, 76),
     cards: [
       shooter(spawn(FORT_HENDRIX, '041', 'walker', [1, 2, 4, 6])),
       shooter(spawn(FORT_HENDRIX, '042', 'walker', [2, 3, 5, 7])),
@@ -147,6 +160,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: TREJO,
     optional: true,
+    isHard: hardNumbers(83, 86),
     cards: [
       special(TREJO, '081', 'trejo'),
       special(TREJO, '082', 'trejo'),
@@ -159,6 +173,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: TOXIC,
     optional: true,
+    isHard: hardFromBlue(3),
     cards: [
       spawn(TOXIC, '087', 'toxicWalker', [1, 2, 4, 6]),
       spawn(TOXIC, '088', 'toxicWalker', [2, 3, 5, 7]),
@@ -176,6 +191,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: BERSERKER,
     optional: true,
+    isHard: hardFromBlue(3),
     cards: [
       spawn(BERSERKER, '098', 'berserkerWalker', [1, 2, 4, 6]),
       spawn(BERSERKER, '099', 'berserkerWalker', [2, 3, 5, 7]),
@@ -193,6 +209,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: DOGZ,
     optional: true,
+    isHard: hardFromBlue(3),
     cards: [
       spawn(DOGZ, '109', 'dog', [1, 2, 4, 6]),
       spawn(DOGZ, '110', 'dog', [2, 3, 5, 7]),
@@ -211,6 +228,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: SKINNER,
     optional: true,
+    isHard: hardBetween(137, 152),
     cards: [
       spawn(SKINNER, '121', 'skinnerWalker', [1, 2, 4, 6]),
       spawn(SKINNER, '122', 'skinnerWalker', [2, 3, 5, 7]),
@@ -253,6 +271,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: SEEKER,
     optional: true,
+    isHard: hardFromBlue(3),
     cards: [
       spawn(SEEKER, '157', 'seeker', [1, 2, 4, 6]),
       spawn(SEEKER, '158', 'seeker', [2, 3, 5, 7]),
@@ -271,6 +290,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: CROWZ,
     optional: true,
+    isHard: hardFromBlue(2),
     cards: [
       spawn(CROWZ, '169', 'crow', [1, 2, 4, 6]),
       spawn(CROWZ, '170', 'crow', [2, 3, 5, 7]),
@@ -289,6 +309,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: VIP,
     optional: true,
+    isHard: hardFromBlue(3),
     cards: [
       spawn(VIP, '181', 'vip', [1, 2, 4, 6]),
       spawn(VIP, '182', 'vip', [2, 3, 5, 7]),
@@ -307,6 +328,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: ZOMBIVOR,
     optional: true,
+    isHard: hardBetween(197, 198),
     cards: [
       spawn(ZOMBIVOR, '193', 'lostZombivor', [1, 1, 1, 1]),
       spawn(ZOMBIVOR, '194', 'lostZombivor', [1, 1, 1, 1]),
@@ -319,6 +341,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: ABOMINATION,
     optional: true,
+    isHard: hardFromBlue(1),
     cards: [
       spawn(ABOMINATION, '199', 'abomination', [0, 1, 1, 1]),
       spawn(ABOMINATION, '200', 'abomination', [0, 1, 1, 1]),
@@ -331,6 +354,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: PYTHON,
     optional: true,
+    isHard: hardNumbers(209, 210, 212, 214),
     cards: [
       spawn(PYTHON, '205', 'sillyWalker', [1, 2, 3, 4]),
       spawn(PYTHON, '206', 'sillyWalker', [1, 2, 3, 4]),

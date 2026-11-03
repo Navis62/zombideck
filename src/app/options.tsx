@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppBackground } from '@/components/app-background';
 import { CARD_SETS } from '@/data/decks';
 import { type CardDisplay, useApp } from '@/game/store';
+import type { DeckParts } from '@/game/types';
 import { LANGUAGE_NAMES, type Language, type TranslationKey } from '@/i18n/translations';
 import { COLORS } from '@/theme';
 
@@ -12,13 +13,28 @@ const CARD_DISPLAYS: { value: CardDisplay; label: TranslationKey }[] = [
   { value: 'current', label: 'options.displayCurrent' },
 ];
 
+const DECK_PARTS: { part: keyof DeckParts; label: TranslationKey; detail: TranslationKey }[] = [
+  { part: 'easy', label: 'options.easy', detail: 'options.easyDetail' },
+  { part: 'hard', label: 'options.hard', detail: 'options.hardDetail' },
+  { part: 'extra', label: 'options.extra', detail: 'options.extraDetail' },
+];
+
+/** The deck needs easier or harder cards: switching off the last of them switches on the other. */
+function switchPart(parts: DeckParts, part: keyof DeckParts, on: boolean): DeckParts {
+  const next = { ...parts, [part]: on };
+  if (part === 'easy' && !on && !next.hard) next.hard = true;
+  if (part === 'hard' && !on && !next.easy) next.easy = true;
+  return next;
+}
+
 const LANGUAGES = (Object.keys(LANGUAGE_NAMES) as Language[]).map((code) => ({
   value: code,
   label: LANGUAGE_NAMES[code],
 }));
 
 export default function OptionsScreen() {
-  const { expansions, setExpansions, language, setLanguage, cardDisplay, setCardDisplay, t } = useApp();
+  const { expansions, setExpansions, language, setLanguage, cardDisplay, setCardDisplay, deckParts, setDeckParts, t } =
+    useApp();
   const optionalSets = CARD_SETS.filter((set) => set.optional);
   const allEnabled = optionalSets.every((set) => expansions.includes(set.id));
 
@@ -38,6 +54,22 @@ export default function OptionsScreen() {
         </View>
 
         <ScrollView style={styles.column} contentContainerStyle={styles.content}>
+          <Text style={styles.heading}>{t('options.deck')}</Text>
+          {DECK_PARTS.map(({ part, label, detail }) => (
+            <View key={part} style={styles.row}>
+              <View style={styles.rowLabel}>
+                <Text style={styles.rowText}>{t(label)}</Text>
+                <Text style={styles.rowDetail}>{t(detail)}</Text>
+              </View>
+              <Switch
+                value={deckParts[part]}
+                onValueChange={(on) => setDeckParts(switchPart(deckParts, part, on))}
+                accessibilityLabel={t(label)}
+              />
+            </View>
+          ))}
+          <Text style={styles.muted}>{t('options.deckHint')}</Text>
+
           <Text style={styles.heading}>{t('options.content')}</Text>
           {optionalSets.length === 0 && <Text style={styles.muted}>{t('options.noContent')}</Text>}
           {optionalSets.length > 0 && (

@@ -1,4 +1,4 @@
-import type { CardSet, DangerLevel, GameState, Piles, ZombieCard } from './types';
+import type { CardPart, CardSet, DangerLevel, DeckParts, GameState, Piles, ZombieCard } from './types';
 
 export type Rng = () => number;
 
@@ -23,12 +23,30 @@ export function activeSetIds(sets: readonly CardSet[], expansions: readonly stri
     .map((set) => set.id);
 }
 
-export function selectCards(sets: readonly CardSet[], setIds: readonly string[]): ZombieCard[] {
-  return sets.filter((set) => setIds.includes(set.id)).flatMap((set) => set.cards);
+export const ALL_PARTS: DeckParts = { easy: true, hard: true, extra: true };
+
+export function cardPart(set: CardSet, card: ZombieCard): CardPart {
+  if (card.kind === 'extra') return 'extra';
+  return set.isHard(card) ? 'hard' : 'easy';
 }
 
-export function newGame(sets: readonly CardSet[], setIds: string[], rng: Rng = Math.random): GameState {
-  const ids = selectCards(sets, setIds).map((card) => card.id);
+export function selectCards(
+  sets: readonly CardSet[],
+  setIds: readonly string[],
+  parts: DeckParts = ALL_PARTS,
+): ZombieCard[] {
+  return sets
+    .filter((set) => setIds.includes(set.id))
+    .flatMap((set) => set.cards.filter((card) => parts[cardPart(set, card)]));
+}
+
+export function newGame(
+  sets: readonly CardSet[],
+  setIds: string[],
+  parts: DeckParts = ALL_PARTS,
+  rng: Rng = Math.random,
+): GameState {
+  const ids = selectCards(sets, setIds, parts).map((card) => card.id);
   return {
     version: 1,
     setIds,

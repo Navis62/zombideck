@@ -14,18 +14,18 @@ import { CARD_COLORS, COLORS } from '@/theme';
 const HERO_ZOMBIES: ArtSubject[] = ['runner', 'fatty', 'walker'];
 
 export default function MenuScreen() {
-  const { game, setGame, expansions, t } = useApp();
+  const { game, setGame, expansions, deckParts, t } = useApp();
   const [confirming, setConfirming] = useState(false);
 
   const setIds = activeSetIds(CARD_SETS, expansions);
-  const deckSize = selectCards(CARD_SETS, setIds).length;
+  const deckSize = selectCards(CARD_SETS, setIds, deckParts).length;
 
   const start = () => {
     if (game && !confirming) {
       setConfirming(true);
       return;
     }
-    setGame(() => newGame(CARD_SETS, setIds));
+    setGame(() => newGame(CARD_SETS, setIds, deckParts));
     setConfirming(false);
     router.push('/game');
   };
