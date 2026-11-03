@@ -9,6 +9,7 @@ Unofficial companion app for Zombicide 2nd Edition: it replaces the physical zom
 - Core box, Fort Hendrix (replaces the core deck) and expansions or promos switched on in the options; they apply to the next game.
 - English (default), French, German, Italian, Polish and Brazilian Portuguese; the cards follow the app language.
 - The game is saved on the device and can be resumed.
+- The drawn card is read out by screen readers (TalkBack, VoiceOver).
 
 ## Development
 
@@ -27,3 +28,19 @@ npm run lint
 - `src/data/decks.ts`: cards transcribed from the physical decks
 - `src/game/`: game engine, types and saved state
 - `src/i18n/`: one file per language; `fr.ts` defines the keys every language must provide
+- `assets/zombies/`: one illustration per zombie type, 1280 px tall JPEGs
+- `assets/icons/`: expansion symbols printed above the Danger Levels
+
+## Adding content
+
+- **Cards:** add a set to `CARD_SETS` in `src/data/decks.ts` (`optional: true` for an expansion, `replaces` if it swaps out another set), then its `set.<id>` name in every file of `src/i18n/`. The tests check that every expansion has a name in every language.
+- **Zombie type:** add it to `ZombieType` in `src/game/types.ts`, its `zombie.<type>.other` name in every language, its illustration in `ART` (`src/components/zombie-art.tsx`) and, if the cards print one, its symbol in `ZOMBIE_SYMBOLS` (`src/components/card-face.tsx`).
+- **Language:** copy `src/i18n/en.ts`, translate it, then add it to `TRANSLATIONS` and `LANGUAGE_NAMES` in `src/i18n/translations.ts`.
+
+## Disclaimer
+
+Fan-made and unofficial. Zombicide is a trademark of CMON Global Limited; this app is not affiliated with or endorsed by CMON. Card counts and terms are transcribed from the published games for players who own them.
+
+## License
+
+The source code is released under the MIT License (see `LICENSE`). It does not cover the Zombicide name, rules or card contents, which belong to CMON.

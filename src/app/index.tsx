@@ -5,14 +5,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
 import { Hazard } from '@/components/hazard';
-import { type ArtSubject, hasArt, ZombieFigure } from '@/components/zombie-art';
+import { type ArtSubject, ZombieFigure } from '@/components/zombie-art';
 import { CARD_SETS } from '@/data/decks';
 import { activeSetIds, newGame, selectCards } from '@/game/engine';
 import { useApp } from '@/game/store';
 import { CARD_COLORS, COLORS } from '@/theme';
 
 const HERO_ZOMBIES: ArtSubject[] = ['runner', 'fatty', 'walker'];
-const heroZombies = HERO_ZOMBIES.filter(hasArt);
 
 export default function MenuScreen() {
   const { game, setGame, expansions, t } = useApp();
@@ -41,15 +40,13 @@ export default function MenuScreen() {
             ZOMBIE <Text style={styles.titleAccent}>DECK</Text>
           </Text>
           <Text style={styles.tagline}>{t('menu.tagline')}</Text>
-          {heroZombies.length > 0 && (
-            <View style={styles.horde}>
-              {heroZombies.map((subject) => (
-                <View key={subject} style={styles.zombie}>
-                  <ZombieFigure subject={subject} />
-                </View>
-              ))}
-            </View>
-          )}
+          <View style={styles.horde}>
+            {HERO_ZOMBIES.map((subject) => (
+              <View key={subject} style={styles.zombie}>
+                <ZombieFigure subject={subject} />
+              </View>
+            ))}
+          </View>
         </View>
 
         <View style={styles.menu}>

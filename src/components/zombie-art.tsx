@@ -7,7 +7,7 @@ export type ArtSubject = ZombieType | 'trejo' | 'spam';
 
 // One illustration per subject, upscaled to 1280 px tall and compressed to JPEG.
 // Tall portrait illustrations, shown in the panel beside the Danger Levels.
-const ART: Partial<Record<ArtSubject, ImageSourcePropType>> = {
+const ART: Record<ArtSubject, ImageSourcePropType> = {
   walker: require('../../assets/zombies/walker-cartoon.jpg'),
   fatty: require('../../assets/zombies/fatty-cartoon.jpg'),
   runner: require('../../assets/zombies/runner-cartoon.jpg'),
@@ -32,8 +32,6 @@ const ART: Partial<Record<ArtSubject, ImageSourcePropType>> = {
   spam: require('../../assets/zombies/spam-cartoon.jpg'),
 };
 
-export const hasArt = (subject: ArtSubject) => subject in ART;
-
 export const artSubject = (card: ZombieCard): ArtSubject =>
   card.kind === 'trejo' || card.kind === 'trejoRush' ? 'trejo' : card.kind === 'spam' ? 'spam' : card.zombie;
 
@@ -44,7 +42,6 @@ const ART_RATIO = 2.25;
 export function ZombieFigure({ subject, anchor = 'center' }: { subject: ArtSubject; anchor?: 'center' | 'top' }) {
   const [width, setWidth] = useState(0);
   const source = ART[subject];
-  if (!source) return null;
   if (anchor === 'center') return <Image source={source} style={styles.figure} resizeMode="cover" />;
   // Scaled to the panel width and pinned to the top, cropping the legs instead of the head.
   const scaled = width * 1.08;
