@@ -37,6 +37,12 @@
           "imageWidth": 200
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a8178b20-e29e-47f4-9bc3-579cc1c0d1c4"
+      }
+    },
+    "owner": "navis62"
   }
 }
