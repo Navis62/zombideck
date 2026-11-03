@@ -1,5 +1,5 @@
-import { Image, type ImageSourcePropType, StyleSheet } from 'react-native';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { useState } from 'react';
+import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
 import type { ZombieCard, ZombieType } from '@/game/types';
 
@@ -37,25 +37,27 @@ export const hasArt = (subject: ArtSubject) => subject in ART;
 export const artSubject = (card: ZombieCard): ArtSubject =>
   card.kind === 'trejo' || card.kind === 'trejoRush' ? 'trejo' : card.kind === 'spam' ? 'spam' : card.zombie;
 
-export function Scene() {
-  return (
-    <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" viewBox="0 0 100 140" preserveAspectRatio="none">
-      <Defs>
-        <LinearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor="#f6d27a" />
-          <Stop offset="0.7" stopColor="#e39b2d" />
-          <Stop offset="1" stopColor="#8a5a22" />
-        </LinearGradient>
-      </Defs>
-      <Rect x="0" y="0" width="100" height="140" fill="url(#sky)" />
-    </Svg>
-  );
-}
+// Height over width of the illustrations.
+const ART_RATIO = 2.25;
 
-export function ZombieFigure({ subject }: { subject: ArtSubject }) {
+/** Fills its panel; `top` keeps the head in view when the panel is wider than the illustration. */
+export function ZombieFigure({ subject, anchor = 'center' }: { subject: ArtSubject; anchor?: 'center' | 'top' }) {
+  const [width, setWidth] = useState(0);
   const source = ART[subject];
   if (!source) return null;
-  return <Image source={source} style={styles.figure} resizeMode="cover" />;
+  if (anchor === 'center') return <Image source={source} style={styles.figure} resizeMode="cover" />;
+  // Scaled to the panel width and pinned to the top, cropping the legs instead of the head.
+  const scaled = width * 1.08;
+  return (
+    <View style={StyleSheet.absoluteFill} onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
+      {width > 0 && (
+        <Image
+          source={source}
+          style={{ position: 'absolute', top: -width * 0.03, left: -width * 0.04, width: scaled, height: scaled * ART_RATIO }}
+        />
+      )}
+    </View>
+  );
 }
 
 // Slightly larger than its panel so the overflow trims the printed cream border.

@@ -1,7 +1,7 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
 import Svg, { Line, Path, Polygon } from 'react-native-svg';
 
-import { artSubject, Scene, ZombieFigure } from '@/components/zombie-art';
+import { artSubject, ZombieFigure } from '@/components/zombie-art';
 import { DANGER_LEVELS } from '@/game/engine';
 import { useApp } from '@/game/store';
 import type { DangerLevel, ZombieCard } from '@/game/types';
@@ -109,8 +109,7 @@ export function CardFace({ card, danger }: { card: ZombieCard; danger: DangerLev
 function Art({ card, short }: { card: ZombieCard; short?: boolean }) {
   return (
     <View style={short ? styles.artShort : styles.art}>
-      <Scene />
-      <ZombieFigure subject={artSubject(card)} />
+      <ZombieFigure subject={artSubject(card)} anchor={short ? 'top' : 'center'} />
     </View>
   );
 }
@@ -319,8 +318,8 @@ const styles = StyleSheet.create({
   editionVo: { backgroundColor: '#5d7a2c' },
   body: { flex: 1 },
   art: { height: '100%', aspectRatio: 0.5, overflow: 'hidden' },
-  artShort: { height: 72, overflow: 'hidden' },
-  textBody: { flex: 1, justifyContent: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6 },
+  artShort: { flex: 1, minHeight: 72, overflow: 'hidden' },
+  textBody: { gap: 4, paddingHorizontal: 10, paddingVertical: 8 },
   bodyHeading: { fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
   bodyText: { fontSize: 11, lineHeight: 13, fontWeight: '600' },
   spawnBody: { flex: 1, flexDirection: 'row' },

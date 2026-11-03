@@ -4,6 +4,7 @@ import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-nat
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CardBack } from '@/components/card-back';
+import { AppBackground } from '@/components/app-background';
 import { CardFace } from '@/components/card-face';
 import { CARD_SETS, CARDS_BY_ID } from '@/data/decks';
 import { DANGER_LEVELS, drawCard, reshuffleAll, setDanger, undo } from '@/game/engine';
@@ -42,6 +43,7 @@ export default function GameScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
+      <AppBackground />
       <View style={styles.columns}>
         <View
           style={styles.table}

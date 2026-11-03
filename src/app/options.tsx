@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppBackground } from '@/components/app-background';
 import { CARD_SETS } from '@/data/decks';
 import { type CardDisplay, useApp } from '@/game/store';
 import { LANGUAGE_NAMES, type Language, type TranslationKey } from '@/i18n/translations';
@@ -18,6 +19,7 @@ export default function OptionsScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
+      <AppBackground />
       <View style={styles.columns}>
         <View style={styles.column}>
           <Text style={styles.heading}>{t('options.language')}</Text>

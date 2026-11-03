@@ -4,7 +4,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Hazard } from '@/components/card-back';
-import { type ArtSubject, hasArt, Scene, ZombieFigure } from '@/components/zombie-art';
+import { AppBackground } from '@/components/app-background';
+import { type ArtSubject, hasArt, ZombieFigure } from '@/components/zombie-art';
 import { CARD_SETS } from '@/data/decks';
 import { activeSetIds, newGame, selectCards } from '@/game/engine';
 import { useApp } from '@/game/store';
@@ -32,7 +33,7 @@ export default function MenuScreen() {
 
   return (
     <View style={styles.screen}>
-      <Scene />
+      <AppBackground vivid />
       <Hazard stripes={48} />
       <SafeAreaView style={styles.content} edges={['left', 'right']}>
         <View style={styles.hero}>
@@ -99,9 +100,9 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, gap: 24 },
   hero: { flex: 1, alignSelf: 'stretch', justifyContent: 'center', paddingVertical: 16 },
-  title: { color: CARD_COLORS.ink, fontSize: 46, lineHeight: 50, fontWeight: '900' },
-  titleAccent: { color: '#a51f22' },
-  tagline: { color: CARD_COLORS.ink, fontSize: 13, fontWeight: '700' },
+  title: { color: '#fff0ce', fontSize: 46, lineHeight: 50, fontWeight: '900', textShadowColor: '#171b19', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 },
+  titleAccent: { color: '#ffbf69' },
+  tagline: { color: '#fff0ce', fontSize: 13, fontWeight: '700' },
   horde: { flex: 1, flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 10 },
   zombie: { flex: 1, maxWidth: 125, borderRadius: 8, overflow: 'hidden', borderWidth: 2, borderColor: CARD_COLORS.ink },
   menu: { width: 260, gap: 10 },
