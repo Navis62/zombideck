@@ -173,6 +173,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: TOXIC,
     optional: true,
+    addsZombies: true,
     isHard: hardFromBlue(3),
     cards: [
       spawn(TOXIC, '087', 'toxicWalker', [1, 2, 4, 6]),
@@ -191,6 +192,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: BERSERKER,
     optional: true,
+    addsZombies: true,
     isHard: hardFromBlue(3),
     cards: [
       spawn(BERSERKER, '098', 'berserkerWalker', [1, 2, 4, 6]),
@@ -209,6 +211,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: DOGZ,
     optional: true,
+    addsZombies: true,
     isHard: hardFromBlue(3),
     cards: [
       spawn(DOGZ, '109', 'dog', [1, 2, 4, 6]),
@@ -228,6 +231,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: SKINNER,
     optional: true,
+    addsZombies: true,
     isHard: hardBetween(137, 152),
     cards: [
       spawn(SKINNER, '121', 'skinnerWalker', [1, 2, 4, 6]),
@@ -271,6 +275,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: SEEKER,
     optional: true,
+    addsZombies: true,
     isHard: hardFromBlue(3),
     cards: [
       spawn(SEEKER, '157', 'seeker', [1, 2, 4, 6]),
@@ -290,6 +295,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: CROWZ,
     optional: true,
+    addsZombies: true,
     isHard: hardFromBlue(2),
     cards: [
       spawn(CROWZ, '169', 'crow', [1, 2, 4, 6]),
@@ -309,6 +315,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: VIP,
     optional: true,
+    addsZombies: true,
     isHard: hardFromBlue(3),
     cards: [
       spawn(VIP, '181', 'vip', [1, 2, 4, 6]),
@@ -328,6 +335,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: ZOMBIVOR,
     optional: true,
+    addsZombies: true,
     isHard: hardBetween(197, 198),
     cards: [
       spawn(ZOMBIVOR, '193', 'lostZombivor', [1, 1, 1, 1]),
@@ -340,7 +348,8 @@ export const CARD_SETS: readonly CardSet[] = [
   },
   {
     id: ABOMINATION,
-    optional: true,
+    optional: false,
+    scaled: true,
     isHard: hardFromBlue(1),
     cards: [
       spawn(ABOMINATION, '199', 'abomination', [0, 1, 1, 1]),

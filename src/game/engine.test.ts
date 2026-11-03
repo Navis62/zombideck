@@ -158,19 +158,20 @@ test('card ids are unique and belong to their set', () => {
 });
 
 test('expansion cards stay out of the deck until switched on', () => {
-  assert.deepEqual(activeSetIds(CARD_SETS, []), ['core2e']);
+  assert.deepEqual(activeSetIds(CARD_SETS, []), ['core2e', 'abomination']);
+  assert.equal(selectCards(CARD_SETS, activeSetIds(CARD_SETS, [])).length, 40);
   const optional = CARD_SETS.filter((set) => set.optional).map((set) => set.id);
   assert.equal(selectCards(CARD_SETS, activeSetIds(CARD_SETS, optional)).length, 174);
 });
 
 test('expansion cards follow the printed numbers without gaps', () => {
-  const numbers = CARD_SETS.filter((set) => set.optional)
+  const numbers = CARD_SETS.filter((set) => set.id !== 'core2e')
     .flatMap((set) => set.cards.map((card) => Number(card.id.slice(-3))));
   assert.deepEqual(numbers, Array.from({ length: 174 }, (_, index) => index + 41));
 });
 
 test('Fort Hendrix replaces the core deck card for card', () => {
-  assert.deepEqual(activeSetIds(CARD_SETS, ['fortHendrix']), ['fortHendrix']);
+  assert.deepEqual(activeSetIds(CARD_SETS, ['fortHendrix']), ['fortHendrix', 'abomination']);
   const counts = ({ id, setId, ...card }: ZombieCard) => ({ ...card, shooter: undefined });
   assert.deepEqual(selectCards(CARD_SETS, ['fortHendrix']).map(counts), selectCards(CARD_SETS, ['core2e']).map(counts));
 });
@@ -230,4 +231,19 @@ test('the deck keeps only the chosen parts', () => {
   assert.equal(size({ easy: true, hard: false, extra: true }), 18 + 4 + 4);
   assert.equal(size({ easy: false, hard: true, extra: false }), 18 + 2);
   assert.equal(size({ easy: false, hard: false, extra: true }), 4);
+});
+
+test('the kit Abominations follow the share of zombie expansions switched on, easier and harder in turn', () => {
+  const abominations = (expansions: string[]) =>
+    selectCards(CARD_SETS, activeSetIds(CARD_SETS, expansions))
+      .filter((card) => card.setId === 'abomination')
+      .map((card) => card.id.slice(-3));
+  const zombieSets = CARD_SETS.filter((set) => set.addsZombies).map((set) => set.id);
+  assert.deepEqual(abominations([]), []);
+  assert.deepEqual(abominations(['trejo', 'python']), []);
+  assert.deepEqual(abominations(zombieSets), ['199', '202', '200', '203', '201', '204']);
+  // 88 of the 112 zombie expansion cards: 4.7 Abominations.
+  assert.deepEqual(abominations(zombieSets.filter((id) => id !== 'seeker' && id !== 'crowz')), ['199', '202', '200', '203', '201']);
+  // Rue Morgue alone, 36 cards: 1.9.
+  assert.deepEqual(abominations(['skinner']), ['199', '202']);
 });

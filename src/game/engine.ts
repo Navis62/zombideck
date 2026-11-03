@@ -30,14 +30,27 @@ export function cardPart(set: CardSet, card: ZombieCard): CardPart {
   return set.isHard(card) ? 'hard' : 'easy';
 }
 
+const zombieCards = (sets: readonly CardSet[]) =>
+  sets.filter((set) => set.addsZombies).reduce((total, set) => total + set.cards.length, 0);
+
+/** The cards of a scaled set, easier and harder in turn, as many as the share of zombie expansions switched on. */
+function scaledCards(set: CardSet, share: number): readonly ZombieCard[] {
+  const easy = set.cards.filter((card) => !set.isHard(card));
+  const hard = set.cards.filter((card) => set.isHard(card));
+  const alternate = easy.flatMap((card, i) => [card, ...(hard[i] ? [hard[i]] : [])]).concat(hard.slice(easy.length));
+  return alternate.slice(0, Math.round(set.cards.length * share));
+}
+
 export function selectCards(
   sets: readonly CardSet[],
   setIds: readonly string[],
   parts: DeckParts = ALL_PARTS,
 ): ZombieCard[] {
-  return sets
-    .filter((set) => setIds.includes(set.id))
-    .flatMap((set) => set.cards.filter((card) => parts[cardPart(set, card)]));
+  const active = sets.filter((set) => setIds.includes(set.id));
+  const share = zombieCards(sets) ? zombieCards(active) / zombieCards(sets) : 0;
+  return active.flatMap((set) =>
+    (set.scaled ? scaledCards(set, share) : set.cards).filter((card) => parts[cardPart(set, card)]),
+  );
 }
 
 export function newGame(

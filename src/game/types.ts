@@ -60,6 +60,13 @@ export type CardSet = {
   optional: boolean;
   /** Set taken out of the deck while this one is switched on. */
   replaces?: string;
+  /** Zombie expansion that dilutes the Abominations of the deck (see `scaled`). */
+  addsZombies?: true;
+  /**
+   * Abomination cards of the upgrade kit: never switched on by hand, the deck takes as many of them as the share of
+   * zombie expansions switched on (all of them: every card).
+   */
+  scaled?: true;
   /** Harder part of the set, as the core rulebook sorts its deck; the other cards are the easier part. */
   isHard: (card: ZombieCard) => boolean;
   cards: readonly ZombieCard[];
