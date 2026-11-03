@@ -61,7 +61,7 @@ export default function OptionsScreen() {
               onPress={() => setExpansions(allEnabled ? [] : optionalSets.map((set) => set.id))}
               accessibilityRole="button"
             >
-              <Text style={styles.rowText}>{t(allEnabled ? 'options.deselectAll' : 'options.selectAll')}</Text>
+              <Text style={styles.toggleAllText}>{t(allEnabled ? 'options.deselectAll' : 'options.selectAll')}</Text>
             </Pressable>
           )}
           {optionalSets.map((set) => {
@@ -108,13 +108,8 @@ const styles = StyleSheet.create({
   rowLabel: { flex: 1, paddingVertical: 8 },
   rowText: { color: COLORS.text, fontSize: 16 },
   rowDetail: { color: COLORS.muted, fontSize: 12 },
-  toggleAll: {
-    alignItems: 'center',
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-  },
+  toggleAll: { alignItems: 'center', backgroundColor: COLORS.accent, borderRadius: 8, padding: 12 },
+  toggleAllText: { color: '#ffffff', fontSize: 16, fontWeight: '800', textTransform: 'uppercase' },
   languages: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   language: {
     flexGrow: 1,
