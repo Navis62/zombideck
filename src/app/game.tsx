@@ -49,10 +49,13 @@ export default function GameScreen() {
 
   const [table, setTable] = useState({ width: 0, height: 0 });
   const [flip] = useState(() => new Animated.Value(1));
+  // Restarted once the table is measured too: the cards may move to a grid then, and on web the remounted cards
+  // would miss an animation already under way and stay edge-on.
+  const measured = table.width > 0;
   useEffect(() => {
     flip.setValue(0);
     Animated.timing(flip, { toValue: 1, duration: 260, useNativeDriver: Platform.OS !== 'web' }).start();
-  }, [drawnKey, flip]);
+  }, [drawnKey, measured, flip]);
 
   // Shakes the deck for a moment each time it is shuffled.
   const [shuffles, setShuffles] = useState(0);

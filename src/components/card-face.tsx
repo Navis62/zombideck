@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo } from 'react';
-import { Image, type ImageSourcePropType, type ImageStyle, StyleSheet, Text, View } from 'react-native';
+import { Image, type ImageSourcePropType, type ImageStyle, Platform, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path, Polygon } from 'react-native-svg';
 
 import { artSubject, ZombieFigure } from '@/components/zombie-art';
@@ -287,7 +287,8 @@ function Level(props: {
           ]}
           // "×10" stays on one line, "All Walkers" on up to three: the text shrinks instead of wrapping (Android
           // fonts run wider than the web ones).
-          numberOfLines={props.wide ? 3 : 1}
+          // Web has no shrink-to-fit: a line limit there would only cut "×5" down to "×…".
+          numberOfLines={Platform.OS === 'web' ? undefined : props.wide ? 3 : 1}
           adjustsFontSizeToFit
           minimumFontScale={0.4}
         >
