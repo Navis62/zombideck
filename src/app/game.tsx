@@ -1,23 +1,29 @@
 import { useKeepAwake } from 'expo-keep-awake';
-import { Redirect } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
+import { Button } from '@/components/button';
 import { CardBack } from '@/components/card-back';
 import { CardFace } from '@/components/card-face';
+import { DiscardSheet } from '@/components/discard-sheet';
 import { CARDS_BY_ID } from '@/data/decks';
 import { DANGER_LEVELS, drawCard, reshuffleAll, setDanger, shuffleDeck, undo } from '@/game/engine';
+import { drawFeedback } from '@/game/feedback';
+import { countDraw } from '@/game/review';
 import { useApp } from '@/game/store';
 import type { GameState } from '@/game/types';
-import { COLORS, DANGER_COLORS } from '@/theme';
+import { COLORS, DANGER_COLORS, PRESSED } from '@/theme';
 
 const CARD_RATIO = 63 / 88;
 const TABLE_GAP = 16;
+/** Time to tap "Reshuffle all" a second time before it goes back to normal. */
+const CONFIRM_MS = 3000;
 
 export default function GameScreen() {
-  const { game, setGame, t } = useApp();
+  const { game, setGame, haptics, t } = useApp();
   const currentId = game?.piles.current ?? null;
   // The phone lies on the table for the whole game: keep the screen on.
   useKeepAwake();
@@ -38,6 +44,16 @@ export default function GameScreen() {
     Animated.timing(shake, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }).start();
   }, [shuffles, shake]);
 
+  // Reshuffling everything breaks the game's rhythm: it takes a second tap, undo can still bring the cards back.
+  const [confirmingShuffle, setConfirmingShuffle] = useState(false);
+  useEffect(() => {
+    if (!confirmingShuffle) return;
+    const timer = setTimeout(() => setConfirmingShuffle(false), CONFIRM_MS);
+    return () => clearTimeout(timer);
+  }, [confirmingShuffle]);
+
+  const [showDiscard, setShowDiscard] = useState(false);
+
   if (!game) return <Redirect href="/" />;
 
   const update = (change: (state: GameState) => GameState) =>
@@ -57,6 +73,20 @@ export default function GameScreen() {
     update(change);
     setShuffles((count) => count + 1);
   };
+  const draw = () => {
+    update((state) => drawCard(state));
+    countDraw();
+    if (haptics) drawFeedback();
+  };
+  const reshuffle = () => {
+    if (!confirmingShuffle) {
+      setConfirmingShuffle(true);
+      return;
+    }
+    setConfirmingShuffle(false);
+    shuffleWith((state) => reshuffleAll(state));
+  };
+  const leave = () => (router.canGoBack() ? router.back() : router.replace('/'));
   // Both cards must fit side by side, whichever of the width or height runs out first.
   const slot = {
     width: Math.max(0, Math.min((table.width - TABLE_GAP) / 2, table.height * CARD_RATIO)),
@@ -64,7 +94,7 @@ export default function GameScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
+    <SafeAreaView style={styles.screen} edges={['top', 'left', 'right', 'bottom']}>
       <AppBackground />
       <View style={styles.columns}>
         <View
@@ -72,16 +102,12 @@ export default function GameScreen() {
           onLayout={({ nativeEvent: { layout } }) => setTable({ width: layout.width, height: layout.height })}
         >
           <Animated.View style={[slot, deckShake]}>
-            <CardBack
-              count={game.piles.draw.length}
-              label={t('game.draw')}
-              onPress={() => update((state) => drawCard(state))}
-            />
+            <CardBack count={game.piles.draw.length} label={t('game.draw')} width={slot.width} onPress={draw} />
           </Animated.View>
           <View style={slot}>
             {card ? (
               <Animated.View style={[styles.drawn, { transform: [{ perspective: 800 }, { rotateY }] }]}>
-                <CardFace card={card} danger={danger} />
+                <CardFace card={card} danger={danger} width={slot.width} />
               </Animated.View>
             ) : (
               <View style={styles.empty}>
@@ -91,16 +117,18 @@ export default function GameScreen() {
           </View>
         </View>
 
-        <View style={styles.controls}>
+        <ScrollView style={styles.controls} contentContainerStyle={styles.controlsContent}>
+          <Button label={`‹ ${t('game.back')}`} onPress={leave} />
           <Text style={styles.heading}>{t('danger.title')}</Text>
           <View style={styles.levels}>
             {DANGER_LEVELS.map((level) => (
               <Pressable
                 key={level}
-                style={[
+                style={({ pressed }) => [
                   styles.level,
                   { backgroundColor: DANGER_COLORS[level].background },
                   level === danger && styles.levelActive,
+                  pressed && PRESSED,
                 ]}
                 onPress={() => update((state) => setDanger(state, level))}
                 accessibilityRole="button"
@@ -117,30 +145,27 @@ export default function GameScreen() {
             {game.piles.reshuffled && <Text style={styles.notice}>{t('game.reshuffled')}</Text>}
           </View>
 
-          <SmallButton label={t('game.undo')} disabled={game.history.length === 0} onPress={() => update(undo)} />
-          <SmallButton
+          <Button label={t('game.undo')} disabled={game.history.length === 0} onPress={() => update(undo)} />
+          <Button
             label={t('game.shuffleDeck')}
             disabled={game.piles.draw.length < 2}
             onPress={() => shuffleWith((state) => shuffleDeck(state))}
           />
-          <SmallButton label={t('game.shuffle')} onPress={() => shuffleWith((state) => reshuffleAll(state))} />
-          <Text style={styles.muted}>{t('game.discard', { n: game.piles.discard.length })}</Text>
-        </View>
+          <Button
+            label={t(confirmingShuffle ? 'game.confirmShuffle' : 'game.shuffle')}
+            warning={confirmingShuffle}
+            onPress={reshuffle}
+          />
+          <Button
+            label={t('game.discard', { n: game.piles.discard.length })}
+            onPress={() => setShowDiscard(true)}
+          />
+        </ScrollView>
       </View>
+      {showDiscard && (
+        <DiscardSheet discard={game.piles.discard} danger={danger} onClose={() => setShowDiscard(false)} />
+      )}
     </SafeAreaView>
-  );
-}
-
-function SmallButton(props: { label: string; onPress: () => void; disabled?: boolean }) {
-  return (
-    <Pressable
-      style={[styles.small, props.disabled && styles.disabled]}
-      disabled={props.disabled}
-      onPress={props.onPress}
-      accessibilityRole="button"
-    >
-      <Text style={styles.smallText}>{props.label}</Text>
-    </Pressable>
   );
 }
 
@@ -160,23 +185,13 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   emptyText: { color: COLORS.muted, fontSize: 14, textAlign: 'center' },
-  controls: { width: 200, gap: 8 },
+  controls: { width: 200, flexGrow: 0 },
+  controlsContent: { flexGrow: 1, gap: 8 },
   heading: { color: COLORS.muted, fontSize: 13, fontWeight: '700', textTransform: 'uppercase' },
   levels: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   level: { width: 97, height: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center', opacity: 0.75 },
   levelActive: { opacity: 1, borderWidth: 3, borderColor: '#ffffff' },
   levelText: { fontSize: 14, fontWeight: '800' },
-  spacer: { flex: 1, justifyContent: 'center', gap: 4 },
+  spacer: { flexGrow: 1, minHeight: 24, justifyContent: 'center', gap: 4 },
   notice: { color: COLORS.warning, fontSize: 13, textAlign: 'center' },
-  muted: { color: COLORS.muted, fontSize: 13, textAlign: 'center' },
-  small: {
-    backgroundColor: COLORS.surface,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    alignItems: 'center',
-  },
-  smallText: { color: COLORS.text, fontSize: 15 },
-  disabled: { opacity: 0.4 },
 });

@@ -10,7 +10,8 @@ import {
 } from 'react';
 
 import { CARDS_BY_ID } from '@/data/decks';
-import { LANGUAGE_NAMES, TRANSLATIONS, type Language, type TranslationKey } from '@/i18n/translations';
+import { deviceLanguage } from '@/i18n/device-language';
+import { isLanguage, type Language, type Translate, translator } from '@/i18n/translations';
 import { ALL_PARTS, isValidSave } from './engine';
 import type { DeckParts, GameState } from './types';
 
@@ -19,20 +20,11 @@ const LANGUAGE_KEY = 'zombideck.language';
 const EXPANSIONS_KEY = 'zombideck.expansions';
 const CARD_DISPLAY_KEY = 'zombideck.cardDisplay';
 const DECK_PARTS_KEY = 'zombideck.deckParts';
+const HAPTICS_KEY = 'zombideck.haptics';
 
 /** Spawn cards show every Danger Level, or only the current one. */
 export type CardDisplay = 'all' | 'current';
 const isCardDisplay = (value: string | null): value is CardDisplay => value === 'all' || value === 'current';
-
-type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
-
-const translator =
-  (language: Language): Translate =>
-  (key, params = {}) =>
-    Object.entries(params).reduce(
-      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
-      TRANSLATIONS[language][key] as string,
-    );
 
 type AppContextValue = {
   game: GameState | null;
@@ -45,14 +37,14 @@ type AppContextValue = {
   setCardDisplay: (cardDisplay: CardDisplay) => void;
   deckParts: DeckParts;
   setDeckParts: (deckParts: DeckParts) => void;
+  /** Vibrate when a card is drawn. */
+  haptics: boolean;
+  setHaptics: (haptics: boolean) => void;
   /** Translates the interface and what is printed on the cards alike. */
   t: Translate;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
-
-const isLanguage = (value: string | null | undefined): value is Language =>
-  !!value && value in LANGUAGE_NAMES;
 
 function save(key: string, value: string, what: string) {
   AsyncStorage.setItem(key, value).catch((error) => console.warn(`Could not save the ${what}`, error));
@@ -93,19 +85,21 @@ function parseDeckParts(raw: string | null): DeckParts {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [loaded, setLoaded] = useState(false);
   const [game, setGame] = useState<GameState | null>(null);
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>(deviceLanguage);
   const [expansions, setExpansions] = useState<string[]>([]);
   const [cardDisplay, setCardDisplay] = useState<CardDisplay>('current');
   const [deckParts, setDeckParts] = useState<DeckParts>(ALL_PARTS);
+  const [haptics, setHaptics] = useState(true);
 
   useEffect(() => {
-    AsyncStorage.multiGet([GAME_KEY, LANGUAGE_KEY, EXPANSIONS_KEY, CARD_DISPLAY_KEY, DECK_PARTS_KEY])
-      .then(([[, savedGame], [, savedLanguage], [, savedExpansions], [, savedCardDisplay], [, savedDeckParts]]) => {
+    AsyncStorage.multiGet([GAME_KEY, LANGUAGE_KEY, EXPANSIONS_KEY, CARD_DISPLAY_KEY, DECK_PARTS_KEY, HAPTICS_KEY])
+      .then(([[, savedGame], [, savedLanguage], [, savedExpansions], [, savedCardDisplay], [, savedDeckParts], [, savedHaptics]]) => {
         setGame(parseSave(savedGame));
         if (isLanguage(savedLanguage)) setLanguage(savedLanguage);
         setExpansions(parseExpansions(savedExpansions));
         if (isCardDisplay(savedCardDisplay)) setCardDisplay(savedCardDisplay);
         setDeckParts(parseDeckParts(savedDeckParts));
+        setHaptics(savedHaptics !== 'off');
       })
       .catch((error) => console.warn('Could not load the saved game', error))
       .finally(() => setLoaded(true));
@@ -137,6 +131,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     save(DECK_PARTS_KEY, JSON.stringify(next), 'deck parts');
   }, []);
 
+  const chooseHaptics = useCallback((next: boolean) => {
+    setHaptics(next);
+    save(HAPTICS_KEY, next ? 'on' : 'off', 'vibration');
+  }, []);
+
   const value = useMemo(
     () => ({
       game,
@@ -149,6 +148,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCardDisplay: chooseCardDisplay,
       deckParts,
       setDeckParts: chooseDeckParts,
+      haptics,
+      setHaptics: chooseHaptics,
       t: translator(language),
     }),
     [
@@ -161,6 +162,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       chooseCardDisplay,
       deckParts,
       chooseDeckParts,
+      haptics,
+      chooseHaptics,
     ],
   );
 

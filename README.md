@@ -10,6 +10,9 @@ Unofficial companion app for Zombicide 2nd Edition: it replaces the physical zom
 - English (default), French, German, Spanish, Italian, Polish, Brazilian Portuguese and Russian; the cards follow the app language.
 - The game is saved on the device and can be resumed.
 - The drawn card is read out by screen readers (TalkBack, VoiceOver).
+- The discard pile can be browsed, most recent card first; reshuffling everything asks for a second tap.
+- Optional vibration on each draw; the app follows the device language until another one is chosen.
+- Corrections to cards and translations ship over the air with EAS Update (`npx eas-cli@latest update --channel production`).
 
 ## Development
 
@@ -24,7 +27,7 @@ npm run lint
 ## Project layout
 
 - `src/app/`: screens (Expo Router routes)
-- `src/components/`: card faces, card back, artwork, background and hazard stripes
+- `src/components/`: card faces, card back, discard sheet, buttons, artwork, background and hazard stripes
 - `src/data/decks.ts`: cards transcribed from the physical decks
 - `src/game/`: game engine, types and saved state
 - `src/i18n/`: one file per language; `fr.ts` defines the keys every language must provide

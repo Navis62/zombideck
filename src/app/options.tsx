@@ -6,7 +6,7 @@ import { CARD_SETS } from '@/data/decks';
 import { type CardDisplay, useApp } from '@/game/store';
 import type { DeckParts } from '@/game/types';
 import { LANGUAGE_NAMES, type Language, type TranslationKey } from '@/i18n/translations';
-import { COLORS } from '@/theme';
+import { COLORS, PRESSED } from '@/theme';
 
 const CARD_DISPLAYS: { value: CardDisplay; label: TranslationKey }[] = [
   { value: 'all', label: 'options.displayAll' },
@@ -33,8 +33,19 @@ const LANGUAGES = (Object.keys(LANGUAGE_NAMES) as Language[]).map((code) => ({
 }));
 
 export default function OptionsScreen() {
-  const { expansions, setExpansions, language, setLanguage, cardDisplay, setCardDisplay, deckParts, setDeckParts, t } =
-    useApp();
+  const {
+    expansions,
+    setExpansions,
+    language,
+    setLanguage,
+    cardDisplay,
+    setCardDisplay,
+    deckParts,
+    setDeckParts,
+    haptics,
+    setHaptics,
+    t,
+  } = useApp();
   const optionalSets = CARD_SETS.filter((set) => set.optional);
   const allEnabled = optionalSets.every((set) => expansions.includes(set.id));
 
@@ -42,7 +53,7 @@ export default function OptionsScreen() {
     <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
       <AppBackground />
       <View style={styles.columns}>
-        <View style={styles.column}>
+        <ScrollView style={styles.column} contentContainerStyle={styles.content}>
           <Text style={styles.heading}>{t('options.language')}</Text>
           <Choices options={LANGUAGES} selected={language} onSelect={setLanguage} />
           <Text style={styles.heading}>{t('options.cardDisplay')}</Text>
@@ -51,7 +62,14 @@ export default function OptionsScreen() {
             selected={cardDisplay}
             onSelect={setCardDisplay}
           />
-        </View>
+          <Text style={styles.heading}>{t('options.haptics')}</Text>
+          <View style={styles.row}>
+            <View style={styles.rowLabel}>
+              <Text style={styles.rowText}>{t('options.hapticsDetail')}</Text>
+            </View>
+            <Switch value={haptics} onValueChange={setHaptics} accessibilityLabel={t('options.hapticsDetail')} />
+          </View>
+        </ScrollView>
 
         <ScrollView style={styles.column} contentContainerStyle={styles.content}>
           <Text style={styles.heading}>{t('options.deck')}</Text>
@@ -74,7 +92,7 @@ export default function OptionsScreen() {
           {optionalSets.length === 0 && <Text style={styles.muted}>{t('options.noContent')}</Text>}
           {optionalSets.length > 0 && (
             <Pressable
-              style={styles.toggleAll}
+              style={({ pressed }) => [styles.toggleAll, pressed && PRESSED]}
               onPress={() => setExpansions(allEnabled ? [] : optionalSets.map((set) => set.id))}
               accessibilityRole="button"
             >
@@ -116,7 +134,7 @@ function Choices<T extends string>(props: {
       {props.options.map(({ value, label }) => (
         <Pressable
           key={value}
-          style={[styles.choice, value === props.selected && styles.choiceActive]}
+          style={({ pressed }) => [styles.choice, value === props.selected && styles.choiceActive, pressed && PRESSED]}
           onPress={() => props.onSelect(value)}
           accessibilityRole="button"
           accessibilityState={{ selected: value === props.selected }}
@@ -131,7 +149,7 @@ function Choices<T extends string>(props: {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   columns: { flex: 1, flexDirection: 'row', padding: 12, gap: 16 },
-  column: { flex: 1, gap: 8 },
+  column: { flex: 1 },
   content: { gap: 8 },
   heading: { color: COLORS.muted, fontSize: 14, fontWeight: '700', textTransform: 'uppercase' },
   muted: { color: COLORS.muted, fontSize: 14 },

@@ -7,6 +7,12 @@
     "orientation": "landscape",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a8178b20-e29e-47f4-9bc3-579cc1c0d1c4"
+    },
     "experiments": {
       "typedRoutes": true
     },
@@ -15,11 +21,13 @@
       "supportsTablet": true,
       "requireFullScreen": true,
       "infoPlist": {
-        "CFBundleLocalizations": ["en", "fr", "de", "es", "it", "pl", "pt-BR", "ru"]
+        "CFBundleLocalizations": ["en", "fr", "de", "es", "it", "pl", "pt-BR", "ru"],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "com.navis62.zombiedeck",
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.navis62.zombiedeck",
       "adaptiveIcon": {
         "backgroundColor": "#14130f",
         "foregroundImage": "./assets/zombie-icon-foreground.png",
@@ -39,7 +47,8 @@
           "image": "./assets/cards/back.jpg",
           "imageWidth": 200
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "extra": {
       "eas": {

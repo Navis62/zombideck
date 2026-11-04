@@ -1,3 +1,4 @@
+import { createContext, useContext, useMemo } from 'react';
 import { Image, type ImageSourcePropType, type ImageStyle, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path, Polygon } from 'react-native-svg';
 
@@ -9,8 +10,27 @@ import { CARD_COLORS, DANGER_COLORS } from '@/theme';
 
 // Printed top-down on the cards, red first.
 const PRINTED_LEVELS = [...DANGER_LEVELS].reverse();
-export function CardFace({ card, danger }: { card: ZombieCard; danger: DangerLevel }) {
+
+/** Card width the sizes below were drawn for (a phone in landscape); the card scales from it. */
+const DESIGN_WIDTH = 230;
+
+type CardStyles = ReturnType<typeof makeStyles>;
+const CardStyle = createContext<{ styles: CardStyles; scale: number }>({ styles: makeStyles(1), scale: 1 });
+
+/** `width` is the width the card is drawn at: text, symbols and Danger Levels grow with it. */
+export function CardFace({ card, danger, width }: { card: ZombieCard; danger: DangerLevel; width: number }) {
+  const scale = Math.max(0.5, width / DESIGN_WIDTH);
+  const style = useMemo(() => ({ styles: makeStyles(scale), scale }), [scale]);
+  return (
+    <CardStyle.Provider value={style}>
+      <Card card={card} danger={danger} />
+    </CardStyle.Provider>
+  );
+}
+
+function Card({ card, danger }: { card: ZombieCard; danger: DangerLevel }) {
   const { t, cardDisplay } = useApp();
+  const { styles } = useContext(CardStyle);
 
   const level = t(`danger.${danger}`);
 
@@ -109,6 +129,7 @@ export function CardFace({ card, danger }: { card: ZombieCard; danger: DangerLev
 }
 
 function Art({ card, short }: { card: ZombieCard; short?: boolean }) {
+  const { styles } = useContext(CardStyle);
   return (
     <View style={short ? styles.artShort : styles.art}>
       <ZombieFigure subject={artSubject(card)} anchor={short ? 'top' : 'center'} />
@@ -169,15 +190,23 @@ function specialSymbol(card: ZombieCard): SymbolKind | null {
 
 const isImageSymbol = (kind: SymbolKind): kind is ImageSymbol => kind in SYMBOL_IMAGES;
 
+const scaled = (style: ImageStyle, scale: number): ImageStyle => ({
+  ...style,
+  width: (style.width as number) * scale,
+  height: (style.height as number) * scale,
+  ...(style.marginTop !== undefined && { marginTop: (style.marginTop as number) * scale }),
+});
+
 function LevelSymbol({ kind }: { kind: SymbolKind | null }) {
+  const { styles, scale } = useContext(CardStyle);
   if (!kind) return null;
   return (
     <View style={styles.levelSymbolWrap}>
       <View style={[styles.levelSymbolBadge, kind === 'shooter' && styles.shooterSymbolBadge]}>
         {isImageSymbol(kind) ? (
-          <Image source={SYMBOL_IMAGES[kind].source} style={SYMBOL_IMAGES[kind].style} resizeMode="contain" />
+          <Image source={SYMBOL_IMAGES[kind].source} style={scaled(SYMBOL_IMAGES[kind].style, scale)} resizeMode="contain" />
         ) : (
-          <Svg width={44} height={44} viewBox="0 0 24 24">
+          <Svg width={44 * scale} height={44 * scale} viewBox="0 0 24 24">
             <SymbolDrawing kind={kind} />
           </Svg>
         )}
@@ -215,6 +244,7 @@ function Frame(props: {
   spoken: string;
   children: React.ReactNode;
 }) {
+  const { styles } = useContext(CardStyle);
   return (
     <View
       style={styles.face}
@@ -245,6 +275,7 @@ function Level(props: {
   large?: boolean;
   children: React.ReactNode;
 }) {
+  const { styles, scale } = useContext(CardStyle);
   return (
     <View style={[styles.level, props.active && styles.levelActive, props.large && styles.levelLarge]}>
       <View style={styles.levelValue}>
@@ -259,7 +290,7 @@ function Level(props: {
         </Text>
       </View>
       {/* Torn paint stripe, as if sprayed on the card. */}
-      <Svg width={props.large ? 34 : 20} height="100%" viewBox="0 0 20 34" preserveAspectRatio="none">
+      <Svg width={(props.large ? 34 : 20) * scale} height="100%" viewBox="0 0 20 34" preserveAspectRatio="none">
         <Polygon
           points="7,0 20,0 20,34 4,34 8,27 3,20 9,13 4,6"
           fill={DANGER_COLORS[props.level].background}
@@ -269,46 +300,49 @@ function Level(props: {
   );
 }
 
-const styles = StyleSheet.create({
-  face: { flex: 1, borderRadius: 12, overflow: 'hidden', backgroundColor: CARD_COLORS.body },
-  header: { flexDirection: 'row', gap: 6, paddingHorizontal: 10, paddingVertical: 6, minHeight: 44 },
-  title: { flex: 1, fontSize: 15, lineHeight: 17, fontWeight: '900', textTransform: 'uppercase' },
-  levelSymbolWrap: { alignItems: 'center', justifyContent: 'center', height: 60, marginTop: -52, marginBottom: 2 },
-  levelSymbolBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f2efe6',
-    borderColor: '#1b1a15',
-    borderWidth: 2,
-    shadowColor: '#000000',
-    shadowOpacity: 0.25,
-    shadowRadius: 2.5,
-    shadowOffset: { width: 0, height: 1 },
-  },
-  shooterSymbolBadge: { backgroundColor: '#ffffff', borderColor: '#d8352a', borderWidth: 4 },
-  number: { fontSize: 10, fontWeight: '700', opacity: 0.8 },
-  body: { flex: 1 },
-  art: { height: '100%', aspectRatio: 0.5, overflow: 'hidden' },
-  artShort: { flex: 1, minHeight: 72, overflow: 'hidden' },
-  textBody: { gap: 4, paddingHorizontal: 10, paddingVertical: 8 },
-  bodyHeading: { fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
-  bodyText: { fontSize: 11, lineHeight: 13, fontWeight: '600' },
-  spawnBody: { flex: 1, flexDirection: 'row' },
-  levels: { flex: 1, justifyContent: 'center', gap: 4, backgroundColor: CARD_COLORS.back },
-  level: { flexDirection: 'row', height: 32, backgroundColor: '#ffffff', borderTopLeftRadius: 3, borderBottomLeftRadius: 3, borderWidth: 1, borderRightWidth: 0, borderColor: CARD_COLORS.ink },
-  levelActive: { height: 46, marginLeft: -12, borderWidth: 3, borderRightWidth: 0 },
-  levelValue: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
-  levelLarge: { height: 110 },
-  levelText: { color: CARD_COLORS.ink, fontSize: 15, fontWeight: '700' },
-  levelTextActive: { fontSize: 26, fontWeight: '900' },
-  levelTextLarge: { fontSize: 56 },
-  levelTextWideLarge: { fontSize: 15, lineHeight: 18 },
-  levelTextWide: { color: CARD_COLORS.ink, fontSize: 10, lineHeight: 12, fontWeight: '600', textAlign: 'center' },
-  levelTextWideActive: { fontSize: 11, fontWeight: '900' },
-  footer: { paddingHorizontal: 8, paddingVertical: 5 },
-  footerText: { fontSize: 11, fontWeight: '700', textAlign: 'center' },
-});
+// Sizes for a card DESIGN_WIDTH wide, multiplied by `s`.
+function makeStyles(s: number) {
+  return StyleSheet.create({
+    face: { flex: 1, borderRadius: 12 * s, overflow: 'hidden', backgroundColor: CARD_COLORS.body },
+    header: { flexDirection: 'row', gap: 6 * s, paddingHorizontal: 10 * s, paddingVertical: 6 * s, minHeight: 44 * s },
+    title: { flex: 1, fontSize: 15 * s, lineHeight: 17 * s, fontWeight: '900', textTransform: 'uppercase' },
+    levelSymbolWrap: { alignItems: 'center', justifyContent: 'center', height: 60 * s, marginTop: -52 * s, marginBottom: 2 * s },
+    levelSymbolBadge: {
+      width: 56 * s,
+      height: 56 * s,
+      borderRadius: 28 * s,
+      overflow: 'hidden',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#f2efe6',
+      borderColor: '#1b1a15',
+      borderWidth: 2 * s,
+      shadowColor: '#000000',
+      shadowOpacity: 0.25,
+      shadowRadius: 2.5 * s,
+      shadowOffset: { width: 0, height: 1 * s },
+    },
+    shooterSymbolBadge: { backgroundColor: '#ffffff', borderColor: '#d8352a', borderWidth: 4 * s },
+    number: { fontSize: 10 * s, fontWeight: '700', opacity: 0.8 },
+    body: { flex: 1 },
+    art: { height: '100%', aspectRatio: 0.5, overflow: 'hidden' },
+    artShort: { flex: 1, minHeight: 72 * s, overflow: 'hidden' },
+    textBody: { gap: 4 * s, paddingHorizontal: 10 * s, paddingVertical: 8 * s },
+    bodyHeading: { fontSize: 10 * s, fontWeight: '900', textTransform: 'uppercase' },
+    bodyText: { fontSize: 11 * s, lineHeight: 13 * s, fontWeight: '600' },
+    spawnBody: { flex: 1, flexDirection: 'row' },
+    levels: { flex: 1, justifyContent: 'center', gap: 4 * s, backgroundColor: CARD_COLORS.back },
+    level: { flexDirection: 'row', height: 32 * s, backgroundColor: '#ffffff', borderTopLeftRadius: 3 * s, borderBottomLeftRadius: 3 * s, borderWidth: 1 * s, borderRightWidth: 0, borderColor: CARD_COLORS.ink },
+    levelActive: { height: 46 * s, marginLeft: -12 * s, borderWidth: 3 * s, borderRightWidth: 0 },
+    levelValue: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 * s },
+    levelLarge: { height: 110 * s },
+    levelText: { color: CARD_COLORS.ink, fontSize: 15 * s, fontWeight: '700' },
+    levelTextActive: { fontSize: 26 * s, fontWeight: '900' },
+    levelTextLarge: { fontSize: 56 * s },
+    levelTextWideLarge: { fontSize: 15 * s, lineHeight: 18 * s },
+    levelTextWide: { color: CARD_COLORS.ink, fontSize: 10 * s, lineHeight: 12 * s, fontWeight: '600', textAlign: 'center' },
+    levelTextWideActive: { fontSize: 11 * s, fontWeight: '900' },
+    footer: { paddingHorizontal: 8 * s, paddingVertical: 5 * s },
+    footerText: { fontSize: 11 * s, fontWeight: '700', textAlign: 'center' },
+  });
+}

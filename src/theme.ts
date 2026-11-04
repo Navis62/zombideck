@@ -25,3 +25,6 @@ export const DANGER_COLORS: Record<DangerLevel, { background: string; text: stri
   orange: { background: '#e5822b', text: '#1b1a15' },
   red: { background: '#c8372d', text: '#ffffff' },
 };
+
+/** Feedback under the finger for every button. */
+export const PRESSED = { opacity: 0.7 };
