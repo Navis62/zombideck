@@ -9,12 +9,17 @@ export function Button(props: {
   onPress: () => void;
   disabled?: boolean;
   warning?: boolean;
+  /** Less padding, for the crowded game controls. */
+  compact?: boolean;
+  /** Read instead of the label, for buttons that only show a symbol. */
+  accessibilityLabel?: string;
   accessibilityHint?: string;
 }) {
   return (
     <Pressable
       style={({ pressed }) => [
         styles.button,
+        props.compact && styles.compact,
         props.warning && styles.warning,
         props.disabled && styles.disabled,
         pressed && PRESSED,
@@ -23,6 +28,7 @@ export function Button(props: {
       onPress={props.onPress}
       accessibilityRole="button"
       accessibilityState={{ disabled: !!props.disabled }}
+      accessibilityLabel={props.accessibilityLabel}
       accessibilityHint={props.accessibilityHint}
     >
       <Text style={[styles.label, props.warning && styles.warningLabel]}>{props.label}</Text>
@@ -40,6 +46,7 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: 'center',
   },
+  compact: { paddingVertical: 8 },
   warning: { backgroundColor: CARD_COLORS.extra.background, borderColor: CARD_COLORS.extra.background },
   disabled: { opacity: 0.4 },
   label: { color: COLORS.text, fontSize: 15, textAlign: 'center' },

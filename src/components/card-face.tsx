@@ -285,6 +285,11 @@ function Level(props: {
             props.active && (props.wide ? styles.levelTextWideActive : styles.levelTextActive),
             props.large && (props.wide ? styles.levelTextWideLarge : styles.levelTextLarge),
           ]}
+          // "×10" stays on one line, "All Walkers" on up to three: the text shrinks instead of wrapping (Android
+          // fonts run wider than the web ones).
+          numberOfLines={props.wide ? 3 : 1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.4}
         >
           {props.children}
         </Text>

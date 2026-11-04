@@ -12,7 +12,7 @@ import {
 import { CARDS_BY_ID } from '@/data/decks';
 import { deviceLanguage } from '@/i18n/device-language';
 import { isLanguage, type Language, type Translate, translator } from '@/i18n/translations';
-import { ALL_PARTS, isValidSave } from './engine';
+import { ALL_PARTS, isValidSave, upgradeSave } from './engine';
 import type { DeckParts, GameState } from './types';
 
 const GAME_KEY = 'zombideck.game';
@@ -21,10 +21,15 @@ const EXPANSIONS_KEY = 'zombideck.expansions';
 const CARD_DISPLAY_KEY = 'zombideck.cardDisplay';
 const DECK_PARTS_KEY = 'zombideck.deckParts';
 const HAPTICS_KEY = 'zombideck.haptics';
+const ZONE_DISPLAY_KEY = 'zombideck.zoneDisplay';
 
 /** Spawn cards show every Danger Level, or only the current one. */
 export type CardDisplay = 'all' | 'current';
 const isCardDisplay = (value: string | null): value is CardDisplay => value === 'all' || value === 'current';
+
+/** With several Spawn Zones: every zone's card at once, side by side, or one zone per tap. */
+export type ZoneDisplay = 'row' | 'sequence';
+const isZoneDisplay = (value: string | null): value is ZoneDisplay => value === 'row' || value === 'sequence';
 
 type AppContextValue = {
   game: GameState | null;
@@ -40,6 +45,8 @@ type AppContextValue = {
   /** Vibrate when a card is drawn. */
   haptics: boolean;
   setHaptics: (haptics: boolean) => void;
+  zoneDisplay: ZoneDisplay;
+  setZoneDisplay: (zoneDisplay: ZoneDisplay) => void;
   /** Translates the interface and what is printed on the cards alike. */
   t: Translate;
 };
@@ -53,7 +60,7 @@ function save(key: string, value: string, what: string) {
 function parseSave(raw: string | null): GameState | null {
   if (!raw) return null;
   try {
-    const parsed: unknown = JSON.parse(raw);
+    const parsed = upgradeSave(JSON.parse(raw));
     return isValidSave(parsed, new Set(CARDS_BY_ID.keys())) ? parsed : null;
   } catch {
     return null;
@@ -90,16 +97,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [cardDisplay, setCardDisplay] = useState<CardDisplay>('current');
   const [deckParts, setDeckParts] = useState<DeckParts>(ALL_PARTS);
   const [haptics, setHaptics] = useState(true);
+  const [zoneDisplay, setZoneDisplay] = useState<ZoneDisplay>('row');
 
   useEffect(() => {
-    AsyncStorage.multiGet([GAME_KEY, LANGUAGE_KEY, EXPANSIONS_KEY, CARD_DISPLAY_KEY, DECK_PARTS_KEY, HAPTICS_KEY])
-      .then(([[, savedGame], [, savedLanguage], [, savedExpansions], [, savedCardDisplay], [, savedDeckParts], [, savedHaptics]]) => {
+    AsyncStorage.multiGet([GAME_KEY, LANGUAGE_KEY, EXPANSIONS_KEY, CARD_DISPLAY_KEY, DECK_PARTS_KEY, HAPTICS_KEY, ZONE_DISPLAY_KEY])
+      .then(([[, savedGame], [, savedLanguage], [, savedExpansions], [, savedCardDisplay], [, savedDeckParts], [, savedHaptics], [, savedZoneDisplay]]) => {
         setGame(parseSave(savedGame));
         if (isLanguage(savedLanguage)) setLanguage(savedLanguage);
         setExpansions(parseExpansions(savedExpansions));
         if (isCardDisplay(savedCardDisplay)) setCardDisplay(savedCardDisplay);
         setDeckParts(parseDeckParts(savedDeckParts));
         setHaptics(savedHaptics !== 'off');
+        if (isZoneDisplay(savedZoneDisplay)) setZoneDisplay(savedZoneDisplay);
       })
       .catch((error) => console.warn('Could not load the saved game', error))
       .finally(() => setLoaded(true));
@@ -136,6 +145,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     save(HAPTICS_KEY, next ? 'on' : 'off', 'vibration');
   }, []);
 
+  const chooseZoneDisplay = useCallback((next: ZoneDisplay) => {
+    setZoneDisplay(next);
+    save(ZONE_DISPLAY_KEY, next, 'zone display');
+  }, []);
+
   const value = useMemo(
     () => ({
       game,
@@ -150,6 +164,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setDeckParts: chooseDeckParts,
       haptics,
       setHaptics: chooseHaptics,
+      zoneDisplay,
+      setZoneDisplay: chooseZoneDisplay,
       t: translator(language),
     }),
     [
@@ -164,6 +180,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       chooseDeckParts,
       haptics,
       chooseHaptics,
+      zoneDisplay,
+      chooseZoneDisplay,
     ],
   );
 

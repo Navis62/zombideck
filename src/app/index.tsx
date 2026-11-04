@@ -42,7 +42,8 @@ export default function MenuScreen() {
       setConfirming(true);
       return;
     }
-    setGame(() => newGame(CARD_SETS, setIds, deckParts));
+    // Same board as last time until the players change it: keep its Spawn Zones.
+    setGame(() => newGame(CARD_SETS, setIds, deckParts, Math.random, game?.zones));
     setConfirming(false);
     router.push('/game');
   };

@@ -382,3 +382,6 @@ export const CARD_SETS: readonly CardSet[] = [
 export const CARDS_BY_ID: ReadonlyMap<string, ZombieCard> = new Map(
   CARD_SETS.flatMap((set) => set.cards.map((card) => [card.id, card] as const)),
 );
+
+/** SPAM: "Draw the next card." */
+export const drawsAgain = (cardId: string) => CARDS_BY_ID.get(cardId)?.kind === 'spam';

@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
 import { CARD_SETS } from '@/data/decks';
-import { type CardDisplay, useApp } from '@/game/store';
+import { type CardDisplay, useApp, type ZoneDisplay } from '@/game/store';
 import type { DeckParts } from '@/game/types';
 import { LANGUAGE_NAMES, type Language, type TranslationKey } from '@/i18n/translations';
 import { COLORS, PRESSED } from '@/theme';
@@ -11,6 +11,11 @@ import { COLORS, PRESSED } from '@/theme';
 const CARD_DISPLAYS: { value: CardDisplay; label: TranslationKey }[] = [
   { value: 'all', label: 'options.displayAll' },
   { value: 'current', label: 'options.displayCurrent' },
+];
+
+const ZONE_DISPLAYS: { value: ZoneDisplay; label: TranslationKey }[] = [
+  { value: 'row', label: 'options.zoneRow' },
+  { value: 'sequence', label: 'options.zoneSequence' },
 ];
 
 const DECK_PARTS: { part: keyof DeckParts; label: TranslationKey; detail: TranslationKey }[] = [
@@ -44,6 +49,8 @@ export default function OptionsScreen() {
     setDeckParts,
     haptics,
     setHaptics,
+    zoneDisplay,
+    setZoneDisplay,
     t,
   } = useApp();
   const optionalSets = CARD_SETS.filter((set) => set.optional);
@@ -61,6 +68,12 @@ export default function OptionsScreen() {
             options={CARD_DISPLAYS.map(({ value, label }) => ({ value, label: t(label) }))}
             selected={cardDisplay}
             onSelect={setCardDisplay}
+          />
+          <Text style={styles.heading}>{t('options.zoneDisplay')}</Text>
+          <Choices
+            options={ZONE_DISPLAYS.map(({ value, label }) => ({ value, label: t(label) }))}
+            selected={zoneDisplay}
+            onSelect={setZoneDisplay}
           />
           <Text style={styles.heading}>{t('options.haptics')}</Text>
           <View style={styles.row}>

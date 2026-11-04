@@ -6,15 +6,20 @@ import {
   activeSetIds,
   ALL_PARTS,
   cardPart,
-  drawCard,
+  drawCards,
+  drawNextCard,
   isValidSave,
   MAX_UNDO,
+  MAX_ZONES,
   newGame,
   reshuffleAll,
   selectCards,
   setDanger,
+  setZones,
   shuffleDeck,
   undo,
+  upgradeSave,
+  zonesOf,
 } from './engine.ts';
 import type { CardSet, GameState, ZombieCard } from './types.ts';
 
@@ -38,9 +43,10 @@ const sets: CardSet[] = [
 ];
 
 const allIds = (state: GameState) => {
-  const { draw, discard, current } = state.piles;
-  return [...draw, ...discard, ...(current ? [current] : [])].sort();
+  const { draw, discard, drawn } = state.piles;
+  return [...draw, ...discard, ...drawn].sort();
 };
+const drawCard = (state: GameState, rng?: () => number) => drawCards(state, undefined, rng);
 
 test('selects cards by set', () => {
   assert.deepEqual(selectCards(sets, ['a']).map((c) => c.id), ['a1', 'a2', 'a3']);
@@ -66,7 +72,7 @@ test('a full cycle sees each card once, then reshuffles the discard', () => {
   for (let i = 0; i < 4; i++) {
     state = drawCard(state);
     assert.equal(state.piles.reshuffled, false);
-    seen.push(state.piles.current as string);
+    seen.push(...state.piles.drawn);
   }
   assert.deepEqual([...seen].sort(), ['a1', 'a2', 'a3', 'b1']);
   assert.equal(state.piles.draw.length, 0);
@@ -83,7 +89,7 @@ test('reshuffling one single card draws it again', () => {
   let state = newGame(sets, ['b']);
   state = drawCard(state);
   state = drawCard(state);
-  assert.equal(state.piles.current, 'b1');
+  assert.deepEqual(state.piles.drawn, ['b1']);
   assert.equal(state.piles.reshuffled, true);
 });
 
@@ -117,7 +123,7 @@ test('undo history is capped', () => {
 
 test('manual reshuffle keeps every card, including the one on display', () => {
   const state = reshuffleAll(drawCard(drawCard(newGame(sets, ['a', 'b']))));
-  assert.equal(state.piles.current, null);
+  assert.deepEqual(state.piles.drawn, []);
   assert.equal(state.piles.draw.length, 4);
   assert.deepEqual(allIds(state), ['a1', 'a2', 'a3', 'b1']);
 });
@@ -137,6 +143,8 @@ test('save validation', () => {
   assert.equal(isValidSave(state, new Set(['a1'])), false);
   assert.equal(isValidSave(null, known), false);
   assert.equal(isValidSave({ version: 2 }, known), false);
+  assert.equal(isValidSave({ ...state, zones: 0 }, known), false);
+  assert.equal(isValidSave({ ...state, zones: MAX_ZONES + 1 }, known), false);
   assert.equal(isValidSave({ ...state, danger: 'purple' }, known), false);
 });
 
@@ -147,8 +155,87 @@ test('save validation also checks the set ids and the undo history', () => {
   assert.equal(isValidSave(withoutSetIds, known), false);
   assert.equal(isValidSave({ ...state, history: [null] }, known), false);
   assert.equal(isValidSave({ ...state, history: [{ ...state.piles, draw: ['gone'] }] }, known), false);
-  assert.equal(isValidSave({ ...state, history: [{ ...state.piles, current: 'gone' }] }, known), false);
-  assert.equal(isValidSave({ ...state, piles: { ...state.piles, current: 42 } }, known), false);
+  assert.equal(isValidSave({ ...state, history: [{ ...state.piles, drawn: ['gone'] }] }, known), false);
+  assert.equal(isValidSave({ ...state, piles: { ...state.piles, drawn: 42 } }, known), false);
+});
+
+test('each draw deals one card per Spawn Zone and undoes as a whole', () => {
+  const start = setZones(newGame(sets, ['a', 'b']), 3);
+  const first = drawCard(start);
+  assert.equal(first.piles.drawn.length, 3);
+  assert.equal(first.piles.draw.length, 1);
+  assert.deepEqual(undo(first).piles, start.piles);
+  // The next step discards these three, deals the last card, then reshuffles the discard for the rest.
+  const second = drawCard(first);
+  assert.equal(second.piles.drawn.length, 3);
+  assert.equal(second.piles.reshuffled, true);
+  assert.deepEqual(allIds(second), ['a1', 'a2', 'a3', 'b1']);
+  assert.deepEqual(undo(second).piles, first.piles);
+});
+
+test('one card at a time fills the Spawn Zones in turn, then starts a new step', () => {
+  let state = setZones(newGame(sets, ['a', 'b']), 3);
+  state = drawNextCard(state);
+  state = drawNextCard(state);
+  assert.equal(state.piles.drawn.length, 2);
+  assert.equal(state.piles.discard.length, 0);
+  const before = state;
+  state = drawNextCard(state);
+  assert.equal(state.piles.drawn.length, 3);
+  assert.deepEqual(undo(state).piles, before.piles);
+  // Every zone has its card: the next one discards the step and starts the next.
+  state = drawNextCard(state);
+  assert.deepEqual(state.piles.drawn, [before.piles.draw[1]]);
+  assert.equal(state.piles.discard.length, 3);
+});
+
+test('one card at a time: a card that draws again leaves its zone open, the cards in play never reshuffle', () => {
+  const spam = (id: string) => id === 'a1';
+  // Three zones, but SPAM fills none: the third zone is still open when the deck runs out.
+  let state = setZones(newGame(sets, ['a']), 3);
+  state = { ...state, piles: { ...state.piles, draw: ['a1', 'a2', 'a3'] } };
+  state = drawNextCard(drawNextCard(drawNextCard(state, spam), spam), spam);
+  assert.deepEqual(state.piles.drawn, ['a1', 'a2', 'a3']);
+  assert.deepEqual(drawNextCard(state, spam), state);
+});
+
+test('a deck smaller than the Spawn Zones deals what it has', () => {
+  const state = drawCard(setZones(newGame(sets, ['b']), 4));
+  assert.deepEqual(state.piles.drawn, ['b1']);
+});
+
+test('a card that draws again shares its Spawn Zone with the next card', () => {
+  const spam = (id: string) => id === 'a1';
+  const state = drawCards(setZones(newGame(sets, ['a', 'b'], ALL_PARTS, () => 0), 2), spam, () => 0);
+  const { drawn } = state.piles;
+  assert.equal(drawn.length, drawn.includes('a1') ? 3 : 2);
+  assert.deepEqual(zonesOf(['a1', 'a2', 'a3'], spam), [1, 1, 2]);
+  assert.deepEqual(zonesOf(['a2', 'a1', 'a3'], spam), [1, 2, 2]);
+});
+
+test('the number of Spawn Zones stays within bounds and survives undo', () => {
+  const state = newGame(sets, ['a']);
+  assert.equal(state.zones, 1);
+  assert.equal(setZones(state, 0).zones, 1);
+  assert.equal(setZones(state, MAX_ZONES + 3).zones, MAX_ZONES);
+  assert.equal(undo(setZones(drawCard(state), 2)).zones, 2);
+  assert.equal(newGame(sets, ['a'], ALL_PARTS, Math.random, 3).zones, 3);
+});
+
+test('a save from version 1 comes back with its card on display', () => {
+  const v1 = {
+    version: 1,
+    setIds: ['a'],
+    piles: { draw: ['a1'], discard: ['a2'], current: 'a3', reshuffled: false },
+    history: [{ draw: ['a3', 'a1'], discard: ['a2'], current: null, reshuffled: false }],
+    danger: 'yellow',
+  };
+  const upgraded = upgradeSave(v1);
+  assert.ok(isValidSave(upgraded, new Set(['a1', 'a2', 'a3'])));
+  assert.deepEqual(upgraded.piles, { draw: ['a1'], discard: ['a2'], drawn: ['a3'], reshuffled: false });
+  assert.deepEqual(upgraded.history[0].drawn, []);
+  assert.equal(upgraded.zones, 1);
+  assert.equal(upgradeSave(null), null);
 });
 
 test('card ids are unique and belong to their set', () => {
@@ -188,7 +275,7 @@ test('the core deck matches the rulebook', () => {
 test('shuffling the deck leaves the discard and the card on display alone, and can be undone', () => {
   const drawn = drawCard(drawCard(newGame(sets, ['a', 'b'], ALL_PARTS, () => 0), () => 0), () => 0);
   const reversed = shuffleDeck(drawn, () => 0.999);
-  assert.equal(reversed.piles.current, drawn.piles.current);
+  assert.deepEqual(reversed.piles.drawn, drawn.piles.drawn);
   assert.deepEqual(reversed.piles.discard, drawn.piles.discard);
   assert.deepEqual([...reversed.piles.draw].sort(), [...drawn.piles.draw].sort());
   assert.deepEqual(undo(reversed).piles, drawn.piles);

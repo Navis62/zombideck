@@ -9,8 +9,19 @@ import { Button } from '@/components/button';
 import { CardBack } from '@/components/card-back';
 import { CardFace } from '@/components/card-face';
 import { DiscardSheet } from '@/components/discard-sheet';
-import { CARDS_BY_ID } from '@/data/decks';
-import { DANGER_LEVELS, drawCard, reshuffleAll, setDanger, shuffleDeck, undo } from '@/game/engine';
+import { CARDS_BY_ID, drawsAgain } from '@/data/decks';
+import {
+  DANGER_LEVELS,
+  drawCards,
+  drawNextCard,
+  MAX_ZONES,
+  reshuffleAll,
+  setDanger,
+  setZones,
+  shuffleDeck,
+  undo,
+  zonesOf,
+} from '@/game/engine';
 import { drawFeedback } from '@/game/feedback';
 import { countDraw } from '@/game/review';
 import { useApp } from '@/game/store';
@@ -19,12 +30,20 @@ import { COLORS, DANGER_COLORS, PRESSED } from '@/theme';
 
 const CARD_RATIO = 63 / 88;
 const TABLE_GAP = 16;
+/** Height of the "Zone 2" line above each card, once there is more than one Spawn Zone. */
+const ZONE_LABEL = 22;
+/** Height of the zone line above the card when the zones are dealt one at a time. */
+const SEQUENCE_HEADER = 30;
+/** Below this width the cards stop shrinking on one row: they go on several rows, or the row scrolls. */
+const MIN_CARD_WIDTH = 150;
+/** Smallest cards on several rows (the zombie counts stay readable); below it, one row that scrolls. */
+const MIN_GRID_WIDTH = 95;
 /** Time to tap "Reshuffle all" a second time before it goes back to normal. */
 const CONFIRM_MS = 3000;
 
 export default function GameScreen() {
-  const { game, setGame, haptics, t } = useApp();
-  const currentId = game?.piles.current ?? null;
+  const { game, setGame, haptics, zoneDisplay, t } = useApp();
+  const drawnKey = game?.piles.drawn.join('|') ?? '';
   // The phone lies on the table for the whole game: keep the screen on.
   useKeepAwake();
 
@@ -33,7 +52,7 @@ export default function GameScreen() {
   useEffect(() => {
     flip.setValue(0);
     Animated.timing(flip, { toValue: 1, duration: 260, useNativeDriver: Platform.OS !== 'web' }).start();
-  }, [currentId, flip]);
+  }, [drawnKey, flip]);
 
   // Shakes the deck for a moment each time it is shuffled.
   const [shuffles, setShuffles] = useState(0);
@@ -53,14 +72,18 @@ export default function GameScreen() {
   }, [confirmingShuffle]);
 
   const [showDiscard, setShowDiscard] = useState(false);
+  // One zone at a time: the card looked at, the last one dealt unless a zone above it was tapped since.
+  const [viewed, setViewed] = useState<{ step: string; index: number } | null>(null);
 
   if (!game) return <Redirect href="/" />;
 
   const update = (change: (state: GameState) => GameState) =>
     setGame((state) => (state ? change(state) : state));
 
-  const { danger } = game;
-  const card = currentId ? CARDS_BY_ID.get(currentId) : undefined;
+  const { danger, zones } = game;
+  const { drawn } = game.piles;
+  const cardZones = zonesOf(drawn, drawsAgain);
+  const sequence = zoneDisplay === 'sequence';
   const rotateY = flip.interpolate({ inputRange: [0, 1], outputRange: ['90deg', '0deg'] });
   const shakeSteps = [0, 0.2, 0.4, 0.6, 0.8, 1];
   const deckShake = {
@@ -74,7 +97,7 @@ export default function GameScreen() {
     setShuffles((count) => count + 1);
   };
   const draw = () => {
-    update((state) => drawCard(state));
+    update((state) => (sequence ? drawNextCard(state, drawsAgain) : drawCards(state, drawsAgain)));
     countDraw();
     if (haptics) drawFeedback();
   };
@@ -87,11 +110,34 @@ export default function GameScreen() {
     shuffleWith((state) => reshuffleAll(state));
   };
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/'));
-  // Both cards must fit side by side, whichever of the width or height runs out first.
-  const slot = {
-    width: Math.max(0, Math.min((table.width - TABLE_GAP) / 2, table.height * CARD_RATIO)),
-    aspectRatio: CARD_RATIO,
-  };
+
+  const shown = sequence ? 1 : Math.max(1, drawn.length);
+  const label = zones > 1 || drawn.length > 1 ? (sequence ? SEQUENCE_HEADER : ZONE_LABEL) : 0;
+  const { width, deckWidth, columns, rows } = tableLayout(table, shown, label);
+  // A single card sits in a column as wide as the deck: when the zone line above it makes it a little smaller, it
+  // stays centred there instead of shifting the deck.
+  const column = shown === 1 ? Math.max(width, deckWidth) : width;
+  const rowWidth = Math.max(0, Math.min(table.width - deckWidth - TABLE_GAP, columns * column + (columns - 1) * TABLE_GAP));
+  const slot = { width, aspectRatio: CARD_RATIO };
+  const dealt = drawn.map((id, index) => {
+    const card = CARDS_BY_ID.get(id);
+    return (
+      <View key={`${id}-${index}`} style={{ width: column, alignItems: 'center' }}>
+        {label > 0 && (
+          <Text style={[styles.zone, styles.zoneLine]} numberOfLines={1}>
+            {t('game.zone', { n: cardZones[index] })}
+          </Text>
+        )}
+        <View style={slot}>
+          {card && (
+            <Animated.View style={[styles.drawn, { transform: [{ perspective: 800 }, { rotateY }] }]}>
+              <CardFace card={card} danger={danger} width={width} />
+            </Animated.View>
+          )}
+        </View>
+      </View>
+    );
+  });
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right', 'bottom']}>
@@ -101,24 +147,50 @@ export default function GameScreen() {
           style={styles.table}
           onLayout={({ nativeEvent: { layout } }) => setTable({ width: layout.width, height: layout.height })}
         >
-          <Animated.View style={[slot, deckShake]}>
-            <CardBack count={game.piles.draw.length} label={t('game.draw')} width={slot.width} onPress={draw} />
+          <Animated.View style={[{ width: deckWidth, aspectRatio: CARD_RATIO }, deckShake]}>
+            <CardBack count={game.piles.draw.length} label={t('game.draw')} width={deckWidth} onPress={draw} />
           </Animated.View>
-          <View style={slot}>
-            {card ? (
-              <Animated.View style={[styles.drawn, { transform: [{ perspective: 800 }, { rotateY }] }]}>
-                <CardFace card={card} danger={danger} width={slot.width} />
-              </Animated.View>
-            ) : (
-              <View style={styles.empty}>
+          {sequence ? (
+            <OneAtATime
+              drawn={drawn}
+              cardZones={cardZones}
+              zones={zones}
+              viewedIndex={viewed?.step === drawnKey ? viewed.index : drawn.length - 1}
+              onView={(index) => setViewed({ step: drawnKey, index })}
+              header={label}
+              width={width}
+              column={column}
+              renderCard={(id) => {
+                const card = CARDS_BY_ID.get(id);
+                return card ? <CardFace card={card} danger={danger} width={width} /> : null;
+              }}
+              flip={rotateY}
+              emptyText={t('game.noCard')}
+              t={t}
+            />
+          ) : drawn.length === 0 ? (
+            <View style={{ width: column, paddingTop: label, alignItems: 'center' }}>
+              <View style={[slot, styles.empty]}>
                 <Text style={styles.emptyText}>{t('game.noCard')}</Text>
               </View>
-            )}
-          </View>
+            </View>
+          ) : rows > 1 ? (
+            <View style={[styles.grid, { width: rowWidth }]}>{dealt}</View>
+          ) : (
+            <ScrollView
+              key={drawnKey}
+              horizontal
+              style={{ width: rowWidth, flexGrow: 0 }}
+              contentContainerStyle={styles.row}
+              showsHorizontalScrollIndicator={false}
+            >
+              {dealt}
+            </ScrollView>
+          )}
         </View>
 
         <ScrollView style={styles.controls} contentContainerStyle={styles.controlsContent}>
-          <Button label={`‹ ${t('game.back')}`} onPress={leave} />
+          <Button compact label={`‹ ${t('game.back')}`} onPress={leave} />
           <Text style={styles.heading}>{t('danger.title')}</Text>
           <View style={styles.levels}>
             {DANGER_LEVELS.map((level) => (
@@ -141,22 +213,46 @@ export default function GameScreen() {
             ))}
           </View>
 
+          <View style={styles.zones}>
+            <Text style={[styles.heading, styles.zonesHeading]}>{t('game.zones')}</Text>
+            <Button
+              compact
+              label="−"
+              accessibilityLabel={t('game.zonesLess')}
+              disabled={zones <= 1}
+              onPress={() => update((state) => setZones(state, state.zones - 1))}
+            />
+            <Text style={styles.zonesValue} accessibilityLabel={`${t('game.zones')}: ${zones}`}>
+              {zones}
+            </Text>
+            <Button
+              compact
+              label="+"
+              accessibilityLabel={t('game.zonesMore')}
+              disabled={zones >= MAX_ZONES}
+              onPress={() => update((state) => setZones(state, state.zones + 1))}
+            />
+          </View>
+
           <View style={styles.spacer}>
             {game.piles.reshuffled && <Text style={styles.notice}>{t('game.reshuffled')}</Text>}
           </View>
 
-          <Button label={t('game.undo')} disabled={game.history.length === 0} onPress={() => update(undo)} />
+          <Button compact label={t('game.undo')} disabled={game.history.length === 0} onPress={() => update(undo)} />
           <Button
+            compact
             label={t('game.shuffleDeck')}
             disabled={game.piles.draw.length < 2}
             onPress={() => shuffleWith((state) => shuffleDeck(state))}
           />
           <Button
+            compact
             label={t(confirmingShuffle ? 'game.confirmShuffle' : 'game.shuffle')}
             warning={confirmingShuffle}
             onPress={reshuffle}
           />
           <Button
+            compact
             label={t('game.discard', { n: game.piles.discard.length })}
             onPress={() => setShowDiscard(true)}
           />
@@ -169,13 +265,116 @@ export default function GameScreen() {
   );
 }
 
+/**
+ * Sizes the cards so the deck and `shown` cards fit the table, as large as possible: on one row, or on two or three
+ * when the height allows clearly larger, still readable cards (tablets). On one row past a few Spawn Zones, the cards
+ * keep a readable size and the row scrolls. Beside a single card the deck takes the whole height, so the zone line
+ * above the card never resizes it.
+ */
+function tableLayout(table: { width: number; height: number }, shown: number, label: number) {
+  const tallest = (rows: number) => Math.max(0, ((table.height - (rows - 1) * TABLE_GAP) / rows - label) * CARD_RATIO);
+  if (shown === 1) {
+    const half = Math.max(0, (table.width - TABLE_GAP) / 2);
+    return { width: Math.min(tallest(1), half), deckWidth: Math.min(table.height * CARD_RATIO, half), columns: 1, rows: 1 };
+  }
+  // The deck takes one more column, beside the cards, at their size.
+  const fit = (rows: number) => {
+    const columns = Math.ceil(shown / rows);
+    const width = Math.min(tallest(rows), (table.width - TABLE_GAP * columns) / (columns + 1));
+    return { width, deckWidth: width, columns, rows };
+  };
+  let best = fit(1);
+  // One row too narrow (a phone, many zones): every card in view on several rows beats scrolling, down to a floor.
+  const crowded = best.width < MIN_CARD_WIDTH;
+  for (let rows = 2; rows <= Math.min(3, shown); rows++) {
+    const option = fit(rows);
+    // With room on one row, several rows only for clearly larger cards: an odd 2 + 1 for a few pixels is not worth it.
+    const better = crowded
+      ? option.width >= MIN_GRID_WIDTH && (best.rows === 1 || option.width > best.width)
+      : option.width >= best.width * 1.15;
+    if (better) best = option;
+  }
+  if (best.rows === 1) {
+    best.width = Math.max(best.width, Math.min(MIN_CARD_WIDTH, tallest(1)));
+    best.deckWidth = best.width;
+  }
+  return best;
+}
+
+/** One zone per tap: the card of one zone in full size, the zones of the step as numbered chips above it. */
+function OneAtATime(props: {
+  drawn: readonly string[];
+  cardZones: readonly number[];
+  zones: number;
+  viewedIndex: number;
+  onView: (index: number) => void;
+  header: number;
+  width: number;
+  /** Width of the column the card is centred in. */
+  column: number;
+  renderCard: (id: string) => React.ReactNode;
+  flip: Animated.AnimatedInterpolation<string>;
+  emptyText: string;
+  t: ReturnType<typeof useApp>['t'];
+}) {
+  const { drawn, cardZones, zones, viewedIndex, t } = props;
+  // Zones still waiting for their card in this step (after a SPAM, its zone too); none once every zone is served.
+  const served = drawn.filter((id) => !drawsAgain(id)).length;
+  const pending = Array.from({ length: Math.max(0, zones - served) }, (_, i) => served + i + 1);
+  const viewedId = drawn[viewedIndex];
+  const isLast = viewedIndex === drawn.length - 1;
+  const slot = { width: props.width, aspectRatio: CARD_RATIO };
+  return (
+    <View style={{ width: props.column, alignItems: 'center' }}>
+      {props.header > 0 && (
+        <View style={[styles.sequenceHeader, { height: props.header, width: props.width }]}>
+          <Text style={[styles.zone, styles.sequenceTitle]} numberOfLines={1}>
+            {t('game.zoneOf', { n: viewedId ? cardZones[viewedIndex] : 1, total: zones })}
+          </Text>
+          {drawn.map((id, index) => (
+            <Pressable
+              key={`${id}-${index}`}
+              style={({ pressed }) => [styles.chip, index === viewedIndex && styles.chipViewed, pressed && PRESSED]}
+              onPress={() => props.onView(index)}
+              accessibilityRole="button"
+              accessibilityLabel={t('game.zone', { n: cardZones[index] })}
+              accessibilityState={{ selected: index === viewedIndex }}
+            >
+              <Text style={[styles.chipText, index === viewedIndex && styles.chipTextViewed]}>{cardZones[index]}</Text>
+            </Pressable>
+          ))}
+          {pending.map((zone) => (
+            <View key={`pending-${zone}`} style={[styles.chip, styles.chipPending]}>
+              <Text style={styles.chipText}>{zone}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+      {viewedId ? (
+        <View style={slot}>
+          <Animated.View style={[styles.drawn, isLast && { transform: [{ perspective: 800 }, { rotateY: props.flip }] }]}>
+            {props.renderCard(viewedId)}
+          </Animated.View>
+        </View>
+      ) : (
+        <View style={[slot, styles.empty]}>
+          <Text style={styles.emptyText}>{props.emptyText}</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   columns: { flex: 1, flexDirection: 'row', padding: 12, gap: 16 },
   table: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: TABLE_GAP },
+  row: { gap: TABLE_GAP },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: TABLE_GAP },
+  zone: { height: ZONE_LABEL, color: COLORS.text, fontSize: 13, fontWeight: '800', textAlign: 'center', textTransform: 'uppercase' },
+  zoneLine: { alignSelf: 'stretch' },
   drawn: { flex: 1 },
   empty: {
-    flex: 1,
     borderRadius: 12,
     borderWidth: 2,
     borderStyle: 'dashed',
@@ -186,12 +385,32 @@ const styles = StyleSheet.create({
   },
   emptyText: { color: COLORS.muted, fontSize: 14, textAlign: 'center' },
   controls: { width: 200, flexGrow: 0 },
-  controlsContent: { flexGrow: 1, gap: 8 },
+  controlsContent: { flexGrow: 1, gap: 6 },
   heading: { color: COLORS.muted, fontSize: 13, fontWeight: '700', textTransform: 'uppercase' },
   levels: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  level: { width: 97, height: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center', opacity: 0.75 },
+  level: { width: 97, height: 36, borderRadius: 8, alignItems: 'center', justifyContent: 'center', opacity: 0.75 },
   levelActive: { opacity: 1, borderWidth: 3, borderColor: '#ffffff' },
   levelText: { fontSize: 14, fontWeight: '800' },
-  spacer: { flexGrow: 1, minHeight: 24, justifyContent: 'center', gap: 4 },
+  zones: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
+  zonesHeading: { flex: 1 },
+  zonesValue: { color: COLORS.text, fontSize: 18, fontWeight: '900', minWidth: 20, textAlign: 'center' },
+  sequenceHeader: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingBottom: 6 },
+  sequenceTitle: { flex: 1, height: undefined, textAlign: 'left' },
+  chip: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  chipViewed: { backgroundColor: COLORS.text, borderColor: COLORS.text },
+  chipPending: { opacity: 0.4, borderStyle: 'dashed' },
+  chipText: { color: COLORS.text, fontSize: 12, fontWeight: '800' },
+  chipTextViewed: { color: COLORS.background },
+  spacer: { flexGrow: 1, minHeight: 12, justifyContent: 'center', gap: 4 },
   notice: { color: COLORS.warning, fontSize: 13, textAlign: 'center' },
 });

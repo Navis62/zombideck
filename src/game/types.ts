@@ -79,16 +79,19 @@ export type DeckParts = { easy: boolean; hard: boolean; extra: boolean };
 export type Piles = {
   draw: string[];
   discard: string[];
-  current: string | null;
+  /** Cards of the last Spawn step, in Spawn Zone order; they go to the discard on the next draw. */
+  drawn: string[];
   reshuffled: boolean;
 };
 
 export type GameState = {
-  version: 1;
+  version: 2;
   setIds: string[];
   piles: Piles;
-  /** Piles before each recent draw or shuffle, oldest first, for undo. */
+  /** Piles before each recent draw or shuffle, oldest first, for undo: a whole Spawn step undoes at once. */
   history: Piles[];
   /** Chosen by the players, who track their own XP. */
   danger: DangerLevel;
+  /** Spawn Zones on the board: each draw deals one card to each of them. */
+  zones: number;
 };
