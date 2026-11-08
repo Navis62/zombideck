@@ -1,5 +1,154 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm test)",
+      "Bash(npm test *)",
+      "Bash(npm run test *)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run lint)",
+      "Bash(npx tsc --noEmit *)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npx expo lint *)",
+      "Bash(npx expo lint)",
+      "Bash(npx eslint *)",
+      "Bash(npx expo-doctor *)",
+      "Bash(npx expo-doctor)",
+      "Bash(npx expo install --check)",
+      "Bash(node --test *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch --show-current)",
+      "WebFetch(domain:docs.expo.dev)",
+      "WebFetch(domain:reactnative.dev)",
+      "WebFetch(domain:code.claude.com)",
+      "PowerShell(npm test)",
+      "PowerShell(npm test *)",
+      "PowerShell(npm run test *)",
+      "PowerShell(npm run typecheck)",
+      "PowerShell(npm run lint)",
+      "PowerShell(npx tsc --noEmit *)",
+      "PowerShell(npx tsc --noEmit)",
+      "PowerShell(npx expo lint *)",
+      "PowerShell(npx expo lint)",
+      "PowerShell(npx eslint *)",
+      "PowerShell(npx expo-doctor *)",
+      "PowerShell(npx expo-doctor)",
+      "PowerShell(npx expo install --check)",
+      "PowerShell(node --test *)",
+      "PowerShell(git status *)",
+      "PowerShell(git diff *)",
+      "PowerShell(git log *)",
+      "PowerShell(git show *)",
+      "PowerShell(git branch --show-current)"
+    ],
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(npm install *)",
+      "Bash(npm uninstall *)",
+      "Bash(npm i *)",
+      "Bash(npx expo install *)",
+      "Bash(npx expo install --fix)",
+      "Bash(npx expo prebuild *)",
+      "Bash(npx eas-cli@latest *)",
+      "Bash(npx eas-cli *)",
+      "Bash(eas *)",
+      "PowerShell(git commit *)",
+      "PowerShell(git push *)",
+      "PowerShell(npm install *)",
+      "PowerShell(npm uninstall *)",
+      "PowerShell(npm i *)",
+      "PowerShell(npx expo install *)",
+      "PowerShell(npx expo install --fix)",
+      "PowerShell(npx expo prebuild *)",
+      "PowerShell(npx eas-cli@latest *)",
+      "PowerShell(npx eas-cli *)",
+      "PowerShell(eas *)",
+      "Bash(eas-cli *)",
+      "PowerShell(eas-cli *)",
+      "Bash(bunx eas-cli *)",
+      "PowerShell(bunx eas-cli *)"
+    ],
+    "deny": [
+      "Edit(./android/**)",
+      "Edit(./ios/**)",
+      "Edit(./node_modules/**)",
+      "Edit(./package-lock.json)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(**/*.jks)",
+      "Read(**/*.p8)",
+      "Read(**/*.p12)",
+      "Read(**/*.key)",
+      "Read(**/*.pem)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "PowerShell(git push --force *)",
+      "PowerShell(git push -f *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-bash.mjs\"",
+            "timeout": 10,
+            "statusMessage": "Vérification de la commande"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/lint-file.mjs\"",
+            "timeout": 60,
+            "statusMessage": "eslint"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/checks-on-stop.mjs\" snapshot",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/checks-on-stop.mjs\"",
+            "timeout": 180,
+            "statusMessage": "Tests et typecheck"
+          }
+        ]
+      }
+    ]
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": { "source": "github", "repo": "anthropics/claude-plugins-official" }
+    }
+  },
   "enabledPlugins": {
-    "expo@claude-plugins-official": true
+    "expo@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true
   }
 }
