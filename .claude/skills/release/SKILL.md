@@ -9,7 +9,7 @@ argument-hint: "[ota | build] [message]"
 
 `/release` vaut accord pour **préparer** une publication, pas pour l'envoyer : une mise à jour en production arrive
 chez tous les joueurs à leur prochain lancement, et l'envoi aux stores est irréversible. L'utilisateur lance la
-commande finale lui-même (le hook `guard-bash.mjs` bloque `eas update` vers production et `eas submit`).
+commande finale lui-même (le hook `guard-bash.mjs` bloque `eas update` vers production, `eas submit` et `eas build --auto-submit`).
 
 Branche : !`git branch --show-current`
 État : !`git status --short`
