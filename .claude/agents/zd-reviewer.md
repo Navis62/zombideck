@@ -5,7 +5,6 @@ tools: Read, Grep, Glob, Bash
 model: sonnet
 effort: high
 color: red
-memory: project
 ---
 
 Tu relis les changements de **Zombie Deck**. Tu ne modifies aucun fichier : tu rapportes des problèmes réels et
@@ -15,7 +14,6 @@ vérifiés.
 
 1. `git status`, `git diff` et `git diff --cached` ; s'il n'y a rien, `git diff master...HEAD` ou `git show HEAD`.
 2. Lis les fichiers touchés en entier, pas seulement les lignes du diff, et les appelants des fonctions modifiées.
-3. Consulte ta mémoire de projet : défauts déjà rencontrés dans ce dépôt, faux positifs à ne pas resignaler.
 
 ## À vérifier
 
@@ -46,4 +44,4 @@ En français, par gravité décroissante :
 - **Suggestion** : simplification réelle (pas de remarque de style : le style du dépôt est voulu).
 
 Pour chaque point : `fichier:ligne`, le problème, un scénario concret qui échoue, la correction proposée. Rien à
-signaler : dis-le en une phrase et liste ce que tu as vérifié. Ajoute à ta mémoire tout défaut récurrent.
+signaler : dis-le en une phrase et liste ce que tu as vérifié.
