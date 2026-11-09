@@ -17,6 +17,7 @@ import {
   setDanger,
   setZones,
   shuffleDeck,
+  startsNewStep,
   undo,
   upgradeSave,
   zonesOf,
@@ -197,6 +198,20 @@ test('one card at a time: a card that draws again leaves its zone open, the card
   state = drawNextCard(drawNextCard(drawNextCard(state, spam), spam), spam);
   assert.deepEqual(state.piles.drawn, ['a1', 'a2', 'a3']);
   assert.deepEqual(drawNextCard(state, spam), state);
+});
+
+test('one card at a time: a new Spawn step starts on an empty table or once every zone is served', () => {
+  const spam = (id: string) => id === 'a1';
+  let state = setZones(newGame(sets, ['a']), 2);
+  state = { ...state, piles: { ...state.piles, draw: ['a1', 'a2', 'a3'] } };
+  assert.equal(startsNewStep(state, spam), true);
+  state = drawNextCard(state, spam);
+  // SPAM serves no zone.
+  assert.equal(startsNewStep(state, spam), false);
+  state = drawNextCard(state, spam);
+  assert.equal(startsNewStep(state, spam), false);
+  state = drawNextCard(state, spam);
+  assert.equal(startsNewStep(state, spam), true);
 });
 
 test('a deck smaller than the Spawn Zones deals what it has', () => {

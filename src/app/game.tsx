@@ -19,6 +19,7 @@ import {
   setDanger,
   setZones,
   shuffleDeck,
+  startsNewStep,
   undo,
   zonesOf,
 } from '@/game/engine';
@@ -99,9 +100,13 @@ export default function GameScreen() {
     update(change);
     setShuffles((count) => count + 1);
   };
+  const deal = (state: GameState) => (sequence ? drawNextCard(state, drawsAgain) : drawCards(state, drawsAgain));
   const draw = () => {
-    update((state) => (sequence ? drawNextCard(state, drawsAgain) : drawCards(state, drawsAgain)));
-    countDraw();
+    // No card left to deal (the rest are on display for this step): no vibration, no draw counted.
+    if (deal(game) === game) return;
+    // The rating prompt counts Spawn steps, however the zones are dealt.
+    if (!sequence || startsNewStep(game, drawsAgain)) countDraw();
+    update(deal);
     if (haptics) drawFeedback();
   };
   const reshuffle = () => {

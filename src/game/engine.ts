@@ -101,14 +101,19 @@ export function drawCards(state: GameState, drawsAgain: DrawsAgain = () => false
   return { ...state, history: remember(state), piles: { draw, discard, drawn, reshuffled } };
 }
 
+/** Whether the next card dealt one zone at a time opens a new Spawn step: none on display, or every zone served. */
+export function startsNewStep(state: GameState, drawsAgain: DrawsAgain = () => false): boolean {
+  const { drawn } = state.piles;
+  return drawn.length === 0 || drawn.filter((card) => !drawsAgain(card)).length >= state.zones;
+}
+
 /**
  * Deals the card of the next Spawn Zone only, for players who take the zones one at a time. Once every zone has its
  * card, the next draw starts a new Spawn step and discards the previous one.
  */
 export function drawNextCard(state: GameState, drawsAgain: DrawsAgain = () => false, rng: Rng = Math.random): GameState {
   const { piles } = state;
-  const filled = piles.drawn.filter((card) => !drawsAgain(card)).length;
-  const newStep = filled >= state.zones;
+  const newStep = startsNewStep(state, drawsAgain);
   let draw = piles.draw;
   let discard = newStep ? [...piles.discard, ...piles.drawn] : piles.discard;
   let reshuffled = !newStep && piles.reshuffled;
