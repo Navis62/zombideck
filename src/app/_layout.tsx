@@ -18,7 +18,9 @@ function Navigator() {
         contentStyle: { backgroundColor: COLORS.background },
       }}
     >
+      {/* The universe carousel opens the app; each universe has its own menu. */}
       <Stack.Screen name="index" options={{ title: t('appName'), headerShown: false }} />
+      <Stack.Screen name="menu" options={{ title: t('appName'), headerShown: false }} />
       {/* No header during the game: the height goes to the cards, the Menu button sits with the controls. */}
       <Stack.Screen name="game" options={{ title: t('game.title'), headerShown: false }} />
       <Stack.Screen name="expansions" options={{ title: t('expansions.title') }} />

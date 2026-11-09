@@ -2,6 +2,7 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
+import { UNIVERSES } from '@/data/universes';
 import { type CardDisplay, useApp, type ZoneDisplay } from '@/game/store';
 import type { DeckParts } from '@/game/types';
 import { LANGUAGE_NAMES, type Language, type TranslationKey } from '@/i18n/translations';
@@ -38,18 +39,18 @@ const LANGUAGES = (Object.keys(LANGUAGE_NAMES) as Language[]).map((code) => ({
 
 export default function OptionsScreen() {
   const {
+    universe,
     language,
     setLanguage,
     cardDisplay,
     setCardDisplay,
-    deckParts,
-    setDeckParts,
     haptics,
     setHaptics,
     zoneDisplay,
     setZoneDisplay,
     t,
   } = useApp();
+  const { deckParts: hasDeckParts } = UNIVERSES[universe];
 
   return (
     <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
@@ -81,24 +82,34 @@ export default function OptionsScreen() {
             selected={zoneDisplay}
             onSelect={setZoneDisplay}
           />
-          <Text style={styles.heading}>{t('options.deck')}</Text>
-          {DECK_PARTS.map(({ part, label, detail }) => (
-            <View key={part} style={styles.row}>
-              <View style={styles.rowLabel}>
-                <Text style={styles.rowText}>{t(label)}</Text>
-                <Text style={styles.rowDetail}>{t(detail)}</Text>
-              </View>
-              <Switch
-                value={deckParts[part]}
-                onValueChange={(on) => setDeckParts(switchPart(deckParts, part, on))}
-                accessibilityLabel={t(label)}
-              />
-            </View>
-          ))}
-          <Text style={styles.muted}>{t('options.deckHint')}</Text>
+          {hasDeckParts && <DeckPartsOptions />}
         </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+/** Only for a universe whose rulebook sorts the deck into easier and harder cards. */
+function DeckPartsOptions() {
+  const { deckParts, setDeckParts, t } = useApp();
+  return (
+    <>
+      <Text style={styles.heading}>{t('options.deck')}</Text>
+      {DECK_PARTS.map(({ part, label, detail }) => (
+        <View key={part} style={styles.row}>
+          <View style={styles.rowLabel}>
+            <Text style={styles.rowText}>{t(label)}</Text>
+            <Text style={styles.rowDetail}>{t(detail)}</Text>
+          </View>
+          <Switch
+            value={deckParts[part]}
+            onValueChange={(on) => setDeckParts(switchPart(deckParts, part, on))}
+            accessibilityLabel={t(label)}
+          />
+        </View>
+      ))}
+      <Text style={styles.muted}>{t('options.deckHint')}</Text>
+    </>
   );
 }
 

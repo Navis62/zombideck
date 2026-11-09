@@ -4,6 +4,7 @@ Unofficial companion app for Zombicide 2nd Edition: it replaces the physical zom
 
 ## Features
 
+- The app opens on a carousel of Zombicide universes; each one has its own menu, expansions and saved choices (Modern today, more eras to come).
 - Draw, undo, shuffle the deck or reshuffle everything; the discard is reshuffled automatically when the deck runs out.
 - Danger Level chosen by the players; cards show only the current level, or all four.
 - Core box, Fort Hendrix (replaces the core deck) and expansions or promos switched on in their own menu, reached from the main menu; they apply to the next game.
@@ -29,6 +30,7 @@ npm run lint
 - `src/app/`: screens (Expo Router routes)
 - `src/components/`: card faces, card back, discard sheet, buttons, artwork, background and hazard stripes
 - `src/data/decks.ts`: cards transcribed from the physical decks
+- `src/data/universes.ts`: the universes offered in the opening carousel and the sets of each
 - `src/game/`: game engine, types and saved state
 - `src/i18n/`: one file per language; `fr.ts` defines the keys every language must provide
 - `assets/zombies/`: one illustration per zombie type, 1280 px tall JPEGs
@@ -38,6 +40,7 @@ npm run lint
 
 - **Cards:** add a set to `CARD_SETS` in `src/data/decks.ts` (`optional: true` for an expansion, `replaces` if it swaps out another set, `addsZombies: true` if it should bring its share of the upgrade kit's Abomination cards, and `isHard` for its harder cards), then its `set.<id>` name in every file of `src/i18n/`. The tests check that every expansion has a name in every language.
 - **Zombie type:** add it to `ZombieType` in `src/game/types.ts`, its `zombie.<type>.other` name in every language (plus `zombie.<type>.rush` if it has Rush cards and `zombie.<type>.all` if it has Extra Activation cards), its illustration in `ART` (`src/components/zombie-art.tsx`) and, if the cards print one, its symbol in `ZOMBIE_SYMBOLS` (`src/components/card-face.tsx`).
+- **Universe:** add its id to `UniverseId` (`src/game/types.ts`) and `UNIVERSE_IDS` (`src/game/engine.ts`), its sets to `UNIVERSES` (`src/data/universes.ts`), its carousel card to `PLAYABLE` (`src/app/index.tsx`) and its `universe.*` names in every language.
 - **Language:** copy `src/i18n/en.ts`, translate it, then add it to `TRANSLATIONS` and `LANGUAGE_NAMES` in `src/i18n/translations.ts`.
 
 ## Disclaimer

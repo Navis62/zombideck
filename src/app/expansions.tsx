@@ -2,15 +2,16 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
-import { OPTIONAL_SETS } from '@/data/decks';
+import { UNIVERSES } from '@/data/universes';
 import { useApp } from '@/game/store';
 import type { TranslationKey } from '@/i18n/translations';
 import { COLORS, PRESSED } from '@/theme';
 
 /** Expansions and promos switched on for the next game, two to a row so the whole list fits in landscape. */
 export default function ExpansionsScreen() {
-  const { expansions, setExpansions, t } = useApp();
-  const allEnabled = OPTIONAL_SETS.every((set) => expansions.includes(set.id));
+  const { universe, expansions, setExpansions, t } = useApp();
+  const { optionalSets } = UNIVERSES[universe];
+  const allEnabled = optionalSets.every((set) => expansions.includes(set.id));
 
   return (
     <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
@@ -20,7 +21,7 @@ export default function ExpansionsScreen() {
           <Text style={[styles.muted, styles.hint]}>{t('expansions.hint')}</Text>
           <Pressable
             style={({ pressed }) => [styles.toggleAll, pressed && PRESSED]}
-            onPress={() => setExpansions(allEnabled ? [] : OPTIONAL_SETS.map((set) => set.id))}
+            onPress={() => setExpansions(allEnabled ? [] : optionalSets.map((set) => set.id))}
             accessibilityRole="button"
           >
             <Text style={styles.toggleAllText}>
@@ -28,7 +29,7 @@ export default function ExpansionsScreen() {
             </Text>
           </Pressable>
         </View>
-        {pairs(OPTIONAL_SETS).map((pair) => (
+        {pairs(optionalSets).map((pair) => (
           <View key={pair[0].id} style={styles.line}>
             {pair.map((set) => {
               const label = t(`set.${set.id}` as TranslationKey);

@@ -94,7 +94,7 @@ export default function GameScreen() {
     AccessibilityInfo.announceForAccessibility(announcement(drawnCards, currentDanger, zoneCount, sequence, t));
   }, [drawnCards, currentDanger, zoneCount, sequence, t]);
 
-  if (!game) return <Redirect href="/" />;
+  if (!game) return <Redirect href="/menu" />;
 
   const update = (change: (state: GameState) => GameState) =>
     setGame((state) => (state ? change(state) : state));
@@ -131,7 +131,7 @@ export default function GameScreen() {
     setConfirmingShuffle(false);
     shuffleWith((state) => reshuffleAll(state));
   };
-  const leave = () => (router.canGoBack() ? router.back() : router.replace('/'));
+  const leave = () => (router.canGoBack() ? router.back() : router.replace('/menu'));
 
   const shown = sequence ? 1 : Math.max(1, drawn.length);
   const label = zones > 1 || drawn.length > 1 ? (sequence ? SEQUENCE_HEADER : ZONE_LABEL) : 0;

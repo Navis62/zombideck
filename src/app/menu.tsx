@@ -6,8 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppBackground } from '@/components/app-background';
 import { Hazard } from '@/components/hazard';
 import { type ArtSubject, ZombieFigure } from '@/components/zombie-art';
-import { CARD_SETS, OPTIONAL_SETS } from '@/data/decks';
-import { activeSetIds, newGame, selectCards } from '@/game/engine';
+import { UNIVERSES } from '@/data/universes';
+import { activeSetIds, ALL_PARTS, newGame, selectCards } from '@/game/engine';
 import { askForReviewIfDue } from '@/game/review';
 import { useApp } from '@/game/store';
 import { CARD_COLORS, COLORS, PRESSED } from '@/theme';
@@ -20,7 +20,11 @@ const ART_RATIO = 0.5;
 const REVIEW_DELAY_MS = 1000;
 
 export default function MenuScreen() {
-  const { game, setGame, expansions, deckParts, t } = useApp();
+  const { game, setGame, universe, expansions, deckParts, t } = useApp();
+  const { sets, optionalSets, deckParts: hasDeckParts } = UNIVERSES[universe];
+  // A game from another universe is not resumed here, but starting a new one still replaces it.
+  const resumable = game?.universe === universe ? game : null;
+  const parts = hasDeckParts ? deckParts : ALL_PARTS;
   const [confirming, setConfirming] = useState(false);
   // The illustrations keep their shape: as wide as the row allows, as tall as the space left under the title.
   const [horde, setHorde] = useState({ width: 0, height: 0 });
@@ -34,9 +38,9 @@ export default function MenuScreen() {
     }, []),
   );
 
-  const setIds = activeSetIds(CARD_SETS, expansions);
-  const deckSize = selectCards(CARD_SETS, setIds, deckParts).length;
-  const enabledExpansions = OPTIONAL_SETS.filter((set) => setIds.includes(set.id)).length;
+  const setIds = activeSetIds(sets, expansions);
+  const deckSize = selectCards(sets, setIds, parts).length;
+  const enabledExpansions = optionalSets.filter((set) => setIds.includes(set.id)).length;
 
   const start = () => {
     if (game && !confirming) {
@@ -44,7 +48,7 @@ export default function MenuScreen() {
       return;
     }
     // Same board as last time until the players change it: keep its Spawn Zones.
-    setGame(() => newGame(CARD_SETS, setIds, deckParts, Math.random, game?.zones));
+    setGame(() => newGame(sets, setIds, parts, Math.random, game?.zones, universe));
     setConfirming(false);
     router.push('/game');
   };
@@ -73,7 +77,7 @@ export default function MenuScreen() {
 
         {/* Scrolls when the buttons do not fit: a short screen, a large system font size. */}
         <ScrollView style={styles.menu} contentContainerStyle={styles.menuContent}>
-          {game && (
+          {resumable && (
             <Pressable
               style={({ pressed }) => [styles.primary, pressed && PRESSED]}
               onPress={() => {
@@ -84,20 +88,20 @@ export default function MenuScreen() {
             >
               <Text style={styles.primaryText}>{t('menu.resume')}</Text>
               <Text style={styles.primaryDetail}>
-                {t('menu.resumeDetail', { n: game.piles.draw.length, level: t(`danger.${game.danger}`) })}
+                {t('menu.resumeDetail', { n: resumable.piles.draw.length, level: t(`danger.${resumable.danger}`) })}
               </Text>
             </Pressable>
           )}
           <Pressable
-            style={({ pressed }) => [game ? styles.secondary : styles.primary, confirming && styles.confirm, pressed && PRESSED]}
+            style={({ pressed }) => [resumable ? styles.secondary : styles.primary, confirming && styles.confirm, pressed && PRESSED]}
             onPress={start}
             accessibilityRole="button"
           >
-            <Text style={game && !confirming ? styles.secondaryText : styles.primaryText}>
+            <Text style={resumable && !confirming ? styles.secondaryText : styles.primaryText}>
               {t(confirming ? 'menu.confirmStart' : 'menu.start')}
             </Text>
             {!confirming && (
-              <Text style={game ? styles.secondaryDetail : styles.primaryDetail}>
+              <Text style={resumable ? styles.secondaryDetail : styles.primaryDetail}>
                 {t('menu.startDetail', { n: deckSize })}
               </Text>
             )}
@@ -111,7 +115,7 @@ export default function MenuScreen() {
             >
               <Text style={styles.secondaryText}>{t('expansions.title')}</Text>
               <Text style={styles.secondaryDetail}>
-                {t('menu.expansionsDetail', { n: enabledExpansions, total: OPTIONAL_SETS.length })}
+                {t('menu.expansionsDetail', { n: enabledExpansions, total: optionalSets.length })}
               </Text>
             </Pressable>
           )}
@@ -122,13 +126,24 @@ export default function MenuScreen() {
           >
             <Text style={styles.secondaryText}>{t(confirming ? 'menu.cancel' : 'options.title')}</Text>
           </Pressable>
-          <Pressable
-            style={({ pressed }) => [styles.link, pressed && PRESSED]}
-            onPress={() => router.push('/about')}
-            accessibilityRole="button"
-          >
-            <Text style={styles.linkText}>{t('about.title')}</Text>
-          </Pressable>
+          {/* Side by side: the menu column stays as short as before the carousel. */}
+          <View style={styles.links}>
+            <Pressable
+              style={({ pressed }) => [styles.link, pressed && PRESSED]}
+              // Opened from the carousel, so going back is going there.
+              onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
+              accessibilityRole="button"
+            >
+              <Text style={styles.linkText}>‹ {t('menu.changeUniverse')}</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [styles.link, pressed && PRESSED]}
+              onPress={() => router.push('/about')}
+              accessibilityRole="button"
+            >
+              <Text style={styles.linkText}>{t('about.title')}</Text>
+            </Pressable>
+          </View>
         </ScrollView>
       </SafeAreaView>
       <Hazard stripes={48} />
@@ -162,7 +177,8 @@ const styles = StyleSheet.create({
   },
   secondaryText: { color: COLORS.text, fontSize: 16, fontWeight: '800', textTransform: 'uppercase', textAlign: 'center' },
   secondaryDetail: { color: COLORS.muted, fontSize: 12, marginTop: 2 },
-  link: { alignSelf: 'center', paddingVertical: 6, paddingHorizontal: 16 },
+  links: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' },
+  link: { paddingVertical: 6, paddingHorizontal: 10 },
   linkText: { color: '#fff0ce', fontSize: 14, fontWeight: '700', textDecorationLine: 'underline' },
   confirm: { backgroundColor: CARD_COLORS.extra.background, borderColor: CARD_COLORS.extra.background },
 });

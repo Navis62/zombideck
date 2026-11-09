@@ -14,8 +14,8 @@ import {
 import { CARDS_BY_ID } from '@/data/decks';
 import { deviceLanguage } from '@/i18n/device-language';
 import { isLanguage, type Language, type Translate, translator } from '@/i18n/translations';
-import { ALL_PARTS, isValidSave, upgradeSave } from './engine';
-import type { DeckParts, GameState } from './types';
+import { ALL_PARTS, isValidSave, UNIVERSE_IDS, upgradeSave } from './engine';
+import type { DeckParts, GameState, UniverseId } from './types';
 
 const GAME_KEY = 'zombideck.game';
 const LANGUAGE_KEY = 'zombideck.language';
@@ -24,6 +24,16 @@ const CARD_DISPLAY_KEY = 'zombideck.cardDisplay';
 const DECK_PARTS_KEY = 'zombideck.deckParts';
 const HAPTICS_KEY = 'zombideck.haptics';
 const ZONE_DISPLAY_KEY = 'zombideck.zoneDisplay';
+const UNIVERSE_KEY = 'zombideck.universe';
+
+/** Each universe has its own list; the modern one keeps the key it had before there were universes. */
+const expansionsKey = (universe: UniverseId) =>
+  universe === 'modern' ? EXPANSIONS_KEY : `${EXPANSIONS_KEY}.${universe}`;
+
+const isUniverse = (value: string | null): value is UniverseId => UNIVERSE_IDS.includes(value as UniverseId);
+type ByUniverse<T> = Record<UniverseId, T>;
+const noExpansions = (): ByUniverse<string[]> =>
+  Object.fromEntries(UNIVERSE_IDS.map((universe) => [universe, []])) as unknown as ByUniverse<string[]>;
 
 /** Spawn cards show every Danger Level, or only the current one. */
 export type CardDisplay = 'all' | 'current';
@@ -38,6 +48,10 @@ type AppContextValue = {
   setGame: (update: (game: GameState | null) => GameState | null) => void;
   language: Language;
   setLanguage: (language: Language) => void;
+  /** The era picked in the carousel: its sets fill the menu, the expansions and the next game. */
+  universe: UniverseId;
+  setUniverse: (universe: UniverseId) => void;
+  /** Expansions switched on in the current universe. */
   expansions: string[];
   /** Takes the new list or, for changes made in quick succession, a function of the current one. */
   setExpansions: Dispatch<SetStateAction<string[]>>;
@@ -96,18 +110,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loaded, setLoaded] = useState(false);
   const [game, setGame] = useState<GameState | null>(null);
   const [language, setLanguage] = useState<Language>(deviceLanguage);
-  const [expansions, setExpansions] = useState<string[]>([]);
+  const [universe, setUniverse] = useState<UniverseId>('modern');
+  const [allExpansions, setAllExpansions] = useState<ByUniverse<string[]>>(noExpansions);
   const [cardDisplay, setCardDisplay] = useState<CardDisplay>('current');
   const [deckParts, setDeckParts] = useState<DeckParts>(ALL_PARTS);
   const [haptics, setHaptics] = useState(true);
   const [zoneDisplay, setZoneDisplay] = useState<ZoneDisplay>('row');
 
   useEffect(() => {
-    AsyncStorage.multiGet([GAME_KEY, LANGUAGE_KEY, EXPANSIONS_KEY, CARD_DISPLAY_KEY, DECK_PARTS_KEY, HAPTICS_KEY, ZONE_DISPLAY_KEY])
-      .then(([[, savedGame], [, savedLanguage], [, savedExpansions], [, savedCardDisplay], [, savedDeckParts], [, savedHaptics], [, savedZoneDisplay]]) => {
-        setGame(parseSave(savedGame));
+    const keys = [GAME_KEY, LANGUAGE_KEY, UNIVERSE_KEY, CARD_DISPLAY_KEY, DECK_PARTS_KEY, HAPTICS_KEY, ZONE_DISPLAY_KEY];
+    AsyncStorage.multiGet([...keys, ...UNIVERSE_IDS.map(expansionsKey)])
+      .then((entries) => {
+        const stored = new Map(entries);
+        const read = (key: string) => stored.get(key) ?? null;
+        setGame(parseSave(read(GAME_KEY)));
+        const savedLanguage = read(LANGUAGE_KEY);
         if (isLanguage(savedLanguage)) setLanguage(savedLanguage);
-        setExpansions(parseExpansions(savedExpansions));
+        const savedUniverse = read(UNIVERSE_KEY);
+        if (isUniverse(savedUniverse)) setUniverse(savedUniverse);
+        setAllExpansions(
+          Object.fromEntries(
+            UNIVERSE_IDS.map((id) => [id, parseExpansions(read(expansionsKey(id)))]),
+          ) as unknown as ByUniverse<string[]>,
+        );
+        const savedCardDisplay = read(CARD_DISPLAY_KEY);
+        const savedZoneDisplay = read(ZONE_DISPLAY_KEY);
+        const savedDeckParts = read(DECK_PARTS_KEY);
+        const savedHaptics = read(HAPTICS_KEY);
         if (isCardDisplay(savedCardDisplay)) setCardDisplay(savedCardDisplay);
         setDeckParts(parseDeckParts(savedDeckParts));
         setHaptics(savedHaptics !== 'off');
@@ -128,10 +157,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     save(LANGUAGE_KEY, next, 'language');
   }, []);
 
+  const chooseUniverse = useCallback((next: UniverseId) => {
+    setUniverse(next);
+    save(UNIVERSE_KEY, next, 'universe');
+  }, []);
+
+  const expansions = allExpansions[universe];
+  const setExpansions = useCallback<Dispatch<SetStateAction<string[]>>>(
+    (update) =>
+      setAllExpansions((all) => ({
+        ...all,
+        [universe]: typeof update === 'function' ? update(all[universe]) : update,
+      })),
+    [universe],
+  );
+
   // Saved from the state rather than in the setter, so updates computed from the current list are saved too.
   useEffect(() => {
-    if (loaded) save(EXPANSIONS_KEY, JSON.stringify(expansions), 'expansions');
-  }, [expansions, loaded]);
+    if (!loaded) return;
+    for (const id of UNIVERSE_IDS) save(expansionsKey(id), JSON.stringify(allExpansions[id]), 'expansions');
+  }, [allExpansions, loaded]);
 
   const chooseCardDisplay = useCallback((next: CardDisplay) => {
     setCardDisplay(next);
@@ -159,6 +204,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setGame,
       language,
       setLanguage: chooseLanguage,
+      universe,
+      setUniverse: chooseUniverse,
       expansions,
       setExpansions,
       cardDisplay,
@@ -175,7 +222,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       game,
       language,
       chooseLanguage,
+      universe,
+      chooseUniverse,
       expansions,
+      setExpansions,
       cardDisplay,
       chooseCardDisplay,
       deckParts,
