@@ -3,6 +3,7 @@ import { Image, type ImageSourcePropType, type ImageStyle, Platform, StyleSheet,
 import Svg, { Path, Polygon } from 'react-native-svg';
 
 import { type ArtSubject, artSubject, ZombieFigure } from '@/components/zombie-art';
+import { ABOMINATIONS, NAMED_NECROMANCERS, NAMED_ZOMBIES } from '@/data/fantasy';
 import { DANGER_LEVELS } from '@/game/engine';
 import { useApp } from '@/game/store';
 import {
@@ -10,6 +11,8 @@ import {
   type ExtraZombie,
   type FantasyCard,
   type FantasyLevel,
+  type FantasyNecromancer,
+  type NamedNecromancer,
   isFantasyCard,
   type ModernCard,
   type ZombieCard,
@@ -344,14 +347,14 @@ const FANTASY_HEADER = { background: CARD_COLORS.parchment, text: CARD_COLORS.pa
 
 /** The Horde symbol applies to every zombie a level spawns, but not to an Abomination. */
 const feedsHorde = (card: FantasyCard, level: FantasyLevel) =>
-  card.kind === 'levels' && !!card.horde && !!level && !level.zombie.endsWith('Abomination');
+  card.kind === 'levels' && !!card.horde && !!level && !ABOMINATIONS.has(level.zombie);
 
+/** The rule printed on a card without Danger Levels, one paragraph per line. */
 function fantasyRule(card: FantasyCard, t: Translate): string[] {
   switch (card.kind) {
     case 'necromancer':
-      return card.zombie === 'orcNecromancer'
-        ? [t('card.orcNecromancerRule'), t('card.necromancerHorde')]
-        : [t('card.necromancerRule')];
+      if (isNamedNecromancer(card.zombie)) return [t('card.namedNecromancerRule'), t(`card.${card.zombie}Rule`)];
+      return [t(card.zombie === 'orcNecromancer' ? 'card.orcNecromancerRule' : 'card.necromancerRule')];
     case 'doubleSpawn':
       return [t('card.doubleSpawnRule')];
     case 'enterHorde':
@@ -370,6 +373,11 @@ function fantasyLine(card: FantasyCard, at: DangerLevel, t: Translate): { label?
   if (card.kind !== 'levels') return { value: '', spoken: '' };
   const level = card.levels[DANGER_LEVELS.indexOf(at)];
   if (!level) return { value: t('card.nothingInSight'), spoken: t('card.nothingInSight') };
+  // Named Abominations are printed as a picture across the levels, without a count.
+  if (NAMED_ZOMBIES.has(level.zombie)) {
+    const name = t(`zombie.${level.zombie}.one`);
+    return { value: name, spoken: name };
+  }
   const horde = feedsHorde(card, level) ? `, ${t('card.hordeBonus')}` : '';
   return {
     label: t(`zombie.${level.zombie}.one`),
@@ -378,24 +386,43 @@ function fantasyLine(card: FantasyCard, at: DangerLevel, t: Translate): { label?
   };
 }
 
+const isNamedNecromancer = (zombie: FantasyNecromancer): zombie is NamedNecromancer => NAMED_NECROMANCERS.has(zombie);
+
+/** The Horde banner under the rule: the zombies the Orc Necromancer adds to the Horde. */
+const hordeRule = (card: FantasyCard, t: Translate) =>
+  card.kind === 'necromancer' && card.zombie === 'orcNecromancer' ? t('card.necromancerHorde') : undefined;
+const spokenRule = (card: FantasyCard, t: Translate) => [...fantasyRule(card, t), hordeRule(card, t) ?? ''].join(' ').trim();
+
+/** The title printed on a card with Danger Levels: its own, a named zombie's, or the one of its core box. */
+function levelsTitle(card: Extract<FantasyCard, { kind: 'levels' }>, t: Translate): string {
+  if (card.title === 'named') {
+    const named = card.levels.find((level) => level !== null);
+    return t('card.named', { name: named ? t(`zombie.${named.zombie}.one`) : '' });
+  }
+  if (card.title) return t(`card.${card.title}`);
+  return t(card.horde ? 'card.assembleHorde' : 'card.fantasyInvasion');
+}
+
 function fantasyText(card: FantasyCard, danger: DangerLevel, t: Translate): CardText {
   switch (card.kind) {
     case 'levels':
       return {
-        title: t(card.horde ? 'card.assembleHorde' : 'card.fantasyInvasion'),
+        title: levelsTitle(card, t),
         spoken: `${t(`danger.${danger}`)}: ${fantasyLine(card, danger, t).spoken}`,
       };
     case 'activation':
       return { title: t('card.extra'), spoken: `${t(`danger.${danger}`)}: ${fantasyLine(card, danger, t).spoken}` };
     case 'necromancer':
       return {
-        title: t(card.zombie === 'orcNecromancer' ? 'card.orcNecromancer' : 'card.necromancer'),
-        spoken: fantasyRule(card, t).join(' '),
+        title: isNamedNecromancer(card.zombie)
+          ? t('card.named', { name: t(`zombie.${card.zombie}.one`) })
+          : t(card.zombie === 'orcNecromancer' ? 'card.orcNecromancer' : 'card.necromancer'),
+        spoken: spokenRule(card, t),
       };
     case 'doubleSpawn':
-      return { title: t('card.doubleSpawn'), spoken: fantasyRule(card, t).join(' ') };
+      return { title: t('card.doubleSpawn'), spoken: spokenRule(card, t) };
     case 'enterHorde':
-      return { title: t('card.enterHorde'), spoken: fantasyRule(card, t).join(' ') };
+      return { title: t('card.enterHorde'), spoken: spokenRule(card, t) };
   }
 }
 
@@ -405,10 +432,18 @@ function FantasyFace({ card, danger, text }: { card: FantasyCard; danger: Danger
   const { styles } = useContext(CardStyle);
   const current = cardDisplay === 'current';
   const shown = current ? [danger] : PRINTED_LEVELS;
+  // A named Abomination is printed as one picture across its levels: shown above them, so it stays in view at Blue too.
+  const named = card.kind === 'levels' && card.title === 'named' ? card.levels.find((level) => level !== null)?.zombie : undefined;
   return (
     <Frame card={card} text={text} headerColor={FANTASY_HEADER} faceColor={CARD_COLORS.parchment}>
       {card.kind === 'levels' || card.kind === 'activation' ? (
         <View style={styles.fantasyLevels}>
+          {named && (
+            <View style={styles.fantasyNamedArt}>
+              {/* Wider than tall: the head and chest of the creature, below the halo. */}
+              <ZombieFigure subject={named} anchor="upper" />
+            </View>
+          )}
           {shown.map((at) => {
             const line = fantasyLine(card, at, t);
             const level = card.kind === 'levels' ? card.levels[DANGER_LEVELS.indexOf(at)] : null;
@@ -418,7 +453,7 @@ function FantasyFace({ card, danger, text }: { card: FantasyCard; danger: Danger
                 level={at}
                 active={at === danger}
                 large={current}
-                subject={card.kind === 'activation' ? card.zombie : level?.zombie}
+                subject={card.kind === 'activation' ? card.zombie : named ? undefined : level?.zombie}
                 label={line.label}
                 value={line.value}
                 horde={feedsHorde(card, level)}
@@ -435,11 +470,12 @@ function FantasyFace({ card, danger, text }: { card: FantasyCard; danger: Danger
             />
           </View>
           <View style={styles.fantasyRuleCaption}>
-          {fantasyRule(card, t).map((rule, index) => (
-            <Text key={rule} style={index === 0 ? styles.fantasyRule : styles.fantasyHordeRule}>
-              {rule}
-            </Text>
-          ))}
+            {fantasyRule(card, t).map((rule) => (
+              <Text key={rule} style={styles.fantasyRule}>
+                {rule}
+              </Text>
+            ))}
+            {hordeRule(card, t) && <Text style={styles.fantasyHordeRule}>{hordeRule(card, t)}</Text>}
           </View>
         </View>
       )}
@@ -535,6 +571,7 @@ function makeStyles(s: number) {
     },
     hordeText: { color: '#ffffff', fontSize: 10 * s, fontWeight: '900' },
     fantasyRuleBody: { flex: 1, padding: 6 * s, backgroundColor: CARD_COLORS.fantasyFrame },
+    fantasyNamedArt: { flex: 1, minHeight: 0, overflow: 'hidden', backgroundColor: CARD_COLORS.parchment },
     fantasyRuleArt: { flex: 1, minHeight: 0, overflow: 'hidden', backgroundColor: CARD_COLORS.parchment },
     fantasyRuleCaption: { gap: 4 * s, backgroundColor: CARD_COLORS.parchmentRow },
     fantasyRule: {

@@ -6,6 +6,7 @@ Unofficial companion app for Zombicide 2nd Edition: it replaces the physical zom
 
 - The app opens on a carousel of Zombicide universes; each one has its own menu, expansions and saved choices (Modern and Fantasy).
 - Fantasy: Black Plague and Green Horde, alone or mixed, with Double Spawn, Enter the Horde and the Horde symbol on the cards.
+- Fantasy expansions: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes and the Horde Box, with named Abominations and Necromancers.
 - Draw, undo, shuffle the deck or reshuffle everything; the discard is reshuffled automatically when the deck runs out.
 - Danger Level chosen by the players; cards show only the current level, or all four.
 - Core box, Fort Hendrix (replaces the core deck) and expansions or promos switched on in their own menu, reached from the main menu; they apply to the next game.
@@ -31,7 +32,7 @@ npm run lint
 - `src/app/`: screens (Expo Router routes)
 - `src/components/`: card faces, card back, discard sheet, buttons, artwork, background and hazard stripes
 - `src/data/decks.ts`: cards transcribed from the physical decks
-- `src/data/fantasy.ts`: the fantasy era cards (Black Plague, Green Horde), checked against the printed cards
+- `src/data/fantasy.ts`: the fantasy era cards (Black Plague, Green Horde and their expansions), checked against the printed cards
 - `src/data/universes.ts`: the universes offered in the opening carousel and the sets of each
 - `src/game/`: game engine, types and saved state
 - `src/i18n/`: one file per language; `fr.ts` defines the keys every language must provide

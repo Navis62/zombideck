@@ -10,7 +10,7 @@ Images: `feature-graphic.png` (Play Store banner, 1024×500) and `screenshots/` 
 
 **Title:** Zombie Deck
 
-**Short description:** Unofficial zombie spawn deck for Zombicide 2nd Edition. Draw, shuffle, survive!
+**Short description:** Unofficial spawn deck for Zombicide 2nd Edition, Black Plague and Green Horde.
 
 **Full description:**
 
@@ -27,6 +27,8 @@ Zombie Deck replaces the zombie spawn deck of Zombicide 2nd Edition on your phon
 Expansions and promos (switch them on in the Expansions & promos menu):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, the extra Abomination cards, Danny Trejo and Monty Python's Flying Circus.
 
+New: the medieval-fantasy era. When the app opens, pick your universe: Zombicide 2nd Edition, or Black Plague and Green Horde, alone or mixed. Every spawn card of both core boxes, with Double Spawn, Enter the Horde and the Horde symbol; each universe has its own expansions. Fantasy expansions: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes and the Horde Box.
+
 Available in English, French, German, Spanish, Italian, Polish, Brazilian Portuguese and Russian, with the official zombie names of each edition.
 
 You need your own copy of the game to play: the app only replaces the spawn deck.
@@ -39,7 +41,7 @@ Fan-made and unofficial. Zombicide is a trademark of CMON Global Limited; this a
 
 **Titre :** Zombie Deck
 
-**Description courte :** Pioche zombie non officielle pour Zombicide 2e édition : piochez et survivez !
+**Description courte :** Pioche zombie non officielle : Zombicide 2e édition, Black Plague, Green Horde
 
 **Description complète :**
 
@@ -56,6 +58,8 @@ Zombie Deck remplace la pioche zombie de Zombicide 2e édition sur votre télép
 Extensions et promos (à activer dans le menu Extensions et promos) :
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, les cartes Abomination supplémentaires, Danny Trejo et Monty Python's Flying Circus.
 
+Nouveau : l'univers médiéval-fantastique. À l'ouverture, choisissez votre univers : Zombicide 2e édition, ou Black Plague et Green Horde, seuls ou mélangés. Toutes les cartes d'invasion des deux boîtes de base, avec Double invasion, La Horde arrive et le symbole de la Horde ; chaque univers a ses propres extensions. Extensions Fantasy : Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes et la Horde Box.
+
 Disponible en français, anglais, allemand, espagnol, italien, polonais, portugais (Brésil) et russe, avec les noms officiels des zombies de chaque édition.
 
 Vous avez besoin de votre propre exemplaire du jeu : l'appli remplace seulement la pioche zombie.
@@ -68,7 +72,7 @@ Application de fan, non officielle. Zombicide est une marque de CMON Global Limi
 
 **Titel:** Zombie Deck
 
-**Kurzbeschreibung:** Inoffizieller Zombie-Stapel für Zombicide Zweite Edition: ziehen, überleben!
+**Kurzbeschreibung:** Inoffizieller Zombie-Stapel: Zombicide Zweite Edition, Black Plague, Green Horde
 
 **Vollständige Beschreibung:**
 
@@ -85,6 +89,8 @@ Zombie Deck ersetzt den Zombie-Stapel von Zombicide Zweite Edition auf deinem Ha
 Erweiterungen und Promos (im Menü Erweiterungen & Promos einschalten):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, die zusätzlichen Monstrum-Karten, Danny Trejo und Monty Python's Flying Circus.
 
+Neu: die Fantasy-Welt. Beim Start wählst du dein Universum: Zombicide Zweite Edition oder Black Plague und Green Horde, einzeln oder gemischt. Alle Spawnkarten beider Grundboxen, mit Doppel-Spawn, „Die Horde kommt!“ und dem Horden-Symbol; jedes Universum hat seine eigenen Erweiterungen. Fantasy-Erweiterungen: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes und die Horde Box.
+
 Verfügbar auf Deutsch, Englisch, Französisch, Spanisch, Italienisch, Polnisch, brasilianischem Portugiesisch und Russisch, mit den offiziellen Zombienamen jeder Ausgabe.
 
 Du brauchst dein eigenes Exemplar des Spiels: Die App ersetzt nur den Zombie-Stapel.
@@ -97,7 +103,7 @@ Fan-Projekt, inoffiziell. Zombicide ist eine Marke von CMON Global Limited; dies
 
 **Título:** Zombie Deck
 
-**Descripción breve:** Mazo de zombis no oficial para Zombicide Segunda Edición. ¡Roba y sobrevive!
+**Descripción breve:** Mazo de zombis no oficial: Zombicide Segunda Edición, Black Plague, Green Horde
 
 **Descripción completa:**
 
@@ -114,6 +120,8 @@ Zombie Deck sustituye el mazo de zombis de Zombicide Segunda Edición en tu móv
 Expansiones y promos (actívalas en el menú Expansiones y promos):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, las cartas de Abominación adicionales, Danny Trejo y Monty Python's Flying Circus.
 
+Novedad: el universo de fantasía medieval. Al abrir la app, elige tu universo: Zombicide Segunda Edición, o Black Plague y Green Horde, por separado o mezclados. Todas las cartas de aparición de ambas cajas básicas, con Aparición doble, ¡Llega la Horda! y el símbolo de la Horda; cada universo tiene sus propias expansiones. Expansiones de fantasía: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes y la Horde Box.
+
 Disponible en español, inglés, francés, alemán, italiano, polaco, portugués de Brasil y ruso, con los nombres oficiales de los zombis de cada edición.
 
 Necesitas tu propio ejemplar del juego: la app solo sustituye el mazo de zombis.
@@ -126,7 +134,7 @@ Creada por fans, no oficial. Zombicide es una marca de CMON Global Limited; esta
 
 **Titolo:** Zombie Deck
 
-**Descrizione breve:** Mazzo Zombie non ufficiale per Zombicide 2a Edizione. Pesca e sopravvivi!
+**Descrizione breve:** Mazzo Zombie non ufficiale: Zombicide 2a Edizione, Black Plague, Green Horde
 
 **Descrizione completa:**
 
@@ -143,6 +151,8 @@ Zombie Deck sostituisce il mazzo Zombie di Zombicide 2a Edizione sul tuo telefon
 Espansioni e promo (da attivare nel menu Espansioni e promo):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, le carte Abominio aggiuntive, Danny Trejo e Monty Python's Flying Circus.
 
+Novità: l'universo fantasy medievale. All'apertura, scegli il tuo universo: Zombicide 2a Edizione, oppure Black Plague e Green Horde, da soli o insieme. Tutte le carte Zombie delle due scatole base, con Generazione doppia, Arriva l'Orda! e il simbolo dell'Orda; ogni universo ha le sue espansioni. Espansioni fantasy: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes e la Horde Box.
+
 Disponibile in italiano, inglese, francese, tedesco, spagnolo, polacco, portoghese brasiliano e russo, con i nomi ufficiali degli zombie di ogni edizione.
 
 Ti serve una copia del gioco: l'app sostituisce solo il mazzo Zombie.
@@ -155,7 +165,7 @@ Creata da fan, non ufficiale. Zombicide è un marchio di CMON Global Limited; qu
 
 **Tytuł:** Zombie Deck
 
-**Krótki opis:** Nieoficjalna talia Zombie do Zombicide 2. edycja. Dobieraj, tasuj, przetrwaj!
+**Krótki opis:** Nieoficjalna talia Zombie: Zombicide 2. edycja, Czarna Plaga, Zielona Horda
 
 **Pełny opis:**
 
@@ -172,6 +182,8 @@ Zombie Deck zastępuje talię Zombie z Zombicide 2. edycja na twoim telefonie lu
 Dodatki i promo (do włączenia w menu Dodatki i promo):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie psy, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, dodatkowe karty Abominacji, Danny Trejo i Monty Python's Flying Circus.
 
+Nowość: świat fantasy. Po uruchomieniu wybierz swój świat: Zombicide 2. edycja albo Czarna Plaga i Zielona Horda, osobno lub razem. Wszystkie karty namnażania z obu podstawowych pudełek, z Podwójnym namnażaniem, kartami „Nadchodzi Horda!” i symbolem Hordy; każdy świat ma własne dodatki. Dodatki fantasy: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes i Horde Box.
+
 Dostępna po polsku, angielsku, francusku, niemiecku, hiszpańsku, włosku, w portugalskim brazylijskim i rosyjskim.
 
 Potrzebujesz własnego egzemplarza gry: aplikacja zastępuje tylko talię Zombie.
@@ -184,7 +196,7 @@ Projekt fanowski, nieoficjalny. Zombicide jest znakiem towarowym CMON Global Lim
 
 **Título:** Zombie Deck
 
-**Descrição curta:** Baralho de zumbis não oficial para Zombicide 2ª Edição. Compre e sobreviva!
+**Descrição curta:** Baralho de zumbis não oficial: Zombicide 2ª Edição, Black Plague, Green Horde
 
 **Descrição completa:**
 
@@ -201,6 +213,8 @@ Zombie Deck substitui o baralho de zumbis de Zombicide 2ª Edição no seu celul
 Expansões e promos (ative no menu Expansões e promos):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, as cartas de Abominação extras, Danny Trejo e Monty Python's Flying Circus.
 
+Novidade: o universo de fantasia medieval. Ao abrir o app, escolha seu universo: Zombicide 2ª Edição, ou Black Plague e Green Horde, separados ou misturados. Todas as cartas de entrada das duas caixas básicas, com Entrada dupla, A Horda chegou! e o símbolo da Horda; cada universo tem suas próprias expansões. Expansões de fantasia: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes e a Horde Box.
+
 Disponível em português do Brasil, inglês, francês, alemão, espanhol, italiano, polonês e russo, com os nomes oficiais dos zumbis de cada edição.
 
 Você precisa ter o jogo: o app substitui apenas o baralho de zumbis.
@@ -213,7 +227,7 @@ Feito por fãs, não oficial. Zombicide é uma marca da CMON Global Limited; est
 
 **Название:** Zombie Deck
 
-**Краткое описание:** Неофициальная колода зомби для «Зомбицид. Вторая редакция». Тяни и выживай!
+**Краткое описание:** Неофициальная колода зомби: «Зомбицид» 2-я ред., Чёрная чума, Зелёная орда
 
 **Полное описание:**
 
@@ -229,6 +243,8 @@ Zombie Deck заменяет колоду зомби из «Зомбицид. В
 
 Дополнения и промо (включаются в меню «Дополнения и промо»):
 Форт Хендрикс, Токсичный центр, Prison Outbreak, Rue Morgue, Злобные соседи, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, дополнительные карты отродий, Дэнни Трехо и Monty Python's Flying Circus.
+
+Новое: мир фэнтези. При запуске выберите свой мир: «Зомбицид. Вторая редакция» или «Чёрная чума» и «Зелёная орда», по отдельности или вместе. Все карты появления из обеих базовых коробок, с двойным появлением, картами «Орда идёт!» и символом орды; у каждого мира свои дополнения. Дополнения фэнтези: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes и Horde Box.
 
 Доступно на русском, английском, французском, немецком, испанском, итальянском, польском и бразильском португальском, с официальными названиями зомби каждого издания.
 

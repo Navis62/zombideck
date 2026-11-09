@@ -1,4 +1,15 @@
-import type { CardSet, FantasyActivated, FantasyCard, FantasyLevel, FantasyNecromancer, FantasyZombie, ZombieCard } from '../game/types';
+import type {
+  CardSet,
+  FantasyActivated,
+  FantasyCard,
+  FantasyLevel,
+  FantasyNecromancer,
+  FantasyTitle,
+  FantasyZombie,
+  NamedAbomination,
+  NamedNecromancer,
+  ZombieCard,
+} from '../game/types';
 
 // Fantasy era cards, transcribed from the printed cards (checked card by card against pictures of the decks).
 // Levels are in Danger Level order: blue, yellow, orange, red (the cards print them top-down, red first).
@@ -6,34 +17,58 @@ import type { CardSet, FantasyActivated, FantasyCard, FantasyLevel, FantasyNecro
 
 const BLACK_PLAGUE = 'blackPlague';
 const GREEN_HORDE = 'greenHorde';
+const WULFSBURG = 'wulfsburg';
+const NPC_1 = 'npc1';
+const NPC_2 = 'npc2';
+const DEADEYE = 'deadeyeWalkers';
+// Not "crowz": the modern Murder of Crowz already has that id.
+const FANTASY_CROWZ = 'fantasyCrowz';
+const ZOMBIE_BOSSES = 'zombieBosses';
+const FRIENDS_AND_FOES = 'friendsAndFoes';
+const HORDE_BOX = 'hordeBox';
 
 type Letter = 'W' | 'R' | 'F' | 'A';
-const STANDARD: Record<Letter, FantasyZombie> = {
+/** The zombies a set prints; a letter it has none of cannot be read. */
+type Zombies = Partial<Record<Letter, FantasyZombie>>;
+const STANDARD: Zombies = {
   W: 'fantasyWalker',
   R: 'fantasyRunner',
   F: 'fantasyFatty',
   A: 'fantasyAbomination',
 };
-const ORC: Record<Letter, FantasyZombie> = { W: 'orcWalker', R: 'orcRunner', F: 'orcFatty', A: 'orcAbomination' };
+const ORC: Zombies = { W: 'orcWalker', R: 'orcRunner', F: 'orcFatty', A: 'orcAbomination' };
+const WOLFZ: Zombies = { W: 'wolfz', A: 'wolfbomination' };
+const NPC: Zombies = { W: 'npcWalker' };
+const DEADEYE_WALKERS: Zombies = { W: 'deadeyeWalker' };
+const CROWZ: Zombies = { W: 'crowz' };
+const TAINTED: Zombies = { W: 'taintedWalker', A: 'taintedAbomination' };
 
-function level(spec: string, zombies: Record<Letter, FantasyZombie>): FantasyLevel {
+function level(spec: string, zombies: Zombies): FantasyLevel {
   if (spec === '-') return null;
-  if (spec === 'A') return { zombie: zombies.A, count: 1 };
+  if (spec === 'A' && zombies.A) return { zombie: zombies.A, count: 1 };
   // A Walker, Runner or Fatty level always prints its count: a missing one is a transcription slip.
   const match = /^([WRF])([1-9]\d*)$/.exec(spec);
   if (!match) throw new Error(`Unreadable level "${spec}"`);
   const [, letter, count] = match;
-  return { zombie: zombies[letter as Letter], count: Number(count) };
+  const zombie = zombies[letter as Letter];
+  if (!zombie) throw new Error(`No zombie "${letter}" in this set: "${spec}"`);
+  return { zombie, count: Number(count) };
 }
 
 type Specs = readonly [string, string, string, string];
 
-const levels = (setId: string, id: string, specs: Specs, zombies: Record<Letter, FantasyZombie>, horde?: true): FantasyCard => ({
+const levels = (
+  setId: string,
+  id: string,
+  specs: Specs,
+  zombies: Zombies,
+  extra: { horde?: true; title?: FantasyTitle } = {},
+): FantasyCard => ({
   id: `${setId}-${id}`,
   setId,
   kind: 'levels',
   levels: [level(specs[0], zombies), level(specs[1], zombies), level(specs[2], zombies), level(specs[3], zombies)],
-  ...(horde && { horde }),
+  ...extra,
 });
 
 const activation = (setId: string, id: string, zombie: FantasyActivated): FantasyCard => ({
@@ -135,9 +170,9 @@ const blackPlagueCards: ZombieCard[] = [
 ];
 
 const greenHordeCards: ZombieCard[] = [
-  ...GREEN_HORDE_SPAWNS.map((specs, i) => levels(GREEN_HORDE, number(167 + i), specs, ORC, true)),
-  ...GREEN_HORDE_TWINS.map((specs, i) => levels(GREEN_HORDE, number(179 + i), specs, ORC, true)),
-  ...GREEN_HORDE_TWINS.map((specs, i) => levels(GREEN_HORDE, number(191 + i), specs, ORC, true)),
+  ...GREEN_HORDE_SPAWNS.map((specs, i) => levels(GREEN_HORDE, number(167 + i), specs, ORC, { horde: true })),
+  ...GREEN_HORDE_TWINS.map((specs, i) => levels(GREEN_HORDE, number(179 + i), specs, ORC, { horde: true })),
+  ...GREEN_HORDE_TWINS.map((specs, i) => levels(GREEN_HORDE, number(191 + i), specs, ORC, { horde: true })),
   activation(GREEN_HORDE, '203', 'orcWalker'),
   activation(GREEN_HORDE, '204', 'orcWalker'),
   activation(GREEN_HORDE, '205', 'orcFatty'),
@@ -146,10 +181,126 @@ const greenHordeCards: ZombieCard[] = [
   ...copies(213, 8, (id) => special(GREEN_HORDE, id, 'enterHorde')),
 ];
 
+// Wulfsburg: #055-#057 come back as #058-#060, then two Wolfbominations.
+const WOLFZ_SPAWNS: readonly Specs[] = [
+  ['W1', 'W2', 'W3', 'W4'], // 055 and 058
+  ['W2', 'W3', 'W4', 'W5'],
+  ['W3', 'W4', 'W5', 'W6'], // 057 and 060
+];
+const wulfsburgCards: ZombieCard[] = [
+  ...[...WOLFZ_SPAWNS, ...WOLFZ_SPAWNS].map((specs, i) => levels(WULFSBURG, number(55 + i), specs, WOLFZ, { title: 'wolfzInvasion' })),
+  ...copies(61, 2, (id) => levels(WULFSBURG, id, ['-', 'A', 'A', 'A'], WOLFZ, { title: 'named' })),
+];
+
+// N.P.C. 1 (purple border) and N.P.C. 2 (green border) print the same four cards in turn, three times each.
+// The fan wiki has #064 and #065 wrong; checked on the printed cards.
+const NPC_SPAWNS: readonly Specs[] = [
+  ['-', 'W4', 'W4', 'W5'], // 063, 067, 071; 075, 079, 083
+  ['W1', 'W1', 'W6', 'W7'],
+  ['W1', 'W2', 'W2', 'W8'],
+  ['W2', 'W3', 'W4', 'W4'], // 066, 070, 074; 078, 082, 086
+];
+const npcCards = (setId: string, first: number): ZombieCard[] =>
+  Array.from({ length: 12 }, (_, i) => levels(setId, number(first + i), NPC_SPAWNS[i % 4], NPC, { title: 'npcInvasion' }));
+
+// Deadeye Walkers: #099-#101 come back as #102-#104.
+const DEADEYE_SPAWNS: readonly Specs[] = [
+  ['W1', 'W2', 'W3', 'W4'], // 099 and 102
+  ['W2', 'W3', 'W4', 'W5'],
+  ['W3', 'W4', 'W5', 'W6'], // 101 and 104
+];
+const deadeyeCards: ZombieCard[] = [...DEADEYE_SPAWNS, ...DEADEYE_SPAWNS].map((specs, i) =>
+  levels(DEADEYE, number(99 + i), specs, DEADEYE_WALKERS, { title: 'deadeyeWalkers' }),
+);
+
+// Murder of Crowz: twelve identical cards.
+const crowzCards: ZombieCard[] = copies(105, 12, (id) =>
+  levels(FANTASY_CROWZ, id, ['W2', 'W3', 'W4', 'W5'], CROWZ, { title: 'murderOfCrowz' }),
+);
+
+/** Named Abominations: their picture across Yellow to Red, "Nothing in sight!" at Blue, and their name as the title. */
+const namedAbomination = (setId: string, id: string, zombie: NamedAbomination): FantasyCard =>
+  levels(setId, id, ['-', 'A', 'A', 'A'], { A: zombie }, { title: 'named' });
+const NAMED_ABOMINATIONS: readonly (readonly [NamedAbomination, string, number, number])[] = [
+  ['ablobination', 'zombieBosses', 87, 4],
+  ['abominatroll', 'zombieBosses', 91, 4],
+  ['abominotaur', 'zombieBosses', 95, 4],
+  ['feralDragon', 'hordeBox', 285, 8],
+  ['fattyBurster', 'hordeBox', 293, 6],
+  ['zombieGiant', 'hordeBox', 299, 4],
+  ['gorgomination', 'hordeBox', 303, 4],
+  ['hordeBrother', 'hordeBox', 307, 4],
+  ['siegeBreaker', 'hordeBox', 311, 4],
+  ['swampLurker', 'hordeBox', 315, 4],
+  ['abominabunny', 'hordeBox', 319, 4],
+  ['magentaCovefe', 'hordeBox', 323, 4],
+  ['vaultWarden', 'hordeBox', 327, 4],
+  ['werezombie', 'hordeBox', 331, 4],
+  ['chromatiz', 'hordeBox', 347, 4],
+];
+const namedCards = (setId: string) =>
+  NAMED_ABOMINATIONS.filter(([, set]) => set === setId).flatMap(([zombie, , first, count]) =>
+    copies(first, count, (id) => namedAbomination(setId, id, zombie)),
+  );
+const namedNecromancers = (setId: string, first: number, zombie: NamedNecromancer) =>
+  copies(first, 6, (id) => necromancer(setId, id, zombie));
+
+/** The zombies printed without a count: their picture stands for one. */
+export const NAMED_ZOMBIES: ReadonlySet<FantasyZombie> = new Set(['wolfbomination', ...NAMED_ABOMINATIONS.map(([zombie]) => zombie)]);
+/** Abominations, named or not: the Horde symbol never adds one to the Horde. */
+export const ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
+  'fantasyAbomination',
+  'orcAbomination',
+  'taintedAbomination',
+  ...NAMED_ZOMBIES,
+]);
+/** Necromancers with a name: the normal Necromancer rules, plus one of their own. */
+export const NAMED_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<NamedNecromancer>(['countTemeraire', 'queenSevera']);
+
+// Friends and Foes: the levels as printed (the fan wiki adds the Horde zombie to most counts, not to Red on #253).
+const TAINTED_SPAWNS: readonly Specs[] = [
+  ['A', 'W1', 'W5', 'W2'], // 253
+  ['W2', 'A', 'W1', 'W3'],
+  ['W2', 'W1', 'A', 'W6'], // 255
+  ['W1', 'W3', 'W2', 'A'],
+  ['W1', 'W2', 'W3', 'W6'],
+  ['W1', 'W1', 'W4', 'W5'],
+  ['W1', 'W4', 'W2', 'W3'],
+  ['W1', 'W1', 'W6', 'W2'], // 260
+  ['W1', 'W2', 'W2', 'W8'],
+  ['W1', 'W2', 'W2', 'W7'],
+  ['W1', 'W4', 'W4', 'W3'],
+  ['W1', 'W3', 'W5', 'W3'], // 264
+];
+const friendsAndFoesCards: ZombieCard[] = [
+  ...TAINTED_SPAWNS.map((specs, i) =>
+    levels(FRIENDS_AND_FOES, number(253 + i), specs, TAINTED, { horde: true, title: 'taintHorde' }),
+  ),
+  ...copies(265, 2, (id) => special(FRIENDS_AND_FOES, id, 'enterHorde')),
+];
+
+// The two Necromancers come between Werezombie (#331-#334) and Chromatiz (#347-#350): the cards go in printed order.
+const hordeBoxCards: ZombieCard[] = [
+  ...namedCards(HORDE_BOX),
+  ...namedNecromancers(HORDE_BOX, 335, 'countTemeraire'),
+  ...namedNecromancers(HORDE_BOX, 341, 'queenSevera'),
+].sort((a, b) => a.id.localeCompare(b.id));
+
 const noHardCards = () => false;
 
-/** Two core boxes, each playable alone; "all fantasy Zombicide contents are compatible", so both can be mixed. */
+/**
+ * Two core boxes, each playable alone; "all fantasy Zombicide contents are compatible", so both can be mixed. The
+ * expansions add their cards to either.
+ */
 export const FANTASY_SETS: readonly CardSet[] = [
   { id: BLACK_PLAGUE, optional: true, core: true, isHard: noHardCards, cards: blackPlagueCards },
   { id: GREEN_HORDE, optional: true, core: true, isHard: noHardCards, cards: greenHordeCards },
+  { id: WULFSBURG, optional: true, isHard: noHardCards, cards: wulfsburgCards },
+  { id: NPC_1, optional: true, isHard: noHardCards, cards: npcCards(NPC_1, 63) },
+  { id: NPC_2, optional: true, isHard: noHardCards, cards: npcCards(NPC_2, 75) },
+  { id: ZOMBIE_BOSSES, optional: true, isHard: noHardCards, cards: namedCards(ZOMBIE_BOSSES) },
+  { id: DEADEYE, optional: true, isHard: noHardCards, cards: deadeyeCards },
+  { id: FANTASY_CROWZ, optional: true, isHard: noHardCards, cards: crowzCards },
+  { id: FRIENDS_AND_FOES, optional: true, isHard: noHardCards, cards: friendsAndFoesCards },
+  { id: HORDE_BOX, optional: true, isHard: noHardCards, cards: hordeBoxCards },
 ];

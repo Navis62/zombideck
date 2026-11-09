@@ -67,10 +67,40 @@ export type FantasyZombie =
   | 'orcWalker'
   | 'orcRunner'
   | 'orcFatty'
-  | 'orcAbomination';
+  | 'orcAbomination'
+  | 'wolfz'
+  | 'wolfbomination'
+  | 'npcWalker'
+  | 'deadeyeWalker'
+  | 'crowz'
+  | 'taintedWalker'
+  | 'taintedAbomination'
+  | NamedAbomination;
+/** Abominations with a name, printed as a picture across the levels instead of a count. */
+export type NamedAbomination =
+  | 'ablobination'
+  | 'abominatroll'
+  | 'abominotaur'
+  | 'feralDragon'
+  | 'fattyBurster'
+  | 'zombieGiant'
+  | 'gorgomination'
+  | 'hordeBrother'
+  | 'siegeBreaker'
+  | 'swampLurker'
+  | 'abominabunny'
+  | 'magentaCovefe'
+  | 'vaultWarden'
+  | 'werezombie'
+  | 'chromatiz';
 /** Zombies an Extra Activation card can name. */
 export type FantasyActivated = 'fantasyWalker' | 'fantasyRunner' | 'fantasyFatty' | 'orcWalker' | 'orcRunner' | 'orcFatty';
-export type FantasyNecromancer = 'necromancer' | 'orcNecromancer';
+/** Necromancers with a name: the normal Necromancer rules, plus one of their own. */
+export type NamedNecromancer = 'countTemeraire' | 'queenSevera';
+export type FantasyNecromancer = 'necromancer' | 'orcNecromancer' | NamedNecromancer;
+
+/** Title printed on a fantasy spawn card when it is not the core box one ("Zombies Invasion", "Assemble the HORDE!"). */
+export type FantasyTitle = 'wolfzInvasion' | 'npcInvasion' | 'deadeyeWalkers' | 'murderOfCrowz' | 'taintHorde' | 'named';
 
 /** What one Danger Level of a fantasy card spawns; `null` is "Nothing in sight!". */
 export type FantasyLevel = { zombie: FantasyZombie; count: number } | null;
@@ -82,7 +112,12 @@ type FantasyBase = { id: string; setId: string };
  * Horde (not for an Abomination).
  */
 export type FantasyCard =
-  | (FantasyBase & { kind: 'levels'; levels: readonly [FantasyLevel, FantasyLevel, FantasyLevel, FantasyLevel]; horde?: true })
+  | (FantasyBase & {
+      kind: 'levels';
+      levels: readonly [FantasyLevel, FantasyLevel, FantasyLevel, FantasyLevel];
+      horde?: true;
+      title?: FantasyTitle;
+    })
   | (FantasyBase & { kind: 'activation'; zombie: FantasyActivated })
   | (FantasyBase & { kind: 'necromancer'; zombie: FantasyNecromancer })
   | (FantasyBase & { kind: 'doubleSpawn' })

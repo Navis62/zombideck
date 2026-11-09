@@ -431,6 +431,48 @@ test('Black Plague and Green Horde have their 54 cards each, numbered without ga
   assert.deepEqual(numbers('greenHorde'), Array.from({ length: 54 }, (_, i) => 167 + i));
 });
 
+test('the fantasy expansions follow the printed numbers: #055-#116, #253-#266, #285-#350', () => {
+  const ids = ['wulfsburg', 'npc1', 'npc2', 'zombieBosses', 'deadeyeWalkers', 'fantasyCrowz', 'friendsAndFoes', 'hordeBox'];
+  const cards = ids.flatMap((id) => FANTASY_SETS.find((set) => set.id === id)?.cards ?? []);
+  const range = (first: number, last: number) => Array.from({ length: last - first + 1 }, (_, i) => first + i);
+  const printed = [...range(55, 116), ...range(253, 266), ...range(285, 350)];
+  assert.deepEqual(cards.map((card) => Number(card.id.slice(-3))), printed);
+  assert.ok(ids.every((id) => UNIVERSES.fantasy.optionalSets.some((set) => set.id === id && !set.core)));
+});
+
+test('the fantasy expansion cards match the printed cards', () => {
+  const counts = (id: string) => levelsOf(id).map((level) => level && `${level.zombie} ${level.count}`);
+  assert.deepEqual(counts('wulfsburg-060'), ['wolfz 3', 'wolfz 4', 'wolfz 5', 'wolfz 6']);
+  assert.deepEqual(counts('wulfsburg-062'), [null, 'wolfbomination 1', 'wolfbomination 1', 'wolfbomination 1']);
+  // The fan wiki has #064 as 1/3/4/4 and #065 with 5 at Red.
+  assert.deepEqual(counts('npc1-064'), ['npcWalker 1', 'npcWalker 1', 'npcWalker 6', 'npcWalker 7']);
+  assert.deepEqual(counts('npc1-065'), ['npcWalker 1', 'npcWalker 2', 'npcWalker 2', 'npcWalker 8']);
+  assert.deepEqual(counts('npc2-083'), [null, 'npcWalker 4', 'npcWalker 4', 'npcWalker 5']);
+  assert.deepEqual(counts('npc2-086'), ['npcWalker 2', 'npcWalker 3', 'npcWalker 4', 'npcWalker 4']);
+  assert.deepEqual(counts('deadeyeWalkers-104'), ['deadeyeWalker 3', 'deadeyeWalker 4', 'deadeyeWalker 5', 'deadeyeWalker 6']);
+  assert.deepEqual(counts('fantasyCrowz-113'), ['crowz 2', 'crowz 3', 'crowz 4', 'crowz 5']);
+  // Friends and Foes as printed: the fan wiki adds the Horde zombie to the counts, except Red on #253.
+  assert.deepEqual(counts('friendsAndFoes-253'), ['taintedAbomination 1', 'taintedWalker 1', 'taintedWalker 5', 'taintedWalker 2']);
+  assert.deepEqual(counts('friendsAndFoes-264'), ['taintedWalker 1', 'taintedWalker 3', 'taintedWalker 5', 'taintedWalker 3']);
+  const tainted = fantasyCard('friendsAndFoes-260');
+  assert.equal(tainted.kind === 'levels' && tainted.horde, true);
+  assert.equal(fantasyCard('friendsAndFoes-266').kind, 'enterHorde');
+  assert.deepEqual(counts('zombieBosses-098'), [null, 'abominotaur 1', 'abominotaur 1', 'abominotaur 1']);
+  assert.deepEqual(counts('hordeBox-293'), [null, 'fattyBurster 1', 'fattyBurster 1', 'fattyBurster 1']);
+  // Chromatiz is an Abomination (the fan wiki lists it as a Necromancer).
+  assert.deepEqual(counts('hordeBox-348'), [null, 'chromatiz 1', 'chromatiz 1', 'chromatiz 1']);
+  const necromancerOf = (id: string) => {
+    const card = fantasyCard(id);
+    return card.kind === 'necromancer' ? card.zombie : card.kind;
+  };
+  assert.deepEqual(['hordeBox-335', 'hordeBox-340', 'hordeBox-341', 'hordeBox-346'].map(necromancerOf), [
+    'countTemeraire',
+    'countTemeraire',
+    'queenSevera',
+    'queenSevera',
+  ]);
+});
+
 test('the fantasy cards keep the corrections checked on the printed cards', () => {
   // #017 and #029: Runners at Red, where the fan wiki has Walkers.
   for (const id of ['blackPlague-017', 'blackPlague-029']) {
@@ -449,10 +491,10 @@ test('the fantasy cards keep the corrections checked on the printed cards', () =
   assert.deepEqual(levelsOf('greenHorde-171')[1], { zombie: 'orcFatty', count: 1 });
 });
 
-test('every Green Horde spawn card carries the Horde symbol, no Black Plague card does', () => {
+test('every Green Horde and Friends and Foes spawn card carries the Horde symbol, no other card does', () => {
   for (const set of FANTASY_SETS) {
     for (const card of set.cards.filter((each) => each.kind === 'levels')) {
-      assert.equal(card.kind === 'levels' && !!card.horde, set.id === 'greenHorde', card.id);
+      assert.equal(card.kind === 'levels' && !!card.horde, set.id === 'greenHorde' || set.id === 'friendsAndFoes', card.id);
     }
   }
 });
@@ -494,11 +536,11 @@ test('select all and deselect all keep the core box in use', () => {
   assert.deepEqual(noExpansions(modern, ['toxic']), ['core2e']);
   assert.deepEqual(allExpansions(modern, ['fortHendrix']), [...expansionIds, 'fortHendrix']);
   const fantasy = UNIVERSES.fantasy;
-  assert.deepEqual(allExpansions(fantasy, []), ['blackPlague', 'greenHorde']);
+  assert.deepEqual(allExpansions(fantasy, []), FANTASY_SETS.map((set) => set.id));
   assert.deepEqual(noExpansions(fantasy, ['greenHorde']), ['greenHorde']);
   assert.deepEqual(noExpansions(fantasy, ['blackPlague', 'greenHorde']), ['blackPlague']);
   assert.deepEqual(switchableSets(modern).length, modern.optionalSets.length - 2);
-  assert.deepEqual(switchableSets(fantasy).map((set) => set.id), ['blackPlague', 'greenHorde']);
+  assert.deepEqual(switchableSets(fantasy).map((set) => set.id), FANTASY_SETS.map((set) => set.id));
 });
 
 test('a save holds only cards of its own universe', () => {
