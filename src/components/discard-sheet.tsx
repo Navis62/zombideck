@@ -25,6 +25,9 @@ export function DiscardSheet(props: { discard: readonly string[]; danger: Danger
       // iOS shows modals in portrait unless told otherwise; the app is landscape only.
       supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
       onRequestClose={props.onClose}
+      // Android: the dimmed overlay reaches under the system bars and the camera cutout too.
+      statusBarTranslucent
+      navigationBarTranslucent
     >
       <SafeAreaView style={styles.overlay} edges={['left', 'right', 'top', 'bottom']}>
         {/* Tapping beside the cards closes the sheet too. */}

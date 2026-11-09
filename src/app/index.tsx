@@ -126,7 +126,10 @@ export default function UniverseScreen() {
                 </View>
                 <View style={[styles.caption, styles.captionRow]}>
                   <View style={styles.captionText}>
-                    <Text style={styles.name}>{t(slide.name)}</Text>
+                    {/* One line: a long name ("Médiéval-fantastique") shrinks instead of breaking inside the word. */}
+                    <Text style={styles.name} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
+                      {t(slide.name)}
+                    </Text>
                     <Text style={styles.detail}>{t(slide.detail)}</Text>
                   </View>
                   {/* In the caption, clear of the illustrations. */}

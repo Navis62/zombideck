@@ -312,6 +312,9 @@ export default function GameScreen() {
           // iOS shows modals in portrait unless told otherwise; the app is landscape only.
           supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
           onRequestClose={() => setZoomed(null)}
+          // Android: the dimmed overlay reaches under the system bars and the camera cutout too.
+          statusBarTranslucent
+          navigationBarTranslucent
         >
           <Pressable
             style={styles.zoom}
