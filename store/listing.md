@@ -2,7 +2,7 @@
 
 Text for the Google Play and App Store listings, one section per language. Limits: title 30 characters, short description 80 characters, full description 4000 characters.
 
-Images: `feature-graphic.png` (Play Store banner, 1024×500) and `screenshots/` (1920×1080).
+Images: `feature-graphic.png` (Play Store banner, 1024×500) and `screenshots/` (1920×1080, in display order: the universes, Fantasy, then Modern).
 
 ---
 
@@ -251,3 +251,73 @@ Zombie Deck заменяет колоду зомби из «Зомбицид. В
 Для игры нужен свой экземпляр игры: приложение заменяет только колоду зомби.
 
 Фанатский неофициальный проект. Zombicide — товарный знак CMON Global Limited; приложение не связано с CMON и не одобрено ею.
+
+---
+
+## Release notes (What's new)
+
+Play Console, 500 characters per language.
+
+<en-US>
+New: the Fantasy universe. Choose your era when the app opens: Zombicide 2nd Edition, or Black Plague and Green Horde.
+• Black Plague, Green Horde and 8 expansions: Wulfsburg, NPC-1 and 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
+• Double Spawn, Enter the Horde, the Horde symbol, named Abominations and Necromancers
+• Tap a card to read it full screen when several zones are drawn
+• Bigger deck when the cards take two rows
+</en-US>
+
+<fr-FR>
+Nouveau : l'univers médiéval-fantastique. À l'ouverture, choisissez : Zombicide 2e édition, ou Black Plague et Green Horde.
+• Black Plague, Green Horde et 8 extensions : Wulfsburg, NPC-1 et 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
+• Double invasion, La Horde arrive, symbole de la Horde, Abominations et Nécromanciens nommés
+• Touchez une carte pour l'agrandir quand il y a plusieurs zones
+• Pioche plus grande sur deux lignes
+</fr-FR>
+
+<de-DE>
+Neu: die Fantasy-Welt. Wähle beim Start dein Universum: Zombicide Zweite Edition oder Black Plague und Green Horde.
+• Black Plague, Green Horde und 8 Erweiterungen: Wulfsburg, NPC-1 und 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
+• Doppel-Spawn, „Die Horde kommt!“, Horden-Symbol, benannte Monstren und Nekromanten
+• Tippe eine Karte an, um sie bei mehreren Zonen groß zu lesen
+• Größerer Stapel bei zwei Kartenreihen
+</de-DE>
+
+<es-ES>
+Novedad: el universo de fantasía medieval. Al abrir la app, elige: Zombicide Segunda Edición, o Black Plague y Green Horde.
+• Black Plague, Green Horde y 8 expansiones: Wulfsburg, NPC-1 y 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
+• Aparición doble, ¡Llega la Horda!, símbolo de la Horda, Abominaciones y Nigromantes con nombre
+• Toca una carta para verla en grande con varias zonas
+• Mazo más grande con dos filas de cartas
+</es-ES>
+
+<it-IT>
+Novità: l'universo fantasy medievale. All'apertura scegli: Zombicide 2a Edizione, oppure Black Plague e Green Horde.
+• Black Plague, Green Horde e 8 espansioni: Wulfsburg, NPC-1 e 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
+• Generazione doppia, Arriva l'Orda!, simbolo dell'Orda, Abomini e Negromanti con nome
+• Tocca una carta per ingrandirla quando ci sono più zone
+• Mazzo più grande con due righe di carte
+</it-IT>
+
+<pl-PL>
+Nowość: świat fantasy. Po uruchomieniu wybierz: Zombicide 2. edycja albo Czarna Plaga i Zielona Horda.
+• Czarna Plaga, Zielona Horda i 8 dodatków: Wulfsburg, NPC-1 i 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
+• Podwójne namnażanie, „Nadchodzi Horda!”, symbol Hordy, nazwane Abominacje i Nekromanci
+• Dotknij karty, aby ją powiększyć przy kilku strefach
+• Większa talia przy dwóch rzędach kart
+</pl-PL>
+
+<pt-BR>
+Novidade: o universo de fantasia medieval. Ao abrir o app, escolha: Zombicide 2ª Edição, ou Black Plague e Green Horde.
+• Black Plague, Green Horde e 8 expansões: Wulfsburg, NPC-1 e 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
+• Entrada dupla, A Horda chegou!, símbolo da Horda, Abominações e Necromantes nomeados
+• Toque numa carta para ampliá-la quando há várias zonas
+• Baralho maior com duas linhas de cartas
+</pt-BR>
+
+<ru-RU>
+Новое: мир фэнтези. При запуске выберите: «Зомбицид. Вторая редакция» или «Чёрная чума» и «Зелёная орда».
+• «Чёрная чума», «Зелёная орда» и 8 дополнений: Wulfsburg, NPC-1 и 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
+• Двойное появление, «Орда идёт!», символ орды, именные отродья и некроманты
+• Коснитесь карты, чтобы увеличить её при нескольких зонах
+• Колода крупнее, когда карты в два ряда
+</ru-RU>
