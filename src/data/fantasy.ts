@@ -247,12 +247,16 @@ const namedNecromancers = (setId: string, first: number, zombie: NamedNecromance
 
 /** The zombies printed without a count: their picture stands for one. */
 export const NAMED_ZOMBIES: ReadonlySet<FantasyZombie> = new Set(['wolfbomination', ...NAMED_ABOMINATIONS.map(([zombie]) => zombie)]);
-/** Abominations, named or not: the Horde symbol never adds one to the Horde. */
+/**
+ * Abominations, named or not: the Horde symbol never adds one to the Horde. The Horde Box makes Fatty Bursters
+ * Fatties, and gives the Feral Dragon and the Zombie Giant rules of their own.
+ */
+const NOT_ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set(['fattyBurster', 'feralDragon', 'zombieGiant']);
 export const ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
   'fantasyAbomination',
   'orcAbomination',
   'taintedAbomination',
-  ...NAMED_ZOMBIES,
+  ...[...NAMED_ZOMBIES].filter((zombie) => !NOT_ABOMINATIONS.has(zombie)),
 ]);
 /** Necromancers with a name: the normal Necromancer rules, plus one of their own. */
 export const NAMED_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<NamedNecromancer>(['countTemeraire', 'queenSevera']);
