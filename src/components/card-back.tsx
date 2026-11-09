@@ -1,11 +1,12 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CARD_COLORS } from '@/theme';
+import type { UniverseId } from '@/game/types';
 
 /** Card width the badge was drawn for; it grows with the card on tablets. */
 const DESIGN_WIDTH = 230;
 
-export function CardBack(props: { count: number; label: string; width: number; onPress: () => void }) {
+export function CardBack(props: { count: number; label: string; width: number; universe: UniverseId; onPress: () => void }) {
   const s = Math.max(0.5, props.width / DESIGN_WIDTH);
   return (
     <Pressable
@@ -18,7 +19,7 @@ export function CardBack(props: { count: number; label: string; width: number; o
       <View style={[styles.edge, styles.edgeFar]} />
       <View style={[styles.edge, styles.edgeNear]} />
       <View style={styles.back}>
-        <Image source={require('../../assets/cards/back.jpg')} style={styles.image} resizeMode="cover" />
+        <Image source={props.universe === 'fantasy' ? require('../../assets/cards/back-fantasy.jpg') : require('../../assets/cards/back.jpg')} style={styles.image} resizeMode="cover" />
         <View
           style={[
             styles.badge,

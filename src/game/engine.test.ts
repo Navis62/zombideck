@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { CARD_SETS, OPTIONAL_SETS } from '../data/decks.ts';
+import { FANTASY_SETS } from '../data/fantasy.ts';
+import { allExpansions, CARDS_BY_ID, cardEffect, cardIdsOf, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
 import {
   activeSetIds,
   ALL_PARTS,
@@ -17,7 +19,9 @@ import {
   setDanger,
   setZones,
   shuffleDeck,
+  type SpawnEffect,
   startsNewStep,
+  pendingZones,
   undo,
   upgradeSave,
   zonesOf,
@@ -140,25 +144,25 @@ test('a game starts at blue and undo keeps the chosen danger level', () => {
 test('save validation', () => {
   const state = drawCard(newGame(sets, ['a']));
   const known = new Set(['a1', 'a2', 'a3']);
-  assert.equal(isValidSave(JSON.parse(JSON.stringify(state)), known), true);
-  assert.equal(isValidSave(state, new Set(['a1'])), false);
-  assert.equal(isValidSave(null, known), false);
-  assert.equal(isValidSave({ version: 2 }, known), false);
-  assert.equal(isValidSave({ ...state, zones: 0 }, known), false);
-  assert.equal(isValidSave({ ...state, zones: MAX_ZONES + 1 }, known), false);
-  assert.equal(isValidSave({ ...state, danger: 'purple' }, known), false);
-  assert.equal(isValidSave({ ...state, universe: 'steampunk' }, known), false);
+  assert.equal(isValidSave(JSON.parse(JSON.stringify(state)), () => known), true);
+  assert.equal(isValidSave(state, () => new Set(['a1'])), false);
+  assert.equal(isValidSave(null, () => known), false);
+  assert.equal(isValidSave({ version: 2 }, () => known), false);
+  assert.equal(isValidSave({ ...state, zones: 0 }, () => known), false);
+  assert.equal(isValidSave({ ...state, zones: MAX_ZONES + 1 }, () => known), false);
+  assert.equal(isValidSave({ ...state, danger: 'purple' }, () => known), false);
+  assert.equal(isValidSave({ ...state, universe: 'steampunk' }, () => known), false);
 });
 
 test('save validation also checks the set ids and the undo history', () => {
   const state = drawCard(newGame(sets, ['a']));
   const known = new Set(['a1', 'a2', 'a3']);
   const { setIds: _setIds, ...withoutSetIds } = state;
-  assert.equal(isValidSave(withoutSetIds, known), false);
-  assert.equal(isValidSave({ ...state, history: [null] }, known), false);
-  assert.equal(isValidSave({ ...state, history: [{ ...state.piles, draw: ['gone'] }] }, known), false);
-  assert.equal(isValidSave({ ...state, history: [{ ...state.piles, drawn: ['gone'] }] }, known), false);
-  assert.equal(isValidSave({ ...state, piles: { ...state.piles, drawn: 42 } }, known), false);
+  assert.equal(isValidSave(withoutSetIds, () => known), false);
+  assert.equal(isValidSave({ ...state, history: [null] }, () => known), false);
+  assert.equal(isValidSave({ ...state, history: [{ ...state.piles, draw: ['gone'] }] }, () => known), false);
+  assert.equal(isValidSave({ ...state, history: [{ ...state.piles, drawn: ['gone'] }] }, () => known), false);
+  assert.equal(isValidSave({ ...state, piles: { ...state.piles, drawn: 42 } }, () => known), false);
 });
 
 test('each draw deals one card per Spawn Zone and undoes as a whole', () => {
@@ -192,7 +196,7 @@ test('one card at a time fills the Spawn Zones in turn, then starts a new step',
 });
 
 test('one card at a time: a card that draws again leaves its zone open, the cards in play never reshuffle', () => {
-  const spam = (id: string) => id === 'a1';
+  const spam = (id: string): SpawnEffect => (id === 'a1' ? 'drawAgain' : 'spawn');
   // Three zones, but SPAM fills none: the third zone is still open when the deck runs out.
   let state = setZones(newGame(sets, ['a']), 3);
   state = { ...state, piles: { ...state.piles, draw: ['a1', 'a2', 'a3'] } };
@@ -202,7 +206,7 @@ test('one card at a time: a card that draws again leaves its zone open, the card
 });
 
 test('one card at a time: a new Spawn step starts on an empty table or once every zone is served', () => {
-  const spam = (id: string) => id === 'a1';
+  const spam = (id: string): SpawnEffect => (id === 'a1' ? 'drawAgain' : 'spawn');
   let state = setZones(newGame(sets, ['a']), 2);
   state = { ...state, piles: { ...state.piles, draw: ['a1', 'a2', 'a3'] } };
   assert.equal(startsNewStep(state, spam), true);
@@ -215,13 +219,58 @@ test('one card at a time: a new Spawn step starts on an empty table or once ever
   assert.equal(startsNewStep(state, spam), true);
 });
 
+// Double Spawn and Enter the Horde, on a deck in a known order: d = Double Spawn, h = Enter the Horde, a1..a6 plain.
+const stacked = (zones: number, draw: string[]) => {
+  const state = setZones(newGame(sets, ['a']), zones);
+  return { ...state, piles: { ...state.piles, draw } };
+};
+const fantasyEffect = (id: string): SpawnEffect => (id.startsWith('d') ? 'double' : id.startsWith('h') ? 'endStep' : 'spawn');
+
+test('a Double Spawn sends two cards to the next zone', () => {
+  const state = drawCards(stacked(3, ['a1', 'd1', 'a2', 'a3', 'a4', 'a5']), fantasyEffect);
+  assert.deepEqual(state.piles.drawn, ['a1', 'd1', 'a2', 'a3']);
+  assert.deepEqual(zonesOf(state.piles.drawn, fantasyEffect, 3), [1, 2, 3, 3]);
+});
+
+test('two Double Spawns for one zone send four cards to the next one', () => {
+  const state = drawCards(stacked(4, ['d1', 'd2', 'd3', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6']), fantasyEffect);
+  // Zone 1 draws a Double Spawn: zone 2 draws two cards, both Double Spawns: zone 3 draws four, zone 4 one.
+  assert.deepEqual(state.piles.drawn, ['d1', 'd2', 'd3', 'a1', 'a2', 'a3', 'a4', 'a5']);
+  assert.deepEqual(zonesOf(state.piles.drawn, fantasyEffect, 4), [1, 2, 2, 3, 3, 3, 3, 4]);
+});
+
+test('a Double Spawn for the last zone gives the first zone an extra double spawn', () => {
+  const state = drawCards(stacked(2, ['a1', 'd1', 'a2', 'a3', 'a4']), fantasyEffect);
+  assert.deepEqual(state.piles.drawn, ['a1', 'd1', 'a2', 'a3']);
+  assert.deepEqual(zonesOf(state.piles.drawn, fantasyEffect, 2), [1, 2, 1, 1]);
+});
+
+test('Enter the Horde ends the Spawn step', () => {
+  const state = drawCards(stacked(4, ['a1', 'h1', 'a2']), fantasyEffect);
+  assert.deepEqual(state.piles.drawn, ['a1', 'h1']);
+  assert.equal(startsNewStep(state, fantasyEffect), true);
+});
+
+test('one zone at a time follows Double Spawns and lists the zones still waiting', () => {
+  let state = stacked(3, ['a1', 'd1', 'a2', 'a3', 'a4']);
+  assert.deepEqual(pendingZones(state, fantasyEffect), [1, 2, 3]);
+  state = drawNextCard(drawNextCard(state, fantasyEffect), fantasyEffect);
+  assert.deepEqual(pendingZones(state, fantasyEffect), [3, 3]);
+  state = drawNextCard(state, fantasyEffect);
+  assert.deepEqual(pendingZones(state, fantasyEffect), [3]);
+  assert.equal(startsNewStep(state, fantasyEffect), false);
+  state = drawNextCard(state, fantasyEffect);
+  assert.equal(startsNewStep(state, fantasyEffect), true);
+  assert.deepEqual(pendingZones(state, fantasyEffect), []);
+});
+
 test('a deck smaller than the Spawn Zones deals what it has', () => {
   const state = drawCard(setZones(newGame(sets, ['b']), 4));
   assert.deepEqual(state.piles.drawn, ['b1']);
 });
 
 test('a card that draws again shares its Spawn Zone with the next card', () => {
-  const spam = (id: string) => id === 'a1';
+  const spam = (id: string): SpawnEffect => (id === 'a1' ? 'drawAgain' : 'spawn');
   const state = drawCards(setZones(newGame(sets, ['a', 'b'], ALL_PARTS, () => 0), 2), spam, () => 0);
   const { drawn } = state.piles;
   assert.equal(drawn.length, drawn.includes('a1') ? 3 : 2);
@@ -247,7 +296,7 @@ test('a save from version 1 comes back with its card on display', () => {
     danger: 'yellow',
   };
   const upgraded = upgradeSave(v1);
-  assert.ok(isValidSave(upgraded, new Set(['a1', 'a2', 'a3'])));
+  assert.ok(isValidSave(upgraded, () => new Set(['a1', 'a2', 'a3'])));
   assert.deepEqual(upgraded.piles, { draw: ['a1'], discard: ['a2'], drawn: ['a3'], reshuffled: false });
   assert.deepEqual(upgraded.history[0].drawn, []);
   assert.equal(upgraded.zones, 1);
@@ -259,7 +308,7 @@ test('a save from version 2 comes back in the modern universe, its game untouche
   const { universe: _universe, ...current } = drawCard(setZones(newGame(sets, ['a']), 2));
   const v2 = { ...current, version: 2 };
   const upgraded = upgradeSave(JSON.parse(JSON.stringify(v2)));
-  assert.ok(isValidSave(upgraded, new Set(['a1', 'a2', 'a3'])));
+  assert.ok(isValidSave(upgraded, () => new Set(['a1', 'a2', 'a3'])));
   assert.deepEqual(upgraded, { ...v2, version: 3, universe: 'modern' });
 });
 
@@ -314,7 +363,7 @@ test('shuffling the deck leaves the discard and the card on display alone, and c
 test('every expansion has a name in every language', async () => {
   const { TRANSLATIONS } = await import('../i18n/translations.ts');
   for (const [language, texts] of Object.entries(TRANSLATIONS)) {
-    for (const set of OPTIONAL_SETS) {
+    for (const set of Object.values(UNIVERSES).flatMap((universe) => universe.optionalSets)) {
       assert.ok((texts as Record<string, string>)[`set.${set.id}`], `${language}: set.${set.id}`);
     }
   }
@@ -363,4 +412,103 @@ test('the kit Abominations follow the share of zombie expansions switched on, ea
   assert.deepEqual(abominations(zombieSets.filter((id) => id !== 'seeker' && id !== 'crowz')), ['199', '202', '200', '203', '201']);
   // Rue Morgue alone, 36 cards: 1.9.
   assert.deepEqual(abominations(['skinner']), ['199', '202']);
+});
+
+const fantasyCard = (id: string) => {
+  const card = CARDS_BY_ID.get(id);
+  assert.ok(card, id);
+  return card;
+};
+const levelsOf = (id: string) => {
+  const card = fantasyCard(id);
+  assert.equal(card.kind, 'levels');
+  return card.kind === 'levels' ? card.levels : [];
+};
+
+test('Black Plague and Green Horde have their 54 cards each, numbered without gaps', () => {
+  const numbers = (setId: string) => FANTASY_SETS.find((set) => set.id === setId)?.cards.map((card) => Number(card.id.slice(-3)));
+  assert.deepEqual(numbers('blackPlague'), Array.from({ length: 54 }, (_, i) => 1 + i));
+  assert.deepEqual(numbers('greenHorde'), Array.from({ length: 54 }, (_, i) => 167 + i));
+});
+
+test('the fantasy cards keep the corrections checked on the printed cards', () => {
+  // #017 and #029: Runners at Red, where the fan wiki has Walkers.
+  for (const id of ['blackPlague-017', 'blackPlague-029']) {
+    assert.deepEqual(levelsOf(id)[3], { zombie: 'fantasyRunner', count: 6 });
+  }
+  // #034 is the twin of #022, the fan wiki swaps its zombie types.
+  assert.deepEqual(levelsOf('blackPlague-034'), levelsOf('blackPlague-022'));
+  assert.deepEqual(levelsOf('blackPlague-034'), [
+    { zombie: 'fantasyFatty', count: 1 },
+    { zombie: 'fantasyWalker', count: 2 },
+    { zombie: 'fantasyFatty', count: 2 },
+    { zombie: 'fantasyWalker', count: 7 },
+  ]);
+  // Green Horde counts as printed, the Horde zombie apart (the fan wiki adds it), #171 at Yellow included.
+  assert.deepEqual(levelsOf('greenHorde-167'), [null, { zombie: 'orcRunner', count: 4 }, { zombie: 'orcWalker', count: 5 }, { zombie: 'orcFatty', count: 2 }]);
+  assert.deepEqual(levelsOf('greenHorde-171')[1], { zombie: 'orcFatty', count: 1 });
+});
+
+test('every Green Horde spawn card carries the Horde symbol, no Black Plague card does', () => {
+  for (const set of FANTASY_SETS) {
+    for (const card of set.cards.filter((each) => each.kind === 'levels')) {
+      assert.equal(card.kind === 'levels' && !!card.horde, set.id === 'greenHorde', card.id);
+    }
+  }
+});
+
+test('Double Spawn, Enter the Horde and SPAM change the Spawn step, the other cards do not', () => {
+  assert.equal(cardEffect('blackPlague-047'), 'double');
+  assert.equal(cardEffect('greenHorde-213'), 'endStep');
+  assert.equal(cardEffect('python-213'), 'drawAgain');
+  assert.equal(cardEffect('blackPlague-041'), 'spawn');
+  assert.equal(cardEffect('core2e-001'), 'spawn');
+});
+
+test('the fantasy universe plays Black Plague, Green Horde or both, never neither', () => {
+  const fantasy = UNIVERSES.fantasy;
+  assert.equal(selectCards(fantasy.sets, ['blackPlague', 'greenHorde']).length, 108);
+  assert.deepEqual(withCoreBox(fantasy, [], 'blackPlague'), ['greenHorde']);
+  assert.deepEqual(withCoreBox(fantasy, [], 'greenHorde'), ['blackPlague']);
+  assert.deepEqual(withCoreBox(fantasy, ['greenHorde']), ['greenHorde']);
+  assert.deepEqual(withCoreBox(UNIVERSES.modern, []), ['core2e']);
+});
+
+test('Modern core boxes alternate, preserve expansions and restore old preferences', () => {
+  const modern = UNIVERSES.modern;
+  assert.deepEqual(modern.optionalSets.filter((set) => set.core).map((set) => set.id), ['core2e', 'fortHendrix']);
+  assert.deepEqual(withCoreBox(modern, ['toxic']), ['toxic', 'core2e']);
+  assert.deepEqual(withCoreBox(modern, ['fortHendrix', 'toxic']), ['toxic', 'fortHendrix']);
+  assert.deepEqual(withCoreBox(modern, ['core2e', 'fortHendrix'], 'fortHendrix'), ['fortHendrix']);
+  assert.deepEqual(withCoreBox(modern, ['core2e', 'fortHendrix'], 'core2e'), ['core2e']);
+  assert.deepEqual(withCoreBox(modern, ['toxic'], 'core2e'), ['toxic', 'fortHendrix']);
+  assert.deepEqual(withCoreBox(modern, ['toxic'], 'fortHendrix'), ['toxic', 'core2e']);
+  assert.deepEqual(activeSetIds(modern.sets, withCoreBox(modern, ['fortHendrix'])), ['fortHendrix', 'abomination']);
+  assert.deepEqual(activeSetIds(modern.sets, withCoreBox(modern, ['core2e'])), ['core2e', 'abomination']);
+});
+
+test('select all and deselect all keep the core box in use', () => {
+  const modern = UNIVERSES.modern;
+  const expansionIds = modern.optionalSets.filter((set) => !set.core).map((set) => set.id);
+  assert.deepEqual(noExpansions(modern, ['fortHendrix', 'toxic']), ['fortHendrix']);
+  assert.deepEqual(noExpansions(modern, ['toxic']), ['core2e']);
+  assert.deepEqual(allExpansions(modern, ['fortHendrix']), [...expansionIds, 'fortHendrix']);
+  const fantasy = UNIVERSES.fantasy;
+  assert.deepEqual(allExpansions(fantasy, []), ['blackPlague', 'greenHorde']);
+  assert.deepEqual(noExpansions(fantasy, ['greenHorde']), ['greenHorde']);
+  assert.deepEqual(noExpansions(fantasy, ['blackPlague', 'greenHorde']), ['blackPlague']);
+  assert.deepEqual(switchableSets(modern).length, modern.optionalSets.length - 2);
+  assert.deepEqual(switchableSets(fantasy).map((set) => set.id), ['blackPlague', 'greenHorde']);
+});
+
+test('a save holds only cards of its own universe', () => {
+  const fantasy = newGame(UNIVERSES.fantasy.sets, ['blackPlague'], ALL_PARTS, () => 0, 1, 'fantasy');
+  assert.ok(isValidSave(fantasy, cardIdsOf));
+  assert.equal(isValidSave({ ...fantasy, universe: 'modern' }, cardIdsOf), false);
+});
+
+test('card ids are unique across every universe', () => {
+  const ids = Object.values(UNIVERSES).flatMap((universe) => universe.sets.flatMap((set) => set.cards.map((card) => card.id)));
+  assert.equal(new Set(ids).size, ids.length);
+  assert.equal(CARDS_BY_ID.size, ids.length);
 });

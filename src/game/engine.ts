@@ -3,7 +3,7 @@ import type { CardPart, CardSet, DangerLevel, DeckParts, GameState, Piles, Unive
 export type Rng = () => number;
 
 export const DANGER_LEVELS: readonly DangerLevel[] = ['blue', 'yellow', 'orange', 'red'];
-export const UNIVERSE_IDS: readonly UniverseId[] = ['modern'];
+export const UNIVERSE_IDS: readonly UniverseId[] = ['modern', 'fantasy'];
 export const MAX_UNDO = 20;
 export const MAX_ZONES = 8;
 
@@ -75,20 +75,55 @@ export function newGame(
   };
 }
 
-/** Cards such as SPAM say "draw the next card": they come out with the card of their zone instead of filling it. */
-export type DrawsAgain = (cardId: string) => boolean;
+/**
+ * What a card does to the Spawn step, besides what it spawns:
+ * - `spawn`: it serves its Spawn Zone;
+ * - `drawAgain` (SPAM, "draw the next card"): it comes out with the next card, which serves the same zone;
+ * - `double` (Double Spawn): nothing spawns there, and the next zone gets two cards instead of one;
+ * - `endStep` (Enter the Horde): the Horde spawns there and the Spawn step ends.
+ */
+export type SpawnEffect = 'spawn' | 'drawAgain' | 'double' | 'endStep';
+export type CardEffect = (cardId: string) => SpawnEffect;
+const plainCards: CardEffect = () => 'spawn';
+
+/** Where a Spawn step stands after some cards: the zone being served and how many cards it still needs. */
+type StepPlan = { zone: number; need: number; doubles: number; extra: boolean; done: boolean };
+const START: StepPlan = { zone: 1, need: 1, doubles: 0, extra: false, done: false };
 
 /**
- * Deals one card to each Spawn Zone. The cards of the previous step go to the discard first; an empty deck
- * reshuffles the discard, never the cards being dealt.
+ * Follows the Black Plague rules for Double Spawn: each one drawn for a zone gives the next zone two cards (two
+ * Double Spawns, four cards). One drawn for the last zone gives the first zone an extra double spawn, even if it
+ * already spawned, and so on until a zone draws no Double Spawn.
  */
-export function drawCards(state: GameState, drawsAgain: DrawsAgain = () => false, rng: Rng = Math.random): GameState {
+function nextPlan(plan: StepPlan, effect: SpawnEffect, zones: number): StepPlan {
+  if (plan.done) return plan;
+  if (effect === 'endStep') return { ...plan, done: true };
+  if (effect === 'drawAgain') return plan;
+  const doubles = plan.doubles + (effect === 'double' ? 1 : 0);
+  const need = plan.need - 1;
+  if (need > 0) return { ...plan, need, doubles };
+  if (doubles > 0) {
+    const last = plan.zone >= zones;
+    return { zone: last ? 1 : plan.zone + 1, need: doubles * 2, doubles: 0, extra: plan.extra || last, done: false };
+  }
+  if (plan.extra || plan.zone >= zones) return { ...plan, need: 0, doubles: 0, done: true };
+  return { zone: plan.zone + 1, need: 1, doubles: 0, extra: false, done: false };
+}
+
+const planOf = (drawn: readonly string[], effect: CardEffect, zones: number) =>
+  drawn.reduce((plan, card) => nextPlan(plan, effect(card), zones), START);
+
+/**
+ * Deals one card to each Spawn Zone, more when cards ask for it. The cards of the previous step go to the discard
+ * first; an empty deck reshuffles the discard, never the cards being dealt.
+ */
+export function drawCards(state: GameState, effect: CardEffect = plainCards, rng: Rng = Math.random): GameState {
   let draw = state.piles.draw;
   let discard = [...state.piles.discard, ...state.piles.drawn];
   const drawn: string[] = [];
   let reshuffled = false;
-  let filled = 0;
-  while (filled < state.zones) {
+  let plan = START;
+  while (!plan.done) {
     if (draw.length === 0) {
       if (discard.length === 0) break;
       draw = shuffle(discard, rng);
@@ -98,25 +133,38 @@ export function drawCards(state: GameState, drawsAgain: DrawsAgain = () => false
     const [card, ...rest] = draw;
     draw = rest;
     drawn.push(card);
-    if (!drawsAgain(card)) filled++;
+    plan = nextPlan(plan, effect(card), state.zones);
   }
   if (drawn.length === 0) return state;
   return { ...state, history: remember(state), piles: { draw, discard, drawn, reshuffled } };
 }
 
-/** Whether the next card dealt one zone at a time opens a new Spawn step: none on display, or every zone served. */
-export function startsNewStep(state: GameState, drawsAgain: DrawsAgain = () => false): boolean {
+/** Whether the next card dealt one zone at a time opens a new Spawn step: none on display, or the step is over. */
+export function startsNewStep(state: GameState, effect: CardEffect = plainCards): boolean {
   const { drawn } = state.piles;
-  return drawn.length === 0 || drawn.filter((card) => !drawsAgain(card)).length >= state.zones;
+  return drawn.length === 0 || planOf(drawn, effect, state.zones).done;
 }
 
 /**
- * Deals the card of the next Spawn Zone only, for players who take the zones one at a time. Once every zone has its
- * card, the next draw starts a new Spawn step and discards the previous one.
+ * The zone of each card still to come in the current step, in order: a zone owed two cards by a Double Spawn is
+ * listed twice. None once the step is over.
  */
-export function drawNextCard(state: GameState, drawsAgain: DrawsAgain = () => false, rng: Rng = Math.random): GameState {
+export function pendingZones(state: GameState, effect: CardEffect = plainCards): number[] {
+  const plan = planOf(state.piles.drawn, effect, state.zones);
+  if (plan.done) return [];
+  const current = Array.from({ length: plan.need }, () => plan.zone);
+  // After a Double Spawn on the last zone, only the zone being served is known to come.
+  if (plan.extra) return current;
+  return [...current, ...Array.from({ length: state.zones - plan.zone }, (_, i) => plan.zone + 1 + i)];
+}
+
+/**
+ * Deals the card of the next Spawn Zone only, for players who take the zones one at a time. Once the step is over,
+ * the next draw starts a new one and discards the previous cards.
+ */
+export function drawNextCard(state: GameState, effect: CardEffect = plainCards, rng: Rng = Math.random): GameState {
   const { piles } = state;
-  const newStep = startsNewStep(state, drawsAgain);
+  const newStep = startsNewStep(state, effect);
   let draw = piles.draw;
   let discard = newStep ? [...piles.discard, ...piles.drawn] : piles.discard;
   let reshuffled = !newStep && piles.reshuffled;
@@ -131,13 +179,16 @@ export function drawNextCard(state: GameState, drawsAgain: DrawsAgain = () => fa
   return { ...state, history: remember(state), piles: { draw: rest, discard, drawn, reshuffled } };
 }
 
-/** The Spawn Zone (from 1) of each card dealt: a card that draws again shares its zone with the next one. */
-export function zonesOf(drawn: readonly string[], drawsAgain: DrawsAgain = () => false): number[] {
-  let zone = 1;
+/**
+ * The Spawn Zone (from 1) of each card dealt: a card that draws again shares its zone with the next one, a Double
+ * Spawn sends two cards to the next zone, back to the first one after the last.
+ */
+export function zonesOf(drawn: readonly string[], effect: CardEffect = plainCards, zones = MAX_ZONES): number[] {
+  let plan = START;
   return drawn.map((card) => {
-    const current = zone;
-    if (!drawsAgain(card)) zone++;
-    return current;
+    const zone = plan.zone;
+    plan = nextPlan(plan, effect(card), zones);
+    return zone;
   });
 }
 
@@ -197,13 +248,17 @@ function upgradeFromV2(value: unknown): unknown {
   return save?.version === 2 ? { ...save, version: 3, universe: 'modern' } : value;
 }
 
-/** Rejects saves that are malformed or refer to cards that no longer exist. */
-export function isValidSave(value: unknown, knownCardIds: ReadonlySet<string>): value is GameState {
+/** Rejects saves that are malformed or refer to cards that no longer exist in their universe. */
+export function isValidSave(
+  value: unknown,
+  cardIdsOf: (universe: UniverseId) => ReadonlySet<string>,
+): value is GameState {
   const state = value as GameState | null;
   if (state?.version !== 3 || !DANGER_LEVELS.includes(state.danger) || !UNIVERSE_IDS.includes(state.universe)) return false;
   if (!Number.isInteger(state.zones) || state.zones !== clampZones(state.zones)) return false;
   if (!Array.isArray(state.setIds) || !state.setIds.every((id) => typeof id === 'string')) return false;
   if (!Array.isArray(state.history)) return false;
+  const knownCardIds = cardIdsOf(state.universe);
   return [state.piles, ...state.history].every((piles) => isValidPiles(piles, knownCardIds));
 }
 

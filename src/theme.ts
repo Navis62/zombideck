@@ -17,6 +17,12 @@ export const CARD_COLORS = {
   spawn: { background: '#1b1a15', text: '#ffffff' },
   rush: { background: '#f4b71f', text: '#1b1a15' },
   extra: { background: '#e5261f', text: '#1b1a15' },
+  /** Fantasy era: worn parchment, dark brown ink, a red frame, and the green Horde badge. */
+  parchment: '#efe3c6',
+  parchmentRow: '#f8f0dc',
+  parchmentInk: '#3b2a1a',
+  fantasyFrame: '#8f1d1d',
+  horde: '#2f7d3a',
 };
 
 export const DANGER_COLORS: Record<DangerLevel, { background: string; text: string }> = {

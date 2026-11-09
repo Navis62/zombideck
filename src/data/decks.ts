@@ -64,6 +64,7 @@ export const CARD_SETS: readonly CardSet[] = [
   {
     id: CORE,
     optional: false,
+    core: true,
     isHard: hardBetween(19, 36),
     cards: [
       spawn(CORE, '001', 'walker', [1, 2, 4, 6]),
@@ -112,6 +113,7 @@ export const CARD_SETS: readonly CardSet[] = [
     // Same counts as the core deck, new art; it replaces the core deck when switched on.
     id: FORT_HENDRIX,
     optional: true,
+    core: true,
     replaces: CORE,
     isHard: hardBetween(59, 76),
     cards: [
@@ -381,10 +383,3 @@ export const CARD_SETS: readonly CardSet[] = [
 
 /** Expansions and promos the players switch on for the next game. */
 export const OPTIONAL_SETS: readonly CardSet[] = CARD_SETS.filter((set) => set.optional);
-
-export const CARDS_BY_ID: ReadonlyMap<string, ZombieCard> = new Map(
-  CARD_SETS.flatMap((set) => set.cards.map((card) => [card.id, card] as const)),
-);
-
-/** SPAM: "Draw the next card." */
-export const drawsAgain = (cardId: string) => CARDS_BY_ID.get(cardId)?.kind === 'spam';

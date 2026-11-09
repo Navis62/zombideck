@@ -2,10 +2,19 @@ import { createContext, useContext, useMemo } from 'react';
 import { Image, type ImageSourcePropType, type ImageStyle, Platform, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path, Polygon } from 'react-native-svg';
 
-import { artSubject, ZombieFigure } from '@/components/zombie-art';
+import { type ArtSubject, artSubject, ZombieFigure } from '@/components/zombie-art';
 import { DANGER_LEVELS } from '@/game/engine';
 import { useApp } from '@/game/store';
-import type { DangerLevel, ExtraZombie, ZombieCard, ZombieType } from '@/game/types';
+import {
+  type DangerLevel,
+  type ExtraZombie,
+  type FantasyCard,
+  type FantasyLevel,
+  isFantasyCard,
+  type ModernCard,
+  type ZombieCard,
+  type ZombieType,
+} from '@/game/types';
 import type { Translate } from '@/i18n/translations';
 import { CARD_COLORS, DANGER_COLORS } from '@/theme';
 
@@ -33,6 +42,7 @@ type CardText = { title: string; footer?: string; spoken: string };
 
 /** Title, footer and what a screen reader says about the body of a card, at the given Danger Level. */
 function cardText(card: ZombieCard, danger: DangerLevel, t: Translate): CardText {
+  if (isFantasyCard(card)) return fantasyText(card, danger, t);
   const level = t(`danger.${danger}`);
   switch (card.kind) {
     case 'trejo':
@@ -74,6 +84,8 @@ function Card({ card, danger }: { card: ZombieCard; danger: DangerLevel }) {
   const { t, cardDisplay } = useApp();
   const { styles } = useContext(CardStyle);
   const text = cardText(card, danger, t);
+
+  if (isFantasyCard(card)) return <FantasyFace card={card} danger={danger} text={text} />;
 
   if (card.kind === 'trejo' || card.kind === 'trejoRush') {
     const isRush = card.kind === 'trejoRush';
@@ -150,7 +162,7 @@ function Card({ card, danger }: { card: ZombieCard; danger: DangerLevel }) {
   );
 }
 
-function Art({ card, short }: { card: ZombieCard; short?: boolean }) {
+function Art({ card, short }: { card: ModernCard; short?: boolean }) {
   const { styles } = useContext(CardStyle);
   return (
     <View style={short ? styles.artShort : styles.art}>
@@ -205,7 +217,7 @@ const ZOMBIE_SYMBOLS: Partial<Record<ZombieType, SymbolKind>> = {
   lostZombivor: 'lostZombivor',
 };
 
-function specialSymbol(card: ZombieCard): SymbolKind | null {
+function specialSymbol(card: ModernCard): SymbolKind | null {
   if (card.kind !== 'spawn' && card.kind !== 'rush' && card.kind !== 'extra') return null;
   return ZOMBIE_SYMBOLS[card.zombie] ?? (card.kind !== 'extra' && card.shooter ? 'shooter' : null);
 }
@@ -261,12 +273,18 @@ function Frame(props: {
   card: ZombieCard;
   text: CardText;
   headerColor: { background: string; text: string };
+  /** The card stock: orange for the modern cards, parchment for the fantasy ones. */
+  faceColor?: string;
   children: React.ReactNode;
 }) {
   const { styles } = useContext(CardStyle);
   const { title, spoken, footer } = props.text;
   return (
-    <View style={styles.face} accessible accessibilityLabel={sentences([title, spoken, footer])}>
+    <View
+      style={[styles.face, props.faceColor !== undefined && { backgroundColor: props.faceColor }]}
+      accessible
+      accessibilityLabel={sentences([title, spoken, footer])}
+    >
       <View style={[styles.header, { backgroundColor: props.headerColor.background }]}>
         <Text style={[styles.title, { color: props.headerColor.text }]} numberOfLines={3}>
           {title}
@@ -322,9 +340,222 @@ function Level(props: {
   );
 }
 
+const FANTASY_HEADER = { background: CARD_COLORS.parchment, text: CARD_COLORS.parchmentInk };
+
+/** The Horde symbol applies to every zombie a level spawns, but not to an Abomination. */
+const feedsHorde = (card: FantasyCard, level: FantasyLevel) =>
+  card.kind === 'levels' && !!card.horde && !!level && !level.zombie.endsWith('Abomination');
+
+function fantasyRule(card: FantasyCard, t: Translate): string[] {
+  switch (card.kind) {
+    case 'necromancer':
+      return card.zombie === 'orcNecromancer'
+        ? [t('card.orcNecromancerRule'), t('card.necromancerHorde')]
+        : [t('card.necromancerRule')];
+    case 'doubleSpawn':
+      return [t('card.doubleSpawnRule')];
+    case 'enterHorde':
+      return [t('card.enterHordeRule')];
+    default:
+      return [];
+  }
+}
+
+/** What one Danger Level of a fantasy spawn or Extra Activation card says. */
+function fantasyLine(card: FantasyCard, at: DangerLevel, t: Translate): { label?: string; value: string; spoken: string } {
+  if (card.kind === 'activation') {
+    const text = at === 'blue' ? t('card.extraNobody') : t(`zombie.${card.zombie}.all`);
+    return { value: text, spoken: text };
+  }
+  if (card.kind !== 'levels') return { value: '', spoken: '' };
+  const level = card.levels[DANGER_LEVELS.indexOf(at)];
+  if (!level) return { value: t('card.nothingInSight'), spoken: t('card.nothingInSight') };
+  const horde = feedsHorde(card, level) ? `, ${t('card.hordeBonus')}` : '';
+  return {
+    label: t(`zombie.${level.zombie}.one`),
+    value: `×${level.count}`,
+    spoken: `${level.count} ${t(`zombie.${level.zombie}.${level.count === 1 ? 'one' : 'other'}`)}${horde}`,
+  };
+}
+
+function fantasyText(card: FantasyCard, danger: DangerLevel, t: Translate): CardText {
+  switch (card.kind) {
+    case 'levels':
+      return {
+        title: t(card.horde ? 'card.assembleHorde' : 'card.fantasyInvasion'),
+        spoken: `${t(`danger.${danger}`)}: ${fantasyLine(card, danger, t).spoken}`,
+      };
+    case 'activation':
+      return { title: t('card.extra'), spoken: `${t(`danger.${danger}`)}: ${fantasyLine(card, danger, t).spoken}` };
+    case 'necromancer':
+      return {
+        title: t(card.zombie === 'orcNecromancer' ? 'card.orcNecromancer' : 'card.necromancer'),
+        spoken: fantasyRule(card, t).join(' '),
+      };
+    case 'doubleSpawn':
+      return { title: t('card.doubleSpawn'), spoken: fantasyRule(card, t).join(' ') };
+    case 'enterHorde':
+      return { title: t('card.enterHorde'), spoken: fantasyRule(card, t).join(' ') };
+  }
+}
+
+/** Fantasy era card: parchment stock, the printed title, then the Danger Levels red first, or the rule of the card. */
+function FantasyFace({ card, danger, text }: { card: FantasyCard; danger: DangerLevel; text: CardText }) {
+  const { t, cardDisplay } = useApp();
+  const { styles } = useContext(CardStyle);
+  const current = cardDisplay === 'current';
+  const shown = current ? [danger] : PRINTED_LEVELS;
+  return (
+    <Frame card={card} text={text} headerColor={FANTASY_HEADER} faceColor={CARD_COLORS.parchment}>
+      {card.kind === 'levels' || card.kind === 'activation' ? (
+        <View style={styles.fantasyLevels}>
+          {shown.map((at) => {
+            const line = fantasyLine(card, at, t);
+            const level = card.kind === 'levels' ? card.levels[DANGER_LEVELS.indexOf(at)] : null;
+            return (
+              <FantasyRow
+                key={at}
+                level={at}
+                active={at === danger}
+                large={current}
+                subject={card.kind === 'activation' ? card.zombie : level?.zombie}
+                label={line.label}
+                value={line.value}
+                horde={feedsHorde(card, level)}
+              />
+            );
+          })}
+        </View>
+      ) : (
+        <View style={styles.fantasyRuleBody}>
+          <View style={styles.fantasyRuleArt}>
+            <ZombieFigure
+              subject={card.kind === 'necromancer' ? card.zombie : card.kind === 'enterHorde' ? 'orcWalker' : 'fantasyWalker'}
+              anchor="top"
+            />
+          </View>
+          <View style={styles.fantasyRuleCaption}>
+          {fantasyRule(card, t).map((rule, index) => (
+            <Text key={rule} style={index === 0 ? styles.fantasyRule : styles.fantasyHordeRule}>
+              {rule}
+            </Text>
+          ))}
+          </View>
+        </View>
+      )}
+    </Frame>
+  );
+}
+
+function FantasyRow(props: {
+  subject?: ArtSubject;
+  level: DangerLevel;
+  active: boolean;
+  /** Alone on the card, when only the current Danger Level is shown. */
+  large: boolean;
+  /** The zombie type, above its count; none for "Nothing in sight!" and the Extra Activations. */
+  label?: string;
+  value: string;
+  horde: boolean;
+}) {
+  const { styles, scale } = useContext(CardStyle);
+  const counted = props.label !== undefined;
+  return (
+    <View style={[styles.fantasyRow, props.active && styles.fantasyRowActive, props.large && styles.fantasyRowLarge]}>
+      {/* Flames of the Danger Level, as the printed cards have on the left of each line. */}
+      <Svg width={(props.large ? 30 : 18) * scale} height="100%" viewBox="0 0 18 34" preserveAspectRatio="none">
+        <Polygon points="0,0 12,0 7,6 13,12 6,18 12,24 5,30 10,34 0,34" fill={DANGER_COLORS[props.level].background} />
+      </Svg>
+      {props.subject && (
+        <View style={{ width: (props.large ? 60 : 38) * scale, alignSelf: 'stretch', overflow: 'hidden' }}>
+          <ZombieFigure subject={props.subject} anchor="full" />
+        </View>
+      )}
+      {props.horde && (
+        <View style={styles.hordeBadge}>
+          <Text style={styles.hordeText}>+1</Text>
+        </View>
+      )}
+      <View style={styles.fantasyCell}>
+        {counted && (
+          <Text style={[styles.fantasyLabel, props.large && styles.fantasyLabelLarge]} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.75}>
+            {props.label}
+          </Text>
+        )}
+        <Text
+          style={[
+            counted ? styles.fantasyCount : styles.fantasyNote,
+            counted && props.active && styles.fantasyCountActive,
+            counted && props.large && styles.fantasyCountLarge,
+            !counted && props.large && styles.fantasyNoteLarge,
+          ]}
+          numberOfLines={Platform.OS === 'web' ? undefined : counted ? 1 : 3}
+          adjustsFontSizeToFit
+          minimumFontScale={0.4}
+        >
+          {props.value}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 // Sizes for a card DESIGN_WIDTH wide, multiplied by `s`.
 function makeStyles(s: number) {
   return StyleSheet.create({
+    fantasyLevels: { flex: 1, justifyContent: 'center', gap: 4 * s, padding: 6 * s, backgroundColor: CARD_COLORS.fantasyFrame },
+    fantasyRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      minHeight: 34 * s,
+      backgroundColor: CARD_COLORS.parchmentRow,
+      borderRadius: 3 * s,
+      overflow: 'hidden',
+    },
+    fantasyRowActive: { minHeight: 48 * s, borderWidth: 3 * s, borderColor: CARD_COLORS.parchmentInk },
+    fantasyRowLarge: { minHeight: 120 * s },
+    fantasyCell: { flex: 1, minWidth: 0, alignItems: 'flex-end', justifyContent: 'center', paddingHorizontal: 6 * s, paddingVertical: 2 * s },
+    fantasyLabel: { alignSelf: 'stretch', textAlign: 'right', color: CARD_COLORS.parchmentInk, fontSize: 9 * s, fontWeight: '700', fontStyle: 'italic' },
+    fantasyLabelLarge: { fontSize: 14 * s },
+    fantasyCount: { color: CARD_COLORS.parchmentInk, fontSize: 16 * s, fontWeight: '900' },
+    fantasyCountActive: { fontSize: 24 * s },
+    fantasyCountLarge: { fontSize: 52 * s },
+    fantasyNote: { alignSelf: 'center', color: CARD_COLORS.parchmentInk, fontSize: 11 * s, fontWeight: '700', fontStyle: 'italic', textAlign: 'center' },
+    fantasyNoteLarge: { fontSize: 18 * s },
+    hordeBadge: {
+      marginLeft: 4 * s,
+      minWidth: 22 * s,
+      height: 22 * s,
+      borderRadius: 11 * s,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: CARD_COLORS.horde,
+      borderWidth: 1.5 * s,
+      borderColor: '#ffffff',
+    },
+    hordeText: { color: '#ffffff', fontSize: 10 * s, fontWeight: '900' },
+    fantasyRuleBody: { flex: 1, padding: 6 * s, backgroundColor: CARD_COLORS.fantasyFrame },
+    fantasyRuleArt: { flex: 1, minHeight: 0, overflow: 'hidden', backgroundColor: CARD_COLORS.parchment },
+    fantasyRuleCaption: { gap: 4 * s, backgroundColor: CARD_COLORS.parchmentRow },
+    fantasyRule: {
+      color: CARD_COLORS.parchmentInk,
+      backgroundColor: CARD_COLORS.parchmentRow,
+      borderRadius: 4 * s,
+      padding: 8 * s,
+      fontSize: 12 * s,
+      lineHeight: 15 * s,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    fantasyHordeRule: {
+      color: '#ffffff',
+      backgroundColor: CARD_COLORS.horde,
+      borderRadius: 4 * s,
+      padding: 6 * s,
+      fontSize: 11 * s,
+      fontWeight: '800',
+      textAlign: 'center',
+    },
     face: { flex: 1, borderRadius: 12 * s, overflow: 'hidden', backgroundColor: CARD_COLORS.body },
     header: { flexDirection: 'row', gap: 6 * s, paddingHorizontal: 10 * s, paddingVertical: 6 * s, minHeight: 44 * s },
     title: { flex: 1, fontSize: 15 * s, lineHeight: 17 * s, fontWeight: '900', textTransform: 'uppercase' },

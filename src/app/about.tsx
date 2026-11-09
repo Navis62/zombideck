@@ -17,12 +17,12 @@ const LINKS = {
 const open = (url: string) => Linking.openURL(url).catch((error) => console.warn('Could not open', url, error));
 
 export default function AboutScreen() {
-  const { t } = useApp();
+  const { universe, t } = useApp();
   const version = Constants.expoConfig?.version;
 
   return (
     <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
-      <AppBackground />
+      <AppBackground universe={universe} />
       <View style={styles.columns}>
         <ScrollView style={styles.column} contentContainerStyle={styles.content}>
           <Text style={styles.title}>

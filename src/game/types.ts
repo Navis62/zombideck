@@ -34,7 +34,7 @@ export type ExtraZombie = 'walker' | 'runner' | 'fatty' | 'skinnerWalker' | 'ski
 export type DangerLevel = 'blue' | 'yellow' | 'orange' | 'red';
 
 /** A Zombicide era with its own boxes, zombies and cards, chosen when the app opens. */
-export type UniverseId = 'modern';
+export type UniverseId = 'modern' | 'fantasy';
 
 /** Zombie counts, in Danger Level order: blue, yellow, orange, red. */
 export type SpawnCounts = readonly [number, number, number, number];
@@ -49,7 +49,8 @@ type SpawnCard<Kind, Zombie> = {
   shooter?: true;
 };
 
-export type ZombieCard =
+/** Cards of the modern era: one zombie type per card, a count per Danger Level. */
+export type ModernCard =
   | SpawnCard<'spawn', ZombieType>
   | SpawnCard<'rush', RushZombie>
   | { id: string; setId: string; kind: 'extra'; zombie: ExtraZombie }
@@ -57,10 +58,47 @@ export type ZombieCard =
   | { id: string; setId: string; kind: 'trejoRush' }
   | { id: string; setId: string; kind: 'spam' };
 
+/** Zombies of the fantasy era (Black Plague, Green Horde). */
+export type FantasyZombie =
+  | 'fantasyWalker'
+  | 'fantasyRunner'
+  | 'fantasyFatty'
+  | 'fantasyAbomination'
+  | 'orcWalker'
+  | 'orcRunner'
+  | 'orcFatty'
+  | 'orcAbomination';
+/** Zombies an Extra Activation card can name. */
+export type FantasyActivated = 'fantasyWalker' | 'fantasyRunner' | 'fantasyFatty' | 'orcWalker' | 'orcRunner' | 'orcFatty';
+export type FantasyNecromancer = 'necromancer' | 'orcNecromancer';
+
+/** What one Danger Level of a fantasy card spawns; `null` is "Nothing in sight!". */
+export type FantasyLevel = { zombie: FantasyZombie; count: number } | null;
+
+type FantasyBase = { id: string; setId: string };
+/**
+ * Cards of the fantasy era. Unlike the modern ones, each Danger Level of a spawn card can bring a different zombie
+ * type. `horde` is the Horde symbol of Green Horde: each level also sets one more zombie of its type aside for the
+ * Horde (not for an Abomination).
+ */
+export type FantasyCard =
+  | (FantasyBase & { kind: 'levels'; levels: readonly [FantasyLevel, FantasyLevel, FantasyLevel, FantasyLevel]; horde?: true })
+  | (FantasyBase & { kind: 'activation'; zombie: FantasyActivated })
+  | (FantasyBase & { kind: 'necromancer'; zombie: FantasyNecromancer })
+  | (FantasyBase & { kind: 'doubleSpawn' })
+  | (FantasyBase & { kind: 'enterHorde' });
+
+export type ZombieCard = ModernCard | FantasyCard;
+
+const FANTASY_KINDS: ReadonlySet<ZombieCard['kind']> = new Set(['levels', 'activation', 'necromancer', 'doubleSpawn', 'enterHorde']);
+export const isFantasyCard = (card: ZombieCard): card is FantasyCard => FANTASY_KINDS.has(card.kind);
+
 export type CardSet = {
   id: string;
   /** Expansions and promos are switched on in the options; the rest is always in the deck. */
   optional: boolean;
+  /** A core box that can be played alone: a universe made of several needs at least one switched on. */
+  core?: true;
   /** Set taken out of the deck while this one is switched on. */
   replaces?: string;
   /** Zombie expansion that dilutes the Abominations of the deck (see `scaled`). */

@@ -16,8 +16,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
 import { Hazard } from '@/components/hazard';
-import { type ArtSubject, ZombieFigure } from '@/components/zombie-art';
-import { UPCOMING_UNIVERSES, type UpcomingUniverse } from '@/data/universes';
+import { ZombieFigure } from '@/components/zombie-art';
+import { UNIVERSES, UPCOMING_UNIVERSES, type UpcomingUniverse } from '@/data/universes';
 import { UNIVERSE_IDS } from '@/game/engine';
 import { useApp } from '@/game/store';
 import type { UniverseId } from '@/game/types';
@@ -37,9 +37,8 @@ type Slide =
       id: UniverseId;
       name: TranslationKey;
       detail: TranslationKey;
+      /** Scenery of the era. */
       art: ImageSourcePropType;
-      /** Zombies of the era, standing in front of its scenery. */
-      heroes: readonly ArtSubject[];
     }
   | { kind: 'upcoming'; id: UpcomingUniverse; name: TranslationKey };
 
@@ -48,11 +47,14 @@ const PLAYABLE: Record<UniverseId, Omit<Extract<Slide, { kind: 'playable' }>, 'k
     name: 'universe.modern',
     detail: 'universe.modernGame',
     art: require('../../assets/backgrounds/ruined-city.jpg'),
-    heroes: ['runner', 'fatty', 'walker'],
+  },
+  fantasy: {
+    name: 'universe.fantasy', detail: 'universe.fantasyGame',
+    art: require('../../assets/backgrounds/ruined-castle.jpg'),
   },
 };
 
-const UPCOMING: Record<UpcomingUniverse, TranslationKey> = { fantasy: 'universe.fantasy' };
+const UPCOMING: Record<UpcomingUniverse, TranslationKey> = {};
 
 const SLIDES: readonly Slide[] = [
   ...UNIVERSE_IDS.map((id): Slide => ({ kind: 'playable', id, ...PLAYABLE[id] })),
@@ -80,8 +82,8 @@ export default function UniverseScreen() {
 
   return (
     <View style={styles.screen}>
-      <AppBackground />
-      <Hazard stripes={48} />
+      <AppBackground universe={universe} />
+      <Hazard universe={universe} stripes={48} />
       <SafeAreaView style={styles.content} edges={['left', 'right']}>
         <View style={styles.header}>
           <Text style={styles.title}>
@@ -116,7 +118,7 @@ export default function UniverseScreen() {
                 <Image source={slide.art} style={StyleSheet.absoluteFill} resizeMode="cover" />
                 <View style={styles.shade} />
                 <View style={styles.heroes}>
-                  {slide.heroes.map((subject) => (
+                  {UNIVERSES[slide.id].heroes.map((subject) => (
                     <View key={subject} style={styles.hero}>
                       <ZombieFigure subject={subject} />
                     </View>
@@ -162,7 +164,7 @@ export default function UniverseScreen() {
           </View>
         )}
       </SafeAreaView>
-      <Hazard stripes={48} />
+      <Hazard universe={universe} stripes={48} />
     </View>
   );
 }

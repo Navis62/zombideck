@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
 import { CardFace } from '@/components/card-face';
-import { CARDS_BY_ID } from '@/data/decks';
+import { CARDS_BY_ID } from '@/data/universes';
 import { useApp } from '@/game/store';
 import type { DangerLevel } from '@/game/types';
 import { COLORS } from '@/theme';

@@ -1,13 +1,23 @@
 import { useState } from 'react';
 import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
-import type { ZombieCard, ZombieType } from '@/game/types';
+import type { FantasyNecromancer, FantasyZombie, ModernCard, ZombieType } from '@/game/types';
 
-export type ArtSubject = ZombieType | 'trejo' | 'spam';
+export type ArtSubject = ZombieType | FantasyZombie | FantasyNecromancer | 'trejo' | 'spam';
 
 // One illustration per subject, upscaled to 1280 px tall and compressed to JPEG.
 // Tall portrait illustrations, shown in the panel beside the Danger Levels.
 const ART: Record<ArtSubject, ImageSourcePropType> = {
+  fantasyWalker: require('../../assets/zombies/fantasy-walker-cartoon.jpg'),
+  fantasyRunner: require('../../assets/zombies/fantasy-runner-cartoon.jpg'),
+  fantasyFatty: require('../../assets/zombies/fantasy-fatty-cartoon.jpg'),
+  fantasyAbomination: require('../../assets/zombies/fantasy-abomination-cartoon.jpg'),
+  orcWalker: require('../../assets/zombies/orc-walker-cartoon.jpg'),
+  orcRunner: require('../../assets/zombies/orc-runner-cartoon.jpg'),
+  orcFatty: require('../../assets/zombies/orc-fatty-cartoon.jpg'),
+  orcAbomination: require('../../assets/zombies/orc-abomination-cartoon.jpg'),
+  necromancer: require('../../assets/zombies/necromancer-cartoon.jpg'),
+  orcNecromancer: require('../../assets/zombies/orc-necromancer-cartoon.jpg'),
   walker: require('../../assets/zombies/walker-cartoon.jpg'),
   fatty: require('../../assets/zombies/fatty-cartoon.jpg'),
   runner: require('../../assets/zombies/runner-cartoon.jpg'),
@@ -32,16 +42,17 @@ const ART: Record<ArtSubject, ImageSourcePropType> = {
   spam: require('../../assets/zombies/spam-cartoon.jpg'),
 };
 
-export const artSubject = (card: ZombieCard): ArtSubject =>
+export const artSubject = (card: ModernCard): ArtSubject =>
   card.kind === 'trejo' || card.kind === 'trejoRush' ? 'trejo' : card.kind === 'spam' ? 'spam' : card.zombie;
 
 // Height over width of the Trejo and SPAM illustrations, the only ones shown top-anchored.
 const ART_RATIO = 2.25;
 
 /** Fills its panel; `top` keeps the head in view when the panel is wider than the illustration. */
-export function ZombieFigure({ subject, anchor = 'center' }: { subject: ArtSubject; anchor?: 'center' | 'top' }) {
+export function ZombieFigure({ subject, anchor = 'center' }: { subject: ArtSubject; anchor?: 'center' | 'top' | 'full' }) {
   const [width, setWidth] = useState(0);
   const source = ART[subject];
+  if (anchor === 'full') return <Image source={source} style={styles.fullFigure} resizeMode="contain" />;
   if (anchor === 'center') return <Image source={source} style={styles.figure} resizeMode="cover" />;
   // Scaled to the panel width and pinned to the top, cropping the legs instead of the head.
   const scaled = width * 1.08;
@@ -59,5 +70,6 @@ export function ZombieFigure({ subject, anchor = 'center' }: { subject: ArtSubje
 
 // Slightly larger than its panel so the overflow trims the printed cream border.
 const styles = StyleSheet.create({
+  fullFigure: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
   figure: { position: 'absolute', top: '-2%', left: '-4%', width: '108%', height: '104%' },
 });

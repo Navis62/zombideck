@@ -54,7 +54,7 @@ export default function OptionsScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
-      <AppBackground />
+      <AppBackground universe={universe} />
       {/* One scroll for the whole page: two columns side by side, the app on the left, the game on the right. */}
       <ScrollView contentContainerStyle={styles.columns}>
         <View style={styles.column}>

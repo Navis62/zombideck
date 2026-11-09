@@ -5,14 +5,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
 import { Hazard } from '@/components/hazard';
-import { type ArtSubject, ZombieFigure } from '@/components/zombie-art';
-import { UNIVERSES } from '@/data/universes';
+import { ZombieFigure } from '@/components/zombie-art';
+import { switchableSets, UNIVERSES } from '@/data/universes';
 import { activeSetIds, ALL_PARTS, newGame, selectCards } from '@/game/engine';
 import { askForReviewIfDue } from '@/game/review';
 import { useApp } from '@/game/store';
 import { CARD_COLORS, COLORS, PRESSED } from '@/theme';
 
-const HERO_ZOMBIES: ArtSubject[] = ['runner', 'fatty', 'walker'];
 const HORDE_GAP = 8;
 /** Width over height of the zombie illustrations. */
 const ART_RATIO = 0.5;
@@ -21,7 +20,7 @@ const REVIEW_DELAY_MS = 1000;
 
 export default function MenuScreen() {
   const { game, setGame, universe, expansions, deckParts, t } = useApp();
-  const { sets, optionalSets, deckParts: hasDeckParts } = UNIVERSES[universe];
+  const { sets, deckParts: hasDeckParts, tagline, heroes } = UNIVERSES[universe];
   // A game from another universe is not resumed here, but starting a new one still replaces it.
   const resumable = game?.universe === universe ? game : null;
   const parts = hasDeckParts ? deckParts : ALL_PARTS;
@@ -40,7 +39,9 @@ export default function MenuScreen() {
 
   const setIds = activeSetIds(sets, expansions);
   const deckSize = selectCards(sets, setIds, parts).length;
-  const enabledExpansions = optionalSets.filter((set) => setIds.includes(set.id)).length;
+  // A core box that replaces another is not an expansion: the counter leaves it out.
+  const expansionSets = switchableSets(UNIVERSES[universe]);
+  const enabledExpansions = expansionSets.filter((set) => setIds.includes(set.id)).length;
 
   const start = () => {
     if (game && !confirming) {
@@ -55,19 +56,19 @@ export default function MenuScreen() {
 
   return (
     <View style={styles.screen}>
-      <AppBackground vivid />
-      <Hazard stripes={48} />
+      <AppBackground universe={universe} vivid />
+      <Hazard universe={universe} stripes={48} />
       <SafeAreaView style={styles.content} edges={['left', 'right']}>
         <View style={styles.hero}>
           <Text style={styles.title}>
             ZOMBIE <Text style={styles.titleAccent}>DECK</Text>
           </Text>
-          <Text style={styles.tagline}>{t('menu.tagline')}</Text>
+          <Text style={styles.tagline}>{t(tagline)}</Text>
           <View
             style={styles.horde}
             onLayout={({ nativeEvent: { layout } }) => setHorde({ width: layout.width, height: layout.height })}
           >
-            {HERO_ZOMBIES.map((subject) => (
+            {heroes.map((subject) => (
               <View key={subject} style={[styles.zombie, { width: zombieWidth, aspectRatio: ART_RATIO }]}>
                 <ZombieFigure subject={subject} />
               </View>
@@ -115,7 +116,7 @@ export default function MenuScreen() {
             >
               <Text style={styles.secondaryText}>{t('expansions.title')}</Text>
               <Text style={styles.secondaryDetail}>
-                {t('menu.expansionsDetail', { n: enabledExpansions, total: optionalSets.length })}
+                {t('menu.expansionsDetail', { n: enabledExpansions, total: expansionSets.length })}
               </Text>
             </Pressable>
           )}
@@ -146,7 +147,7 @@ export default function MenuScreen() {
           </View>
         </ScrollView>
       </SafeAreaView>
-      <Hazard stripes={48} />
+      <Hazard universe={universe} stripes={48} />
     </View>
   );
 }

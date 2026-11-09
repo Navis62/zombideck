@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import { CARDS_BY_ID } from '@/data/decks';
+import { cardIdsOf, UNIVERSES, withCoreBox } from '@/data/universes';
 import { deviceLanguage } from '@/i18n/device-language';
 import { isLanguage, type Language, type Translate, translator } from '@/i18n/translations';
 import { ALL_PARTS, isValidSave, UNIVERSE_IDS, upgradeSave } from './engine';
@@ -32,8 +32,10 @@ const expansionsKey = (universe: UniverseId) =>
 
 const isUniverse = (value: string | null): value is UniverseId => UNIVERSE_IDS.includes(value as UniverseId);
 type ByUniverse<T> = Record<UniverseId, T>;
-const noExpansions = (): ByUniverse<string[]> =>
-  Object.fromEntries(UNIVERSE_IDS.map((universe) => [universe, []])) as unknown as ByUniverse<string[]>;
+const defaultExpansions = (): ByUniverse<string[]> =>
+  Object.fromEntries(
+    UNIVERSE_IDS.map((universe) => [universe, [...UNIVERSES[universe].defaultExpansions]]),
+  ) as unknown as ByUniverse<string[]>;
 
 /** Spawn cards show every Danger Level, or only the current one. */
 export type CardDisplay = 'all' | 'current';
@@ -78,14 +80,15 @@ function parseSave(raw: string | null): GameState | null {
   if (!raw) return null;
   try {
     const parsed = upgradeSave(JSON.parse(raw));
-    return isValidSave(parsed, new Set(CARDS_BY_ID.keys())) ? parsed : null;
+    return isValidSave(parsed, cardIdsOf) ? parsed : null;
   } catch {
     return null;
   }
 }
 
-function parseExpansions(raw: string | null): string[] {
-  if (!raw) return [];
+/** Nothing stored yet: the universe's default expansions. */
+function parseExpansions(raw: string | null, fallback: readonly string[]): string[] {
+  if (!raw) return [...fallback];
   try {
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed.filter((id) => typeof id === 'string') : [];
@@ -111,7 +114,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [game, setGame] = useState<GameState | null>(null);
   const [language, setLanguage] = useState<Language>(deviceLanguage);
   const [universe, setUniverse] = useState<UniverseId>('modern');
-  const [allExpansions, setAllExpansions] = useState<ByUniverse<string[]>>(noExpansions);
+  const [allExpansions, setAllExpansions] = useState<ByUniverse<string[]>>(defaultExpansions);
   const [cardDisplay, setCardDisplay] = useState<CardDisplay>('current');
   const [deckParts, setDeckParts] = useState<DeckParts>(ALL_PARTS);
   const [haptics, setHaptics] = useState(true);
@@ -130,7 +133,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (isUniverse(savedUniverse)) setUniverse(savedUniverse);
         setAllExpansions(
           Object.fromEntries(
-            UNIVERSE_IDS.map((id) => [id, parseExpansions(read(expansionsKey(id)))]),
+            UNIVERSE_IDS.map((id) => [id, withCoreBox(UNIVERSES[id], parseExpansions(read(expansionsKey(id)), UNIVERSES[id].defaultExpansions))]),
           ) as unknown as ByUniverse<string[]>,
         );
         const savedCardDisplay = read(CARD_DISPLAY_KEY);

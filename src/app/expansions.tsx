@@ -2,7 +2,7 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
-import { UNIVERSES } from '@/data/universes';
+import { allExpansions, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '@/data/universes';
 import { useApp } from '@/game/store';
 import type { TranslationKey } from '@/i18n/translations';
 import { COLORS, PRESSED } from '@/theme';
@@ -10,18 +10,19 @@ import { COLORS, PRESSED } from '@/theme';
 /** Expansions and promos switched on for the next game, two to a row so the whole list fits in landscape. */
 export default function ExpansionsScreen() {
   const { universe, expansions, setExpansions, t } = useApp();
-  const { optionalSets } = UNIVERSES[universe];
-  const allEnabled = optionalSets.every((set) => expansions.includes(set.id));
+  const current = UNIVERSES[universe];
+  const { optionalSets } = current;
+  const allEnabled = switchableSets(current).every((set) => expansions.includes(set.id));
 
   return (
     <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
-      <AppBackground />
+      <AppBackground universe={universe} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Text style={[styles.muted, styles.hint]}>{t('expansions.hint')}</Text>
           <Pressable
             style={({ pressed }) => [styles.toggleAll, pressed && PRESSED]}
-            onPress={() => setExpansions(allEnabled ? [] : optionalSets.map((set) => set.id))}
+            onPress={() => setExpansions(allEnabled ? noExpansions(current, expansions) : allExpansions(current, expansions))}
             accessibilityRole="button"
           >
             <Text style={styles.toggleAllText}>
@@ -44,7 +45,9 @@ export default function ExpansionsScreen() {
                       value={expansions.includes(set.id)}
                       // From the current list: two switches flipped before a render both count.
                       onValueChange={(on) =>
-                        setExpansions((current) => [...current.filter((id) => id !== set.id), ...(on ? [set.id] : [])])
+                        setExpansions((list) =>
+                              withCoreBox(current, [...list.filter((id) => id !== set.id), ...(on ? [set.id] : [])], set.id),
+                            )
                       }
                       accessibilityLabel={label}
                     />

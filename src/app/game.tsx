@@ -9,12 +9,13 @@ import { Button } from '@/components/button';
 import { CardBack } from '@/components/card-back';
 import { CardFace, cardLabel } from '@/components/card-face';
 import { DiscardSheet } from '@/components/discard-sheet';
-import { CARDS_BY_ID, drawsAgain } from '@/data/decks';
+import { CARDS_BY_ID, cardEffect } from '@/data/universes';
 import {
   DANGER_LEVELS,
   drawCards,
   drawNextCard,
   MAX_ZONES,
+  pendingZones,
   reshuffleAll,
   setDanger,
   setZones,
@@ -35,7 +36,7 @@ const TABLE_GAP = 16;
 /** Height of the "Zone 2" line above each card, once there is more than one Spawn Zone. */
 const ZONE_LABEL = 22;
 /** Height of the zone line above the card when the zones are dealt one at a time. */
-const SEQUENCE_HEADER = 30;
+const SEQUENCE_HEADER = 48;
 /** Below this width the cards stop shrinking on one row: they go on several rows, or the row scrolls. */
 const MIN_CARD_WIDTH = 150;
 /** Smallest cards on several rows (the zombie counts stay readable); below it, one row that scrolls. */
@@ -101,7 +102,7 @@ export default function GameScreen() {
 
   const { danger, zones } = game;
   const { drawn } = game.piles;
-  const cardZones = zonesOf(drawn, drawsAgain);
+  const cardZones = zonesOf(drawn, cardEffect, zones);
   const rotateY = flip.interpolate({ inputRange: [0, 1], outputRange: ['90deg', '0deg'] });
   const shakeSteps = [0, 0.2, 0.4, 0.6, 0.8, 1];
   const deckShake = {
@@ -114,12 +115,12 @@ export default function GameScreen() {
     update(change);
     setShuffles((count) => count + 1);
   };
-  const deal = (state: GameState) => (sequence ? drawNextCard(state, drawsAgain) : drawCards(state, drawsAgain));
+  const deal = (state: GameState) => (sequence ? drawNextCard(state, cardEffect) : drawCards(state, cardEffect));
   const draw = () => {
     // No card left to deal (the rest are on display for this step): no vibration, no draw counted.
     if (deal(game) === game) return;
     // The rating prompt counts Spawn steps, however the zones are dealt.
-    if (!sequence || startsNewStep(game, drawsAgain)) countDraw();
+    if (!sequence || startsNewStep(game, cardEffect)) countDraw();
     update(deal);
     if (haptics) drawFeedback();
   };
@@ -163,20 +164,21 @@ export default function GameScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right', 'bottom']}>
-      <AppBackground />
+      <AppBackground universe={game.universe} />
       <View style={styles.columns}>
         <View
           style={styles.table}
           onLayout={({ nativeEvent: { layout } }) => setTable({ width: layout.width, height: layout.height })}
         >
           <Animated.View style={[{ width: deckWidth, aspectRatio: CARD_RATIO }, deckShake]}>
-            <CardBack count={game.piles.draw.length} label={t('game.draw')} width={deckWidth} onPress={draw} />
+            <CardBack count={game.piles.draw.length} label={t('game.draw')} width={deckWidth} universe={game.universe} onPress={draw} />
           </Animated.View>
           {sequence ? (
             <OneAtATime
               drawn={drawn}
               cardZones={cardZones}
               zones={zones}
+              pending={pendingZones(game, cardEffect)}
               viewedIndex={viewed?.step === drawnKey ? viewed.index : drawn.length - 1}
               onView={(index) => setViewed({ step: drawnKey, index })}
               header={label}
@@ -334,7 +336,7 @@ function announcement(
   sequence: boolean,
   t: Translate,
 ): string {
-  const cardZones = zonesOf(drawn, drawsAgain);
+  const cardZones = zonesOf(drawn, cardEffect, zones);
   const withZones = zones > 1 || drawn.length > 1;
   const indexes = sequence ? [drawn.length - 1] : drawn.map((_, index) => index);
   return indexes
@@ -353,6 +355,8 @@ function OneAtATime(props: {
   drawn: readonly string[];
   cardZones: readonly number[];
   zones: number;
+  /** The zone of each card still to come in this step: twice for a zone owed two cards by a Double Spawn. */
+  pending: readonly number[];
   viewedIndex: number;
   onView: (index: number) => void;
   header: number;
@@ -364,10 +368,7 @@ function OneAtATime(props: {
   emptyText: string;
   t: Translate;
 }) {
-  const { drawn, cardZones, zones, viewedIndex, t } = props;
-  // Zones still waiting for their card in this step (after a SPAM, its zone too); none once every zone is served.
-  const served = drawn.filter((id) => !drawsAgain(id)).length;
-  const pending = Array.from({ length: Math.max(0, zones - served) }, (_, i) => served + i + 1);
+  const { drawn, cardZones, zones, pending, viewedIndex, t } = props;
   const viewedId = drawn[viewedIndex];
   const isLast = viewedIndex === drawn.length - 1;
   const slot = { width: props.width, aspectRatio: CARD_RATIO };
@@ -375,26 +376,43 @@ function OneAtATime(props: {
     <View style={{ width: props.column, alignItems: 'center' }}>
       {props.header > 0 && (
         <View style={[styles.sequenceHeader, { height: props.header, width: props.width }]}>
-          <Text style={[styles.zone, styles.sequenceTitle]} numberOfLines={1}>
-            {t('game.zoneOf', { n: viewedId ? cardZones[viewedIndex] : 1, total: zones })}
-          </Text>
-          {drawn.map((id, index) => (
-            <Pressable
-              key={`${id}-${index}`}
-              style={({ pressed }) => [styles.chip, index === viewedIndex && styles.chipViewed, pressed && PRESSED]}
-              onPress={() => props.onView(index)}
-              accessibilityRole="button"
-              accessibilityLabel={t('game.zone', { n: cardZones[index] })}
-              accessibilityState={{ selected: index === viewedIndex }}
-            >
-              <Text style={[styles.chipText, index === viewedIndex && styles.chipTextViewed]}>{cardZones[index]}</Text>
-            </Pressable>
-          ))}
-          {pending.map((zone) => (
-            <View key={`pending-${zone}`} style={[styles.chip, styles.chipPending]}>
-              <Text style={styles.chipText}>{zone}</Text>
-            </View>
-          ))}
+          <View style={styles.sequenceRow}>
+            <Text style={[styles.zone, styles.sequenceTitle]} numberOfLines={1}>
+              {t('game.zoneOf', { n: viewedId ? cardZones[viewedIndex] : 1, total: zones })}
+            </Text>
+            {drawn.map((id, index) => (
+              <Pressable
+                key={`${id}-${index}`}
+                style={({ pressed }) => [styles.chip, index === viewedIndex && styles.chipViewed, pressed && PRESSED]}
+                onPress={() => props.onView(index)}
+                accessibilityRole="button"
+                accessibilityLabel={t('game.zone', { n: cardZones[index] })}
+                accessibilityState={{ selected: index === viewedIndex }}
+              >
+                <Text style={[styles.chipText, index === viewedIndex && styles.chipTextViewed]}>{cardZones[index]}</Text>
+              </Pressable>
+            ))}
+            {pending.map((zone, index) => (
+              <View
+                key={`pending-${index}`}
+                style={[styles.chip, styles.chipPending]}
+                accessible
+                accessibilityLabel={t('game.zonePending', { n: zone })}
+              >
+                <Text style={styles.chipText}>{zone}</Text>
+              </View>
+            ))}
+          </View>
+          {/* Says what the faded chips mean: cards of this step still in the deck. */}
+          {drawn.length > 0 && (
+            <Text style={styles.sequenceHint} numberOfLines={1}>
+              {pending.length === 0
+                ? t('game.spawnDone')
+                : pending.length === 1
+                  ? t('game.toDrawOne')
+                  : t('game.toDrawOther', { n: pending.length })}
+            </Text>
+          )}
         </View>
       )}
       {viewedId ? (
@@ -441,7 +459,9 @@ const styles = StyleSheet.create({
   zones: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
   zonesHeading: { flex: 1 },
   zonesValue: { color: COLORS.text, fontSize: 18, fontWeight: '900', minWidth: 20, textAlign: 'center' },
-  sequenceHeader: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingBottom: 6 },
+  sequenceHeader: { justifyContent: 'flex-end', paddingBottom: 6 },
+  sequenceRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  sequenceHint: { color: COLORS.muted, fontSize: 12, fontWeight: '600', marginTop: 2 },
   sequenceTitle: { flex: 1, height: undefined, textAlign: 'left' },
   chip: {
     minWidth: 22,
