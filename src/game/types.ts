@@ -33,6 +33,9 @@ export type RushZombie =
 export type ExtraZombie = 'walker' | 'runner' | 'fatty' | 'skinnerWalker' | 'skinnerRunner' | 'skinnerFatty';
 export type DangerLevel = 'blue' | 'yellow' | 'orange' | 'red';
 
+/** A Zombicide era with its own boxes, zombies and cards, chosen when the app opens. */
+export type UniverseId = 'modern';
+
 /** Zombie counts, in Danger Level order: blue, yellow, orange, red. */
 export type SpawnCounts = readonly [number, number, number, number];
 
@@ -85,7 +88,9 @@ export type Piles = {
 };
 
 export type GameState = {
-  version: 2;
+  version: 3;
+  /** The game's era: its sets, its cards and the menu it is resumed from. */
+  universe: UniverseId;
   setIds: string[];
   piles: Piles;
   /** Piles before each recent draw or shuffle, oldest first, for undo: a whole Spawn step undoes at once. */

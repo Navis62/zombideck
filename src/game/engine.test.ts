@@ -147,6 +147,7 @@ test('save validation', () => {
   assert.equal(isValidSave({ ...state, zones: 0 }, known), false);
   assert.equal(isValidSave({ ...state, zones: MAX_ZONES + 1 }, known), false);
   assert.equal(isValidSave({ ...state, danger: 'purple' }, known), false);
+  assert.equal(isValidSave({ ...state, universe: 'steampunk' }, known), false);
 });
 
 test('save validation also checks the set ids and the undo history', () => {
@@ -250,7 +251,21 @@ test('a save from version 1 comes back with its card on display', () => {
   assert.deepEqual(upgraded.piles, { draw: ['a1'], discard: ['a2'], drawn: ['a3'], reshuffled: false });
   assert.deepEqual(upgraded.history[0].drawn, []);
   assert.equal(upgraded.zones, 1);
+  assert.equal(upgraded.universe, 'modern');
   assert.equal(upgradeSave(null), null);
+});
+
+test('a save from version 2 comes back in the modern universe, its game untouched', () => {
+  const { universe: _universe, ...current } = drawCard(setZones(newGame(sets, ['a']), 2));
+  const v2 = { ...current, version: 2 };
+  const upgraded = upgradeSave(JSON.parse(JSON.stringify(v2)));
+  assert.ok(isValidSave(upgraded, new Set(['a1', 'a2', 'a3'])));
+  assert.deepEqual(upgraded, { ...v2, version: 3, universe: 'modern' });
+});
+
+test('a new game belongs to the universe it is started in', () => {
+  assert.equal(newGame(sets, ['a']).universe, 'modern');
+  assert.equal(newGame(sets, ['a'], ALL_PARTS, Math.random, 1, 'modern').universe, 'modern');
 });
 
 test('card ids are unique and belong to their set', () => {

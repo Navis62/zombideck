@@ -1,8 +1,9 @@
-import type { CardPart, CardSet, DangerLevel, DeckParts, GameState, Piles, ZombieCard } from './types';
+import type { CardPart, CardSet, DangerLevel, DeckParts, GameState, Piles, UniverseId, ZombieCard } from './types';
 
 export type Rng = () => number;
 
 export const DANGER_LEVELS: readonly DangerLevel[] = ['blue', 'yellow', 'orange', 'red'];
+export const UNIVERSE_IDS: readonly UniverseId[] = ['modern'];
 export const MAX_UNDO = 20;
 export const MAX_ZONES = 8;
 
@@ -60,10 +61,12 @@ export function newGame(
   parts: DeckParts = ALL_PARTS,
   rng: Rng = Math.random,
   zones = 1,
+  universe: UniverseId = 'modern',
 ): GameState {
   const ids = selectCards(sets, setIds, parts).map((card) => card.id);
   return {
-    version: 2,
+    version: 3,
+    universe,
     setIds,
     piles: { draw: shuffle(ids, rng), discard: [], drawn: [], reshuffled: false },
     history: [],
@@ -175,8 +178,12 @@ export function setDanger(state: GameState, danger: DangerLevel): GameState {
 
 type PilesV1 = Omit<Piles, 'drawn'> & { current: string | null };
 
-/** Brings a save from an older version of the app up to date; anything else comes back unchanged. */
+/** Brings a save from an older version of the app up to date, one version at a time; anything else is unchanged. */
 export function upgradeSave(value: unknown): unknown {
+  return upgradeFromV2(upgradeFromV1(value));
+}
+
+function upgradeFromV1(value: unknown): unknown {
   const save = value as { version?: number; piles?: PilesV1; history?: PilesV1[] } | null;
   if (save?.version !== 1 || !save.piles || !Array.isArray(save.history)) return value;
   // Version 1 had a single card on display and no Spawn Zones.
@@ -184,10 +191,16 @@ export function upgradeSave(value: unknown): unknown {
   return { ...save, version: 2, zones: 1, piles: upgrade(save.piles), history: save.history.map(upgrade) };
 }
 
+function upgradeFromV2(value: unknown): unknown {
+  const save = value as { version?: number } | null;
+  // Version 2 knew only the modern era, before the universes were chosen at launch.
+  return save?.version === 2 ? { ...save, version: 3, universe: 'modern' } : value;
+}
+
 /** Rejects saves that are malformed or refer to cards that no longer exist. */
 export function isValidSave(value: unknown, knownCardIds: ReadonlySet<string>): value is GameState {
   const state = value as GameState | null;
-  if (state?.version !== 2 || !DANGER_LEVELS.includes(state.danger)) return false;
+  if (state?.version !== 3 || !DANGER_LEVELS.includes(state.danger) || !UNIVERSE_IDS.includes(state.universe)) return false;
   if (!Number.isInteger(state.zones) || state.zones !== clampZones(state.zones)) return false;
   if (!Array.isArray(state.setIds) || !state.setIds.every((id) => typeof id === 'string')) return false;
   if (!Array.isArray(state.history)) return false;
