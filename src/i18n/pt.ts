@@ -48,6 +48,7 @@ export const pt: Record<TranslationKey, string> = {
   'game.discardTitle': 'Descarte, da mais recente para a mais antiga',
   'game.discardEmpty': 'O descarte está vazio.',
   'game.close': 'Fechar',
+  'game.zoom': 'Amplia a carta',
   'game.zones': 'Zonas de entrada',
   'game.zone': 'Zona {n}',
   'game.zonesLess': 'Uma zona a menos',

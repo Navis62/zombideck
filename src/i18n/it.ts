@@ -50,6 +50,7 @@ export const it: Record<TranslationKey, string> = {
   'game.discardTitle': 'Scarti, dal più recente',
   'game.discardEmpty': 'Non ci sono scarti.',
   'game.close': 'Chiudi',
+  'game.zoom': 'Ingrandisce la carta',
   'game.zones': 'Zone di generazione',
   'game.zone': 'Zona {n}',
   'game.zonesLess': 'Una zona in meno',

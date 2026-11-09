@@ -50,6 +50,7 @@ export const ru: Record<TranslationKey, string> = {
   'game.discardTitle': 'Сброс, сначала последние',
   'game.discardEmpty': 'Сброс пуст.',
   'game.close': 'Закрыть',
+  'game.zoom': 'Увеличивает карту',
   'game.zones': 'Зоны появления',
   'game.zone': 'Зона {n}',
   'game.zonesLess': 'На одну зону меньше',

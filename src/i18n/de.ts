@@ -48,6 +48,7 @@ export const de: Record<TranslationKey, string> = {
   'game.discardTitle': 'Ablage, neueste zuerst',
   'game.discardEmpty': 'Die Ablage ist leer.',
   'game.close': 'Schließen',
+  'game.zoom': 'Vergrößert die Karte',
   'game.zones': 'Spawnzonen',
   'game.zone': 'Zone {n}',
   'game.zonesLess': 'Eine Zone weniger',

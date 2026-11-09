@@ -50,6 +50,7 @@ export const pl: Record<TranslationKey, string> = {
   'game.discardTitle': 'Odrzucone, od najnowszej',
   'game.discardEmpty': 'Brak odrzuconych kart.',
   'game.close': 'Zamknij',
+  'game.zoom': 'Powiększa kartę',
   'game.zones': 'Strefy namnażania',
   'game.zone': 'Strefa {n}',
   'game.zonesLess': 'O jedną strefę mniej',

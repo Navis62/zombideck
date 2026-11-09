@@ -48,6 +48,7 @@ export const en: Record<TranslationKey, string> = {
   'game.discardTitle': 'Discard, most recent first',
   'game.discardEmpty': 'The discard pile is empty.',
   'game.close': 'Close',
+  'game.zoom': 'Enlarges the card',
   'game.zones': 'Spawn Zones',
   'game.zone': 'Zone {n}',
   'game.zonesLess': 'One zone fewer',

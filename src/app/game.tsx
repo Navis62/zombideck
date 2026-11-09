@@ -1,7 +1,18 @@
 import { useKeepAwake } from 'expo-keep-awake';
 import { Redirect, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  AccessibilityInfo,
+  Animated,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
@@ -41,6 +52,8 @@ const SEQUENCE_HEADER = 48;
 const MIN_CARD_WIDTH = 150;
 /** Smallest cards on several rows (the zombie counts stay readable); below it, one row that scrolls. */
 const MIN_GRID_WIDTH = 95;
+/** Share of the screen height a card takes once tapped to be read up close. */
+const ZOOM_HEIGHT = 0.9;
 /** Time to tap "Reshuffle all" a second time before it goes back to normal. */
 const CONFIRM_MS = 3000;
 
@@ -80,6 +93,9 @@ export default function GameScreen() {
   const [showDiscard, setShowDiscard] = useState(false);
   // One zone at a time: the card looked at, the last one dealt unless a zone above it was tapped since.
   const [viewed, setViewed] = useState<{ step: string; index: number } | null>(null);
+  // Several cards side by side are small: one tapped is shown full screen, until the next draw.
+  const [zoomed, setZoomed] = useState<{ step: string; index: number } | null>(null);
+  const window = useWindowDimensions();
 
   // Focus stays on the deck after a draw: without an announcement, a screen reader would not say the new cards. The
   // cards on display when the screen opens are not announced; an undo announces the cards it brings back.
@@ -142,6 +158,7 @@ export default function GameScreen() {
   const column = shown === 1 ? Math.max(width, deckWidth) : width;
   const rowWidth = Math.max(0, Math.min(table.width - deckWidth - TABLE_GAP, columns * column + (columns - 1) * TABLE_GAP));
   const slot = { width, aspectRatio: CARD_RATIO };
+  const zoomedCard = zoomed?.step === drawnKey ? CARDS_BY_ID.get(drawn[zoomed.index]) : undefined;
   const dealt = drawn.map((id, index) => {
     const card = CARDS_BY_ID.get(id);
     return (
@@ -151,13 +168,19 @@ export default function GameScreen() {
             {t('game.zone', { n: cardZones[index] })}
           </Text>
         )}
-        <View style={slot}>
+        <Pressable
+          style={({ pressed }) => [slot, pressed && PRESSED]}
+          disabled={!card || shown === 1}
+          onPress={() => setZoomed({ step: drawnKey, index })}
+          accessibilityRole={shown > 1 ? 'button' : undefined}
+          accessibilityHint={shown > 1 ? t('game.zoom') : undefined}
+        >
           {card && (
             <Animated.View style={[styles.drawn, { transform: [{ perspective: 800 }, { rotateY }] }]}>
               <CardFace card={card} danger={danger} width={width} />
             </Animated.View>
           )}
-        </View>
+        </Pressable>
       </View>
     );
   });
@@ -282,12 +305,37 @@ export default function GameScreen() {
           />
         </ScrollView>
       </View>
+      {zoomedCard && zoomed && (
+        <Modal
+          transparent
+          animationType="fade"
+          // iOS shows modals in portrait unless told otherwise; the app is landscape only.
+          supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
+          onRequestClose={() => setZoomed(null)}
+        >
+          <Pressable
+            style={styles.zoom}
+            onPress={() => setZoomed(null)}
+            accessibilityRole="button"
+            accessibilityLabel={t('game.close')}
+          >
+            {label > 0 && <Text style={styles.zone}>{t('game.zone', { n: cardZones[zoomed.index] })}</Text>}
+            <View style={{ width: zoomWidth(window), aspectRatio: CARD_RATIO }}>
+              <CardFace card={zoomedCard} danger={danger} width={zoomWidth(window)} />
+            </View>
+          </Pressable>
+        </Modal>
+      )}
       {showDiscard && (
         <DiscardSheet discard={game.piles.discard} danger={danger} onClose={() => setShowDiscard(false)} />
       )}
     </SafeAreaView>
   );
 }
+
+/** A tapped card as large as the screen allows, below its zone line. */
+const zoomWidth = (window: { width: number; height: number }) =>
+  Math.min((window.height * ZOOM_HEIGHT - ZONE_LABEL) * CARD_RATIO, window.width * ZOOM_HEIGHT);
 
 /**
  * Sizes the cards so the deck and `shown` cards fit the table, as large as possible: on one row, or on two or three
@@ -321,6 +369,10 @@ function tableLayout(table: { width: number; height: number }, shown: number, la
   if (best.rows === 1) {
     best.width = Math.max(best.width, Math.min(MIN_CARD_WIDTH, tallest(1)));
     best.deckWidth = best.width;
+  } else {
+    // The cards are sized by the height: the deck takes the width they leave, up to the whole height.
+    const cards = best.columns * best.width + (best.columns - 1) * TABLE_GAP;
+    best.deckWidth = Math.max(best.width, Math.min(table.height * CARD_RATIO, table.width - TABLE_GAP - cards));
   }
   return best;
 }
@@ -439,6 +491,7 @@ const styles = StyleSheet.create({
   zone: { height: ZONE_LABEL, color: COLORS.text, fontSize: 13, fontWeight: '800', textAlign: 'center', textTransform: 'uppercase' },
   zoneLine: { alignSelf: 'stretch' },
   drawn: { flex: 1 },
+  zoom: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: 'rgba(9, 14, 12, 0.92)' },
   empty: {
     borderRadius: 12,
     borderWidth: 2,

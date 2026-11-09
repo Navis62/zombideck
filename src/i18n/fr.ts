@@ -46,6 +46,7 @@ export const fr = {
   'game.discardTitle': 'Défausse, de la plus récente à la plus ancienne',
   'game.discardEmpty': 'La défausse est vide.',
   'game.close': 'Fermer',
+  'game.zoom': 'Agrandit la carte',
   'game.zones': "Zones d'invasion",
   'game.zone': 'Zone {n}',
   'game.zonesLess': 'Une zone de moins',
