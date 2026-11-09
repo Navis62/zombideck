@@ -18,7 +18,7 @@ npx expo install <paquet>   # jamais npm install <paquet>
 
 ## Règles du dépôt
 
-- Code, commentaires, noms de tests, README et commits **en anglais** ; on échange avec l'utilisateur en français.
+- Code, commentaires, noms de tests, README et commits **en anglais** ; on échange avec l'utilisateur dans sa langue.
 - Les cartes (`src/data/decks.ts`) sont une transcription des paquets imprimés : on ne devine rien, on demande la
   carte. Un id de carte existant ne change jamais.
 - Une partie sauvegardée doit survivre à toute mise à jour : forme de la sauvegarde changée = `version` +

@@ -104,4 +104,4 @@ Add these to Phase 2 for this repo:
     the fingerprint unnoticed; dependencies that phone home (contradicting `PRIVACY.md`).
 13. **Screen logic** — game logic living in `src/app/*.tsx` that should be a pure, tested function in `src/game/`.
 
-Write the audit in French (the maintainer's language); keep the section headings above.
+Write the audit in the user's language; keep the section headings above.
