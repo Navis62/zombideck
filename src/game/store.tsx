@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   createContext,
+  type Dispatch,
+  type SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -37,7 +39,8 @@ type AppContextValue = {
   language: Language;
   setLanguage: (language: Language) => void;
   expansions: string[];
-  setExpansions: (expansions: string[]) => void;
+  /** Takes the new list or, for changes made in quick succession, a function of the current one. */
+  setExpansions: Dispatch<SetStateAction<string[]>>;
   cardDisplay: CardDisplay;
   setCardDisplay: (cardDisplay: CardDisplay) => void;
   deckParts: DeckParts;
@@ -125,10 +128,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     save(LANGUAGE_KEY, next, 'language');
   }, []);
 
-  const chooseExpansions = useCallback((next: string[]) => {
-    setExpansions(next);
-    save(EXPANSIONS_KEY, JSON.stringify(next), 'expansions');
-  }, []);
+  // Saved from the state rather than in the setter, so updates computed from the current list are saved too.
+  useEffect(() => {
+    if (loaded) save(EXPANSIONS_KEY, JSON.stringify(expansions), 'expansions');
+  }, [expansions, loaded]);
 
   const chooseCardDisplay = useCallback((next: CardDisplay) => {
     setCardDisplay(next);
@@ -157,7 +160,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       language,
       setLanguage: chooseLanguage,
       expansions,
-      setExpansions: chooseExpansions,
+      setExpansions,
       cardDisplay,
       setCardDisplay: chooseCardDisplay,
       deckParts,
@@ -173,7 +176,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       language,
       chooseLanguage,
       expansions,
-      chooseExpansions,
       cardDisplay,
       chooseCardDisplay,
       deckParts,

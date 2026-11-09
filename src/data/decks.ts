@@ -379,6 +379,9 @@ export const CARD_SETS: readonly CardSet[] = [
   },
 ];
 
+/** Expansions and promos the players switch on for the next game. */
+export const OPTIONAL_SETS: readonly CardSet[] = CARD_SETS.filter((set) => set.optional);
+
 export const CARDS_BY_ID: ReadonlyMap<string, ZombieCard> = new Map(
   CARD_SETS.flatMap((set) => set.cards.map((card) => [card.id, card] as const)),
 );

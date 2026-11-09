@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { CARD_SETS } from '../data/decks.ts';
+import { CARD_SETS, OPTIONAL_SETS } from '../data/decks.ts';
 import {
   activeSetIds,
   ALL_PARTS,
@@ -262,7 +262,7 @@ test('card ids are unique and belong to their set', () => {
 test('expansion cards stay out of the deck until switched on', () => {
   assert.deepEqual(activeSetIds(CARD_SETS, []), ['core2e', 'abomination']);
   assert.equal(selectCards(CARD_SETS, activeSetIds(CARD_SETS, [])).length, 40);
-  const optional = CARD_SETS.filter((set) => set.optional).map((set) => set.id);
+  const optional = OPTIONAL_SETS.map((set) => set.id);
   assert.equal(selectCards(CARD_SETS, activeSetIds(CARD_SETS, optional)).length, 174);
 });
 
@@ -299,7 +299,7 @@ test('shuffling the deck leaves the discard and the card on display alone, and c
 test('every expansion has a name in every language', async () => {
   const { TRANSLATIONS } = await import('../i18n/translations.ts');
   for (const [language, texts] of Object.entries(TRANSLATIONS)) {
-    for (const set of CARD_SETS.filter((s) => s.optional)) {
+    for (const set of OPTIONAL_SETS) {
       assert.ok((texts as Record<string, string>)[`set.${set.id}`], `${language}: set.${set.id}`);
     }
   }

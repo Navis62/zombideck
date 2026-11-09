@@ -1,12 +1,12 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
 import { Hazard } from '@/components/hazard';
 import { type ArtSubject, ZombieFigure } from '@/components/zombie-art';
-import { CARD_SETS } from '@/data/decks';
+import { CARD_SETS, OPTIONAL_SETS } from '@/data/decks';
 import { activeSetIds, newGame, selectCards } from '@/game/engine';
 import { askForReviewIfDue } from '@/game/review';
 import { useApp } from '@/game/store';
@@ -36,6 +36,7 @@ export default function MenuScreen() {
 
   const setIds = activeSetIds(CARD_SETS, expansions);
   const deckSize = selectCards(CARD_SETS, setIds, deckParts).length;
+  const enabledExpansions = OPTIONAL_SETS.filter((set) => setIds.includes(set.id)).length;
 
   const start = () => {
     if (game && !confirming) {
@@ -70,7 +71,8 @@ export default function MenuScreen() {
           </View>
         </View>
 
-        <View style={styles.menu}>
+        {/* Scrolls when the buttons do not fit: a short screen, a large system font size. */}
+        <ScrollView style={styles.menu} contentContainerStyle={styles.menuContent}>
           {game && (
             <Pressable
               style={({ pressed }) => [styles.primary, pressed && PRESSED]}
@@ -100,6 +102,19 @@ export default function MenuScreen() {
               </Text>
             )}
           </Pressable>
+          {/* Set up before starting: the expansions apply to the next game. */}
+          {!confirming && (
+            <Pressable
+              style={({ pressed }) => [styles.secondary, pressed && PRESSED]}
+              onPress={() => router.push('/expansions')}
+              accessibilityRole="button"
+            >
+              <Text style={styles.secondaryText}>{t('expansions.title')}</Text>
+              <Text style={styles.secondaryDetail}>
+                {t('menu.expansionsDetail', { n: enabledExpansions, total: OPTIONAL_SETS.length })}
+              </Text>
+            </Pressable>
+          )}
           <Pressable
             style={({ pressed }) => [styles.secondary, pressed && PRESSED]}
             onPress={() => (confirming ? setConfirming(false) : router.push('/options'))}
@@ -114,7 +129,7 @@ export default function MenuScreen() {
           >
             <Text style={styles.linkText}>{t('about.title')}</Text>
           </Pressable>
-        </View>
+        </ScrollView>
       </SafeAreaView>
       <Hazard stripes={48} />
     </View>
@@ -130,7 +145,9 @@ const styles = StyleSheet.create({
   tagline: { color: '#fff0ce', fontSize: 13, fontWeight: '700' },
   horde: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: HORDE_GAP, marginTop: 10 },
   zombie: { borderRadius: 8, overflow: 'hidden', borderWidth: 2, borderColor: CARD_COLORS.ink },
-  menu: { width: 260, gap: 10 },
+  // A ScrollView grows by default: without flexGrow 0 it would take the width of the illustrations.
+  menu: { width: 260, flexGrow: 0, alignSelf: 'stretch' },
+  menuContent: { flexGrow: 1, justifyContent: 'center', gap: 10, paddingVertical: 12 },
   primary: { backgroundColor: '#a51f22', borderColor: CARD_COLORS.ink, borderWidth: 2, borderRadius: 8, paddingVertical: 12, paddingHorizontal: 16, alignItems: 'center' },
   primaryText: { color: '#ffffff', fontSize: 18, fontWeight: '900', textTransform: 'uppercase', textAlign: 'center' },
   primaryDetail: { color: '#ffffff', fontSize: 12, fontWeight: '600', marginTop: 2 },

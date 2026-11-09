@@ -24,7 +24,7 @@ Zombie Deck replaces the zombie spawn deck of Zombicide 2nd Edition on your phon
 • The screen stays on during the game
 • Works offline, no ads, no account, no data collected
 
-Expansions and promos (switch them on in the options):
+Expansions and promos (switch them on in the Expansions & promos menu):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, the extra Abomination cards, Danny Trejo and Monty Python's Flying Circus.
 
 Available in English, French, German, Spanish, Italian, Polish, Brazilian Portuguese and Russian, with the official zombie names of each edition.
@@ -53,7 +53,7 @@ Zombie Deck remplace la pioche zombie de Zombicide 2e édition sur votre télép
 • L'écran reste allumé pendant la partie
 • Fonctionne hors ligne, sans publicité, sans compte, sans collecte de données
 
-Extensions et promos (à activer dans les options) :
+Extensions et promos (à activer dans le menu Extensions et promos) :
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, les cartes Abomination supplémentaires, Danny Trejo et Monty Python's Flying Circus.
 
 Disponible en français, anglais, allemand, espagnol, italien, polonais, portugais (Brésil) et russe, avec les noms officiels des zombies de chaque édition.
@@ -82,7 +82,7 @@ Zombie Deck ersetzt den Zombie-Stapel von Zombicide Zweite Edition auf deinem Ha
 • Der Bildschirm bleibt während der Partie an
 • Funktioniert offline, ohne Werbung, ohne Konto, ohne Datensammlung
 
-Erweiterungen und Promos (in den Optionen einschalten):
+Erweiterungen und Promos (im Menü Erweiterungen & Promos einschalten):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, die zusätzlichen Monstrum-Karten, Danny Trejo und Monty Python's Flying Circus.
 
 Verfügbar auf Deutsch, Englisch, Französisch, Spanisch, Italienisch, Polnisch, brasilianischem Portugiesisch und Russisch, mit den offiziellen Zombienamen jeder Ausgabe.
@@ -111,7 +111,7 @@ Zombie Deck sustituye el mazo de zombis de Zombicide Segunda Edición en tu móv
 • La pantalla se mantiene encendida durante la partida
 • Funciona sin conexión, sin anuncios, sin cuenta y sin recoger datos
 
-Expansiones y promos (actívalas en las opciones):
+Expansiones y promos (actívalas en el menú Expansiones y promos):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, las cartas de Abominación adicionales, Danny Trejo y Monty Python's Flying Circus.
 
 Disponible en español, inglés, francés, alemán, italiano, polaco, portugués de Brasil y ruso, con los nombres oficiales de los zombis de cada edición.
@@ -140,7 +140,7 @@ Zombie Deck sostituisce il mazzo Zombie di Zombicide 2a Edizione sul tuo telefon
 • Lo schermo resta acceso durante la partita
 • Funziona offline, senza pubblicità, senza account, senza raccolta di dati
 
-Espansioni e promo (da attivare nelle opzioni):
+Espansioni e promo (da attivare nel menu Espansioni e promo):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, le carte Abominio aggiuntive, Danny Trejo e Monty Python's Flying Circus.
 
 Disponibile in italiano, inglese, francese, tedesco, spagnolo, polacco, portoghese brasiliano e russo, con i nomi ufficiali degli zombie di ogni edizione.
@@ -169,7 +169,7 @@ Zombie Deck zastępuje talię Zombie z Zombicide 2. edycja na twoim telefonie lu
 • Ekran nie gaśnie podczas gry
 • Działa offline, bez reklam, bez konta, bez zbierania danych
 
-Dodatki i promo (do włączenia w opcjach):
+Dodatki i promo (do włączenia w menu Dodatki i promo):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie psy, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, dodatkowe karty Abominacji, Danny Trejo i Monty Python's Flying Circus.
 
 Dostępna po polsku, angielsku, francusku, niemiecku, hiszpańsku, włosku, w portugalskim brazylijskim i rosyjskim.
@@ -198,7 +198,7 @@ Zombie Deck substitui o baralho de zumbis de Zombicide 2ª Edição no seu celul
 • A tela fica ligada durante a partida
 • Funciona offline, sem anúncios, sem conta e sem coleta de dados
 
-Expansões e promos (ative nas opções):
+Expansões e promos (ative no menu Expansões e promos):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, as cartas de Abominação extras, Danny Trejo e Monty Python's Flying Circus.
 
 Disponível em português do Brasil, inglês, francês, alemão, espanhol, italiano, polonês e russo, com os nomes oficiais dos zumbis de cada edição.
@@ -227,7 +227,7 @@ Zombie Deck заменяет колоду зомби из «Зомбицид. В
 • Экран не гаснет во время партии
 • Работает офлайн, без рекламы, без аккаунта и без сбора данных
 
-Дополнения и промо (включаются в настройках):
+Дополнения и промо (включаются в меню «Дополнения и промо»):
 Форт Хендрикс, Токсичный центр, Prison Outbreak, Rue Morgue, Злобные соседи, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, дополнительные карты отродий, Дэнни Трехо и Monty Python's Flying Circus.
 
 Доступно на русском, английском, французском, немецком, испанском, итальянском, польском и бразильском португальском, с официальными названиями зомби каждого издания.

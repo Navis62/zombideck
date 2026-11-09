@@ -21,6 +21,7 @@ function Navigator() {
       <Stack.Screen name="index" options={{ title: t('appName'), headerShown: false }} />
       {/* No header during the game: the height goes to the cards, the Menu button sits with the controls. */}
       <Stack.Screen name="game" options={{ title: t('game.title'), headerShown: false }} />
+      <Stack.Screen name="expansions" options={{ title: t('expansions.title') }} />
       <Stack.Screen name="options" options={{ title: t('options.title') }} />
       <Stack.Screen name="about" options={{ title: t('about.title') }} />
     </Stack>
