@@ -32,9 +32,10 @@ export const translator =
   (language: Language): Translate =>
   (key, params = {}) =>
     Object.entries(params).reduce(
-      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
       TRANSLATIONS[language][key] as string,
     );
 
 export const isLanguage = (value: string | null | undefined): value is Language =>
-  !!value && value in LANGUAGE_NAMES;
+  // Own keys only: `in` would also accept inherited names such as "toString".
+  !!value && Object.hasOwn(LANGUAGE_NAMES, value);
