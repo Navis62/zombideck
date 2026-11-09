@@ -5,7 +5,8 @@ import Svg, { Path, Polygon } from 'react-native-svg';
 import { artSubject, ZombieFigure } from '@/components/zombie-art';
 import { DANGER_LEVELS } from '@/game/engine';
 import { useApp } from '@/game/store';
-import type { DangerLevel, ZombieCard, ZombieType } from '@/game/types';
+import type { DangerLevel, ExtraZombie, ZombieCard, ZombieType } from '@/game/types';
+import type { Translate } from '@/i18n/translations';
 import { CARD_COLORS, DANGER_COLORS } from '@/theme';
 
 // Printed top-down on the cards, red first.
@@ -28,22 +29,57 @@ export function CardFace({ card, danger, width }: { card: ZombieCard; danger: Da
   );
 }
 
+type CardText = { title: string; footer?: string; spoken: string };
+
+/** Title, footer and what a screen reader says about the body of a card, at the given Danger Level. */
+function cardText(card: ZombieCard, danger: DangerLevel, t: Translate): CardText {
+  const level = t(`danger.${danger}`);
+  switch (card.kind) {
+    case 'trejo':
+    case 'trejoRush': {
+      const isRush = card.kind === 'trejoRush';
+      return {
+        title: isRush ? t('card.rushTitle', { zombies: 'Trejo' }) : 'Trejo',
+        spoken: [t('card.trejoChoice'), ...trejoChoices(isRush).map((key, index) => `${index + 1}. ${t(key)}`)].join(' '),
+      };
+    }
+    case 'spam':
+      return { title: 'Spam', spoken: `${t('card.spam1')} ${t('card.spam2')}` };
+    case 'extra':
+      return { title: t('card.extra'), footer: t('card.extraRule'), spoken: `${level}: ${extraLine(card.zombie, danger, t)}` };
+    default: {
+      const zombies = t(`zombie.${card.zombie}.other`);
+      const isRush = card.kind === 'rush';
+      return {
+        title: card.kind === 'rush' ? t('card.rushTitle', { zombies: t(`zombie.${card.zombie}.rush`) }) : zombies,
+        footer: isRush ? t('card.rushRule') : card.zombie === 'seeker' ? t('card.seekerRule') : undefined,
+        spoken: `${level}: ${card.counts[DANGER_LEVELS.indexOf(danger)]} ${zombies}`,
+      };
+    }
+  }
+}
+
+/** The whole card as a screen reader says it, to announce a card as it is drawn. */
+export function cardLabel(card: ZombieCard, danger: DangerLevel, t: Translate): string {
+  const { title, spoken, footer } = cardText(card, danger, t);
+  return sentences([title, spoken, footer]);
+}
+
+const trejoChoices = (isRush: boolean) => ['card.trejo1', 'card.trejo2', isRush ? 'card.trejo3Rush' : 'card.trejo3'] as const;
+
+const extraLine = (zombie: ExtraZombie, at: DangerLevel, t: Translate) =>
+  at === 'blue' ? t('card.extraNobody') : t(`zombie.${zombie}.all`);
+
 function Card({ card, danger }: { card: ZombieCard; danger: DangerLevel }) {
   const { t, cardDisplay } = useApp();
   const { styles } = useContext(CardStyle);
-
-  const level = t(`danger.${danger}`);
+  const text = cardText(card, danger, t);
 
   if (card.kind === 'trejo' || card.kind === 'trejoRush') {
     const isRush = card.kind === 'trejoRush';
-    const choices = ['card.trejo1', 'card.trejo2', isRush ? 'card.trejo3Rush' : 'card.trejo3'] as const;
+    const choices = trejoChoices(isRush);
     return (
-      <Frame
-        card={card}
-        title={isRush ? t('card.rushTitle', { zombies: 'Trejo' }) : 'Trejo'}
-        headerColor={isRush ? CARD_COLORS.rush : CARD_COLORS.spawn}
-        spoken={[t('card.trejoChoice'), ...choices.map((key, index) => `${index + 1}. ${t(key)}`)].join(' ')}
-      >
+      <Frame card={card} text={text} headerColor={isRush ? CARD_COLORS.rush : CARD_COLORS.spawn}>
         <Art card={card} short />
         <View style={[styles.textBody, { backgroundColor: isRush ? CARD_COLORS.rush.background : CARD_COLORS.spawn.background }]}>
           <Text style={[styles.bodyHeading, { color: isRush ? CARD_COLORS.ink : '#ffffff' }]}>{t('card.trejoChoice')}</Text>
@@ -59,7 +95,7 @@ function Card({ card, danger }: { card: ZombieCard; danger: DangerLevel }) {
 
   if (card.kind === 'spam') {
     return (
-      <Frame card={card} title="Spam" headerColor={CARD_COLORS.spawn} spoken={`${t('card.spam1')} ${t('card.spam2')}`}>
+      <Frame card={card} text={text} headerColor={CARD_COLORS.spawn}>
         <Art card={card} short />
         <View style={[styles.textBody, { backgroundColor: CARD_COLORS.spawn.background }]}>
           <Text style={[styles.bodyText, { color: '#ffffff' }]}>{t('card.spam1')}</Text>
@@ -69,26 +105,18 @@ function Card({ card, danger }: { card: ZombieCard; danger: DangerLevel }) {
     );
   }
 
-  const zombies = t(`zombie.${card.zombie}.other`);
   const symbol = specialSymbol(card);
 
   if (card.kind === 'extra') {
-    const extraLine = (at: DangerLevel) => (at === 'blue' ? t('card.extraNobody') : t(`zombie.${card.zombie}.all`));
     return (
-      <Frame
-        card={card}
-        title={t('card.extra')}
-        headerColor={CARD_COLORS.extra}
-        footer={t('card.extraRule')}
-        spoken={`${level}: ${extraLine(danger)}`}
-      >
+      <Frame card={card} text={text} headerColor={CARD_COLORS.extra}>
         <View style={styles.spawnBody}>
           <Art card={card} />
           <View style={styles.levels}>
             <LevelSymbol kind={symbol} />
             {(cardDisplay === 'current' ? [danger] : PRINTED_LEVELS).map((shown) => (
               <Level key={shown} level={shown} active={shown === danger} wide large={cardDisplay === 'current'}>
-                {extraLine(shown)}
+                {extraLine(card.zombie, shown, t)}
               </Level>
             ))}
           </View>
@@ -100,13 +128,7 @@ function Card({ card, danger }: { card: ZombieCard; danger: DangerLevel }) {
   const isRush = card.kind === 'rush';
   const { counts } = card;
   return (
-    <Frame
-      card={card}
-      title={card.kind === 'rush' ? t('card.rushTitle', { zombies: t(`zombie.${card.zombie}.rush`) }) : zombies}
-      headerColor={isRush ? CARD_COLORS.rush : CARD_COLORS.spawn}
-      footer={isRush ? t('card.rushRule') : card.zombie === 'seeker' ? t('card.seekerRule') : undefined}
-      spoken={`${level}: ${counts[DANGER_LEVELS.indexOf(danger)]} ${zombies}`}
-    >
+    <Frame card={card} text={text} headerColor={isRush ? CARD_COLORS.rush : CARD_COLORS.spawn}>
       <View style={styles.spawnBody}>
         <Art card={card} />
         <View style={styles.levels}>
@@ -237,30 +259,24 @@ const sentences = (parts: (string | undefined)[]) =>
 
 function Frame(props: {
   card: ZombieCard;
-  title: string;
+  text: CardText;
   headerColor: { background: string; text: string };
-  footer?: string;
-  /** What a screen reader says about the card body, read between the title and the footer. */
-  spoken: string;
   children: React.ReactNode;
 }) {
   const { styles } = useContext(CardStyle);
+  const { title, spoken, footer } = props.text;
   return (
-    <View
-      style={styles.face}
-      accessible
-      accessibilityLabel={sentences([props.title, props.spoken, props.footer])}
-    >
+    <View style={styles.face} accessible accessibilityLabel={sentences([title, spoken, footer])}>
       <View style={[styles.header, { backgroundColor: props.headerColor.background }]}>
         <Text style={[styles.title, { color: props.headerColor.text }]} numberOfLines={3}>
-          {props.title}
+          {title}
         </Text>
         <Text style={[styles.number, { color: props.headerColor.text }]}>#{props.card.id.slice(-3)}</Text>
       </View>
       <View style={styles.body}>{props.children}</View>
-      {props.footer && (
+      {footer && (
         <View style={[styles.footer, { backgroundColor: props.headerColor.background }]}>
-          <Text style={[styles.footerText, { color: props.headerColor.text }]}>{props.footer}</Text>
+          <Text style={[styles.footerText, { color: props.headerColor.text }]}>{footer}</Text>
         </View>
       )}
     </View>

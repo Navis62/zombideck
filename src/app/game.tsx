@@ -1,13 +1,13 @@
 import { useKeepAwake } from 'expo-keep-awake';
 import { Redirect, router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Animated, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { AccessibilityInfo, Animated, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
 import { Button } from '@/components/button';
 import { CardBack } from '@/components/card-back';
-import { CardFace } from '@/components/card-face';
+import { CardFace, cardLabel } from '@/components/card-face';
 import { DiscardSheet } from '@/components/discard-sheet';
 import { CARDS_BY_ID, drawsAgain } from '@/data/decks';
 import {
@@ -26,7 +26,8 @@ import {
 import { drawFeedback } from '@/game/feedback';
 import { countDraw } from '@/game/review';
 import { useApp } from '@/game/store';
-import type { GameState } from '@/game/types';
+import type { DangerLevel, GameState } from '@/game/types';
+import type { Translate } from '@/i18n/translations';
 import { COLORS, DANGER_COLORS, PRESSED } from '@/theme';
 
 const CARD_RATIO = 63 / 88;
@@ -79,6 +80,20 @@ export default function GameScreen() {
   // One zone at a time: the card looked at, the last one dealt unless a zone above it was tapped since.
   const [viewed, setViewed] = useState<{ step: string; index: number } | null>(null);
 
+  // Focus stays on the deck after a draw: without an announcement, a screen reader would not say the new cards. The
+  // cards on display when the screen opens are not announced; an undo announces the cards it brings back.
+  const sequence = zoneDisplay === 'sequence';
+  const drawnCards = game?.piles.drawn;
+  const announced = useRef(drawnCards);
+  const currentDanger = game?.danger;
+  const zoneCount = game?.zones;
+  useEffect(() => {
+    if (drawnCards === announced.current) return;
+    announced.current = drawnCards;
+    if (!drawnCards?.length || !currentDanger || !zoneCount || Platform.OS === 'web') return;
+    AccessibilityInfo.announceForAccessibility(announcement(drawnCards, currentDanger, zoneCount, sequence, t));
+  }, [drawnCards, currentDanger, zoneCount, sequence, t]);
+
   if (!game) return <Redirect href="/" />;
 
   const update = (change: (state: GameState) => GameState) =>
@@ -87,7 +102,6 @@ export default function GameScreen() {
   const { danger, zones } = game;
   const { drawn } = game.piles;
   const cardZones = zonesOf(drawn, drawsAgain);
-  const sequence = zoneDisplay === 'sequence';
   const rotateY = flip.interpolate({ inputRange: [0, 1], outputRange: ['90deg', '0deg'] });
   const shakeSteps = [0, 0.2, 0.4, 0.6, 0.8, 1];
   const deckShake = {
@@ -309,6 +323,31 @@ function tableLayout(table: { width: number; height: number }, shown: number, la
   return best;
 }
 
+/**
+ * What a screen reader says once cards are dealt: every card of the step, or only the last one when the zones are
+ * dealt one at a time; each with its Spawn Zone once there is more than one.
+ */
+function announcement(
+  drawn: readonly string[],
+  danger: DangerLevel,
+  zones: number,
+  sequence: boolean,
+  t: Translate,
+): string {
+  const cardZones = zonesOf(drawn, drawsAgain);
+  const withZones = zones > 1 || drawn.length > 1;
+  const indexes = sequence ? [drawn.length - 1] : drawn.map((_, index) => index);
+  return indexes
+    .map((index) => {
+      const card = CARDS_BY_ID.get(drawn[index]);
+      if (!card) return '';
+      const label = cardLabel(card, danger, t);
+      return withZones ? `${t('game.zone', { n: cardZones[index] })}: ${label}` : label;
+    })
+    .filter(Boolean)
+    .join(' ');
+}
+
 /** One zone per tap: the card of one zone in full size, the zones of the step as numbered chips above it. */
 function OneAtATime(props: {
   drawn: readonly string[];
@@ -323,7 +362,7 @@ function OneAtATime(props: {
   renderCard: (id: string) => React.ReactNode;
   flip: Animated.AnimatedInterpolation<string>;
   emptyText: string;
-  t: ReturnType<typeof useApp>['t'];
+  t: Translate;
 }) {
   const { drawn, cardZones, zones, viewedIndex, t } = props;
   // Zones still waiting for their card in this step (after a SPAM, its zone too); none once every zone is served.
