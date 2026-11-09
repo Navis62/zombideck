@@ -18,9 +18,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppBackground } from '@/components/app-background';
 import { Button } from '@/components/button';
 import { CardBack } from '@/components/card-back';
-import { CardFace, cardLabel } from '@/components/card-face';
+import { CardFace, cardLabel, type Reveal } from '@/components/card-face';
 import { DiscardSheet } from '@/components/discard-sheet';
-import { CARDS_BY_ID, cardEffect } from '@/data/universes';
+import { bossTrigger, CARDS_BY_ID, cardEffect } from '@/data/universes';
 import {
   DANGER_LEVELS,
   drawCards,
@@ -38,7 +38,7 @@ import {
 import { drawFeedback } from '@/game/feedback';
 import { countDraw } from '@/game/review';
 import { useApp } from '@/game/store';
-import type { DangerLevel, GameState } from '@/game/types';
+import type { BossRule, DangerLevel, GameState, Revealed } from '@/game/types';
 import type { Translate } from '@/i18n/translations';
 import { COLORS, DANGER_COLORS, PRESSED } from '@/theme';
 
@@ -104,12 +104,15 @@ export default function GameScreen() {
   const announced = useRef(drawnCards);
   const currentDanger = game?.danger;
   const zoneCount = game?.zones;
+  const revealed = game?.piles.bosses?.revealed;
+  const bossRule = game?.bossRule;
   useEffect(() => {
     if (drawnCards === announced.current) return;
     announced.current = drawnCards;
     if (!drawnCards?.length || !currentDanger || !zoneCount || Platform.OS === 'web') return;
-    AccessibilityInfo.announceForAccessibility(announcement(drawnCards, currentDanger, zoneCount, sequence, t));
-  }, [drawnCards, currentDanger, zoneCount, sequence, t]);
+    const reveal = revealOf(revealed, bossRule);
+    AccessibilityInfo.announceForAccessibility(announcement(drawnCards, currentDanger, zoneCount, sequence, t, reveal));
+  }, [drawnCards, currentDanger, zoneCount, sequence, t, revealed, bossRule]);
 
   if (!game) return <Redirect href="/menu" />;
 
@@ -131,7 +134,9 @@ export default function GameScreen() {
     update(change);
     setShuffles((count) => count + 1);
   };
-  const deal = (state: GameState) => (sequence ? drawNextCard(state, cardEffect) : drawCards(state, cardEffect));
+  const deal = (state: GameState) =>
+    sequence ? drawNextCard(state, cardEffect, Math.random, bossTrigger) : drawCards(state, cardEffect, Math.random, bossTrigger);
+  const reveal = revealOf(game.piles.bosses?.revealed, game.bossRule);
   const draw = () => {
     // No card left to deal (the rest are on display for this step): no vibration, no draw counted.
     if (deal(game) === game) return;
@@ -177,7 +182,7 @@ export default function GameScreen() {
         >
           {card && (
             <Animated.View style={[styles.drawn, { transform: [{ perspective: 800 }, { rotateY }] }]}>
-              <CardFace card={card} danger={danger} width={width} />
+              <CardFace card={card} danger={danger} width={width} reveal={reveal(id)} />
             </Animated.View>
           )}
         </Pressable>
@@ -209,7 +214,7 @@ export default function GameScreen() {
               column={column}
               renderCard={(id) => {
                 const card = CARDS_BY_ID.get(id);
-                return card ? <CardFace card={card} danger={danger} width={width} /> : null;
+                return card ? <CardFace card={card} danger={danger} width={width} reveal={reveal(id)} /> : null;
               }}
               flip={rotateY}
               emptyText={t('game.noCard')}
@@ -324,7 +329,7 @@ export default function GameScreen() {
           >
             {label > 0 && <Text style={styles.zone}>{t('game.zone', { n: cardZones[zoomed.index] })}</Text>}
             <View style={{ width: zoomWidth(window), aspectRatio: CARD_RATIO }}>
-              <CardFace card={zoomedCard} danger={danger} width={zoomWidth(window)} />
+              <CardFace card={zoomedCard} danger={danger} width={zoomWidth(window)} reveal={reveal(zoomedCard.id)} />
             </View>
           </Pressable>
         </Modal>
@@ -384,12 +389,21 @@ function tableLayout(table: { width: number; height: number }, shown: number, la
  * What a screen reader says once cards are dealt: every card of the step, or only the last one when the zones are
  * dealt one at a time; each with its Spawn Zone once there is more than one.
  */
+/** The boss each card on display revealed from its deck, with the Dead Men Tales rules. */
+const revealOf =
+  (revealed: Record<string, Revealed> | undefined, rule: BossRule | null | undefined) =>
+  (cardId: string): Reveal | undefined => {
+    const shown = revealed?.[cardId];
+    return shown && rule ? { boss: shown.boss, rule } : undefined;
+  };
+
 function announcement(
   drawn: readonly string[],
   danger: DangerLevel,
   zones: number,
   sequence: boolean,
   t: Translate,
+  reveal: (cardId: string) => Reveal | undefined,
 ): string {
   const cardZones = zonesOf(drawn, cardEffect, zones);
   const withZones = zones > 1 || drawn.length > 1;
@@ -398,7 +412,7 @@ function announcement(
     .map((index) => {
       const card = CARDS_BY_ID.get(drawn[index]);
       if (!card) return '';
-      const label = cardLabel(card, danger, t);
+      const label = cardLabel(card, danger, t, reveal(card.id));
       return withZones ? `${t('game.zone', { n: cardZones[index] })}: ${label}` : label;
     })
     .filter(Boolean)

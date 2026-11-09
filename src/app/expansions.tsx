@@ -2,7 +2,21 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
+import {
+  ABOMINATION_BOSSES,
+  BIG_BOSSES,
+  type Boss,
+  BOSS_RULES,
+  NECROMANCER_BOSSES,
+  THREAT_BUDGET,
+  THREAT_LEVELS,
+  THREAT_MODES,
+  type ThreatLevel,
+  type ThreatMode,
+} from '@/data/threat';
 import { allExpansions, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '@/data/universes';
+import { activeSetIds } from '@/game/engine';
+import type { BossRule } from '@/game/types';
 import { useApp } from '@/game/store';
 import type { TranslationKey } from '@/i18n/translations';
 import { COLORS, PRESSED } from '@/theme';
@@ -59,8 +73,133 @@ export default function ExpansionsScreen() {
             {pair.length === 1 && <View style={styles.cell} />}
           </View>
         ))}
+        {current.threat && <ThreatOptions />}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+const LEVEL_LABELS: Record<ThreatLevel, TranslationKey> = {
+  calm: 'threat.calm',
+  standard: 'threat.standard',
+  hard: 'threat.hard',
+  nightmare: 'threat.nightmare',
+};
+
+const MODE_LABELS: Record<ThreatMode, { label: TranslationKey; detail: TranslationKey }> = {
+  classic: { label: 'threat.classic', detail: 'threat.classicDetail' },
+  deadMenTales: { label: 'threat.deadMenTales', detail: 'threat.deadMenTalesDetail' },
+};
+
+const RULE_LABELS: Record<BossRule, { label: TranslationKey; detail: TranslationKey }> = {
+  oneAtATime: { label: 'threat.oneAtATime', detail: 'threat.oneAtATimeDetail' },
+  fest: { label: 'threat.fest', detail: 'threat.festDetail' },
+};
+
+/** A row of choices, the one in use outlined. */
+function Choices<T extends string>(props: { options: readonly T[]; selected: T; label: (value: T) => string; onSelect: (value: T) => void }) {
+  return (
+    <View style={styles.choices}>
+      {props.options.map((value) => (
+        <Pressable
+          key={value}
+          style={({ pressed }) => [styles.choice, value === props.selected && styles.choiceActive, pressed && PRESSED]}
+          onPress={() => props.onSelect(value)}
+          accessibilityRole="button"
+          accessibilityState={{ selected: value === props.selected }}
+        >
+          <Text style={styles.rowText}>{props.label(value)}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+/**
+ * How the bosses of the expansions switched on join the game, picked one by one: in the Zombie deck, dosed by the
+ * Threat (classic), or in decks of their own (Dead Men Tales). Only for an era whose rulebooks build the deck that
+ * way (see `threat.ts`).
+ */
+function ThreatOptions() {
+  const { universe, expansions, threat, setThreat, t } = useApp();
+  const setIds = activeSetIds(UNIVERSES[universe].sets, expansions);
+  const available = (bosses: readonly Boss[]) => bosses.filter((boss) => setIds.includes(boss.setId));
+  const abominations = [...available(ABOMINATION_BOSSES), ...available(BIG_BOSSES)];
+  const necromancers = available(NECROMANCER_BOSSES);
+  const budget = THREAT_BUDGET[threat.level];
+  const classic = threat.mode === 'classic';
+
+  const toggle = (zombie: string, on: boolean) =>
+    setThreat((current) => ({
+      ...current,
+      off: on ? current.off.filter((id) => id !== zombie) : [...current.off.filter((id) => id !== zombie), zombie],
+    }));
+
+  const switches = (bosses: readonly Boss[]) =>
+    pairs(bosses).map((pair) => (
+      <View key={pair[0].zombie} style={styles.line}>
+        {pair.map((boss) => {
+          const label = t(`zombie.${boss.zombie}.other`);
+          return (
+            <View key={boss.zombie} style={styles.cell}>
+              <View style={styles.row}>
+                <View style={styles.rowLabel}>
+                  <Text style={styles.rowText}>{label}</Text>
+                  {classic && BIG_BOSSES.includes(boss) && <Text style={styles.rowDetail}>{t('threat.outside')}</Text>}
+                </View>
+                <Switch
+                  value={!threat.off.includes(boss.zombie)}
+                  onValueChange={(on) => toggle(boss.zombie, on)}
+                  accessibilityLabel={label}
+                />
+              </View>
+            </View>
+          );
+        })}
+        {pair.length === 1 && <View style={styles.cell} />}
+      </View>
+    ));
+
+  return (
+    <>
+      <Text style={styles.heading}>{t('threat.rules')}</Text>
+      <Choices
+        options={THREAT_MODES}
+        selected={threat.mode}
+        label={(mode) => t(MODE_LABELS[mode].label)}
+        onSelect={(mode) => setThreat((current) => ({ ...current, mode }))}
+      />
+      <Text style={styles.muted}>{t(MODE_LABELS[threat.mode].detail)}</Text>
+      <Text style={styles.heading}>{t('threat.title')}</Text>
+      {classic ? (
+        <>
+          <Choices
+            options={THREAT_LEVELS}
+            selected={threat.level}
+            label={(level) => t(LEVEL_LABELS[level])}
+            onSelect={(level) => setThreat((current) => ({ ...current, level }))}
+          />
+          <Text style={styles.muted}>
+            {budget === Infinity ? t('threat.nightmareDetail') : t('threat.detail', { n: budget })}
+          </Text>
+        </>
+      ) : (
+        <>
+          <Choices
+            options={BOSS_RULES}
+            selected={threat.bossRule}
+            label={(rule) => t(RULE_LABELS[rule].label)}
+            onSelect={(bossRule) => setThreat((current) => ({ ...current, bossRule }))}
+          />
+          <Text style={styles.muted}>{t(RULE_LABELS[threat.bossRule].detail)}</Text>
+        </>
+      )}
+      {abominations.length > 0 && <Text style={styles.heading}>{t('threat.abominations')}</Text>}
+      {switches(abominations)}
+      <Text style={styles.heading}>{t('threat.necromancers')}</Text>
+      {classic && <Text style={styles.muted}>{t('threat.necromancersHint')}</Text>}
+      {switches(necromancers)}
+    </>
   );
 }
 
@@ -95,6 +234,18 @@ const styles = StyleSheet.create({
   rowLabel: { flex: 1, paddingVertical: 8 },
   rowText: { color: COLORS.text, fontSize: 16 },
   rowDetail: { color: COLORS.muted, fontSize: 12 },
+  heading: { color: COLORS.muted, fontSize: 14, fontWeight: '700', textTransform: 'uppercase', marginTop: 8 },
+  choices: { flexDirection: 'row', gap: 8 },
+  choice: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+  },
+  choiceActive: { borderColor: COLORS.text },
   toggleAll: { alignItems: 'center', backgroundColor: COLORS.accent, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 16 },
   toggleAllText: { color: '#ffffff', fontSize: 16, fontWeight: '800', textTransform: 'uppercase' },
 });

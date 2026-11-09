@@ -1,4 +1,18 @@
-import type { CardPart, CardSet, DangerLevel, DeckParts, GameState, Piles, UniverseId, ZombieCard } from './types';
+import type {
+  BossDeck,
+  BossKind,
+  BossPiles,
+  BossRule,
+  CardPart,
+  CardSet,
+  DangerLevel,
+  DeckParts,
+  GameState,
+  Piles,
+  Revealed,
+  UniverseId,
+  ZombieCard,
+} from './types';
 
 export type Rng = () => number;
 
@@ -55,6 +69,14 @@ export function selectCards(
   );
 }
 
+/** The bosses of the Abomination and Necromancer decks, when the bosses are not cards of the Zombie deck. */
+export type BossSetup = { rule: BossRule; abomination: string[]; necromancer: string[] };
+/** A new deck: its cards and, with the Dead Men Tales rules, its boss decks. */
+export type Deck = { cards: ZombieCard[]; bosses?: BossSetup };
+/** Last say on the cards of a new deck, such as the fantasy era dosing its bosses. */
+export type Tailor = (cards: ZombieCard[], rng: Rng) => Deck;
+const keepAll: Tailor = (cards) => ({ cards });
+
 export function newGame(
   sets: readonly CardSet[],
   setIds: string[],
@@ -62,13 +84,20 @@ export function newGame(
   rng: Rng = Math.random,
   zones = 1,
   universe: UniverseId = 'modern',
+  tailor: Tailor = keepAll,
 ): GameState {
-  const ids = selectCards(sets, setIds, parts).map((card) => card.id);
+  const deck = tailor(selectCards(sets, setIds, parts), rng);
+  const ids = deck.cards.map((card) => card.id);
+  const bossDeck = (bosses: readonly string[]): BossDeck => ({ draw: shuffle(bosses, rng), discard: [] });
+  const bosses = deck.bosses
+    ? { abomination: bossDeck(deck.bosses.abomination), necromancer: bossDeck(deck.bosses.necromancer), revealed: {} }
+    : null;
   return {
-    version: 3,
+    version: 4,
+    bossRule: deck.bosses?.rule ?? null,
     universe,
     setIds,
-    piles: { draw: shuffle(ids, rng), discard: [], drawn: [], reshuffled: false },
+    piles: { draw: shuffle(ids, rng), discard: [], drawn: [], reshuffled: false, bosses },
     history: [],
     danger: 'blue',
     zones: clampZones(zones),
@@ -85,6 +114,52 @@ export function newGame(
 export type SpawnEffect = 'spawn' | 'drawAgain' | 'double' | 'endStep';
 export type CardEffect = (cardId: string) => SpawnEffect;
 const plainCards: CardEffect = () => 'spawn';
+
+/** The boss deck a card calls on at a Danger Level, if any: an Abomination it spawns, a Necromancer. */
+export type BossTrigger = (cardId: string, danger: DangerLevel) => BossKind | undefined;
+const noBosses: BossTrigger = () => undefined;
+
+function drawBoss(deck: BossDeck, rng: Rng): { boss?: string; deck: BossDeck } {
+  let { draw, discard } = deck;
+  if (draw.length === 0) {
+    if (discard.length === 0) return { deck };
+    draw = shuffle(discard, rng);
+    discard = [];
+  }
+  const [boss, ...rest] = draw;
+  return { boss, deck: { draw: rest, discard } };
+}
+
+/**
+ * The boss decks once some cards leave the display (their bosses go to the discard of their deck) and others are
+ * dealt (each one calling on a deck reveals its top card, the deck reshuffling its discard when empty).
+ */
+function revealBosses(
+  bosses: BossPiles | null,
+  leaving: readonly string[],
+  dealt: readonly string[],
+  trigger: BossTrigger,
+  danger: DangerLevel,
+  rng: Rng,
+): BossPiles | null {
+  if (!bosses) return null;
+  const decks = { abomination: bosses.abomination, necromancer: bosses.necromancer };
+  const revealed: Record<string, Revealed> = { ...bosses.revealed };
+  for (const card of leaving) {
+    const gone = revealed[card];
+    if (!gone) continue;
+    decks[gone.kind] = { ...decks[gone.kind], discard: [...decks[gone.kind].discard, gone.boss] };
+    delete revealed[card];
+  }
+  for (const card of dealt) {
+    const kind = trigger(card, danger);
+    if (!kind) continue;
+    const { boss, deck } = drawBoss(decks[kind], rng);
+    decks[kind] = deck;
+    if (boss) revealed[card] = { kind, boss };
+  }
+  return { ...decks, revealed };
+}
 
 /** Where a Spawn step stands after some cards: the zone being served and how many cards it still needs. */
 type StepPlan = { zone: number; need: number; doubles: number; extra: boolean; done: boolean };
@@ -117,7 +192,12 @@ const planOf = (drawn: readonly string[], effect: CardEffect, zones: number) =>
  * Deals one card to each Spawn Zone, more when cards ask for it. The cards of the previous step go to the discard
  * first; an empty deck reshuffles the discard, never the cards being dealt.
  */
-export function drawCards(state: GameState, effect: CardEffect = plainCards, rng: Rng = Math.random): GameState {
+export function drawCards(
+  state: GameState,
+  effect: CardEffect = plainCards,
+  rng: Rng = Math.random,
+  trigger: BossTrigger = noBosses,
+): GameState {
   let draw = state.piles.draw;
   let discard = [...state.piles.discard, ...state.piles.drawn];
   const drawn: string[] = [];
@@ -136,7 +216,8 @@ export function drawCards(state: GameState, effect: CardEffect = plainCards, rng
     plan = nextPlan(plan, effect(card), state.zones);
   }
   if (drawn.length === 0) return state;
-  return { ...state, history: remember(state), piles: { draw, discard, drawn, reshuffled } };
+  const bosses = revealBosses(state.piles.bosses, state.piles.drawn, drawn, trigger, state.danger, rng);
+  return { ...state, history: remember(state), piles: { draw, discard, drawn, reshuffled, bosses } };
 }
 
 /** Whether the next card dealt one zone at a time opens a new Spawn step: none on display, or the step is over. */
@@ -162,7 +243,12 @@ export function pendingZones(state: GameState, effect: CardEffect = plainCards):
  * Deals the card of the next Spawn Zone only, for players who take the zones one at a time. Once the step is over,
  * the next draw starts a new one and discards the previous cards.
  */
-export function drawNextCard(state: GameState, effect: CardEffect = plainCards, rng: Rng = Math.random): GameState {
+export function drawNextCard(
+  state: GameState,
+  effect: CardEffect = plainCards,
+  rng: Rng = Math.random,
+  trigger: BossTrigger = noBosses,
+): GameState {
   const { piles } = state;
   const newStep = startsNewStep(state, effect);
   let draw = piles.draw;
@@ -176,7 +262,8 @@ export function drawNextCard(state: GameState, effect: CardEffect = plainCards, 
   }
   const [card, ...rest] = draw;
   const drawn = newStep ? [card] : [...piles.drawn, card];
-  return { ...state, history: remember(state), piles: { draw: rest, discard, drawn, reshuffled } };
+  const bosses = revealBosses(piles.bosses, newStep ? piles.drawn : [], [card], trigger, state.danger, rng);
+  return { ...state, history: remember(state), piles: { draw: rest, discard, drawn, reshuffled, bosses } };
 }
 
 /**
@@ -199,13 +286,16 @@ export function setZones(state: GameState, zones: number): GameState {
   return { ...state, zones: clampZones(zones) };
 }
 
-/** Puts every card, including the ones on display, back in the deck. */
+/** Puts every card, including the ones on display, back in the deck; the bosses go back in their decks too. */
 export function reshuffleAll(state: GameState, rng: Rng = Math.random): GameState {
   const { draw, discard, drawn } = state.piles;
+  const gathered = revealBosses(state.piles.bosses, drawn, [], noBosses, state.danger, rng);
+  const regather = (deck: BossDeck): BossDeck => ({ draw: shuffle([...deck.draw, ...deck.discard], rng), discard: [] });
+  const bosses = gathered && { abomination: regather(gathered.abomination), necromancer: regather(gathered.necromancer), revealed: {} };
   return {
     ...state,
     history: remember(state),
-    piles: { draw: shuffle([...draw, ...discard, ...drawn], rng), discard: [], drawn: [], reshuffled: false },
+    piles: { draw: shuffle([...draw, ...discard, ...drawn], rng), discard: [], drawn: [], reshuffled: false, bosses },
   };
 }
 
@@ -231,7 +321,7 @@ type PilesV1 = Omit<Piles, 'drawn'> & { current: string | null };
 
 /** Brings a save from an older version of the app up to date, one version at a time; anything else is unchanged. */
 export function upgradeSave(value: unknown): unknown {
-  return upgradeFromV2(upgradeFromV1(value));
+  return upgradeFromV3(upgradeFromV2(upgradeFromV1(value)));
 }
 
 function upgradeFromV1(value: unknown): unknown {
@@ -248,13 +338,22 @@ function upgradeFromV2(value: unknown): unknown {
   return save?.version === 2 ? { ...save, version: 3, universe: 'modern' } : value;
 }
 
+function upgradeFromV3(value: unknown): unknown {
+  const save = value as { version?: number; piles?: object; history?: unknown } | null;
+  if (save?.version !== 3 || !save.piles || !Array.isArray(save.history)) return value;
+  // Version 3 had no boss decks: its bosses were cards of the Zombie deck.
+  const upgrade = (piles: object) => ({ ...piles, bosses: null });
+  return { ...save, version: 4, bossRule: null, piles: upgrade(save.piles), history: save.history.map(upgrade) };
+}
+
 /** Rejects saves that are malformed or refer to cards that no longer exist in their universe. */
 export function isValidSave(
   value: unknown,
   cardIdsOf: (universe: UniverseId) => ReadonlySet<string>,
 ): value is GameState {
   const state = value as GameState | null;
-  if (state?.version !== 3 || !DANGER_LEVELS.includes(state.danger) || !UNIVERSE_IDS.includes(state.universe)) return false;
+  if (state?.version !== 4 || !DANGER_LEVELS.includes(state.danger) || !UNIVERSE_IDS.includes(state.universe)) return false;
+  if (state.bossRule !== null && state.bossRule !== 'oneAtATime' && state.bossRule !== 'fest') return false;
   if (!Number.isInteger(state.zones) || state.zones !== clampZones(state.zones)) return false;
   if (!Array.isArray(state.setIds) || !state.setIds.every((id) => typeof id === 'string')) return false;
   if (!Array.isArray(state.history)) return false;
@@ -264,5 +363,19 @@ export function isValidSave(
 
 function isValidPiles(piles: Piles | null | undefined, knownCardIds: ReadonlySet<string>): boolean {
   if (!piles || !Array.isArray(piles.draw) || !Array.isArray(piles.discard) || !Array.isArray(piles.drawn)) return false;
+  if (!isValidBosses(piles.bosses)) return false;
   return [...piles.draw, ...piles.discard, ...piles.drawn].every((id) => knownCardIds.has(id));
+}
+
+const isStrings = (value: unknown): value is string[] => Array.isArray(value) && value.every((id) => typeof id === 'string');
+const isBossDeck = (deck: BossDeck | undefined) => !!deck && isStrings(deck.draw) && isStrings(deck.discard);
+const BOSS_KINDS: readonly BossKind[] = ['abomination', 'necromancer'];
+
+function isValidBosses(bosses: BossPiles | null | undefined): boolean {
+  if (bosses === null) return true;
+  if (!bosses || !isBossDeck(bosses.abomination) || !isBossDeck(bosses.necromancer)) return false;
+  if (!bosses.revealed || typeof bosses.revealed !== 'object') return false;
+  return Object.values(bosses.revealed).every(
+    (shown) => !!shown && BOSS_KINDS.includes(shown.kind) && typeof shown.boss === 'string',
+  );
 }

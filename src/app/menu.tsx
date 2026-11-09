@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppBackground } from '@/components/app-background';
 import { Hazard } from '@/components/hazard';
 import { ZombieFigure } from '@/components/zombie-art';
-import { switchableSets, UNIVERSES } from '@/data/universes';
+import { switchableSets, tailorDeck, UNIVERSES } from '@/data/universes';
 import { activeSetIds, ALL_PARTS, newGame, selectCards } from '@/game/engine';
 import { askForReviewIfDue } from '@/game/review';
 import { useApp } from '@/game/store';
@@ -19,7 +19,7 @@ const ART_RATIO = 0.5;
 const REVIEW_DELAY_MS = 1000;
 
 export default function MenuScreen() {
-  const { game, setGame, universe, expansions, deckParts, t } = useApp();
+  const { game, setGame, universe, expansions, threat, deckParts, t } = useApp();
   const { sets, deckParts: hasDeckParts, tagline, heroes } = UNIVERSES[universe];
   // A game from another universe is not resumed here, but starting a new one still replaces it.
   const resumable = game?.universe === universe ? game : null;
@@ -38,7 +38,8 @@ export default function MenuScreen() {
   );
 
   const setIds = activeSetIds(sets, expansions);
-  const deckSize = selectCards(sets, setIds, parts).length;
+  const tailor = tailorDeck(universe, threat);
+  const deckSize = tailor(selectCards(sets, setIds, parts), Math.random).cards.length;
   // A core box that replaces another is not an expansion: the counter leaves it out.
   const expansionSets = switchableSets(UNIVERSES[universe]);
   const enabledExpansions = expansionSets.filter((set) => setIds.includes(set.id)).length;
@@ -49,7 +50,7 @@ export default function MenuScreen() {
       return;
     }
     // Same board as last time until the players change it: keep its Spawn Zones.
-    setGame(() => newGame(sets, setIds, parts, Math.random, game?.zones, universe));
+    setGame(() => newGame(sets, setIds, parts, Math.random, game?.zones, universe, tailor));
     setConfirming(false);
     router.push('/game');
   };

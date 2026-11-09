@@ -3,6 +3,7 @@ import { test } from 'node:test';
 
 import { CARD_SETS, OPTIONAL_SETS } from '../data/decks.ts';
 import { FANTASY_SETS } from '../data/fantasy.ts';
+import { DEFAULT_THREAT, parseThreat, tailorFantasyDeck, type Threat } from '../data/threat.ts';
 import { allExpansions, CARDS_BY_ID, cardEffect, cardIdsOf, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
 import {
   activeSetIds,
@@ -26,7 +27,7 @@ import {
   upgradeSave,
   zonesOf,
 } from './engine.ts';
-import type { CardSet, GameState, ZombieCard } from './types.ts';
+import type { BossKind, CardSet, GameState, Piles, ZombieCard } from './types.ts';
 
 const sets: CardSet[] = [
   {
@@ -297,19 +298,34 @@ test('a save from version 1 comes back with its card on display', () => {
   };
   const upgraded = upgradeSave(v1);
   assert.ok(isValidSave(upgraded, () => new Set(['a1', 'a2', 'a3'])));
-  assert.deepEqual(upgraded.piles, { draw: ['a1'], discard: ['a2'], drawn: ['a3'], reshuffled: false });
+  assert.deepEqual(upgraded.piles, { draw: ['a1'], discard: ['a2'], drawn: ['a3'], reshuffled: false, bosses: null });
   assert.deepEqual(upgraded.history[0].drawn, []);
   assert.equal(upgraded.zones, 1);
   assert.equal(upgraded.universe, 'modern');
   assert.equal(upgradeSave(null), null);
 });
 
+/** A save as an older version wrote it: no boss decks, no boss rule. */
+const withoutBosses = ({ bossRule: _bossRule, piles, history, ...game }: GameState) => {
+  const strip = ({ bosses: _bosses, ...rest }: Piles) => rest;
+  return { ...game, piles: strip(piles), history: history.map(strip) };
+};
+
 test('a save from version 2 comes back in the modern universe, its game untouched', () => {
-  const { universe: _universe, ...current } = drawCard(setZones(newGame(sets, ['a']), 2));
-  const v2 = { ...current, version: 2 };
+  const game = drawCard(setZones(newGame(sets, ['a']), 2));
+  const { universe: _universe, ...v2 } = { ...withoutBosses(game), version: 2 };
   const upgraded = upgradeSave(JSON.parse(JSON.stringify(v2)));
   assert.ok(isValidSave(upgraded, () => new Set(['a1', 'a2', 'a3'])));
-  assert.deepEqual(upgraded, { ...v2, version: 3, universe: 'modern' });
+  assert.deepEqual(upgraded, game);
+});
+
+test('a save from version 3 comes back without boss decks, its game untouched', () => {
+  const game = drawCard(drawCard(newGame(sets, ['a'])));
+  const v3 = { ...withoutBosses(game), version: 3 };
+  const upgraded = upgradeSave(JSON.parse(JSON.stringify(v3)));
+  assert.ok(isValidSave(upgraded, () => new Set(['a1', 'a2', 'a3'])));
+  assert.deepEqual(upgraded, game);
+  assert.equal(isValidSave(v3, () => new Set(['a1', 'a2', 'a3'])), false);
 });
 
 test('a new game belongs to the universe it is started in', () => {
@@ -553,4 +569,167 @@ test('card ids are unique across every universe', () => {
   const ids = Object.values(UNIVERSES).flatMap((universe) => universe.sets.flatMap((set) => set.cards.map((card) => card.id)));
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(CARDS_BY_ID.size, ids.length);
+});
+
+// The fantasy deck doses its bosses as the rulebooks build it: see src/data/threat.ts for the quotes.
+const fantasyDeck = (setIds: string[], threat: Threat = DEFAULT_THREAT) =>
+  tailorFantasyDeck(selectCards(FANTASY_SETS, setIds), threat, () => 0).cards;
+const bossCount = (cards: readonly ZombieCard[]) => {
+  const counts: Record<string, number> = {};
+  for (const card of cards) {
+    const zombie =
+      card.kind === 'necromancer' ? card.zombie : card.kind === 'levels' && card.title === 'named' ? card.levels[1]?.zombie : undefined;
+    if (zombie) counts[zombie] = (counts[zombie] ?? 0) + 1;
+  }
+  return counts;
+};
+const NAMED_ABOMINATION_ZOMBIES = [
+  'ablobination', 'abominatroll', 'abominotaur', 'gorgomination', 'hordeBrother', 'siegeBreaker',
+  'swampLurker', 'abominabunny', 'magentaCovefe', 'vaultWarden', 'werezombie', 'chromatiz',
+];
+const namedAbominationCards = (cards: readonly ZombieCard[]) =>
+  Object.entries(bossCount(cards)).filter(([zombie]) => NAMED_ABOMINATION_ZOMBIES.includes(zombie)).reduce((n, [, count]) => n + count, 0);
+
+test('the fantasy deck keeps six Necromancer cards per core box, shared with the named Necromancers chosen', () => {
+  assert.deepEqual(bossCount(fantasyDeck(['blackPlague'])), { necromancer: 6 });
+  assert.deepEqual(bossCount(fantasyDeck(['blackPlague', 'greenHorde'])), { necromancer: 6, orcNecromancer: 6 });
+  const cabal = (setIds: string[], off: string[] = []) => {
+    const { necromancer, orcNecromancer, countTemeraire, queenSevera } = bossCount(fantasyDeck(setIds, { ...DEFAULT_THREAT, level: 'standard', off }));
+    return { necromancer, orcNecromancer, countTemeraire, queenSevera };
+  };
+  // The rulebook example shares the six cards between four Necromancers; here they go round in turn.
+  assert.deepEqual(cabal(['blackPlague', 'hordeBox']), { necromancer: 2, orcNecromancer: undefined, countTemeraire: 2, queenSevera: 2 });
+  assert.deepEqual(cabal(['blackPlague', 'hordeBox'], ['queenSevera']), { necromancer: 3, orcNecromancer: undefined, countTemeraire: 3, queenSevera: undefined });
+  assert.deepEqual(cabal(['blackPlague', 'greenHorde', 'hordeBox']), { necromancer: 3, orcNecromancer: 3, countTemeraire: 3, queenSevera: 3 });
+});
+
+test('the Threat sets how many named Abomination cards go in, per core box, shared between the ones chosen', () => {
+  const all = ['blackPlague', 'zombieBosses', 'hordeBox'];
+  const at = (level: Threat['level'], setIds = all, off: string[] = []) => fantasyDeck(setIds, { ...DEFAULT_THREAT, level, off });
+  assert.equal(namedAbominationCards(at('calm')), 2);
+  assert.equal(namedAbominationCards(at('standard')), 4);
+  assert.equal(namedAbominationCards(at('hard')), 8);
+  assert.equal(namedAbominationCards(at('nightmare')), 48);
+  assert.equal(namedAbominationCards(at('standard', ['blackPlague', 'greenHorde', 'zombieBosses', 'hordeBox'])), 8);
+  // Fewer cards than the budget: every card of the Abominations chosen, none of the others.
+  const one = at('hard', ['blackPlague', 'zombieBosses'], ['abominatroll', 'abominotaur']);
+  assert.deepEqual(bossCount(one), { necromancer: 6, ablobination: 4 });
+});
+
+test('the Dragon and the Giant stay outside the Threat, Fatty Bursters always come with the Horde Box', () => {
+  const standard = bossCount(fantasyDeck(['blackPlague', 'hordeBox']));
+  assert.equal(standard.feralDragon, 4);
+  assert.equal(standard.zombieGiant, 4);
+  assert.equal(standard.fattyBurster, 6);
+  assert.equal(bossCount(fantasyDeck(['blackPlague', 'hordeBox'], { ...DEFAULT_THREAT, level: 'nightmare', off: [] })).feralDragon, 8);
+  const without = bossCount(fantasyDeck(['blackPlague', 'hordeBox'], { ...DEFAULT_THREAT, level: 'calm', off: ['feralDragon', 'zombieGiant'] }));
+  assert.equal(without.feralDragon, undefined);
+  assert.equal(without.zombieGiant, undefined);
+  assert.equal(without.fattyBurster, 6);
+});
+
+test('dosing the bosses leaves every other fantasy card in the deck', () => {
+  const setIds = FANTASY_SETS.map((set) => set.id);
+  const isBoss = (card: ZombieCard) => card.kind === 'necromancer' || (card.kind === 'levels' && card.title === 'named');
+  const others = (cards: readonly ZombieCard[]) => cards.filter((card) => !isBoss(card) || bossCount([card]).fattyBurster || bossCount([card]).wolfbomination);
+  assert.deepEqual(others(fantasyDeck(setIds, { ...DEFAULT_THREAT, level: 'calm', off: [] })), others(selectCards(FANTASY_SETS, setIds)));
+});
+
+test('a new game deals the tailored deck', () => {
+  const game = newGame(FANTASY_SETS, ['blackPlague', 'hordeBox'], ALL_PARTS, () => 0, 1, 'fantasy', (cards, rng) =>
+    tailorFantasyDeck(cards, DEFAULT_THREAT, rng),
+  );
+  assert.equal(game.piles.draw.length, fantasyDeck(['blackPlague', 'hordeBox']).length);
+});
+
+test('stored Threat choices are checked, with every boss in at Standard by default', () => {
+  assert.deepEqual(parseThreat(null), DEFAULT_THREAT);
+  assert.deepEqual(parseThreat('not json'), DEFAULT_THREAT);
+  assert.deepEqual(parseThreat('{"level":"extreme","off":["queenSevera",3]}'), { ...DEFAULT_THREAT, level: 'standard', off: ['queenSevera'] });
+  assert.deepEqual(parseThreat('{"level":"hard","off":[]}'), { ...DEFAULT_THREAT, level: 'hard', off: [] });
+});
+
+// Boss decks (Dead Men Tales rules): a card calling on a deck reveals its top boss.
+const bossGame = () =>
+  newGame(sets, ['a'], ALL_PARTS, () => 0, 1, 'modern', (cards) => ({
+    cards,
+    bosses: { rule: 'oneAtATime', abomination: ['x', 'y'], necromancer: ['n'] },
+  }));
+/** In the test sets, card a1 spawns an Abomination at every level and a2 is a Necromancer. */
+const bossTrigger = (cardId: string): BossKind | undefined =>
+  cardId === 'a1' ? 'abomination' : cardId === 'a2' ? 'necromancer' : undefined;
+const dealAll = (state: GameState) => drawCards(state, undefined, () => 0, bossTrigger);
+
+test('a card that calls on a boss deck reveals its top boss, and its boss goes to that deck\'s discard after the step', () => {
+  let state = bossGame();
+  assert.equal(state.bossRule, 'oneAtATime');
+  const firstAbomination = state.piles.bosses?.abomination.draw[0];
+  while (!state.piles.drawn.includes('a1')) state = dealAll(state);
+  assert.deepEqual(state.piles.bosses?.revealed.a1, { kind: 'abomination', boss: firstAbomination });
+  assert.equal(state.piles.bosses?.abomination.draw.length, 1);
+  const next = dealAll(state);
+  assert.equal(next.piles.bosses?.revealed.a1, undefined);
+  assert.deepEqual(next.piles.bosses?.abomination.discard, [firstAbomination]);
+});
+
+test('a boss deck reshuffles its discard when empty, and undo brings the revealed bosses back', () => {
+  let state = bossGame();
+  const seen: string[] = [];
+  for (let i = 0; i < 12; i++) {
+    state = dealAll(state);
+    const shown = state.piles.bosses?.revealed.a1;
+    if (shown) seen.push(shown.boss);
+  }
+  assert.ok(seen.length >= 3, 'the abomination deck ran out and came back');
+  assert.ok(seen.every((boss) => boss === 'x' || boss === 'y'));
+  const before = state;
+  assert.deepEqual(undo(dealAll(before)).piles, before.piles);
+});
+
+test('reshuffling everything puts every boss back in its deck', () => {
+  let state = bossGame();
+  for (let i = 0; i < 3; i++) state = dealAll(state);
+  const bosses = reshuffleAll(state, () => 0).piles.bosses;
+  assert.deepEqual([...(bosses?.abomination.draw ?? [])].sort(), ['x', 'y']);
+  assert.deepEqual(bosses?.necromancer.draw, ['n']);
+  assert.deepEqual(bosses?.revealed, {});
+  assert.deepEqual(bosses?.abomination.discard, []);
+});
+
+test('a game without boss decks reveals nothing, and saves with broken boss decks are rejected', () => {
+  const plain = dealAll(newGame(sets, ['a']));
+  assert.equal(plain.piles.bosses, null);
+  const state = dealAll(bossGame());
+  const known = () => new Set(['a1', 'a2', 'a3']);
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(state)), known));
+  assert.equal(isValidSave({ ...state, bossRule: 'party' }, known), false);
+  const broken = { ...state, piles: { ...state.piles, bosses: { ...state.piles.bosses, revealed: { a1: { kind: 'dragon', boss: 'x' } } } } };
+  assert.equal(isValidSave(broken, known), false);
+});
+
+test('Dead Men Tales keeps the core Abominations and Necromancers in the deck, the named ones in their decks', () => {
+  const setIds = ['blackPlague', 'greenHorde', 'wulfsburg', 'zombieBosses', 'friendsAndFoes', 'hordeBox'];
+  const all = selectCards(FANTASY_SETS, setIds);
+  const deck = tailorFantasyDeck(all, { ...DEFAULT_THREAT, mode: 'deadMenTales', bossRule: 'fest', off: ['abominabunny', 'queenSevera'] });
+  const counts = bossCount(deck.cards);
+  assert.deepEqual(counts, { necromancer: 6, orcNecromancer: 6, fattyBurster: 6 });
+  assert.equal(deck.bosses?.rule, 'fest');
+  assert.deepEqual(deck.bosses?.necromancer, ['necromancer', 'orcNecromancer', 'countTemeraire']);
+  assert.deepEqual(deck.bosses?.abomination, [
+    'fantasyAbomination', 'orcAbomination', 'taintedAbomination', 'wolfbomination',
+    'ablobination', 'abominatroll', 'abominotaur', 'gorgomination', 'hordeBrother', 'siegeBreaker', 'swampLurker',
+    'magentaCovefe', 'vaultWarden', 'werezombie', 'chromatiz', 'feralDragon', 'zombieGiant',
+  ]);
+  // Every other card stays: only the named bosses leave the Zombie deck.
+  assert.equal(deck.cards.length, all.length - 2 - 12 - 54 + 6 - 12);
+});
+
+test('stored Threat choices keep the rules and how Abominations arrive', () => {
+  assert.deepEqual(parseThreat('{"mode":"deadMenTales","bossRule":"fest","level":"calm","off":[]}'), {
+    mode: 'deadMenTales',
+    level: 'calm',
+    bossRule: 'fest',
+    off: [],
+  });
+  assert.deepEqual(parseThreat('{"mode":"pirate","bossRule":"party"}'), DEFAULT_THREAT);
 });

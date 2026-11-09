@@ -152,16 +152,33 @@ export type CardSet = {
 export type CardPart = 'easy' | 'hard' | 'extra';
 export type DeckParts = { easy: boolean; hard: boolean; extra: boolean };
 
+/** Which boss deck a drawn card calls on: the Abomination it spawns, or the Necromancer. */
+export type BossKind = 'abomination' | 'necromancer';
+/** A deck of bosses (zombie ids), one card per boss, drawn and reshuffled like the Zombie deck. */
+export type BossDeck = { draw: string[]; discard: string[] };
+/**
+ * The Abomination and Necromancer decks of the Dead Men Tales rules: a drawn card that spawns one of them reveals
+ * which, from its deck. `revealed` holds the boss revealed for each card of `drawn`.
+ */
+export type Revealed = { kind: BossKind; boss: string };
+export type BossPiles = { abomination: BossDeck; necromancer: BossDeck; revealed: Record<string, Revealed> };
+/** Dead Men Tales: one Abomination at a time (the one on the board gets an Extra Activation), or the Abomination Fest. */
+export type BossRule = 'oneAtATime' | 'fest';
+
 export type Piles = {
   draw: string[];
   discard: string[];
   /** Cards of the last Spawn step, in Spawn Zone order; they go to the discard on the next draw. */
   drawn: string[];
   reshuffled: boolean;
+  /** Only with boss decks (`GameState.bossRule`); `null` when the deck holds its bosses. */
+  bosses: BossPiles | null;
 };
 
 export type GameState = {
-  version: 3;
+  version: 4;
+  /** Boss decks in play and how their bosses arrive; `null`: the bosses are cards of the Zombie deck. */
+  bossRule: BossRule | null;
   /** The game's era: its sets, its cards and the menu it is resumed from. */
   universe: UniverseId;
   setIds: string[];

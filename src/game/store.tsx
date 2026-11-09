@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 
+import { DEFAULT_THREAT, parseThreat, type Threat } from '@/data/threat';
 import { cardIdsOf, UNIVERSES, withCoreBox } from '@/data/universes';
 import { deviceLanguage } from '@/i18n/device-language';
 import { isLanguage, type Language, type Translate, translator } from '@/i18n/translations';
@@ -25,6 +26,8 @@ const DECK_PARTS_KEY = 'zombideck.deckParts';
 const HAPTICS_KEY = 'zombideck.haptics';
 const ZONE_DISPLAY_KEY = 'zombideck.zoneDisplay';
 const UNIVERSE_KEY = 'zombideck.universe';
+/** The bosses and Threat of each universe that doses them (see `Universe.threat`). */
+const threatKey = (universe: UniverseId) => `zombideck.threat.${universe}`;
 
 /** Each universe has its own list; the modern one keeps the key it had before there were universes. */
 const expansionsKey = (universe: UniverseId) =>
@@ -36,6 +39,9 @@ const defaultExpansions = (): ByUniverse<string[]> =>
   Object.fromEntries(
     UNIVERSE_IDS.map((universe) => [universe, [...UNIVERSES[universe].defaultExpansions]]),
   ) as unknown as ByUniverse<string[]>;
+
+const defaultThreats = (): ByUniverse<Threat> =>
+  Object.fromEntries(UNIVERSE_IDS.map((universe) => [universe, DEFAULT_THREAT])) as unknown as ByUniverse<Threat>;
 
 /** Spawn cards show every Danger Level, or only the current one. */
 export type CardDisplay = 'all' | 'current';
@@ -57,6 +63,9 @@ type AppContextValue = {
   expansions: string[];
   /** Takes the new list or, for changes made in quick succession, a function of the current one. */
   setExpansions: Dispatch<SetStateAction<string[]>>;
+  /** Bosses left out and Threat of the current universe, for the next game. */
+  threat: Threat;
+  setThreat: Dispatch<SetStateAction<Threat>>;
   cardDisplay: CardDisplay;
   setCardDisplay: (cardDisplay: CardDisplay) => void;
   deckParts: DeckParts;
@@ -115,6 +124,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(deviceLanguage);
   const [universe, setUniverse] = useState<UniverseId>('modern');
   const [allExpansions, setAllExpansions] = useState<ByUniverse<string[]>>(defaultExpansions);
+  const [allThreats, setAllThreats] = useState<ByUniverse<Threat>>(defaultThreats);
   const [cardDisplay, setCardDisplay] = useState<CardDisplay>('current');
   const [deckParts, setDeckParts] = useState<DeckParts>(ALL_PARTS);
   const [haptics, setHaptics] = useState(true);
@@ -122,7 +132,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const keys = [GAME_KEY, LANGUAGE_KEY, UNIVERSE_KEY, CARD_DISPLAY_KEY, DECK_PARTS_KEY, HAPTICS_KEY, ZONE_DISPLAY_KEY];
-    AsyncStorage.multiGet([...keys, ...UNIVERSE_IDS.map(expansionsKey)])
+    AsyncStorage.multiGet([...keys, ...UNIVERSE_IDS.map(expansionsKey), ...UNIVERSE_IDS.map(threatKey)])
       .then((entries) => {
         const stored = new Map(entries);
         const read = (key: string) => stored.get(key) ?? null;
@@ -135,6 +145,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           Object.fromEntries(
             UNIVERSE_IDS.map((id) => [id, withCoreBox(UNIVERSES[id], parseExpansions(read(expansionsKey(id)), UNIVERSES[id].defaultExpansions))]),
           ) as unknown as ByUniverse<string[]>,
+        );
+        setAllThreats(
+          Object.fromEntries(UNIVERSE_IDS.map((id) => [id, parseThreat(read(threatKey(id)))])) as unknown as ByUniverse<Threat>,
         );
         const savedCardDisplay = read(CARD_DISPLAY_KEY);
         const savedZoneDisplay = read(ZONE_DISPLAY_KEY);
@@ -181,6 +194,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     for (const id of UNIVERSE_IDS) save(expansionsKey(id), JSON.stringify(allExpansions[id]), 'expansions');
   }, [allExpansions, loaded]);
 
+  const threat = allThreats[universe];
+  const setThreat = useCallback<Dispatch<SetStateAction<Threat>>>(
+    (update) =>
+      setAllThreats((all) => ({
+        ...all,
+        [universe]: typeof update === 'function' ? update(all[universe]) : update,
+      })),
+    [universe],
+  );
+
+  useEffect(() => {
+    if (!loaded) return;
+    for (const id of UNIVERSE_IDS) save(threatKey(id), JSON.stringify(allThreats[id]), 'threat');
+  }, [allThreats, loaded]);
+
   const chooseCardDisplay = useCallback((next: CardDisplay) => {
     setCardDisplay(next);
     save(CARD_DISPLAY_KEY, next, 'card display');
@@ -211,6 +239,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setUniverse: chooseUniverse,
       expansions,
       setExpansions,
+      threat,
+      setThreat,
       cardDisplay,
       setCardDisplay: chooseCardDisplay,
       deckParts,
@@ -229,6 +259,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       chooseUniverse,
       expansions,
       setExpansions,
+      threat,
+      setThreat,
       cardDisplay,
       chooseCardDisplay,
       deckParts,

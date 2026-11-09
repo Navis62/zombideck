@@ -1,9 +1,10 @@
 import type { ArtSubject } from '../components/zombie-art';
-import type { CardEffect } from '../game/engine.ts';
+import { type BossTrigger, type CardEffect, DANGER_LEVELS, type Tailor } from '../game/engine.ts';
 import type { CardSet, UniverseId, ZombieCard } from '../game/types';
 import type { TranslationKey } from '../i18n/fr.ts';
 import { CARD_SETS } from './decks.ts';
-import { FANTASY_SETS } from './fantasy.ts';
+import { ABOMINATIONS, FANTASY_SETS } from './fantasy.ts';
+import { type Threat, tailorFantasyDeck } from './threat.ts';
 
 export type Universe = {
   id: UniverseId;
@@ -21,7 +22,14 @@ export type Universe = {
   tagline: TranslationKey;
   /** Zombies of the era, on its carousel card and its menu. */
   heroes: readonly ArtSubject[];
+  /** The era picks its bosses one by one and doses them with a Threat (see `threat.ts`). */
+  threat: boolean;
 };
+
+/** The cards of a new deck once the era has dosed its bosses with the players' Threat. */
+export function tailorDeck(universe: UniverseId, threat: Threat): Tailor {
+  return UNIVERSES[universe].threat ? (cards, rng) => tailorFantasyDeck(cards, threat, rng) : (cards) => ({ cards });
+}
 
 export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {
   modern: {
@@ -33,6 +41,7 @@ export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {
     deckParts: true,
     tagline: 'menu.tagline',
     heroes: ['runner', 'fatty', 'walker'],
+    threat: false,
   },
   fantasy: {
     id: 'fantasy',
@@ -43,6 +52,7 @@ export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {
     deckParts: false,
     tagline: 'menu.taglineFantasy',
     heroes: ['fantasyRunner', 'orcFatty', 'necromancer'],
+    threat: true,
   },
 };
 
@@ -74,6 +84,18 @@ export const cardEffect: CardEffect = (cardId) => {
     default:
       return 'spawn';
   }
+};
+
+/**
+ * With boss decks (Dead Men Tales rules): a Necromancer card reveals its Necromancer, a card that spawns an
+ * Abomination at the current Danger Level reveals which one.
+ */
+export const bossTrigger: BossTrigger = (cardId, danger) => {
+  const card = CARDS_BY_ID.get(cardId);
+  if (card?.kind === 'necromancer') return 'necromancer';
+  if (card?.kind !== 'levels') return undefined;
+  const level = card.levels[DANGER_LEVELS.indexOf(danger)];
+  return level && ABOMINATIONS.has(level.zombie) ? 'abomination' : undefined;
 };
 
 const coreIds = (universe: Universe) => universe.optionalSets.filter((set) => set.core).map((set) => set.id);
