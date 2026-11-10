@@ -43,6 +43,8 @@ export const ABOMINATION_BOSSES: readonly Boss[] = [
   { zombie: 'ablobination', setId: 'zombieBosses' },
   { zombie: 'abominatroll', setId: 'zombieBosses' },
   { zombie: 'abominotaur', setId: 'zombieBosses' },
+  { zombie: 'abominalpha', setId: 'specialGuests' },
+  { zombie: 'abominarat', setId: 'specialGuests' },
   { zombie: 'gorgomination', setId: 'hordeBox' },
   { zombie: 'hordeBrother', setId: 'hordeBox' },
   { zombie: 'siegeBreaker', setId: 'hordeBox' },
@@ -52,15 +54,29 @@ export const ABOMINATION_BOSSES: readonly Boss[] = [
   { zombie: 'vaultWarden', setId: 'hordeBox' },
   { zombie: 'werezombie', setId: 'hordeBox' },
   { zombie: 'chromatiz', setId: 'hordeBox' },
+  { zombie: 'swampTroll', setId: 'ratKingSwampTroll' },
 ];
 /** Not Abominations by the rules, picked one by one but outside the Threat's budget. */
 export const BIG_BOSSES: readonly Boss[] = [
   { zombie: 'feralDragon', setId: 'hordeBox' },
   { zombie: 'zombieGiant', setId: 'hordeBox' },
+  { zombie: 'necromanticDragon', setId: 'noRestForTheWicked' },
 ];
 export const NECROMANCER_BOSSES: readonly Boss[] = [
   { zombie: 'countTemeraire', setId: 'hordeBox' },
   { zombie: 'queenSevera', setId: 'hordeBox' },
+  { zombie: 'toMeKuPa', setId: 'specialGuests' },
+  { zombie: 'blackheart', setId: 'specialGuests' },
+  { zombie: 'ostokar', setId: 'specialGuests' },
+  { zombie: 'evilTroy', setId: 'specialGuests' },
+  { zombie: 'queenMedea', setId: 'specialGuests' },
+  { zombie: 'grin', setId: 'specialGuests' },
+  { zombie: 'erikSummoner', setId: 'specialGuests' },
+  { zombie: 'innsmouth', setId: 'specialGuests' },
+  { zombie: 'faolan', setId: 'specialGuests' },
+  { zombie: 'lordOfSkulls', setId: 'specialGuests' },
+  // A Necromancer printed as a spawn card: his picture over the Swarms of Ratz he brings.
+  { zombie: 'ratKing', setId: 'ratKingSwampTroll' },
 ];
 
 const CORE_NECROMANCERS: readonly { zombie: FantasyNecromancer; setId: string }[] = [
@@ -87,11 +103,12 @@ const DECK_BOSSES = new Set<string>(
 export const BOSS_IDS: ReadonlySet<string> = DECK_BOSSES;
 
 const namedZombie = (card: ZombieCard) =>
-  card.kind === 'levels' && card.title === 'named' ? card.levels.find((level) => level)?.zombie : undefined;
+  card.kind === 'levels' && card.title === 'named' ? (card.boss ?? card.levels.find((level) => level)?.zombie) : undefined;
 
 /** The boss a card spawns: a Necromancer, or the named Abomination printed across its levels. */
 function bossOf(card: ZombieCard): string | undefined {
   if (card.kind === 'necromancer') return card.zombie;
+  if (card.kind === 'levels' && card.boss && NECROMANCER_BOSSES.some((boss) => boss.zombie === card.boss)) return card.boss;
   const zombie = namedZombie(card);
   return zombie && ABOMINATION_ZOMBIES.has(zombie) ? zombie : undefined;
 }

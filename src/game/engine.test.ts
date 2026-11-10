@@ -490,6 +490,39 @@ test('the fantasy expansion cards match the printed cards', () => {
   ]);
 });
 
+test('No Rest for the Wicked, the Special Guests and the Rat King follow the printed numbers: #117-#166, #221-#252, #267-#284, #351-#360', () => {
+  const numbers = (setId: string) => FANTASY_SETS.find((set) => set.id === setId)?.cards.map((card) => Number(card.id.slice(-3)));
+  const range = (first: number, last: number) => Array.from({ length: last - first + 1 }, (_, i) => first + i);
+  assert.deepEqual(numbers('noRestForTheWicked'), range(221, 252));
+  assert.deepEqual(numbers('specialGuests'), [...range(117, 166), ...range(267, 284)]);
+  assert.deepEqual(numbers('ratKingSwampTroll'), range(351, 360));
+});
+
+test('No Rest for the Wicked, the Special Guests and the Rat King match the printed cards', () => {
+  const counts = (id: string) => levelsOf(id).map((level) => level && `${level.zombie} ${level.count}`);
+  assert.deepEqual(counts('noRestForTheWicked-228'), [null, 'necromanticDragon 1', 'necromanticDragon 1', 'necromanticDragon 1']);
+  // Spectral Walkers, Blue to Yellow to Orange to Red, checked card by card.
+  assert.deepEqual(counts('noRestForTheWicked-229'), ['spectralWalker 1', 'spectralWalker 1', 'spectralWalker 5', 'spectralWalker 2']);
+  assert.deepEqual(counts('noRestForTheWicked-237'), ['spectralWalker 1', 'spectralWalker 2', 'spectralWalker 2', 'spectralWalker 8']);
+  assert.deepEqual(counts('noRestForTheWicked-240'), ['spectralWalker 1', 'spectralWalker 3', 'spectralWalker 5', 'spectralWalker 3']);
+  assert.deepEqual(counts('noRestForTheWicked-252'), ['ratz 2', 'ratz 3', 'ratz 4', 'ratz 5']);
+  assert.deepEqual(counts('specialGuests-117'), [null, 'abominalpha 1', 'abominalpha 1', 'abominalpha 1']);
+  assert.deepEqual(counts('specialGuests-124'), [null, 'abominarat 1', 'abominarat 1', 'abominarat 1']);
+  // The Rat King spawns Swarms of Ratz under his picture (the fan wiki has the Rat King on every level).
+  const ratKing = fantasyCard('ratKingSwampTroll-356');
+  assert.equal(ratKing.kind === 'levels' && ratKing.boss, 'ratKing');
+  assert.deepEqual(counts('ratKingSwampTroll-351'), ['ratz 1', 'ratz 2', 'ratz 4', 'ratz 6']);
+  assert.deepEqual(counts('ratKingSwampTroll-360'), [null, 'swampTroll 1', 'swampTroll 1', 'swampTroll 1']);
+  const necromancerOf = (id: string) => {
+    const card = fantasyCard(id);
+    return card.kind === 'necromancer' ? card.zombie : card.kind;
+  };
+  assert.deepEqual(
+    ['125', '134', '140', '148', '149', '160', '162', '268', '274', '284'].map((n) => necromancerOf(`specialGuests-${n}`)),
+    ['toMeKuPa', 'blackheart', 'ostokar', 'evilTroy', 'queenMedea', 'grin', 'erikSummoner', 'innsmouth', 'faolan', 'lordOfSkulls'],
+  );
+});
+
 test('the fantasy cards keep the corrections checked on the printed cards', () => {
   // #017 and #029: Runners at Red, where the fan wiki has Walkers.
   for (const id of ['blackPlague-017', 'blackPlague-029']) {
@@ -602,6 +635,26 @@ test('the fantasy deck keeps six Necromancer cards per core box, shared with the
   assert.deepEqual(cabal(['blackPlague', 'hordeBox']), { necromancer: 2, orcNecromancer: undefined, countTemeraire: 2, queenSevera: 2 });
   assert.deepEqual(cabal(['blackPlague', 'hordeBox'], ['queenSevera']), { necromancer: 3, orcNecromancer: undefined, countTemeraire: 3, queenSevera: undefined });
   assert.deepEqual(cabal(['blackPlague', 'greenHorde', 'hordeBox']), { necromancer: 3, orcNecromancer: 3, countTemeraire: 3, queenSevera: 3 });
+});
+
+test('the new bosses are picked one by one: Abominalpha, Abominarat and the Swamp Troll in the Threat, the Necromantic Dragon outside it', () => {
+  const setIds = ['blackPlague', 'noRestForTheWicked', 'specialGuests', 'ratKingSwampTroll'];
+  const nightmare = bossCount(fantasyDeck(setIds, { ...DEFAULT_THREAT, level: 'nightmare' }));
+  assert.equal(nightmare.abominalpha + nightmare.abominarat + nightmare.swampTroll, 12);
+  assert.equal(nightmare.necromanticDragon, 8);
+  const standard = bossCount(fantasyDeck(setIds));
+  assert.equal((standard.abominalpha ?? 0) + (standard.abominarat ?? 0) + (standard.swampTroll ?? 0), 4);
+  assert.equal(standard.necromanticDragon, 8);
+  // Six Necromancer cards shared between the standard one and the ten named ones: the first six get one each.
+  assert.equal(['necromancer', 'toMeKuPa', 'blackheart', 'ostokar', 'evilTroy', 'queenMedea', 'grin', 'erikSummoner', 'innsmouth', 'faolan', 'lordOfSkulls'].filter((zombie) => standard[zombie] === 1).length, 6);
+  // The Rat King is a Necromancer: in the Cabal with the standard one, his cards share its six.
+  assert.deepEqual(bossCount(fantasyDeck(['blackPlague', 'ratKingSwampTroll'])).necromancer, 3);
+  assert.equal(fantasyDeck(['blackPlague', 'ratKingSwampTroll']).filter((card) => card.kind === 'levels' && card.boss === 'ratKing').length, 3);
+  const dmt = tailorFantasyDeck(selectCards(FANTASY_SETS, setIds), { ...DEFAULT_THREAT, mode: 'deadMenTales' });
+  assert.deepEqual(dmt.bosses?.abomination, ['fantasyAbomination', 'abominalpha', 'abominarat', 'swampTroll', 'necromanticDragon']);
+  assert.equal(dmt.bosses?.necromancer.length, 12);
+  assert.equal(dmt.bosses?.necromancer.at(-1), 'ratKing');
+  assert.equal(dmt.cards.filter((card) => card.kind === 'levels' && card.boss === 'ratKing').length, 0);
 });
 
 test('the Threat sets how many named Abomination cards go in, per core box, shared between the ones chosen', () => {

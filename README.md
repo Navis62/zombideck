@@ -6,7 +6,7 @@ Unofficial companion app for Zombicide 2nd Edition: it replaces the physical zom
 
 - The app opens on a carousel of Zombicide universes; each one has its own menu, expansions and saved choices (Modern and Fantasy).
 - Fantasy: Black Plague and Green Horde, alone or mixed, with Double Spawn, Enter the Horde and the Horde symbol on the cards.
-- Fantasy expansions: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes and the Horde Box, with named Abominations and Necromancers.
+- Fantasy expansions: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, the Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, and the Kickstarter packs and Special Guest boxes, with named Abominations and Necromancers.
 - Fantasy bosses are picked one by one, with two ways to build the deck. Classic: six Necromancer cards per core box shared between the chosen Necromancers (the Necromancer Cabal rule), and a Threat (Calm, Standard, Hard, Nightmare) that sets how many named Abomination cards join the deck. Dead Men Tales: the deck keeps its core Abominations and Necromancers, and each one drawn reveals a boss from an Abomination or Necromancer deck, one at a time or as an Abomination Fest.
 - Draw, undo, shuffle the deck or reshuffle everything; the discard is reshuffled automatically when the deck runs out.
 - Danger Level chosen by the players; cards show only the current level, or all four.

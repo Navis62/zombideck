@@ -26,6 +26,10 @@ const FANTASY_CROWZ = 'fantasyCrowz';
 const ZOMBIE_BOSSES = 'zombieBosses';
 const FRIENDS_AND_FOES = 'friendsAndFoes';
 const HORDE_BOX = 'hordeBox';
+const NO_REST = 'noRestForTheWicked';
+// The Kickstarter packs and Special Guest boxes, several of them sold apart too: one entry, each boss picked alone.
+const SPECIAL_GUESTS = 'specialGuests';
+const RAT_KING = 'ratKingSwampTroll';
 
 type Letter = 'W' | 'R' | 'F' | 'A';
 /** The zombies a set prints; a letter it has none of cannot be read. */
@@ -42,6 +46,8 @@ const NPC: Zombies = { W: 'npcWalker' };
 const DEADEYE_WALKERS: Zombies = { W: 'deadeyeWalker' };
 const CROWZ: Zombies = { W: 'crowz' };
 const TAINTED: Zombies = { W: 'taintedWalker', A: 'taintedAbomination' };
+const SPECTRAL: Zombies = { W: 'spectralWalker' };
+const RATZ: Zombies = { W: 'ratz' };
 
 function level(spec: string, zombies: Zombies): FantasyLevel {
   if (spec === '-') return null;
@@ -62,7 +68,7 @@ const levels = (
   id: string,
   specs: Specs,
   zombies: Zombies,
-  extra: { horde?: true; title?: FantasyTitle } = {},
+  extra: { horde?: true; title?: FantasyTitle; boss?: FantasyZombie } = {},
 ): FantasyCard => ({
   id: `${setId}-${id}`,
   setId,
@@ -225,6 +231,9 @@ const NAMED_ABOMINATIONS: readonly (readonly [NamedAbomination, string, number, 
   ['ablobination', 'zombieBosses', 87, 4],
   ['abominatroll', 'zombieBosses', 91, 4],
   ['abominotaur', 'zombieBosses', 95, 4],
+  ['abominalpha', SPECIAL_GUESTS, 117, 4],
+  ['abominarat', SPECIAL_GUESTS, 121, 4],
+  ['necromanticDragon', NO_REST, 221, 8],
   ['feralDragon', 'hordeBox', 285, 8],
   ['fattyBurster', 'hordeBox', 293, 6],
   ['zombieGiant', 'hordeBox', 299, 4],
@@ -237,6 +246,7 @@ const NAMED_ABOMINATIONS: readonly (readonly [NamedAbomination, string, number, 
   ['vaultWarden', 'hordeBox', 327, 4],
   ['werezombie', 'hordeBox', 331, 4],
   ['chromatiz', 'hordeBox', 347, 4],
+  ['swampTroll', RAT_KING, 357, 4],
 ];
 const namedCards = (setId: string) =>
   NAMED_ABOMINATIONS.filter(([, set]) => set === setId).flatMap(([zombie, , first, count]) =>
@@ -251,7 +261,7 @@ export const NAMED_ZOMBIES: ReadonlySet<FantasyZombie> = new Set(['wolfbominatio
  * Abominations, named or not: the Horde symbol never adds one to the Horde. The Horde Box makes Fatty Bursters
  * Fatties, and gives the Feral Dragon and the Zombie Giant rules of their own.
  */
-const NOT_ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set(['fattyBurster', 'feralDragon', 'zombieGiant']);
+const NOT_ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set(['fattyBurster', 'feralDragon', 'zombieGiant', 'necromanticDragon']);
 export const ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
   'fantasyAbomination',
   'orcAbomination',
@@ -259,7 +269,21 @@ export const ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
   ...[...NAMED_ZOMBIES].filter((zombie) => !NOT_ABOMINATIONS.has(zombie)),
 ]);
 /** Necromancers with a name: the normal Necromancer rules, plus one of their own. */
-export const NAMED_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<NamedNecromancer>(['countTemeraire', 'queenSevera']);
+export const NAMED_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<NamedNecromancer>([
+  'countTemeraire',
+  'queenSevera',
+  'ratKing',
+  'toMeKuPa',
+  'blackheart',
+  'ostokar',
+  'evilTroy',
+  'queenMedea',
+  'grin',
+  'erikSummoner',
+  'innsmouth',
+  'faolan',
+  'lordOfSkulls',
+]);
 
 // Friends and Foes: the levels as printed (the fan wiki adds the Horde zombie to most counts, not to Red on #253).
 const TAINTED_SPAWNS: readonly Specs[] = [
@@ -290,6 +314,50 @@ const hordeBoxCards: ZombieCard[] = [
   ...namedNecromancers(HORDE_BOX, 341, 'queenSevera'),
 ].sort((a, b) => a.id.localeCompare(b.id));
 
+// No Rest for the Wicked: the Necromantic Dragon, twelve Spectral Walkers cards (checked one by one), twelve Swarms of
+// Ratz cards alike.
+const SPECTRAL_SPAWNS: readonly Specs[] = [
+  ['W1', 'W1', 'W5', 'W2'], // 229
+  ['W2', 'W1', 'W1', 'W3'],
+  ['W2', 'W1', 'W1', 'W6'],
+  ['W1', 'W3', 'W2', 'W1'],
+  ['W1', 'W2', 'W3', 'W6'],
+  ['W1', 'W1', 'W4', 'W5'],
+  ['W1', 'W4', 'W2', 'W3'], // 235
+  ['W1', 'W1', 'W6', 'W2'],
+  ['W1', 'W2', 'W2', 'W8'],
+  ['W1', 'W2', 'W2', 'W7'],
+  ['W1', 'W4', 'W4', 'W3'],
+  ['W1', 'W3', 'W5', 'W3'], // 240
+];
+const noRestCards: ZombieCard[] = [
+  ...namedCards(NO_REST),
+  ...SPECTRAL_SPAWNS.map((specs, i) => levels(NO_REST, number(229 + i), specs, SPECTRAL, { title: 'spectralWalkers' })),
+  ...copies(241, 12, (id) => levels(NO_REST, id, ['W2', 'W3', 'W4', 'W5'], RATZ, { title: 'swarmOfRatz' })),
+];
+
+// Abominalpha and Abominarat, then the named Necromancers: #117-#166 and #267-#284.
+const specialGuestCards: ZombieCard[] = [
+  ...namedCards(SPECIAL_GUESTS),
+  ...namedNecromancers(SPECIAL_GUESTS, 125, 'toMeKuPa'),
+  ...namedNecromancers(SPECIAL_GUESTS, 131, 'blackheart'),
+  ...namedNecromancers(SPECIAL_GUESTS, 137, 'ostokar'),
+  ...namedNecromancers(SPECIAL_GUESTS, 143, 'evilTroy'),
+  ...namedNecromancers(SPECIAL_GUESTS, 149, 'queenMedea'),
+  ...namedNecromancers(SPECIAL_GUESTS, 155, 'grin'),
+  ...namedNecromancers(SPECIAL_GUESTS, 161, 'erikSummoner'),
+  ...namedNecromancers(SPECIAL_GUESTS, 267, 'innsmouth'),
+  ...namedNecromancers(SPECIAL_GUESTS, 273, 'faolan'),
+  ...namedNecromancers(SPECIAL_GUESTS, 279, 'lordOfSkulls'),
+];
+
+// The Rat King, a Necromancer, comes with his Swarms of Ratz, his picture above their counts; the Swamp Troll is an
+// Abomination.
+const ratKingCards: ZombieCard[] = [
+  ...copies(351, 6, (id) => levels(RAT_KING, id, ['W1', 'W2', 'W4', 'W6'], RATZ, { title: 'named', boss: 'ratKing' })),
+  ...namedCards(RAT_KING),
+];
+
 const noHardCards = () => false;
 
 /**
@@ -307,4 +375,7 @@ export const FANTASY_SETS: readonly CardSet[] = [
   { id: FANTASY_CROWZ, optional: true, isHard: noHardCards, cards: crowzCards },
   { id: FRIENDS_AND_FOES, optional: true, isHard: noHardCards, cards: friendsAndFoesCards },
   { id: HORDE_BOX, optional: true, isHard: noHardCards, cards: hordeBoxCards },
+  { id: NO_REST, optional: true, isHard: noHardCards, cards: noRestCards },
+  { id: SPECIAL_GUESTS, optional: true, isHard: noHardCards, cards: specialGuestCards },
+  { id: RAT_KING, optional: true, isHard: noHardCards, cards: ratKingCards },
 ];

@@ -416,8 +416,8 @@ const spokenRule = (card: FantasyCard, t: Translate) => [...fantasyRule(card, t)
 /** The title printed on a card with Danger Levels: its own, a named zombie's, or the one of its core box. */
 function levelsTitle(card: Extract<FantasyCard, { kind: 'levels' }>, t: Translate): string {
   if (card.title === 'named') {
-    const named = card.levels.find((level) => level !== null);
-    return t('card.named', { name: named ? t(`zombie.${named.zombie}.one`) : '' });
+    const named = card.boss ?? card.levels.find((level) => level !== null)?.zombie;
+    return t('card.named', { name: named ? t(`zombie.${named}.one`) : '' });
   }
   if (card.title) return t(`card.${card.title}`);
   return t(card.horde ? 'card.assembleHorde' : 'card.fantasyInvasion');
@@ -463,7 +463,8 @@ function FantasyFace({ card, danger, text, reveal }: { card: FantasyCard; danger
   const current = cardDisplay === 'current';
   const shown = current ? [danger] : PRINTED_LEVELS;
   // A named Abomination is printed as one picture across its levels: shown above them, so it stays in view at Blue too.
-  const named = card.kind === 'levels' && card.title === 'named' ? card.levels.find((level) => level !== null)?.zombie : undefined;
+  const named =
+    card.kind === 'levels' && card.title === 'named' ? (card.boss ?? card.levels.find((level) => level !== null)?.zombie) : undefined;
   return (
     <Frame card={card} text={text} headerColor={FANTASY_HEADER} faceColor={CARD_COLORS.parchment}>
       {card.kind === 'levels' || card.kind === 'activation' ? (
