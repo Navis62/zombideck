@@ -32,6 +32,7 @@ const NO_REST = 'noRestForTheWicked';
 const SPECIAL_GUESTS = 'specialGuests';
 const RAT_KING = 'ratKingSwampTroll';
 const WHITE_DEATH = 'whiteDeath';
+const ETERNAL_EMPIRE = 'eternalEmpire';
 
 type Letter = 'W' | 'R' | 'F' | 'A';
 /** The zombies a set prints; a letter it has none of cannot be read. */
@@ -72,7 +73,7 @@ const levels = (
   id: string,
   specs: Specs,
   zombies: Zombies,
-  extra: { horde?: true; title?: FantasyTitle; boss?: FantasyZombie } = {},
+  extra: { horde?: true; title?: FantasyTitle; boss?: FantasyZombie; adds?: FantasyZombie } = {},
 ): FantasyCard => ({
   id: `${setId}-${id}`,
   setId,
@@ -271,8 +272,75 @@ export const ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
   'orcAbomination',
   'taintedAbomination',
   'khanAbomination',
+  'godEaterAbomination',
   ...[...NAMED_ZOMBIES].filter((zombie) => !NOT_ABOMINATIONS.has(zombie)),
 ]);
+/**
+ * Bosses with a rule of their own (`card.<id>Rule`), shown when they are revealed from their deck: the boss cards of
+ * Frozen Fortress, White Death and Eternal Empire, and the named Necromancers.
+ */
+export const BOSS_RULE_IDS: readonly string[] = [
+  'fantasyAbomination',
+  'orcAbomination',
+  'taintedAbomination',
+  'wolfbomination',
+  'ablobination',
+  'abominatroll',
+  'abominotaur',
+  'abominalpha',
+  'abominarat',
+  'gorgomination',
+  'hordeBrother',
+  'siegeBreaker',
+  'swampLurker',
+  'abominabunny',
+  'magentaCovefe',
+  'vaultWarden',
+  'werezombie',
+  'chromatiz',
+  'swampTroll',
+  'feralDragon',
+  'necromanticDragon',
+  'zombieGiant',
+  'khanAbomination',
+  'godEaterAbomination',
+  'defilerNecromancer',
+  'amaterasu',
+  'asura',
+  'bishamon',
+  'chimimoryo',
+  'hachiman',
+  'kijin',
+  'kumiho',
+  'nian',
+  'qilin',
+  'redHare',
+  'shakokiDogu',
+  'sojobo',
+  'susanoWo',
+  'takemikazuchi',
+  'toyol',
+  'yeti',
+  'bomoh',
+  'deathNotes',
+  'hannya',
+  'kaguya',
+  'tengu',
+  'yukiOnna',
+  'toMeKuPa',
+  'blackheart',
+  'ostokar',
+  'evilTroy',
+  'queenMedea',
+  'grin',
+  'erikSummoner',
+  'innsmouth',
+  'faolan',
+  'lordOfSkulls',
+  'countTemeraire',
+  'queenSevera',
+  'ratKing',
+];
 /** Necromancers with a name: the normal Necromancer rules, plus one of their own. */
 export const NAMED_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<NamedNecromancer>([
   'countTemeraire',
@@ -288,6 +356,12 @@ export const NAMED_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<Named
   'innsmouth',
   'faolan',
   'lordOfSkulls',
+  'bomoh',
+  'deathNotes',
+  'hannya',
+  'kaguya',
+  'tengu',
+  'yukiOnna',
 ]);
 
 // Friends and Foes: the levels as printed (the fan wiki adds the Horde zombie to most counts, not to Red on #253).
@@ -384,6 +458,30 @@ const whiteDeathCards: ZombieCard[] = [
   activation(WHITE_DEATH, '484', 'wdRunner'),
 ];
 
+// Eternal Empire: the same cards as White Death, 56 numbers later, with zombies of its own. Its Brutes bring a Warden Brute
+// along, its Abominations cost each Survivor 1 Chi, and its Abomination deck starts with the God-Eater Abomination.
+const EE_ZOMBIES: Zombies = { W: 'eeWalker', R: 'eeRunner', F: 'eeBrute' };
+const eeSpawns = (first: number, count: number, specs: Specs, adds?: FantasyZombie) =>
+  copies(first, count, (id) => levels(ETERNAL_EMPIRE, id, specs, EE_ZOMBIES, { title: 'zombies', ...(adds && { adds }) }));
+const eternalEmpireCards: ZombieCard[] = [
+  ...eeSpawns(485, 6, ['W2', 'W4', 'W6', 'W8']),
+  ...eeSpawns(491, 4, ['F2', 'F2', 'F6', 'F8'], 'wardenBrute'),
+  ...eeSpawns(495, 4, ['R2', 'R2', 'R6', 'R8']),
+  ...eeSpawns(499, 6, ['W4', 'W6', 'W8', 'W10']),
+  ...eeSpawns(505, 4, ['F4', 'F4', 'F6', 'F8'], 'wardenBrute'),
+  ...eeSpawns(509, 4, ['R4', 'R4', 'R6', 'R8']),
+  ...copies(513, 6, (id) => ({ id: `${ETERNAL_EMPIRE}-${id}`, setId: ETERNAL_EMPIRE, kind: 'bossCall', boss: 'abomination', chi: true }) as FantasyCard),
+  ...copies(519, 9, (id) => ({ id: `${ETERNAL_EMPIRE}-${id}`, setId: ETERNAL_EMPIRE, kind: 'bossCall', boss: 'necromancer' }) as FantasyCard),
+  ...copies(528, 9, (id) => ({ id: `${ETERNAL_EMPIRE}-${id}`, setId: ETERNAL_EMPIRE, kind: 'zombieSiege' }) as FantasyCard),
+  activation(ETERNAL_EMPIRE, '537', 'eeWalker'),
+  activation(ETERNAL_EMPIRE, '538', 'eeWalker'),
+  activation(ETERNAL_EMPIRE, '539', 'eeBrute'),
+  activation(ETERNAL_EMPIRE, '540', 'eeRunner'),
+];
+
+// Frozen Fortress prints boss cards only, for the Abomination and Necromancer decks: no spawn card.
+const FROZEN_FORTRESS = 'frozenFortress';
+
 const noHardCards = () => false;
 
 /**
@@ -394,6 +492,7 @@ export const FANTASY_SETS: readonly CardSet[] = [
   { id: BLACK_PLAGUE, optional: true, core: true, isHard: noHardCards, cards: blackPlagueCards },
   { id: GREEN_HORDE, optional: true, core: true, isHard: noHardCards, cards: greenHordeCards },
   { id: WHITE_DEATH, optional: true, core: true, isHard: noHardCards, cards: whiteDeathCards },
+  { id: ETERNAL_EMPIRE, optional: true, core: true, isHard: noHardCards, cards: eternalEmpireCards },
   { id: WULFSBURG, optional: true, isHard: noHardCards, cards: wulfsburgCards },
   { id: NPC_1, optional: true, isHard: noHardCards, cards: npcCards(NPC_1, 63) },
   { id: NPC_2, optional: true, isHard: noHardCards, cards: npcCards(NPC_2, 75) },
@@ -405,4 +504,5 @@ export const FANTASY_SETS: readonly CardSet[] = [
   { id: NO_REST, optional: true, isHard: noHardCards, cards: noRestCards },
   { id: SPECIAL_GUESTS, optional: true, isHard: noHardCards, cards: specialGuestCards },
   { id: RAT_KING, optional: true, isHard: noHardCards, cards: ratKingCards },
+  { id: FROZEN_FORTRESS, optional: true, isHard: noHardCards, cards: [] },
 ];

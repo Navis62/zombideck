@@ -27,8 +27,8 @@ export type Universe = {
 };
 
 /** The cards of a new deck once the era has set its bosses apart, as the players chose them. */
-export function tailorDeck(universe: UniverseId, threat: Threat): Tailor {
-  return UNIVERSES[universe].threat ? (cards) => tailorFantasyDeck(cards, threat) : (cards) => ({ cards });
+export function tailorDeck(universe: UniverseId, threat: Threat, setIds: readonly string[]): Tailor {
+  return UNIVERSES[universe].threat ? (cards) => tailorFantasyDeck(cards, threat, new Set(setIds)) : (cards) => ({ cards });
 }
 
 export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {

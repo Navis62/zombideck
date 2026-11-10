@@ -5,9 +5,9 @@ Unofficial companion app for Zombicide 2nd Edition: it replaces the physical zom
 ## Features
 
 - The app opens on a carousel of Zombicide universes; each one has its own menu, expansions and saved choices (Modern and Fantasy).
-- Fantasy: Black Plague, Green Horde and White Death, alone or mixed, with Double Spawn, Enter the Horde, the Horde symbol and White Death's Zombie Siege on the cards.
-- Fantasy expansions: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, the Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, and the Kickstarter packs and Special Guest boxes, with named Abominations and Necromancers.
-- Fantasy bosses are picked one by one and dealt the White Death and Dead Men Tales way: the deck keeps its core Abominations and Necromancers, and each one drawn reveals a boss from an Abomination or Necromancer deck, one at a time or as an Abomination Fest.
+- Fantasy: Black Plague, Green Horde, White Death and Eternal Empire, alone or mixed, with Double Spawn, Enter the Horde, the Horde symbol and White Death's Zombie Siege on the cards.
+- Fantasy expansions: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, the Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, the Kickstarter packs and Special Guest boxes, and Frozen Fortress's bosses, with named Abominations and Necromancers.
+- Fantasy bosses are picked one by one and dealt the White Death and Dead Men Tales way: the deck keeps its core Abominations and Necromancers, and each one drawn reveals a boss from an Abomination or Necromancer deck, one at a time or as an Abomination Fest; a revealed boss shows the rule of its boss card.
 - Draw, undo, shuffle the deck or reshuffle everything; the discard is reshuffled automatically when the deck runs out.
 - Danger Level chosen by the players; cards show only the current level, or all four.
 - Core box, Fort Hendrix (replaces the core deck) and expansions or promos switched on in their own menu, reached from the main menu; they apply to the next game.

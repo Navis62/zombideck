@@ -80,6 +80,11 @@ export type FantasyZombie =
   | 'wdRunner'
   | 'wdBrute'
   | 'khanAbomination'
+  | 'eeWalker'
+  | 'eeRunner'
+  | 'eeBrute'
+  | 'wardenBrute'
+  | 'godEaterAbomination'
   | 'ratz'
   | 'ratKing'
   | NamedAbomination;
@@ -103,7 +108,23 @@ export type NamedAbomination =
   | 'abominalpha'
   | 'abominarat'
   | 'swampTroll'
-  | 'necromanticDragon';
+  | 'necromanticDragon'
+  | 'amaterasu'
+  | 'asura'
+  | 'bishamon'
+  | 'chimimoryo'
+  | 'hachiman'
+  | 'kijin'
+  | 'kumiho'
+  | 'nian'
+  | 'qilin'
+  | 'redHare'
+  | 'shakokiDogu'
+  | 'sojobo'
+  | 'susanoWo'
+  | 'takemikazuchi'
+  | 'toyol'
+  | 'yeti';
 /** Zombies an Extra Activation card can name. */
 export type FantasyActivated =
   | 'fantasyWalker'
@@ -114,12 +135,21 @@ export type FantasyActivated =
   | 'orcFatty'
   | 'wdWalker'
   | 'wdRunner'
-  | 'wdBrute';
+  | 'wdBrute'
+  | 'eeWalker'
+  | 'eeRunner'
+  | 'eeBrute';
 /** Necromancers with a name: the normal Necromancer rules, plus one of their own. */
 export type NamedNecromancer =
   | 'countTemeraire'
   | 'queenSevera'
   | 'ratKing'
+  | 'bomoh'
+  | 'deathNotes'
+  | 'hannya'
+  | 'kaguya'
+  | 'tengu'
+  | 'yukiOnna'
   | 'toMeKuPa'
   | 'blackheart'
   | 'ostokar'
@@ -162,13 +192,15 @@ export type FantasyCard =
       title?: FantasyTitle;
       /** The named zombie pictured above levels that spawn others (the Rat King and his Swarms of Ratz). */
       boss?: FantasyZombie;
+      /** One more zombie the card adds, printed under the levels (Eternal Empire: "Add 1 Warden Brute."). */
+      adds?: FantasyZombie;
     })
   | (FantasyBase & { kind: 'activation'; zombie: FantasyActivated })
   | (FantasyBase & { kind: 'necromancer'; zombie: FantasyNecromancer })
   | (FantasyBase & { kind: 'doubleSpawn' })
   | (FantasyBase & { kind: 'enterHorde' })
   /** White Death "Abomination!" and "Necromancer!": draw from that boss deck, or its boss on the board gets an Extra Activation. */
-  | (FantasyBase & { kind: 'bossCall'; boss: BossKind })
+  | (FantasyBase & { kind: 'bossCall'; boss: BossKind; chi?: true })
   | (FantasyBase & { kind: 'zombieSiege' });
 
 export type ZombieCard = ModernCard | FantasyCard;

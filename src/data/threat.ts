@@ -34,6 +34,22 @@ export const ABOMINATION_BOSSES: readonly Boss[] = [
   { zombie: 'werezombie', setId: 'hordeBox' },
   { zombie: 'chromatiz', setId: 'hordeBox' },
   { zombie: 'swampTroll', setId: 'ratKingSwampTroll' },
+  { zombie: 'amaterasu', setId: 'frozenFortress' },
+  { zombie: 'asura', setId: 'frozenFortress' },
+  { zombie: 'bishamon', setId: 'frozenFortress' },
+  { zombie: 'chimimoryo', setId: 'frozenFortress' },
+  { zombie: 'hachiman', setId: 'frozenFortress' },
+  { zombie: 'kijin', setId: 'frozenFortress' },
+  { zombie: 'kumiho', setId: 'frozenFortress' },
+  { zombie: 'nian', setId: 'frozenFortress' },
+  { zombie: 'qilin', setId: 'frozenFortress' },
+  { zombie: 'redHare', setId: 'frozenFortress' },
+  { zombie: 'shakokiDogu', setId: 'frozenFortress' },
+  { zombie: 'sojobo', setId: 'frozenFortress' },
+  { zombie: 'susanoWo', setId: 'frozenFortress' },
+  { zombie: 'takemikazuchi', setId: 'frozenFortress' },
+  { zombie: 'toyol', setId: 'frozenFortress' },
+  { zombie: 'yeti', setId: 'frozenFortress' },
 ];
 /** Not Abominations by the rules, but they join the Abomination deck all the same. */
 export const BIG_BOSSES: readonly Boss[] = [
@@ -56,6 +72,12 @@ export const NECROMANCER_BOSSES: readonly Boss[] = [
   { zombie: 'lordOfSkulls', setId: 'specialGuests' },
   // A Necromancer printed as a spawn card: his picture over the Swarms of Ratz he brings.
   { zombie: 'ratKing', setId: 'ratKingSwampTroll' },
+  { zombie: 'bomoh', setId: 'frozenFortress' },
+  { zombie: 'deathNotes', setId: 'frozenFortress' },
+  { zombie: 'hannya', setId: 'frozenFortress' },
+  { zombie: 'kaguya', setId: 'frozenFortress' },
+  { zombie: 'tengu', setId: 'frozenFortress' },
+  { zombie: 'yukiOnna', setId: 'frozenFortress' },
 ];
 
 const CORE_NECROMANCERS: readonly { zombie: FantasyNecromancer; setId: string }[] = [
@@ -68,6 +90,7 @@ const SET_ABOMINATIONS: readonly { zombie: FantasyZombie; setId: string }[] = [
   { zombie: 'fantasyAbomination', setId: 'blackPlague' },
   { zombie: 'orcAbomination', setId: 'greenHorde' },
   { zombie: 'khanAbomination', setId: 'whiteDeath' },
+  { zombie: 'godEaterAbomination', setId: 'eternalEmpire' },
   { zombie: 'taintedAbomination', setId: 'friendsAndFoes' },
   { zombie: 'wolfbomination', setId: 'wulfsburg' },
 ];
@@ -85,10 +108,13 @@ const namedZombie = (card: ZombieCard) =>
 /**
  * Builds the fantasy deck from the cards of the sets switched on: it keeps the cards of its core boxes, Necromancers
  * and Abominations included, and loses every named boss (the Wolfbomination too); each boss of the sets switched on
- * is one card of its deck.
+ * is one card of its deck, Frozen Fortress's too though it prints no spawn card (hence `setIds`).
  */
-export function tailorFantasyDeck(cards: readonly ZombieCard[], threat: Threat): Deck {
-  const setIds = new Set(cards.map((card) => card.setId));
+export function tailorFantasyDeck(
+  cards: readonly ZombieCard[],
+  threat: Threat,
+  setIds: ReadonlySet<string> = new Set(cards.map((card) => card.setId)),
+): Deck {
   const inPlay = (boss: { setId: string }) => setIds.has(boss.setId);
   const chosen = (boss: Boss) => inPlay(boss) && !threat.off.includes(boss.zombie);
   // The named bosses leave the Zombie deck for their own; the rest stays, Fatty Bursters too.

@@ -607,7 +607,8 @@ test('card ids are unique across every universe', () => {
 });
 
 // The fantasy deck sets its bosses apart as White Death and Dead Men Tales build it: see src/data/threat.ts.
-const fantasyDeck = (setIds: string[], threat: Threat = DEFAULT_THREAT) => tailorFantasyDeck(selectCards(FANTASY_SETS, setIds), threat);
+const fantasyDeck = (setIds: string[], threat: Threat = DEFAULT_THREAT) =>
+  tailorFantasyDeck(selectCards(FANTASY_SETS, setIds), threat, new Set(setIds));
 const bossCount = (cards: readonly ZombieCard[]) => {
   const counts: Record<string, number> = {};
   for (const card of cards) {
@@ -680,6 +681,39 @@ test('White Death draws its bosses from decks starting with the Khan Abomination
   assert.equal(mixed.cards.length, 54 + 56);
   assert.deepEqual(mixed.bosses?.abomination, ['fantasyAbomination', 'khanAbomination', 'ablobination', 'abominatroll']);
   assert.deepEqual(mixed.bosses?.necromancer, ['necromancer', 'defilerNecromancer']);
+});
+
+test('Eternal Empire has its 56 cards, #485-#540, its Brutes adding a Warden Brute', () => {
+  const cards = FANTASY_SETS.find((set) => set.id === 'eternalEmpire')?.cards ?? [];
+  assert.deepEqual(cards.map((card) => Number(card.id.slice(-3))), Array.from({ length: 56 }, (_, i) => 485 + i));
+  const counts = (id: string) => levelsOf(id).map((level) => level && `${level.zombie} ${level.count}`);
+  assert.deepEqual(counts('eternalEmpire-485'), ['eeWalker 2', 'eeWalker 4', 'eeWalker 6', 'eeWalker 8']);
+  assert.deepEqual(counts('eternalEmpire-504'), ['eeWalker 4', 'eeWalker 6', 'eeWalker 8', 'eeWalker 10']);
+  assert.deepEqual(counts('eternalEmpire-494'), ['eeBrute 2', 'eeBrute 2', 'eeBrute 6', 'eeBrute 8']);
+  assert.deepEqual(counts('eternalEmpire-508'), ['eeBrute 4', 'eeBrute 4', 'eeBrute 6', 'eeBrute 8']);
+  assert.deepEqual(counts('eternalEmpire-495'), ['eeRunner 2', 'eeRunner 2', 'eeRunner 6', 'eeRunner 8']);
+  assert.deepEqual(counts('eternalEmpire-512'), ['eeRunner 4', 'eeRunner 4', 'eeRunner 6', 'eeRunner 8']);
+  const adds = (id: string) => {
+    const card = fantasyCard(id);
+    return card.kind === 'levels' ? card.adds : undefined;
+  };
+  assert.deepEqual(['491', '508', '485', '509'].map((n) => adds(`eternalEmpire-${n}`)), ['wardenBrute', 'wardenBrute', undefined, undefined]);
+  const abomination = fantasyCard('eternalEmpire-513');
+  assert.equal(abomination.kind === 'bossCall' && abomination.boss === 'abomination' && abomination.chi, true);
+  const necromancer = fantasyCard('eternalEmpire-527');
+  assert.equal(necromancer.kind === 'bossCall' && necromancer.boss === 'necromancer' && !necromancer.chi, true);
+  assert.equal(fantasyCard('eternalEmpire-536').kind, 'zombieSiege');
+  const deck = fantasyDeck(['eternalEmpire']);
+  assert.deepEqual(deck.bosses?.abomination, ['godEaterAbomination']);
+  // No Necromancer of its own: its Necromancer cards call on the ones of the other boxes.
+  assert.deepEqual(deck.bosses?.necromancer, []);
+});
+
+test('Frozen Fortress adds sixteen Abominations and six Necromancers to the boss decks, and no spawn card', () => {
+  const deck = fantasyDeck(['whiteDeath', 'frozenFortress'], { bossRule: 'oneAtATime', off: ['yeti', 'tengu'] });
+  assert.equal(deck.cards.length, 56);
+  assert.equal(deck.bosses?.abomination.length, 1 + 15);
+  assert.deepEqual(deck.bosses?.necromancer, ['defilerNecromancer', 'bomoh', 'deathNotes', 'hannya', 'kaguya', 'yukiOnna']);
 });
 
 test('a new game deals the tailored deck', () => {

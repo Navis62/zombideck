@@ -38,10 +38,10 @@ export default function MenuScreen() {
   );
 
   const setIds = useMemo(() => activeSetIds(sets, expansions), [sets, expansions]);
-  const tailor = tailorDeck(universe, threat);
+  const tailor = tailorDeck(universe, threat, setIds);
   // Built once per choice, not on every render: the count does not depend on the shuffle.
   const deckSize = useMemo(
-    () => tailorDeck(universe, threat)(selectCards(sets, setIds, parts), Math.random).cards.length,
+    () => tailorDeck(universe, threat, setIds)(selectCards(sets, setIds, parts), Math.random).cards.length,
     [universe, threat, sets, setIds, parts],
   );
   // A core box that replaces another is not an expansion: the counter leaves it out.

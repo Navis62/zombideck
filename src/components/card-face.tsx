@@ -3,7 +3,7 @@ import { Image, type ImageSourcePropType, type ImageStyle, Platform, StyleSheet,
 import Svg, { Path, Polygon } from 'react-native-svg';
 
 import { type ArtSubject, artSubject, ZombieFigure } from '@/components/zombie-art';
-import { ABOMINATIONS, NAMED_NECROMANCERS, NAMED_ZOMBIES } from '@/data/fantasy';
+import { ABOMINATIONS, BOSS_RULE_IDS, NAMED_NECROMANCERS, NAMED_ZOMBIES } from '@/data/fantasy';
 import { DANGER_LEVELS } from '@/game/engine';
 import { useApp } from '@/game/store';
 import {
@@ -22,7 +22,7 @@ import {
   type ZombieCard,
   type ZombieType,
 } from '@/game/types';
-import type { Translate } from '@/i18n/translations';
+import type { Translate, TranslationKey } from '@/i18n/translations';
 import { CARD_COLORS, DANGER_COLORS } from '@/theme';
 
 // Printed top-down on the cards, red first.
@@ -61,7 +61,7 @@ const asRevealed = (card: ZombieCard, reveal?: Reveal): ZombieCard =>
 
 /** Title, footer and what a screen reader says about the body of a card, at the given Danger Level. */
 function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: Reveal): CardText {
-  if (isFantasyCard(card)) return withReveal(fantasyText(card, danger, t), reveal, t);
+  if (isFantasyCard(card)) return withReveal(fantasyText(card, danger, t), reveal, t, card.kind !== 'necromancer');
   const level = t(`danger.${danger}`);
   switch (card.kind) {
     case 'trejo':
@@ -377,7 +377,10 @@ function fantasyRule(card: FantasyCard, t: Translate): string[] {
     case 'enterHorde':
       return [t('card.enterHordeRule')];
     case 'bossCall':
-      return [t(card.boss === 'abomination' ? 'card.abominationCallRule' : 'card.necromancerCallRule')];
+      return [
+        ...(card.chi ? [t('card.chiLoss')] : []),
+        t(card.boss === 'abomination' ? 'card.abominationCallRule' : 'card.necromancerCallRule'),
+      ];
     case 'zombieSiege':
       return [t('card.zombieSiegeOrder'), t('card.zombieSiegeSpawn'), t('card.zombieSiegeMove')];
     default:
@@ -419,11 +422,12 @@ function ruleArt(card: FantasyCard, reveal?: Reveal): ArtSubject {
       return card.zombie;
     case 'bossCall':
       if (reveal && reveal.boss !== NO_BOSS) return reveal.boss as ArtSubject;
-      return card.boss === 'abomination' ? 'khanAbomination' : 'defilerNecromancer';
+      if (card.boss === 'necromancer') return card.setId === 'eternalEmpire' ? 'necromancer' : 'defilerNecromancer';
+      return card.setId === 'eternalEmpire' ? 'godEaterAbomination' : 'khanAbomination';
     case 'enterHorde':
       return 'orcWalker';
     case 'zombieSiege':
-      return 'wdWalker';
+      return card.setId === 'eternalEmpire' ? 'eeWalker' : 'wdWalker';
     default:
       return 'fantasyWalker';
   }
@@ -453,6 +457,7 @@ function fantasyText(card: FantasyCard, danger: DangerLevel, t: Translate): Card
     case 'levels':
       return {
         title: levelsTitle(card, t),
+        footer: card.adds ? t('card.addsOne', { name: t(`zombie.${card.adds}.one`) }) : undefined,
         spoken: `${t(`danger.${danger}`)}: ${fantasyLine(card, danger, t).spoken}`,
       };
     case 'activation':
@@ -476,13 +481,18 @@ function fantasyText(card: FantasyCard, danger: DangerLevel, t: Translate): Card
 }
 
 /** The boss revealed from its deck, named under the card with the way it arrives. */
-function withReveal(text: CardText, reveal: Reveal | undefined, t: Translate): CardText {
+/** Bosses with a rule of their own, printed on their boss card (Frozen Fortress, White Death, Eternal Empire). */
+const BOSS_RULED: ReadonlySet<string> = new Set(BOSS_RULE_IDS);
+
+function withReveal(text: CardText, reveal: Reveal | undefined, t: Translate, withRule = true): CardText {
   if (!reveal) return text;
   const isNecromancer = reveal.kind === 'necromancer';
   if (reveal.boss === NO_BOSS) return { ...text, footer: t(isNecromancer ? 'boss.necromancerNone' : 'boss.abominationNone') };
   const name = t(`zombie.${reveal.boss as FantasyZombieName}.one`);
   const rule = isNecromancer ? 'boss.necromancer' : reveal.rule === 'fest' ? 'boss.abominationFest' : 'boss.abomination';
-  return { ...text, footer: t(rule, { name }) };
+  // A Necromancer card already reads as the Necromancer it revealed, its rule included.
+  const own = withRule && BOSS_RULED.has(reveal.boss) ? ` ${t(`card.${reveal.boss}Rule` as TranslationKey)}` : '';
+  return { ...text, footer: `${t(rule, { name })}${own}` };
 }
 
 /** Fantasy era card: parchment stock, the printed title, then the Danger Levels red first, or the rule of the card. */
