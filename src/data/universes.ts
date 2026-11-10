@@ -22,13 +22,13 @@ export type Universe = {
   tagline: TranslationKey;
   /** Zombies of the era, on its carousel card and its menu. */
   heroes: readonly ArtSubject[];
-  /** The era picks its bosses one by one and doses them with a Threat (see `threat.ts`). */
+  /** The era picks its bosses one by one, in boss decks of their own (see `threat.ts`). */
   threat: boolean;
 };
 
-/** The cards of a new deck once the era has dosed its bosses with the players' Threat. */
+/** The cards of a new deck once the era has set its bosses apart, as the players chose them. */
 export function tailorDeck(universe: UniverseId, threat: Threat): Tailor {
-  return UNIVERSES[universe].threat ? (cards, rng) => tailorFantasyDeck(cards, threat, rng) : (cards) => ({ cards });
+  return UNIVERSES[universe].threat ? (cards) => tailorFantasyDeck(cards, threat) : (cards) => ({ cards });
 }
 
 export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {

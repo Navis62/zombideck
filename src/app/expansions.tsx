@@ -8,11 +8,6 @@ import {
   type Boss,
   BOSS_RULES,
   NECROMANCER_BOSSES,
-  THREAT_BUDGET,
-  THREAT_LEVELS,
-  THREAT_MODES,
-  type ThreatLevel,
-  type ThreatMode,
 } from '@/data/threat';
 import { allExpansions, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '@/data/universes';
 import { activeSetIds } from '@/game/engine';
@@ -79,18 +74,6 @@ export default function ExpansionsScreen() {
   );
 }
 
-const LEVEL_LABELS: Record<ThreatLevel, TranslationKey> = {
-  calm: 'threat.calm',
-  standard: 'threat.standard',
-  hard: 'threat.hard',
-  nightmare: 'threat.nightmare',
-};
-
-const MODE_LABELS: Record<ThreatMode, { label: TranslationKey; detail: TranslationKey }> = {
-  classic: { label: 'threat.classic', detail: 'threat.classicDetail' },
-  deadMenTales: { label: 'threat.deadMenTales', detail: 'threat.deadMenTalesDetail' },
-};
-
 const RULE_LABELS: Record<BossRule, { label: TranslationKey; detail: TranslationKey }> = {
   oneAtATime: { label: 'threat.oneAtATime', detail: 'threat.oneAtATimeDetail' },
   fest: { label: 'threat.fest', detail: 'threat.festDetail' },
@@ -116,9 +99,8 @@ function Choices<T extends string>(props: { options: readonly T[]; selected: T; 
 }
 
 /**
- * How the bosses of the expansions switched on join the game, picked one by one: in the Zombie deck, dosed by the
- * Threat (classic), or in decks of their own (Dead Men Tales). Only for an era whose rulebooks build the deck that
- * way (see `threat.ts`).
+ * How the bosses of the expansions switched on join the game: picked one by one, in decks of their own (White Death
+ * and Dead Men Tales). Only for an era whose rulebooks build the deck that way (see `threat.ts`).
  */
 function ThreatOptions() {
   const { universe, expansions, threat, setThreat, t } = useApp();
@@ -126,8 +108,6 @@ function ThreatOptions() {
   const available = (bosses: readonly Boss[]) => bosses.filter((boss) => setIds.includes(boss.setId));
   const abominations = [...available(ABOMINATION_BOSSES), ...available(BIG_BOSSES)];
   const necromancers = available(NECROMANCER_BOSSES);
-  const budget = THREAT_BUDGET[threat.level];
-  const classic = threat.mode === 'classic';
 
   const toggle = (zombie: string, on: boolean) =>
     setThreat((current) => ({
@@ -145,7 +125,6 @@ function ThreatOptions() {
               <View style={styles.row}>
                 <View style={styles.rowLabel}>
                   <Text style={styles.rowText}>{label}</Text>
-                  {classic && BIG_BOSSES.includes(boss) && <Text style={styles.rowDetail}>{t('threat.outside')}</Text>}
                 </View>
                 <Switch
                   value={!threat.off.includes(boss.zombie)}
@@ -163,41 +142,17 @@ function ThreatOptions() {
   return (
     <>
       <Text style={styles.heading}>{t('threat.rules')}</Text>
+      <Text style={styles.muted}>{t('threat.deadMenTalesDetail')}</Text>
       <Choices
-        options={THREAT_MODES}
-        selected={threat.mode}
-        label={(mode) => t(MODE_LABELS[mode].label)}
-        onSelect={(mode) => setThreat((current) => ({ ...current, mode }))}
+        options={BOSS_RULES}
+        selected={threat.bossRule}
+        label={(rule) => t(RULE_LABELS[rule].label)}
+        onSelect={(bossRule) => setThreat((current) => ({ ...current, bossRule }))}
       />
-      <Text style={styles.muted}>{t(MODE_LABELS[threat.mode].detail)}</Text>
-      <Text style={styles.heading}>{t('threat.title')}</Text>
-      {classic ? (
-        <>
-          <Choices
-            options={THREAT_LEVELS}
-            selected={threat.level}
-            label={(level) => t(LEVEL_LABELS[level])}
-            onSelect={(level) => setThreat((current) => ({ ...current, level }))}
-          />
-          <Text style={styles.muted}>
-            {budget === Infinity ? t('threat.nightmareDetail') : t('threat.detail', { n: budget })}
-          </Text>
-        </>
-      ) : (
-        <>
-          <Choices
-            options={BOSS_RULES}
-            selected={threat.bossRule}
-            label={(rule) => t(RULE_LABELS[rule].label)}
-            onSelect={(bossRule) => setThreat((current) => ({ ...current, bossRule }))}
-          />
-          <Text style={styles.muted}>{t(RULE_LABELS[threat.bossRule].detail)}</Text>
-        </>
-      )}
+      <Text style={styles.muted}>{t(RULE_LABELS[threat.bossRule].detail)}</Text>
       {abominations.length > 0 && <Text style={styles.heading}>{t('threat.abominations')}</Text>}
       {switches(abominations)}
       {necromancers.length > 0 && <Text style={styles.heading}>{t('threat.necromancers')}</Text>}
-      {necromancers.length > 0 && classic && <Text style={styles.muted}>{t('threat.necromancersHint')}</Text>}
       {switches(necromancers)}
     </>
   );

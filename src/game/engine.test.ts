@@ -605,9 +605,8 @@ test('card ids are unique across every universe', () => {
   assert.equal(CARDS_BY_ID.size, ids.length);
 });
 
-// The fantasy deck doses its bosses as the rulebooks build it: see src/data/threat.ts for the quotes.
-const fantasyDeck = (setIds: string[], threat: Threat = DEFAULT_THREAT) =>
-  tailorFantasyDeck(selectCards(FANTASY_SETS, setIds), threat, () => 0).cards;
+// The fantasy deck sets its bosses apart as White Death and Dead Men Tales build it: see src/data/threat.ts.
+const fantasyDeck = (setIds: string[], threat: Threat = DEFAULT_THREAT) => tailorFantasyDeck(selectCards(FANTASY_SETS, setIds), threat);
 const bossCount = (cards: readonly ZombieCard[]) => {
   const counts: Record<string, number> = {};
   for (const card of cards) {
@@ -617,90 +616,47 @@ const bossCount = (cards: readonly ZombieCard[]) => {
   }
   return counts;
 };
-const NAMED_ABOMINATION_ZOMBIES = [
-  'ablobination', 'abominatroll', 'abominotaur', 'gorgomination', 'hordeBrother', 'siegeBreaker',
-  'swampLurker', 'abominabunny', 'magentaCovefe', 'vaultWarden', 'werezombie', 'chromatiz',
-];
-const namedAbominationCards = (cards: readonly ZombieCard[]) =>
-  Object.entries(bossCount(cards)).filter(([zombie]) => NAMED_ABOMINATION_ZOMBIES.includes(zombie)).reduce((n, [, count]) => n + count, 0);
 
-test('the fantasy deck keeps six Necromancer cards per core box, shared with the named Necromancers chosen', () => {
-  assert.deepEqual(bossCount(fantasyDeck(['blackPlague'])), { necromancer: 6 });
-  assert.deepEqual(bossCount(fantasyDeck(['blackPlague', 'greenHorde'])), { necromancer: 6, orcNecromancer: 6 });
-  const cabal = (setIds: string[], off: string[] = []) => {
-    const { necromancer, orcNecromancer, countTemeraire, queenSevera } = bossCount(fantasyDeck(setIds, { ...DEFAULT_THREAT, level: 'standard', off }));
-    return { necromancer, orcNecromancer, countTemeraire, queenSevera };
-  };
-  // The rulebook example shares the six cards between four Necromancers; here they go round in turn.
-  assert.deepEqual(cabal(['blackPlague', 'hordeBox']), { necromancer: 2, orcNecromancer: undefined, countTemeraire: 2, queenSevera: 2 });
-  assert.deepEqual(cabal(['blackPlague', 'hordeBox'], ['queenSevera']), { necromancer: 3, orcNecromancer: undefined, countTemeraire: 3, queenSevera: undefined });
-  assert.deepEqual(cabal(['blackPlague', 'greenHorde', 'hordeBox']), { necromancer: 3, orcNecromancer: 3, countTemeraire: 3, queenSevera: 3 });
+test('the fantasy deck keeps the core Abominations and Necromancers, the named bosses go to their decks', () => {
+  const setIds = ['blackPlague', 'greenHorde', 'wulfsburg', 'zombieBosses', 'friendsAndFoes', 'hordeBox'];
+  const all = selectCards(FANTASY_SETS, setIds);
+  const deck = fantasyDeck(setIds, { bossRule: 'fest', off: ['abominabunny', 'queenSevera'] });
+  assert.deepEqual(bossCount(deck.cards), { necromancer: 6, orcNecromancer: 6, fattyBurster: 6 });
+  assert.equal(deck.bosses?.rule, 'fest');
+  assert.deepEqual(deck.bosses?.necromancer, ['necromancer', 'orcNecromancer', 'countTemeraire']);
+  assert.deepEqual(deck.bosses?.abomination, [
+    'fantasyAbomination', 'orcAbomination', 'taintedAbomination', 'wolfbomination',
+    'ablobination', 'abominatroll', 'abominotaur', 'gorgomination', 'hordeBrother', 'siegeBreaker', 'swampLurker',
+    'magentaCovefe', 'vaultWarden', 'werezombie', 'chromatiz', 'feralDragon', 'zombieGiant',
+  ]);
+  // Every other card stays: only the named bosses leave the Zombie deck, Fatty Bursters stay.
+  assert.equal(deck.cards.length, all.length - 2 - 12 - 54 + 6 - 12);
 });
 
-test('the new bosses are picked one by one: Abominalpha, Abominarat and the Swamp Troll in the Threat, the Necromantic Dragon outside it', () => {
+test('the new bosses join their decks: the Necromantic Dragon with the Abominations, the Rat King with the Necromancers', () => {
   const setIds = ['blackPlague', 'noRestForTheWicked', 'specialGuests', 'ratKingSwampTroll'];
-  const nightmare = bossCount(fantasyDeck(setIds, { ...DEFAULT_THREAT, level: 'nightmare' }));
-  assert.equal(nightmare.abominalpha + nightmare.abominarat + nightmare.swampTroll, 12);
-  assert.equal(nightmare.necromanticDragon, 8);
-  const standard = bossCount(fantasyDeck(setIds));
-  assert.equal((standard.abominalpha ?? 0) + (standard.abominarat ?? 0) + (standard.swampTroll ?? 0), 4);
-  assert.equal(standard.necromanticDragon, 8);
-  // Six Necromancer cards shared between the standard one and the ten named ones: the first six get one each.
-  assert.equal(['necromancer', 'toMeKuPa', 'blackheart', 'ostokar', 'evilTroy', 'queenMedea', 'grin', 'erikSummoner', 'innsmouth', 'faolan', 'lordOfSkulls'].filter((zombie) => standard[zombie] === 1).length, 6);
-  // The Rat King is a Necromancer: in the Cabal with the standard one, his cards share its six.
-  assert.deepEqual(bossCount(fantasyDeck(['blackPlague', 'ratKingSwampTroll'])).necromancer, 3);
-  assert.equal(fantasyDeck(['blackPlague', 'ratKingSwampTroll']).filter((card) => card.kind === 'levels' && card.boss === 'ratKing').length, 3);
-  const dmt = tailorFantasyDeck(selectCards(FANTASY_SETS, setIds), { ...DEFAULT_THREAT, mode: 'deadMenTales' });
-  assert.deepEqual(dmt.bosses?.abomination, ['fantasyAbomination', 'abominalpha', 'abominarat', 'swampTroll', 'necromanticDragon']);
-  assert.equal(dmt.bosses?.necromancer.length, 12);
-  assert.equal(dmt.bosses?.necromancer.at(-1), 'ratKing');
-  assert.equal(dmt.cards.filter((card) => card.kind === 'levels' && card.boss === 'ratKing').length, 0);
-});
-
-test('the Threat sets how many named Abomination cards go in, per core box, shared between the ones chosen', () => {
-  const all = ['blackPlague', 'zombieBosses', 'hordeBox'];
-  const at = (level: Threat['level'], setIds = all, off: string[] = []) => fantasyDeck(setIds, { ...DEFAULT_THREAT, level, off });
-  assert.equal(namedAbominationCards(at('calm')), 2);
-  assert.equal(namedAbominationCards(at('standard')), 4);
-  assert.equal(namedAbominationCards(at('hard')), 8);
-  assert.equal(namedAbominationCards(at('nightmare')), 48);
-  assert.equal(namedAbominationCards(at('standard', ['blackPlague', 'greenHorde', 'zombieBosses', 'hordeBox'])), 8);
-  // Fewer cards than the budget: every card of the Abominations chosen, none of the others.
-  const one = at('hard', ['blackPlague', 'zombieBosses'], ['abominatroll', 'abominotaur']);
-  assert.deepEqual(bossCount(one), { necromancer: 6, ablobination: 4 });
-});
-
-test('the Dragon and the Giant stay outside the Threat, Fatty Bursters always come with the Horde Box', () => {
-  const standard = bossCount(fantasyDeck(['blackPlague', 'hordeBox']));
-  assert.equal(standard.feralDragon, 4);
-  assert.equal(standard.zombieGiant, 4);
-  assert.equal(standard.fattyBurster, 6);
-  assert.equal(bossCount(fantasyDeck(['blackPlague', 'hordeBox'], { ...DEFAULT_THREAT, level: 'nightmare', off: [] })).feralDragon, 8);
-  const without = bossCount(fantasyDeck(['blackPlague', 'hordeBox'], { ...DEFAULT_THREAT, level: 'calm', off: ['feralDragon', 'zombieGiant'] }));
-  assert.equal(without.feralDragon, undefined);
-  assert.equal(without.zombieGiant, undefined);
-  assert.equal(without.fattyBurster, 6);
-});
-
-test('dosing the bosses leaves every other fantasy card in the deck', () => {
-  const setIds = FANTASY_SETS.map((set) => set.id);
-  const isBoss = (card: ZombieCard) => card.kind === 'necromancer' || (card.kind === 'levels' && card.title === 'named');
-  const others = (cards: readonly ZombieCard[]) => cards.filter((card) => !isBoss(card) || bossCount([card]).fattyBurster || bossCount([card]).wolfbomination);
-  assert.deepEqual(others(fantasyDeck(setIds, { ...DEFAULT_THREAT, level: 'calm', off: [] })), others(selectCards(FANTASY_SETS, setIds)));
+  const deck = fantasyDeck(setIds);
+  assert.deepEqual(deck.bosses?.abomination, ['fantasyAbomination', 'abominalpha', 'abominarat', 'swampTroll', 'necromanticDragon']);
+  assert.equal(deck.bosses?.necromancer.length, 12);
+  assert.equal(deck.bosses?.necromancer.at(-1), 'ratKing');
+  assert.deepEqual(bossCount(deck.cards), { necromancer: 6 });
+  assert.equal(deck.cards.filter((card) => card.kind === 'levels' && card.boss === 'ratKing').length, 0);
 });
 
 test('a new game deals the tailored deck', () => {
-  const game = newGame(FANTASY_SETS, ['blackPlague', 'hordeBox'], ALL_PARTS, () => 0, 1, 'fantasy', (cards, rng) =>
-    tailorFantasyDeck(cards, DEFAULT_THREAT, rng),
+  const game = newGame(FANTASY_SETS, ['blackPlague', 'hordeBox'], ALL_PARTS, () => 0, 1, 'fantasy', (cards) =>
+    tailorFantasyDeck(cards, DEFAULT_THREAT),
   );
-  assert.equal(game.piles.draw.length, fantasyDeck(['blackPlague', 'hordeBox']).length);
+  assert.equal(game.piles.draw.length, fantasyDeck(['blackPlague', 'hordeBox']).cards.length);
 });
 
-test('stored Threat choices are checked, with every boss in at Standard by default', () => {
+test('stored boss choices are checked, every boss in and one at a time by default', () => {
   assert.deepEqual(parseThreat(null), DEFAULT_THREAT);
   assert.deepEqual(parseThreat('not json'), DEFAULT_THREAT);
-  assert.deepEqual(parseThreat('{"level":"extreme","off":["queenSevera",3]}'), { ...DEFAULT_THREAT, level: 'standard', off: ['queenSevera'] });
-  assert.deepEqual(parseThreat('{"level":"hard","off":[]}'), { ...DEFAULT_THREAT, level: 'hard', off: [] });
+  assert.deepEqual(parseThreat('{"bossRule":"party","off":["queenSevera",3]}'), { bossRule: 'oneAtATime', off: ['queenSevera'] });
+  assert.deepEqual(parseThreat('{"bossRule":"fest","off":[]}'), { bossRule: 'fest', off: [] });
+  // Choices saved under the classic rules, gone since: only what still applies is kept.
+  assert.deepEqual(parseThreat('{"mode":"classic","level":"hard","bossRule":"fest","off":["grin"]}'), { bossRule: 'fest', off: ['grin'] });
 });
 
 // Boss decks (Dead Men Tales rules): a card calling on a deck reveals its top boss.
@@ -761,16 +717,6 @@ test('a game without boss decks reveals nothing, and saves with broken boss deck
   assert.equal(isValidSave(broken, known), false);
 });
 
-test('the Threat adds whole Abominations, one at a time', () => {
-  const all = ['blackPlague', 'zombieBosses', 'hordeBox'];
-  const named = (level: Threat['level']) =>
-    Object.entries(bossCount(fantasyDeck(all, { ...DEFAULT_THREAT, level }))).filter(([zombie]) => NAMED_ABOMINATION_ZOMBIES.includes(zombie));
-  // Standard: one named Abomination with its four cards, not one card of four of them.
-  assert.deepEqual(named('standard').map(([, count]) => count), [4]);
-  assert.deepEqual(named('hard').map(([, count]) => count), [4, 4]);
-  assert.deepEqual(named('calm').map(([, count]) => count), [2]);
-});
-
 /** A boss game where a1 and a3 spawn an Abomination at Blue only, and a2 is a Necromancer. */
 const dangerTrigger = (cardId: string, danger: string): BossKind | undefined =>
   cardId === 'a2' ? 'necromancer' : (cardId === 'a1' || cardId === 'a3') && danger === 'blue' ? 'abomination' : undefined;
@@ -810,29 +756,3 @@ test('a save keeps its boss decks and its rule together, with known bosses only'
   assert.equal(isValidSave(state, known, new Set(['n'])), false);
 });
 
-test('Dead Men Tales keeps the core Abominations and Necromancers in the deck, the named ones in their decks', () => {
-  const setIds = ['blackPlague', 'greenHorde', 'wulfsburg', 'zombieBosses', 'friendsAndFoes', 'hordeBox'];
-  const all = selectCards(FANTASY_SETS, setIds);
-  const deck = tailorFantasyDeck(all, { ...DEFAULT_THREAT, mode: 'deadMenTales', bossRule: 'fest', off: ['abominabunny', 'queenSevera'] });
-  const counts = bossCount(deck.cards);
-  assert.deepEqual(counts, { necromancer: 6, orcNecromancer: 6, fattyBurster: 6 });
-  assert.equal(deck.bosses?.rule, 'fest');
-  assert.deepEqual(deck.bosses?.necromancer, ['necromancer', 'orcNecromancer', 'countTemeraire']);
-  assert.deepEqual(deck.bosses?.abomination, [
-    'fantasyAbomination', 'orcAbomination', 'taintedAbomination', 'wolfbomination',
-    'ablobination', 'abominatroll', 'abominotaur', 'gorgomination', 'hordeBrother', 'siegeBreaker', 'swampLurker',
-    'magentaCovefe', 'vaultWarden', 'werezombie', 'chromatiz', 'feralDragon', 'zombieGiant',
-  ]);
-  // Every other card stays: only the named bosses leave the Zombie deck.
-  assert.equal(deck.cards.length, all.length - 2 - 12 - 54 + 6 - 12);
-});
-
-test('stored Threat choices keep the rules and how Abominations arrive', () => {
-  assert.deepEqual(parseThreat('{"mode":"deadMenTales","bossRule":"fest","level":"calm","off":[]}'), {
-    mode: 'deadMenTales',
-    level: 'calm',
-    bossRule: 'fest',
-    off: [],
-  });
-  assert.deepEqual(parseThreat('{"mode":"pirate","bossRule":"party"}'), DEFAULT_THREAT);
-});
