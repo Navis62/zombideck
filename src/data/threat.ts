@@ -79,6 +79,12 @@ export const NECROMANCER_CARDS_PER_CORE = 6;
 const DRAGON_CARDS = 4;
 
 const ABOMINATION_ZOMBIES = new Set<string>([...ABOMINATION_BOSSES, ...BIG_BOSSES].map((boss) => boss.zombie));
+/** Every boss a Dead Men Tales deck can hold: its cards leave the Zombie deck. */
+const DECK_BOSSES = new Set<string>(
+  [...SET_ABOMINATIONS, ...ABOMINATION_BOSSES, ...BIG_BOSSES, ...CORE_NECROMANCERS, ...NECROMANCER_BOSSES].map((boss) => boss.zombie),
+);
+/** The bosses a saved boss deck may hold. */
+export const BOSS_IDS: ReadonlySet<string> = DECK_BOSSES;
 
 const namedZombie = (card: ZombieCard) =>
   card.kind === 'levels' && card.title === 'named' ? card.levels.find((level) => level)?.zombie : undefined;
@@ -107,8 +113,8 @@ function dealInTurn(piles: readonly (readonly ZombieCard[])[], total: number): Z
 
 /**
  * Builds the fantasy deck from the cards of the sets switched on: six Necromancer cards per core box, shared between
- * the standard and the named Necromancers chosen, and the named Abomination cards the Threat allows, shared between
- * the Abominations chosen (in a random order, so a small budget does not always favor the same ones).
+ * the standard and the named Necromancers chosen, and the named Abomination cards the Threat allows: whole
+ * Abominations among the ones chosen (in a random order, so a small budget does not always favor the same ones).
  */
 export function tailorFantasyDeck(cards: readonly ZombieCard[], threat: Threat, rng: Rng = Math.random): Deck {
   return threat.mode === 'deadMenTales' ? bossDecks(cards, threat) : { cards: classicDeck(cards, threat, rng) };
@@ -132,7 +138,8 @@ function classicDeck(cards: readonly ZombieCard[], threat: Threat, rng: Rng): Zo
   });
   const kept = new Set([
     ...dealInTurn(necromancers, NECROMANCER_CARDS_PER_CORE * cores),
-    ...(budget === Infinity ? abominations.flat() : dealInTurn(abominations, budget)),
+    // One Abomination at a time, as the rulebooks add them: whole ones in a random order, the last one cut short.
+    ...abominations.flat().slice(0, budget),
     ...big,
   ]);
   return cards.filter((card) => bossOf(card) === undefined || kept.has(card));
@@ -146,11 +153,13 @@ function bossDecks(cards: readonly ZombieCard[], threat: Threat): Deck {
   const setIds = new Set(cards.map((card) => card.setId));
   const inPlay = (boss: { setId: string }) => setIds.has(boss.setId);
   const chosen = (boss: Boss) => inPlay(boss) && !threat.off.includes(boss.zombie);
-  const named = (card: ZombieCard) =>
-    namedZombie(card) !== undefined ||
-    (card.kind === 'necromancer' && NECROMANCER_BOSSES.some((boss) => boss.zombie === card.zombie));
+  // The named bosses (Wolfbomination included) leave the Zombie deck for their own; the rest stays, Fatty Bursters too.
+  const named = (card: ZombieCard) => {
+    const zombie = card.kind === 'necromancer' ? card.zombie : namedZombie(card);
+    return zombie !== undefined && DECK_BOSSES.has(zombie) && !CORE_NECROMANCERS.some((core) => core.zombie === zombie);
+  };
   return {
-    cards: cards.filter((card) => !named(card) || namedZombie(card) === 'fattyBurster'),
+    cards: cards.filter((card) => !named(card)),
     bosses: {
       rule: threat.bossRule,
       abomination: [

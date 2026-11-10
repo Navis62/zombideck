@@ -50,6 +50,8 @@ export const en: Record<TranslationKey, string> = {
   'boss.abomination': 'Abomination: {name}. If an Abomination is already on the board, it gets an Extra Activation instead.',
   'boss.abominationFest': 'Abomination Fest: Abominations on the board get an Extra Activation, then {name} arrives.',
   'boss.necromancer': 'Necromancer: {name}. If already on the board, it gets an Extra Activation.',
+  'boss.abominationNone': 'Every Abomination is already on the board: they get an Extra Activation.',
+  'boss.necromancerNone': 'Every Necromancer is already on the board: they get an Extra Activation.',
   'options.deck': 'Zombie cards',
   'options.easy': 'Easier cards',
   'options.easyDetail': '#001 to #018: fewer zombies, no Abomination at Blue',

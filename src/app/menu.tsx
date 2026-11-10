@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -37,9 +37,13 @@ export default function MenuScreen() {
     }, []),
   );
 
-  const setIds = activeSetIds(sets, expansions);
+  const setIds = useMemo(() => activeSetIds(sets, expansions), [sets, expansions]);
   const tailor = tailorDeck(universe, threat);
-  const deckSize = tailor(selectCards(sets, setIds, parts), Math.random).cards.length;
+  // Built once per choice, not on every render: the count does not depend on the shuffle.
+  const deckSize = useMemo(
+    () => tailorDeck(universe, threat)(selectCards(sets, setIds, parts), Math.random).cards.length,
+    [universe, threat, sets, setIds, parts],
+  );
   // A core box that replaces another is not an expansion: the counter leaves it out.
   const expansionSets = switchableSets(UNIVERSES[universe]);
   const enabledExpansions = expansionSets.filter((set) => setIds.includes(set.id)).length;

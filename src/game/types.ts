@@ -160,7 +160,9 @@ export type BossDeck = { draw: string[]; discard: string[] };
  * The Abomination and Necromancer decks of the Dead Men Tales rules: a drawn card that spawns one of them reveals
  * which, from its deck. `revealed` holds the boss revealed for each card of `drawn`.
  */
+/** `boss` is empty when every boss of the deck is already on display: the ones on the board get an Extra Activation. */
 export type Revealed = { kind: BossKind; boss: string };
+export const NO_BOSS = '';
 export type BossPiles = { abomination: BossDeck; necromancer: BossDeck; revealed: Record<string, Revealed> };
 /** Dead Men Tales: one Abomination at a time (the one on the board gets an Extra Activation), or the Abomination Fest. */
 export type BossRule = 'oneAtATime' | 'fest';

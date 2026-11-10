@@ -52,6 +52,8 @@ export const it: Record<TranslationKey, string> = {
   'boss.abomination': 'Abominio: {name}. Se un Abominio è già sul tabellone, ottiene invece un’Attivazione Extra.',
   'boss.abominationFest': 'Abomination Fest: gli Abomini sul tabellone ottengono un’Attivazione Extra, poi arriva {name}.',
   'boss.necromancer': 'Negromante: {name}. Se è già sul tabellone, ottiene un’Attivazione Extra.',
+  'boss.abominationNone': 'Tutti gli Abomini sono già sul tabellone: ottengono un’Attivazione Extra.',
+  'boss.necromancerNone': 'Tutti i Negromanti sono già sul tabellone: ottengono un’Attivazione Extra.',
   'options.deck': 'Carte Zombie',
   'options.easy': 'Carte facili',
   'options.easyDetail': 'Da #001 a #018: meno zombie, nessun Abominio al Blu',

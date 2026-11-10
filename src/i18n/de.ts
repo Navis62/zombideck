@@ -50,6 +50,8 @@ export const de: Record<TranslationKey, string> = {
   'boss.abomination': 'Monstrum: {name}. Ist bereits ein Monstrum auf dem Spielplan, erhält es stattdessen eine Extra-Aktivierung.',
   'boss.abominationFest': 'Abomination Fest: Die Monstren auf dem Spielplan erhalten eine Extra-Aktivierung, dann erscheint {name}.',
   'boss.necromancer': 'Nekromant: {name}. Ist er bereits auf dem Spielplan, erhält er eine Extra-Aktivierung.',
+  'boss.abominationNone': 'Alle Monstren sind bereits auf dem Spielplan: Sie erhalten eine Extra-Aktivierung.',
+  'boss.necromancerNone': 'Alle Nekromanten sind bereits auf dem Spielplan: Sie erhalten eine Extra-Aktivierung.',
   'options.deck': 'Zombiekarten',
   'options.easy': 'Leichtere Karten',
   'options.easyDetail': '#001 bis #018: weniger Zombies, kein Monstrum bei Blau',

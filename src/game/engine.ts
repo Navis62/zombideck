@@ -13,6 +13,7 @@ import type {
   UniverseId,
   ZombieCard,
 } from './types';
+import { NO_BOSS } from './types.ts';
 
 export type Rng = () => number;
 
@@ -148,7 +149,7 @@ function revealBosses(
   for (const card of leaving) {
     const gone = revealed[card];
     if (!gone) continue;
-    decks[gone.kind] = { ...decks[gone.kind], discard: [...decks[gone.kind].discard, gone.boss] };
+    if (gone.boss !== NO_BOSS) decks[gone.kind] = { ...decks[gone.kind], discard: [...decks[gone.kind].discard, gone.boss] };
     delete revealed[card];
   }
   for (const card of dealt) {
@@ -156,7 +157,8 @@ function revealBosses(
     if (!kind) continue;
     const { boss, deck } = drawBoss(decks[kind], rng);
     decks[kind] = deck;
-    if (boss) revealed[card] = { kind, boss };
+    // Every boss of the deck is on display already: the card still calls on it, they get an Extra Activation.
+    revealed[card] = { kind, boss: boss ?? NO_BOSS };
   }
   return { ...decks, revealed };
 }
@@ -313,8 +315,16 @@ export function undo(state: GameState): GameState {
   return piles ? { ...state, piles, history: state.history.slice(0, -1) } : state;
 }
 
-export function setDanger(state: GameState, danger: DangerLevel): GameState {
-  return { ...state, danger };
+/**
+ * Takes effect at once on the cards on display: a card that no longer calls on a boss deck at the new level gives its
+ * boss back, one that now calls on one reveals it. Not something to undo.
+ */
+export function setDanger(state: GameState, danger: DangerLevel, trigger: BossTrigger = noBosses, rng: Rng = Math.random): GameState {
+  const { bosses, drawn } = state.piles;
+  if (!bosses) return { ...state, danger };
+  const leaving = drawn.filter((card) => bosses.revealed[card] && trigger(card, danger) !== bosses.revealed[card].kind);
+  const calling = drawn.filter((card) => trigger(card, danger) && (!bosses.revealed[card] || leaving.includes(card)));
+  return { ...state, danger, piles: { ...state.piles, bosses: revealBosses(bosses, leaving, calling, trigger, danger, rng) } };
 }
 
 type PilesV1 = Omit<Piles, 'drawn'> & { current: string | null };
@@ -350,6 +360,8 @@ function upgradeFromV3(value: unknown): unknown {
 export function isValidSave(
   value: unknown,
   cardIdsOf: (universe: UniverseId) => ReadonlySet<string>,
+  /** The bosses a boss deck may hold; any name when not given. */
+  bossIds?: ReadonlySet<string>,
 ): value is GameState {
   const state = value as GameState | null;
   if (state?.version !== 4 || !DANGER_LEVELS.includes(state.danger) || !UNIVERSE_IDS.includes(state.universe)) return false;
@@ -358,12 +370,13 @@ export function isValidSave(
   if (!Array.isArray(state.setIds) || !state.setIds.every((id) => typeof id === 'string')) return false;
   if (!Array.isArray(state.history)) return false;
   const knownCardIds = cardIdsOf(state.universe);
-  return [state.piles, ...state.history].every((piles) => isValidPiles(piles, knownCardIds));
+  return [state.piles, ...state.history].every(
+    (piles) => isValidPiles(piles, knownCardIds) && (piles.bosses === null) === (state.bossRule === null) && isValidBosses(piles.bosses, bossIds),
+  );
 }
 
 function isValidPiles(piles: Piles | null | undefined, knownCardIds: ReadonlySet<string>): boolean {
   if (!piles || !Array.isArray(piles.draw) || !Array.isArray(piles.discard) || !Array.isArray(piles.drawn)) return false;
-  if (!isValidBosses(piles.bosses)) return false;
   return [...piles.draw, ...piles.discard, ...piles.drawn].every((id) => knownCardIds.has(id));
 }
 
@@ -371,11 +384,16 @@ const isStrings = (value: unknown): value is string[] => Array.isArray(value) &&
 const isBossDeck = (deck: BossDeck | undefined) => !!deck && isStrings(deck.draw) && isStrings(deck.discard);
 const BOSS_KINDS: readonly BossKind[] = ['abomination', 'necromancer'];
 
-function isValidBosses(bosses: BossPiles | null | undefined): boolean {
+function isValidBosses(bosses: BossPiles | null | undefined, bossIds?: ReadonlySet<string>): boolean {
   if (bosses === null) return true;
   if (!bosses || !isBossDeck(bosses.abomination) || !isBossDeck(bosses.necromancer)) return false;
   if (!bosses.revealed || typeof bosses.revealed !== 'object') return false;
-  return Object.values(bosses.revealed).every(
-    (shown) => !!shown && BOSS_KINDS.includes(shown.kind) && typeof shown.boss === 'string',
+  const known = (boss: string) => !bossIds || bossIds.has(boss);
+  const decks = [bosses.abomination, bosses.necromancer].flatMap((deck) => [...deck.draw, ...deck.discard]);
+  return (
+    decks.every(known) &&
+    Object.values(bosses.revealed).every(
+      (shown) => !!shown && BOSS_KINDS.includes(shown.kind) && typeof shown.boss === 'string' && (shown.boss === NO_BOSS || known(shown.boss)),
+    )
   );
 }

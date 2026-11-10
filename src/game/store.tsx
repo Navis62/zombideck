@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import { DEFAULT_THREAT, parseThreat, type Threat } from '@/data/threat';
+import { BOSS_IDS, DEFAULT_THREAT, parseThreat, type Threat } from '@/data/threat';
 import { cardIdsOf, UNIVERSES, withCoreBox } from '@/data/universes';
 import { deviceLanguage } from '@/i18n/device-language';
 import { isLanguage, type Language, type Translate, translator } from '@/i18n/translations';
@@ -89,7 +89,7 @@ function parseSave(raw: string | null): GameState | null {
   if (!raw) return null;
   try {
     const parsed = upgradeSave(JSON.parse(raw));
-    return isValidSave(parsed, cardIdsOf) ? parsed : null;
+    return isValidSave(parsed, cardIdsOf, BOSS_IDS) ? parsed : null;
   } catch {
     return null;
   }

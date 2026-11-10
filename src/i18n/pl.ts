@@ -52,6 +52,8 @@ export const pl: Record<TranslationKey, string> = {
   'boss.abomination': 'Abominacja: {name}. Jeśli Abominacja jest już na planszy, zamiast tego otrzymuje Dodatkową Aktywację.',
   'boss.abominationFest': 'Abomination Fest: Abominacje na planszy otrzymują Dodatkową Aktywację, potem pojawia się {name}.',
   'boss.necromancer': 'Nekromanta: {name}. Jeśli jest już na planszy, otrzymuje Dodatkową Aktywację.',
+  'boss.abominationNone': 'Wszystkie Abominacje są już na planszy: otrzymują Dodatkową Aktywację.',
+  'boss.necromancerNone': 'Wszyscy Nekromanci są już na planszy: otrzymują Dodatkową Aktywację.',
   'options.deck': 'Karty Zombie',
   'options.easy': 'Łatwiejsze karty',
   'options.easyDetail': '#001–#018: mniej zombie, brak Abominacji na Niebieskim',

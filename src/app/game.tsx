@@ -254,7 +254,7 @@ export default function GameScreen() {
                   level === danger && styles.levelActive,
                   pressed && PRESSED,
                 ]}
-                onPress={() => update((state) => setDanger(state, level))}
+                onPress={() => update((state) => setDanger(state, level, bossTrigger))}
                 accessibilityRole="button"
                 accessibilityState={{ selected: level === danger }}
               >
@@ -394,7 +394,7 @@ const revealOf =
   (revealed: Record<string, Revealed> | undefined, rule: BossRule | null | undefined) =>
   (cardId: string): Reveal | undefined => {
     const shown = revealed?.[cardId];
-    return shown && rule ? { boss: shown.boss, rule } : undefined;
+    return shown && rule ? { kind: shown.kind, boss: shown.boss, rule } : undefined;
   };
 
 function announcement(

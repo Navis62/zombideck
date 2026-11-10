@@ -52,6 +52,8 @@ export const ru: Record<TranslationKey, string> = {
   'boss.abomination': 'Отродье: {name}. Если отродье уже на поле, вместо этого оно получает дополнительный ход.',
   'boss.abominationFest': 'Abomination Fest: отродья на поле получают дополнительный ход, затем появляется {name}.',
   'boss.necromancer': 'Некромант: {name}. Если он уже на поле, он получает дополнительный ход.',
+  'boss.abominationNone': 'Все отродья уже на поле: они получают дополнительный ход.',
+  'boss.necromancerNone': 'Все некроманты уже на поле: они получают дополнительный ход.',
   'options.deck': 'Карты зомби',
   'options.easy': 'Простые карты',
   'options.easyDetail': '№001–018: меньше зомби, без отродий на синем уровне',

@@ -28,6 +28,7 @@ import {
   zonesOf,
 } from './engine.ts';
 import type { BossKind, CardSet, GameState, Piles, ZombieCard } from './types.ts';
+import { NO_BOSS } from './types.ts';
 
 const sets: CardSet[] = [
   {
@@ -705,6 +706,55 @@ test('a game without boss decks reveals nothing, and saves with broken boss deck
   assert.equal(isValidSave({ ...state, bossRule: 'party' }, known), false);
   const broken = { ...state, piles: { ...state.piles, bosses: { ...state.piles.bosses, revealed: { a1: { kind: 'dragon', boss: 'x' } } } } };
   assert.equal(isValidSave(broken, known), false);
+});
+
+test('the Threat adds whole Abominations, one at a time', () => {
+  const all = ['blackPlague', 'zombieBosses', 'hordeBox'];
+  const named = (level: Threat['level']) =>
+    Object.entries(bossCount(fantasyDeck(all, { ...DEFAULT_THREAT, level }))).filter(([zombie]) => NAMED_ABOMINATION_ZOMBIES.includes(zombie));
+  // Standard: one named Abomination with its four cards, not one card of four of them.
+  assert.deepEqual(named('standard').map(([, count]) => count), [4]);
+  assert.deepEqual(named('hard').map(([, count]) => count), [4, 4]);
+  assert.deepEqual(named('calm').map(([, count]) => count), [2]);
+});
+
+/** A boss game where a1 and a3 spawn an Abomination at Blue only, and a2 is a Necromancer. */
+const dangerTrigger = (cardId: string, danger: string): BossKind | undefined =>
+  cardId === 'a2' ? 'necromancer' : (cardId === 'a1' || cardId === 'a3') && danger === 'blue' ? 'abomination' : undefined;
+const oneBossGame = () =>
+  newGame(sets, ['a'], ALL_PARTS, () => 0, 3, 'modern', (cards) => ({
+    cards,
+    bosses: { rule: 'oneAtATime', abomination: ['x'], necromancer: ['n'] },
+  }));
+
+test('a card calling on an empty boss deck still says the bosses on the board get an Extra Activation', () => {
+  const state = drawCards(oneBossGame(), undefined, () => 0, dangerTrigger);
+  const revealed = state.piles.bosses?.revealed ?? {};
+  assert.deepEqual([revealed.a1?.boss, revealed.a3?.boss].sort(), [NO_BOSS, 'x']);
+  // The empty reveal is not a card: the next step puts only x back in its deck.
+  const next = drawCards(state, undefined, () => 0, dangerTrigger);
+  assert.ok(next.piles.bosses?.abomination.draw.concat(next.piles.bosses.abomination.discard).every((boss) => boss === 'x'));
+});
+
+test('changing the Danger Level gives back the bosses no card calls on and reveals the new ones', () => {
+  const blue = drawCards(oneBossGame(), undefined, () => 0, dangerTrigger);
+  const red = setDanger(blue, 'red', dangerTrigger, () => 0);
+  assert.deepEqual(Object.keys(red.piles.bosses?.revealed ?? {}), ['a2']);
+  assert.deepEqual(red.piles.bosses?.abomination.discard, ['x']);
+  const back = setDanger(red, 'blue', dangerTrigger, () => 0);
+  assert.deepEqual(Object.keys(back.piles.bosses?.revealed ?? {}).sort(), ['a1', 'a2', 'a3']);
+  // Without boss decks, only the level changes.
+  assert.equal(setDanger(newGame(sets, ['a']), 'red', dangerTrigger).danger, 'red');
+});
+
+test('a save keeps its boss decks and its rule together, with known bosses only', () => {
+  const state = drawCards(oneBossGame(), undefined, () => 0, dangerTrigger);
+  const known = () => new Set(['a1', 'a2', 'a3']);
+  const bosses = new Set(['x', 'n']);
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(state)), known, bosses));
+  assert.equal(isValidSave({ ...state, bossRule: null }, known, bosses), false);
+  assert.equal(isValidSave({ ...newGame(sets, ['a']), bossRule: 'fest' }, known, bosses), false);
+  assert.equal(isValidSave(state, known, new Set(['n'])), false);
 });
 
 test('Dead Men Tales keeps the core Abominations and Necromancers in the deck, the named ones in their decks', () => {

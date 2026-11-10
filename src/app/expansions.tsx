@@ -196,8 +196,8 @@ function ThreatOptions() {
       )}
       {abominations.length > 0 && <Text style={styles.heading}>{t('threat.abominations')}</Text>}
       {switches(abominations)}
-      <Text style={styles.heading}>{t('threat.necromancers')}</Text>
-      {classic && <Text style={styles.muted}>{t('threat.necromancersHint')}</Text>}
+      {necromancers.length > 0 && <Text style={styles.heading}>{t('threat.necromancers')}</Text>}
+      {necromancers.length > 0 && classic && <Text style={styles.muted}>{t('threat.necromancersHint')}</Text>}
       {switches(necromancers)}
     </>
   );
