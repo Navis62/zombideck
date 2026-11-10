@@ -93,6 +93,7 @@ export const cardEffect: CardEffect = (cardId) => {
 export const bossTrigger: BossTrigger = (cardId, danger) => {
   const card = CARDS_BY_ID.get(cardId);
   if (card?.kind === 'necromancer') return 'necromancer';
+  if (card?.kind === 'bossCall') return card.boss;
   if (card?.kind !== 'levels') return undefined;
   const level = card.levels[DANGER_LEVELS.indexOf(danger)];
   return level && ABOMINATIONS.has(level.zombie) ? 'abomination' : undefined;

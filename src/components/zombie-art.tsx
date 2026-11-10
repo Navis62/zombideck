@@ -33,6 +33,11 @@ const ART: Record<ArtSubject, ImageSourcePropType> = {
   countTemeraire: require('../../assets/zombies/count-temeraire-cartoon.jpg'),
   queenSevera: require('../../assets/zombies/queen-severa-cartoon.jpg'),
   // Stand-ins until their own illustrations are drawn.
+  wdWalker: require('../../assets/zombies/fantasy-walker-cartoon.jpg'),
+  wdRunner: require('../../assets/zombies/fantasy-runner-cartoon.jpg'),
+  wdBrute: require('../../assets/zombies/fantasy-fatty-cartoon.jpg'),
+  khanAbomination: require('../../assets/zombies/fantasy-abomination-cartoon.jpg'),
+  defilerNecromancer: require('../../assets/zombies/necromancer-cartoon.jpg'),
   spectralWalker: require('../../assets/zombies/fantasy-walker-cartoon.jpg'),
   ratz: require('../../assets/zombies/crowz-cartoon.jpg'),
   ratKing: require('../../assets/zombies/necromancer-cartoon.jpg'),

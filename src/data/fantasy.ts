@@ -1,4 +1,5 @@
 import type {
+  BossKind,
   CardSet,
   FantasyActivated,
   FantasyCard,
@@ -30,6 +31,7 @@ const NO_REST = 'noRestForTheWicked';
 // The Kickstarter packs and Special Guest boxes, several of them sold apart too: one entry, each boss picked alone.
 const SPECIAL_GUESTS = 'specialGuests';
 const RAT_KING = 'ratKingSwampTroll';
+const WHITE_DEATH = 'whiteDeath';
 
 type Letter = 'W' | 'R' | 'F' | 'A';
 /** The zombies a set prints; a letter it has none of cannot be read. */
@@ -48,6 +50,8 @@ const CROWZ: Zombies = { W: 'crowz' };
 const TAINTED: Zombies = { W: 'taintedWalker', A: 'taintedAbomination' };
 const SPECTRAL: Zombies = { W: 'spectralWalker' };
 const RATZ: Zombies = { W: 'ratz' };
+// White Death prints "Brutes" where the earlier boxes print "Fatty".
+const WHITE_DEATH_ZOMBIES: Zombies = { W: 'wdWalker', R: 'wdRunner', F: 'wdBrute' };
 
 function level(spec: string, zombies: Zombies): FantasyLevel {
   if (spec === '-') return null;
@@ -266,6 +270,7 @@ export const ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
   'fantasyAbomination',
   'orcAbomination',
   'taintedAbomination',
+  'khanAbomination',
   ...[...NAMED_ZOMBIES].filter((zombie) => !NOT_ABOMINATIONS.has(zombie)),
 ]);
 /** Necromancers with a name: the normal Necromancer rules, plus one of their own. */
@@ -358,6 +363,27 @@ const ratKingCards: ZombieCard[] = [
   ...namedCards(RAT_KING),
 ];
 
+// White Death: one zombie type per spawn card, its picture beside the counts. The Abomination and Necromancer cards
+// draw from their boss decks, which start with the Khan Abomination and the Defiler Necromancer.
+const bossCall = (id: string, boss: BossKind): FantasyCard => ({ id: `${WHITE_DEATH}-${id}`, setId: WHITE_DEATH, kind: 'bossCall', boss });
+const whiteDeathSpawns = (first: number, count: number, specs: Specs) =>
+  copies(first, count, (id) => levels(WHITE_DEATH, id, specs, WHITE_DEATH_ZOMBIES, { title: 'zombies' }));
+const whiteDeathCards: ZombieCard[] = [
+  ...whiteDeathSpawns(429, 6, ['W2', 'W4', 'W6', 'W8']),
+  ...whiteDeathSpawns(435, 4, ['F2', 'F2', 'F6', 'F8']),
+  ...whiteDeathSpawns(439, 4, ['R2', 'R2', 'R6', 'R8']),
+  ...whiteDeathSpawns(443, 6, ['W4', 'W6', 'W8', 'W10']),
+  ...whiteDeathSpawns(449, 4, ['F4', 'F4', 'F6', 'F8']),
+  ...whiteDeathSpawns(453, 4, ['R4', 'R4', 'R6', 'R8']),
+  ...copies(457, 6, (id) => bossCall(id, 'abomination')),
+  ...copies(463, 9, (id) => bossCall(id, 'necromancer')),
+  ...copies(472, 9, (id) => ({ id: `${WHITE_DEATH}-${id}`, setId: WHITE_DEATH, kind: 'zombieSiege' }) as FantasyCard),
+  activation(WHITE_DEATH, '481', 'wdWalker'),
+  activation(WHITE_DEATH, '482', 'wdWalker'),
+  activation(WHITE_DEATH, '483', 'wdBrute'),
+  activation(WHITE_DEATH, '484', 'wdRunner'),
+];
+
 const noHardCards = () => false;
 
 /**
@@ -367,6 +393,7 @@ const noHardCards = () => false;
 export const FANTASY_SETS: readonly CardSet[] = [
   { id: BLACK_PLAGUE, optional: true, core: true, isHard: noHardCards, cards: blackPlagueCards },
   { id: GREEN_HORDE, optional: true, core: true, isHard: noHardCards, cards: greenHordeCards },
+  { id: WHITE_DEATH, optional: true, core: true, isHard: noHardCards, cards: whiteDeathCards },
   { id: WULFSBURG, optional: true, isHard: noHardCards, cards: wulfsburgCards },
   { id: NPC_1, optional: true, isHard: noHardCards, cards: npcCards(NPC_1, 63) },
   { id: NPC_2, optional: true, isHard: noHardCards, cards: npcCards(NPC_2, 75) },

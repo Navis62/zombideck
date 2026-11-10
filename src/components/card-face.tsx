@@ -376,6 +376,10 @@ function fantasyRule(card: FantasyCard, t: Translate): string[] {
       return [t('card.doubleSpawnRule')];
     case 'enterHorde':
       return [t('card.enterHordeRule')];
+    case 'bossCall':
+      return [t(card.boss === 'abomination' ? 'card.abominationCallRule' : 'card.necromancerCallRule')];
+    case 'zombieSiege':
+      return [t('card.zombieSiegeOrder'), t('card.zombieSiegeSpawn'), t('card.zombieSiegeMove')];
     default:
       return [];
   }
@@ -408,6 +412,23 @@ type FantasyZombieName = FantasyZombie | FantasyNecromancer;
 
 const isNamedNecromancer = (zombie: FantasyNecromancer): zombie is NamedNecromancer => NAMED_NECROMANCERS.has(zombie);
 
+/** The picture of a card without Danger Levels: its Necromancer, the boss a White Death card revealed, or a horde. */
+function ruleArt(card: FantasyCard, reveal?: Reveal): ArtSubject {
+  switch (card.kind) {
+    case 'necromancer':
+      return card.zombie;
+    case 'bossCall':
+      if (reveal && reveal.boss !== NO_BOSS) return reveal.boss as ArtSubject;
+      return card.boss === 'abomination' ? 'khanAbomination' : 'defilerNecromancer';
+    case 'enterHorde':
+      return 'orcWalker';
+    case 'zombieSiege':
+      return 'wdWalker';
+    default:
+      return 'fantasyWalker';
+  }
+}
+
 /** The Horde banner under the rule: the zombies the Orc Necromancer adds to the Horde. */
 const hordeRule = (card: FantasyCard, t: Translate) =>
   card.kind === 'necromancer' && card.zombie === 'orcNecromancer' ? t('card.necromancerHorde') : undefined;
@@ -418,6 +439,10 @@ function levelsTitle(card: Extract<FantasyCard, { kind: 'levels' }>, t: Translat
   if (card.title === 'named') {
     const named = card.boss ?? card.levels.find((level) => level !== null)?.zombie;
     return t('card.named', { name: named ? t(`zombie.${named}.one`) : '' });
+  }
+  if (card.title === 'zombies') {
+    const first = card.levels.find((level) => level !== null);
+    return first ? t(`zombie.${first.zombie}.other`) : '';
   }
   if (card.title) return t(`card.${card.title}`);
   return t(card.horde ? 'card.assembleHorde' : 'card.fantasyInvasion');
@@ -443,6 +468,10 @@ function fantasyText(card: FantasyCard, danger: DangerLevel, t: Translate): Card
       return { title: t('card.doubleSpawn'), spoken: spokenRule(card, t) };
     case 'enterHorde':
       return { title: t('card.enterHorde'), spoken: spokenRule(card, t) };
+    case 'bossCall':
+      return { title: t(card.boss === 'abomination' ? 'card.abominationCall' : 'card.necromancer'), spoken: spokenRule(card, t) };
+    case 'zombieSiege':
+      return { title: t('card.zombieSiege'), spoken: spokenRule(card, t) };
   }
 }
 
@@ -502,13 +531,7 @@ function FantasyFace({ card, danger, text, reveal }: { card: FantasyCard; danger
         <View style={styles.fantasyRuleBody}>
           <View style={styles.fantasyRuleArt}>
             <ZombieFigure
-              subject={
-                card.kind === 'necromancer'
-                  ? card.zombie
-                  : card.kind === 'enterHorde'
-                    ? 'orcWalker'
-                    : 'fantasyWalker'
-              }
+              subject={ruleArt(card, reveal)}
               anchor="top"
             />
           </View>

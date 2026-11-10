@@ -76,6 +76,10 @@ export type FantasyZombie =
   | 'taintedWalker'
   | 'taintedAbomination'
   | 'spectralWalker'
+  | 'wdWalker'
+  | 'wdRunner'
+  | 'wdBrute'
+  | 'khanAbomination'
   | 'ratz'
   | 'ratKing'
   | NamedAbomination;
@@ -101,7 +105,16 @@ export type NamedAbomination =
   | 'swampTroll'
   | 'necromanticDragon';
 /** Zombies an Extra Activation card can name. */
-export type FantasyActivated = 'fantasyWalker' | 'fantasyRunner' | 'fantasyFatty' | 'orcWalker' | 'orcRunner' | 'orcFatty';
+export type FantasyActivated =
+  | 'fantasyWalker'
+  | 'fantasyRunner'
+  | 'fantasyFatty'
+  | 'orcWalker'
+  | 'orcRunner'
+  | 'orcFatty'
+  | 'wdWalker'
+  | 'wdRunner'
+  | 'wdBrute';
 /** Necromancers with a name: the normal Necromancer rules, plus one of their own. */
 export type NamedNecromancer =
   | 'countTemeraire'
@@ -117,7 +130,7 @@ export type NamedNecromancer =
   | 'innsmouth'
   | 'faolan'
   | 'lordOfSkulls';
-export type FantasyNecromancer = 'necromancer' | 'orcNecromancer' | NamedNecromancer;
+export type FantasyNecromancer = 'necromancer' | 'orcNecromancer' | 'defilerNecromancer' | NamedNecromancer;
 
 /** Title printed on a fantasy spawn card when it is not the core box one ("Zombies Invasion", "Assemble the HORDE!"). */
 export type FantasyTitle =
@@ -128,6 +141,8 @@ export type FantasyTitle =
   | 'taintHorde'
   | 'spectralWalkers'
   | 'swarmOfRatz'
+  /** The zombie type its levels spawn, as White Death prints "Walkers". */
+  | 'zombies'
   | 'named';
 
 /** What one Danger Level of a fantasy card spawns; `null` is "Nothing in sight!". */
@@ -151,11 +166,22 @@ export type FantasyCard =
   | (FantasyBase & { kind: 'activation'; zombie: FantasyActivated })
   | (FantasyBase & { kind: 'necromancer'; zombie: FantasyNecromancer })
   | (FantasyBase & { kind: 'doubleSpawn' })
-  | (FantasyBase & { kind: 'enterHorde' });
+  | (FantasyBase & { kind: 'enterHorde' })
+  /** White Death "Abomination!" and "Necromancer!": draw from that boss deck, or its boss on the board gets an Extra Activation. */
+  | (FantasyBase & { kind: 'bossCall'; boss: BossKind })
+  | (FantasyBase & { kind: 'zombieSiege' });
 
 export type ZombieCard = ModernCard | FantasyCard;
 
-const FANTASY_KINDS: ReadonlySet<ZombieCard['kind']> = new Set(['levels', 'activation', 'necromancer', 'doubleSpawn', 'enterHorde']);
+const FANTASY_KINDS: ReadonlySet<ZombieCard['kind']> = new Set([
+  'levels',
+  'activation',
+  'necromancer',
+  'doubleSpawn',
+  'enterHorde',
+  'bossCall',
+  'zombieSiege',
+]);
 export const isFantasyCard = (card: ZombieCard): card is FantasyCard => FANTASY_KINDS.has(card.kind);
 
 export type CardSet = {

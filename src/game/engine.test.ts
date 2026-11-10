@@ -4,11 +4,12 @@ import { test } from 'node:test';
 import { CARD_SETS, OPTIONAL_SETS } from '../data/decks.ts';
 import { FANTASY_SETS } from '../data/fantasy.ts';
 import { DEFAULT_THREAT, parseThreat, tailorFantasyDeck, type Threat } from '../data/threat.ts';
-import { allExpansions, CARDS_BY_ID, cardEffect, cardIdsOf, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
+import { allExpansions, bossTrigger as fantasyBossTrigger, CARDS_BY_ID, cardEffect, cardIdsOf, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
 import {
   activeSetIds,
   ALL_PARTS,
   cardPart,
+  DANGER_LEVELS,
   drawCards,
   drawNextCard,
   isValidSave,
@@ -641,6 +642,44 @@ test('the new bosses join their decks: the Necromantic Dragon with the Abominati
   assert.equal(deck.bosses?.necromancer.at(-1), 'ratKing');
   assert.deepEqual(bossCount(deck.cards), { necromancer: 6 });
   assert.equal(deck.cards.filter((card) => card.kind === 'levels' && card.boss === 'ratKing').length, 0);
+});
+
+test('White Death has its 56 cards, #429-#484, as printed', () => {
+  const cards = FANTASY_SETS.find((set) => set.id === 'whiteDeath')?.cards ?? [];
+  assert.deepEqual(cards.map((card) => Number(card.id.slice(-3))), Array.from({ length: 56 }, (_, i) => 429 + i));
+  const counts = (id: string) => levelsOf(id).map((level) => level && `${level.zombie} ${level.count}`);
+  // Blue to Red; the cards print them Red first, beside one picture of the zombie type.
+  assert.deepEqual(counts('whiteDeath-429'), ['wdWalker 2', 'wdWalker 4', 'wdWalker 6', 'wdWalker 8']);
+  assert.deepEqual(counts('whiteDeath-448'), ['wdWalker 4', 'wdWalker 6', 'wdWalker 8', 'wdWalker 10']);
+  assert.deepEqual(counts('whiteDeath-435'), ['wdBrute 2', 'wdBrute 2', 'wdBrute 6', 'wdBrute 8']);
+  assert.deepEqual(counts('whiteDeath-452'), ['wdBrute 4', 'wdBrute 4', 'wdBrute 6', 'wdBrute 8']);
+  assert.deepEqual(counts('whiteDeath-442'), ['wdRunner 2', 'wdRunner 2', 'wdRunner 6', 'wdRunner 8']);
+  assert.deepEqual(counts('whiteDeath-453'), ['wdRunner 4', 'wdRunner 4', 'wdRunner 6', 'wdRunner 8']);
+  const kind = (id: string) => {
+    const card = fantasyCard(id);
+    return card.kind === 'bossCall' ? `${card.kind} ${card.boss}` : card.kind === 'activation' ? `${card.kind} ${card.zombie}` : card.kind;
+  };
+  assert.deepEqual(['457', '462', '463', '471', '472', '480', '481', '482', '483', '484'].map((n) => kind(`whiteDeath-${n}`)), [
+    'bossCall abomination', 'bossCall abomination', 'bossCall necromancer', 'bossCall necromancer', 'zombieSiege', 'zombieSiege',
+    'activation wdWalker', 'activation wdWalker', 'activation wdBrute', 'activation wdRunner',
+  ]);
+});
+
+test('White Death draws its bosses from decks starting with the Khan Abomination and the Defiler Necromancer', () => {
+  for (const danger of DANGER_LEVELS) {
+    assert.equal(fantasyBossTrigger('whiteDeath-457', danger), 'abomination');
+    assert.equal(fantasyBossTrigger('whiteDeath-463', danger), 'necromancer');
+    assert.equal(fantasyBossTrigger('whiteDeath-429', danger), undefined);
+    assert.equal(fantasyBossTrigger('whiteDeath-472', danger), undefined);
+  }
+  const alone = fantasyDeck(['whiteDeath']);
+  assert.equal(alone.cards.length, 56);
+  assert.deepEqual(alone.bosses?.abomination, ['khanAbomination']);
+  assert.deepEqual(alone.bosses?.necromancer, ['defilerNecromancer']);
+  const mixed = fantasyDeck(['blackPlague', 'whiteDeath', 'zombieBosses'], { bossRule: 'oneAtATime', off: ['abominotaur'] });
+  assert.equal(mixed.cards.length, 54 + 56);
+  assert.deepEqual(mixed.bosses?.abomination, ['fantasyAbomination', 'khanAbomination', 'ablobination', 'abominatroll']);
+  assert.deepEqual(mixed.bosses?.necromancer, ['necromancer', 'defilerNecromancer']);
 });
 
 test('a new game deals the tailored deck', () => {

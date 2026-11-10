@@ -61,11 +61,13 @@ export const NECROMANCER_BOSSES: readonly Boss[] = [
 const CORE_NECROMANCERS: readonly { zombie: FantasyNecromancer; setId: string }[] = [
   { zombie: 'necromancer', setId: 'blackPlague' },
   { zombie: 'orcNecromancer', setId: 'greenHorde' },
+  { zombie: 'defilerNecromancer', setId: 'whiteDeath' },
 ];
-/** The Abominations printed among the spawn cards of a set, which the Dead Men Tales Abomination deck starts with. */
+/** The Abominations of a box, which the Abomination deck starts with (White Death: its Khan Abomination card). */
 const SET_ABOMINATIONS: readonly { zombie: FantasyZombie; setId: string }[] = [
   { zombie: 'fantasyAbomination', setId: 'blackPlague' },
   { zombie: 'orcAbomination', setId: 'greenHorde' },
+  { zombie: 'khanAbomination', setId: 'whiteDeath' },
   { zombie: 'taintedAbomination', setId: 'friendsAndFoes' },
   { zombie: 'wolfbomination', setId: 'wulfsburg' },
 ];
