@@ -10,7 +10,7 @@ Images: `feature-graphic.png` (Play Store banner, 1024×500) and `screenshots/` 
 
 **Title:** Zombie Deck
 
-**Short description:** Unofficial spawn deck for Zombicide 2nd Edition, Black Plague and Green Horde.
+**Short description:** Unofficial spawn deck: Zombicide 2nd Ed., Black Plague, White Death and more
 
 **Full description:**
 
@@ -41,7 +41,7 @@ Fan-made and unofficial. Zombicide is a trademark of CMON Global Limited; this a
 
 **Titre :** Zombie Deck
 
-**Description courte :** Pioche zombie non officielle : Zombicide 2e édition, Black Plague, Green Horde
+**Description courte :** Pioche zombie non officielle : Zombicide 2e éd., Black Plague, White Death…
 
 **Description complète :**
 
@@ -72,7 +72,7 @@ Application de fan, non officielle. Zombicide est une marque de CMON Global Limi
 
 **Titel:** Zombie Deck
 
-**Kurzbeschreibung:** Inoffizieller Zombie-Stapel: Zombicide Zweite Edition, Black Plague, Green Horde
+**Kurzbeschreibung:** Inoffizieller Zombie-Stapel: Zombicide 2. Ed., Black Plague, White Death…
 
 **Vollständige Beschreibung:**
 
@@ -103,7 +103,7 @@ Fan-Projekt, inoffiziell. Zombicide ist eine Marke von CMON Global Limited; dies
 
 **Título:** Zombie Deck
 
-**Descripción breve:** Mazo de zombis no oficial: Zombicide Segunda Edición, Black Plague, Green Horde
+**Descripción breve:** Mazo de zombis no oficial: Zombicide 2ª Ed., Black Plague, White Death…
 
 **Descripción completa:**
 
@@ -134,7 +134,7 @@ Creada por fans, no oficial. Zombicide es una marca de CMON Global Limited; esta
 
 **Titolo:** Zombie Deck
 
-**Descrizione breve:** Mazzo Zombie non ufficiale: Zombicide 2a Edizione, Black Plague, Green Horde
+**Descrizione breve:** Mazzo Zombie non ufficiale: Zombicide 2a Ed., Black Plague, White Death…
 
 **Descrizione completa:**
 
@@ -165,7 +165,7 @@ Creata da fan, non ufficiale. Zombicide è un marchio di CMON Global Limited; qu
 
 **Tytuł:** Zombie Deck
 
-**Krótki opis:** Nieoficjalna talia Zombie: Zombicide 2. edycja, Czarna Plaga, Zielona Horda
+**Krótki opis:** Nieoficjalna talia Zombie: Zombicide 2. ed., Czarna Plaga, White Death…
 
 **Pełny opis:**
 
@@ -196,7 +196,7 @@ Projekt fanowski, nieoficjalny. Zombicide jest znakiem towarowym CMON Global Lim
 
 **Título:** Zombie Deck
 
-**Descrição curta:** Baralho de zumbis não oficial: Zombicide 2ª Edição, Black Plague, Green Horde
+**Descrição curta:** Baralho de zumbis não oficial: Zombicide 2ª Ed., Black Plague, White Death…
 
 **Descrição completa:**
 
@@ -227,7 +227,7 @@ Feito por fãs, não oficial. Zombicide é uma marca da CMON Global Limited; est
 
 **Название:** Zombie Deck
 
-**Краткое описание:** Неофициальная колода зомби: «Зомбицид» 2-я ред., Чёрная чума, Зелёная орда
+**Краткое описание:** Неофициальная колода зомби: «Зомбицид» 2-я ред., фэнтези, White Death…
 
 **Полное описание:**
 
@@ -258,7 +258,7 @@ Zombie Deck заменяет колоду зомби из «Зомбицид. В
 
 **Назва:** Zombie Deck
 
-**Короткий опис:** Неофіційна колода зомбі: «Зомбіцид» 2-га ред., Чорна чума, Зелена орда
+**Короткий опис:** Неофіційна колода зомбі: «Зомбіцид» 2-га ред., Біла смерть, фентезі…
 
 **Повний опис:**
 
@@ -274,7 +274,7 @@ Zombie Deck замінює колоду зомбі з «Зомбіцид. Дру
 Доповнення та промо (вмикаються в меню «Доповнення та промо»):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, додаткові карти потвор, Danny Trejo і Monty Python's Flying Circus.
 
-Нове: світ фентезі. Під час запуску оберіть свій світ: «Зомбіцид. Друга редакція» або «Чорна чума», «Зелена орда», «Біла смерть» і «Нескорена Імперія», окремо чи разом. Усі карти появи з базових коробок, із подвійною появою, картами «Орда надходить!», символом орди та облогою зомбі з «Білої смерті»; кожен світ має свої доповнення. Доповнення фентезі: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, набори Kickstarter і коробки Special Guests, а також боси Frozen Fortress, з іменними потворами й некромантами.
+Нове: світ фентезі. Під час запуску оберіть свій світ: «Зомбіцид. Друга редакція» або «Чорна чума», «Зелена орда», «Біла смерть» і «Нескорена Імперія», окремо чи разом. Усі карти появи з базових коробок, із подвійною появою, картами «Орда надходить!», символом орди та облогою зомбі з «Білої смерті»; кожен світ має свої доповнення. Доповнення фентезі: Вульфсбург, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, набори Kickstarter і коробки Special Guests, а також боси Frozen Fortress, з іменними потворами й некромантами.
 
 Доступно українською, англійською, французькою, німецькою, іспанською, італійською, польською, бразильською португальською, російською та чеською, з офіційними назвами зомбі кожного видання.
 
@@ -288,7 +288,7 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 
 **Název:** Zombie Deck
 
-**Krátký popis:** Neoficiální balíček zombií: Zombicide 2. edice, Černý mor, Zelená horda
+**Krátký popis:** Neoficiální balíček zombií: Zombicide 2. edice, Černý mor, Bílá smrt…
 
 **Dlouhý popis:**
 
@@ -320,81 +320,101 @@ Fanouškovský, neoficiální projekt. Zombicide je ochranná známka společnos
 Play Console, 500 characters per language.
 
 <en-US>
-New: the Fantasy universe. Choose your era when the app opens: Zombicide 2nd Edition, or Black Plague and Green Horde.
-• Black Plague, Green Horde and 8 expansions: Wulfsburg, NPC-1 and 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
-• Double Spawn, Enter the Horde, the Horde symbol, named Abominations and Necromancers
-• Tap a card to read it full screen when several zones are drawn
-• Bigger deck when the cards take two rows
+New: the complete Fantasy universe. Pick Zombicide 2nd Edition, or Black Plague, Green Horde, White Death and Eternal Empire, alone or mixed.
+• Fantasy expansions, Kickstarter packs and Special Guests, Frozen Fortress bosses
+• Named Abominations and Necromancers, drawn the White Death / Dead Men Tales way, with the rule of each boss
+• New illustrations for bosses and zombies
+• Ukrainian and Czech added
+• Tap a card to zoom; bigger deck on two rows
+• Fixes to cards and translations
 </en-US>
 
 <fr-FR>
-Nouveau : l'univers médiéval-fantastique. À l'ouverture, choisissez : Zombicide 2e édition, ou Black Plague et Green Horde.
-• Black Plague, Green Horde et 8 extensions : Wulfsburg, NPC-1 et 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
-• Double invasion, La Horde arrive, symbole de la Horde, Abominations et Nécromanciens nommés
-• Touchez une carte pour l'agrandir quand il y a plusieurs zones
-• Pioche plus grande sur deux lignes
+Nouveau : l'univers Fantasy complet. Choisissez Zombicide 2e édition, ou Black Plague, Green Horde, White Death et Eternal Empire, seuls ou mélangés.
+• Extensions, packs Kickstarter et invités spéciaux, boss de Frozen Fortress
+• Abominations et Nécromanciens nommés, tirés à la façon White Death / Dead Men Tales, avec la règle de chaque boss
+• Nouvelles illustrations de boss et de zombies
+• Ukrainien et tchèque ajoutés
+• Touchez une carte pour l'agrandir
+• Corrections de cartes et de traductions
 </fr-FR>
 
 <de-DE>
-Neu: die Fantasy-Welt. Wähle beim Start dein Universum: Zombicide Zweite Edition oder Black Plague und Green Horde.
-• Black Plague, Green Horde und 8 Erweiterungen: Wulfsburg, NPC-1 und 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
-• Doppel-Spawn, „Die Horde kommt!“, Horden-Symbol, benannte Monstren und Nekromanten
-• Tippe eine Karte an, um sie bei mehreren Zonen groß zu lesen
-• Größerer Stapel bei zwei Kartenreihen
+Neu: die komplette Fantasy-Welt. Wähle Zombicide Zweite Edition oder Black Plague, Green Horde, White Death und Eternal Empire, einzeln oder gemischt.
+• Erweiterungen, Kickstarter-Pakete und Special Guests, Bosse von Frozen Fortress
+• Benannte Monstren und Nekromanten, gezogen wie bei White Death / Dead Men Tales, mit der Regel jedes Bosses
+• Neue Illustrationen für Bosse und Zombies
+• Ukrainisch und Tschechisch neu dabei
+• Karte antippen zum Vergrößern
+• Korrekturen an Karten und Übersetzungen
 </de-DE>
 
 <es-ES>
-Novedad: el universo de fantasía medieval. Al abrir la app, elige: Zombicide Segunda Edición, o Black Plague y Green Horde.
-• Black Plague, Green Horde y 8 expansiones: Wulfsburg, NPC-1 y 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
-• Aparición doble, ¡Llega la Horda!, símbolo de la Horda, Abominaciones y Nigromantes con nombre
-• Toca una carta para verla en grande con varias zonas
-• Mazo más grande con dos filas de cartas
+Novedad: el universo Fantasía completo. Elige Zombicide Segunda Edición, o Black Plague, Green Horde, White Death y Eternal Empire, por separado o mezclados.
+• Expansiones, packs de Kickstarter e invitados especiales, jefes de Frozen Fortress
+• Abominaciones y Nigromantes con nombre, al estilo White Death / Dead Men Tales, con la regla de cada jefe
+• Nuevas ilustraciones de jefes y zombis
+• Ucraniano y checo añadidos
+• Toca una carta para ampliarla
+• Correcciones de cartas y traducciones
 </es-ES>
 
 <it-IT>
-Novità: l'universo fantasy medievale. All'apertura scegli: Zombicide 2a Edizione, oppure Black Plague e Green Horde.
-• Black Plague, Green Horde e 8 espansioni: Wulfsburg, NPC-1 e 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
-• Generazione doppia, Arriva l'Orda!, simbolo dell'Orda, Abomini e Negromanti con nome
-• Tocca una carta per ingrandirla quando ci sono più zone
-• Mazzo più grande con due righe di carte
+Novità: l'universo Fantasy completo. Scegli Zombicide 2a Edizione, oppure Black Plague, Green Horde, White Death ed Eternal Empire, da soli o insieme.
+• Espansioni, pacchetti Kickstarter e ospiti speciali, boss di Frozen Fortress
+• Abomini e Negromanti con nome, alla maniera di White Death / Dead Men Tales, con la regola di ogni boss
+• Nuove illustrazioni di boss e zombie
+• Aggiunti ucraino e ceco
+• Tocca una carta per ingrandirla
+• Correzioni a carte e traduzioni
 </it-IT>
 
 <pl-PL>
-Nowość: świat fantasy. Po uruchomieniu wybierz: Zombicide 2. edycja albo Czarna Plaga i Zielona Horda.
-• Czarna Plaga, Zielona Horda i 8 dodatków: Wulfsburg, NPC-1 i 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
-• Podwójne namnażanie, „Nadchodzi Horda!”, symbol Hordy, nazwane Abominacje i Nekromanci
-• Dotknij karty, aby ją powiększyć przy kilku strefach
-• Większa talia przy dwóch rzędach kart
+Nowość: pełny świat fantasy. Wybierz Zombicide 2. edycja albo Czarna Plaga, Zielona Horda, White Death i Eternal Empire, osobno lub razem.
+• Dodatki fantasy, zestawy Kickstarter i goście specjalni, bossowie z Frozen Fortress
+• Nazwane Abominacje i Nekromanci, dobierani jak w White Death / Dead Men Tales, z zasadą każdego bossa
+• Nowe ilustracje bossów i zombie
+• Dodano ukraiński i czeski
+• Dotknij karty, aby ją powiększyć; większa talia w dwóch rzędach
+• Poprawki kart i tłumaczeń
 </pl-PL>
 
 <pt-BR>
-Novidade: o universo de fantasia medieval. Ao abrir o app, escolha: Zombicide 2ª Edição, ou Black Plague e Green Horde.
-• Black Plague, Green Horde e 8 expansões: Wulfsburg, NPC-1 e 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
-• Entrada dupla, A Horda chegou!, símbolo da Horda, Abominações e Necromantes nomeados
-• Toque numa carta para ampliá-la quando há várias zonas
-• Baralho maior com duas linhas de cartas
+Novidade: o universo Fantasia completo. Escolha Zombicide 2ª Edição, ou Black Plague, Green Horde, White Death e Eternal Empire, separados ou misturados.
+• Expansões, pacotes Kickstarter e convidados especiais, chefes de Frozen Fortress
+• Abominações e Necromantes nomeados, no estilo White Death / Dead Men Tales, com a regra de cada chefe
+• Novas ilustrações de chefes e zumbis
+• Ucraniano e tcheco adicionados
+• Toque numa carta para ampliá-la
+• Correções de cartas e traduções
 </pt-BR>
 
 <ru-RU>
-Новое: мир фэнтези. При запуске выберите: «Зомбицид. Вторая редакция» или «Чёрная чума» и «Зелёная орда».
-• «Чёрная чума», «Зелёная орда» и 8 дополнений: Wulfsburg, NPC-1 и 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
-• Двойное появление, «Орда идёт!», символ орды, именные отродья и некроманты
-• Коснитесь карты, чтобы увеличить её при нескольких зонах
-• Колода крупнее, когда карты в два ряда
+Новое: полный мир фэнтези. Выберите «Зомбицид. Вторая редакция» или «Чёрную чуму», «Зелёную орду», White Death и Eternal Empire, по отдельности или вместе.
+• Дополнения фэнтези, наборы Kickstarter и особые гости, боссы Frozen Fortress
+• Именные отродья и некроманты, как в White Death / Dead Men Tales, с правилом каждого босса
+• Новые иллюстрации боссов и зомби
+• Добавлены украинский и чешский
+• Коснитесь карты, чтобы увеличить; колода крупнее в два ряда
+• Исправления карт и переводов
 </ru-RU>
 
 <uk-UA>
-Нове: світ фентезі. Під час запуску оберіть: «Зомбіцид. Друга редакція» або «Чорна чума» і «Зелена орда».
-• «Чорна чума», «Зелена орда» та 8 доповнень: Wulfsburg, NPC-1 і 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
-• Подвійна поява, «Орда надходить!», символ орди, іменні потвори й некроманти
-• Торкніться карти, щоб збільшити її, коли зон кілька
-• Більша колода, коли карти у два ряди
+Нове: повний світ фентезі. Оберіть «Зомбіцид. Друга редакція» або «Чорну чуму», «Зелену орду», «Білу смерть» і «Нескорену Імперію», окремо чи разом.
+• Доповнення фентезі, набори Kickstarter і Special Guests, боси Frozen Fortress
+• Іменні потвори й некроманти, як у «Білій смерті» / Dead Men Tales, з правилом кожного боса
+• Нові ілюстрації босів і зомбі
+• Додано українську та чеську
+• Торкніться карти, щоб збільшити; більша колода у два ряди
+• Виправлення карт і перекладів
 </uk-UA>
 
 <cs-CZ>
-Novinka: fantasy svět. Po spuštění si vyberte: Zombicide 2. edice, nebo Černý mor a Zelená horda.
-• Černý mor, Zelená horda a 8 rozšíření: Wulfsburg, NPC-1 a 2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box
-• Dvojité oživení, Příchod hordy, symbol hordy, pojmenované zrůdy a nekromanti
-• Klepnutím na kartu ji zvětšíte, když je vytažených zón více
-• Větší balíček, když jsou karty ve dvou řadách
+Novinka: kompletní fantasy svět. Vyberte Zombicide 2. edice, nebo Černý mor, Zelenou hordu, Bílou smrt a Věčné císařství, samostatně či smíchané.
+• Fantasy rozšíření, balíčky z Kickstarteru a Special Guests, bossové z Frozen Fortress
+• Pojmenované zrůdy a nekromanti, tažení jako v Bílé smrti / Dead Men Tales, s pravidlem každého bosse
+• Nové ilustrace bossů a zombií
+• Přidána ukrajinština a čeština
+• Klepnutím na kartu ji zvětšíte; větší balíček ve dvou řadách
+• Opravy karet a překladů
 </cs-CZ>
