@@ -131,13 +131,14 @@ const HIGH_HEADS: readonly ArtSubject[] = [
   'innsmouth', 'faolan', 'lordOfSkulls', 'spectralWalker', 'ratz', 'ratKing', 'swampTroll', 'necromanticDragon',
   'wdWalker', 'wdRunner', 'wdBrute', 'khanAbomination', 'defilerNecromancer', 'eeWalker', 'eeRunner', 'eeBrute',
   'godEaterAbomination', 'amaterasu', 'asura', 'bishamon', 'chimimoryo', 'hachiman', 'kijin', 'kumiho', 'nian', 'qilin',
-  'redHare', 'shakokiDogu', 'sojobo', 'susanoWo', 'takemikazuchi', 'toyol', 'yeti', 'bomoh', 'deathNotes', 'hannya',
+  'redHare', 'shakokiDogu', 'sojobo', 'susanoWo', 'takemikazuchi', 'yeti', 'bomoh', 'deathNotes', 'hannya',
   'kaguya', 'tengu', 'yukiOnna',
 ];
 /** Creatures whose head sits higher (tall ears, horn, a giant filling the frame) or lower (a maw in the belly). */
 const UPPER_OFFSETS: Partial<Record<ArtSubject, number>> = {
   ...Object.fromEntries(HIGH_HEADS.map((subject) => [subject, 0.03])),
   zombieGiant: 0.03,
+  toyol: 0.12,
   abominabunny: 0.04,
   chromatiz: 0.04,
   ablobination: 0.15,

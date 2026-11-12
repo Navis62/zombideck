@@ -31,6 +31,11 @@ const PRINTED_LEVELS = [...DANGER_LEVELS].reverse();
 
 /** Card width the sizes below were drawn for (a phone in landscape); the card scales from it. */
 const DESIGN_WIDTH = 230;
+/**
+ * Smallest height of the picture on a rule card (boss calls, Necromancers, Double Spawn...), in design pixels. The rule
+ * text below it scrolls instead of taking the whole card, so the head of the boss stays in view on a short phone.
+ */
+const RULE_ART_MIN_HEIGHT = 80;
 
 type CardStyles = ReturnType<typeof makeStyles>;
 const CardStyle = createContext<{ styles: CardStyles; scale: number }>({ styles: makeStyles(1), scale: 1 });
@@ -550,17 +555,17 @@ function FantasyFace({ card, danger, text, reveal }: { card: FantasyCard; danger
           <View style={styles.fantasyRuleArt}>
             <ZombieFigure
               subject={ruleArt(card, reveal)}
-              anchor="top"
+              anchor="upper"
             />
           </View>
-          <View style={styles.fantasyRuleCaption}>
+          <ScrollView style={styles.fantasyRuleScroll} contentContainerStyle={styles.fantasyRuleCaption}>
             {fantasyRule(card, t).map((rule) => (
               <Text key={rule} style={styles.fantasyRule}>
                 {rule}
               </Text>
             ))}
             {hordeRule(card, t) && <Text style={styles.fantasyHordeRule}>{hordeRule(card, t)}</Text>}
-          </View>
+          </ScrollView>
         </View>
       )}
     </Frame>
@@ -654,9 +659,11 @@ function makeStyles(s: number) {
       borderColor: '#ffffff',
     },
     hordeText: { color: '#ffffff', fontSize: 10 * s, fontWeight: '900' },
-    fantasyRuleBody: { flex: 1, padding: 6 * s, backgroundColor: CARD_COLORS.fantasyFrame },
+    fantasyRuleBody: { flex: 1, padding: 6 * s, backgroundColor: CARD_COLORS.fantasyFrame, overflow: 'hidden' },
     fantasyNamedArt: { flex: 1, minHeight: 0, overflow: 'hidden', backgroundColor: CARD_COLORS.parchment },
-    fantasyRuleArt: { flex: 1, minHeight: 0, overflow: 'hidden', backgroundColor: CARD_COLORS.parchment },
+    fantasyRuleArt: { flex: 1, minHeight: RULE_ART_MIN_HEIGHT * s, overflow: 'hidden', backgroundColor: CARD_COLORS.parchment },
+    // Takes the height it needs but gives way to the picture, and scrolls when it is longer than what is left.
+    fantasyRuleScroll: { flexGrow: 0, flexShrink: 1 },
     fantasyRuleCaption: { gap: 4 * s, backgroundColor: CARD_COLORS.parchmentRow },
     fantasyRule: {
       color: CARD_COLORS.parchmentInk,
