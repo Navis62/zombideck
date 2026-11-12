@@ -251,6 +251,8 @@ export type BossDeck = { draw: string[]; discard: string[] };
 /** `boss` is empty when every boss of the deck is already on display: the ones on the board get an Extra Activation. */
 export type Revealed = { kind: BossKind; boss: string };
 export const NO_BOSS = '';
+/** `boss` when the game never had a boss of that kind (an empty deck from the start, not an exhausted one). */
+export const NO_DECK = '-';
 export type BossPiles = { abomination: BossDeck; necromancer: BossDeck; revealed: Record<string, Revealed> };
 /** Dead Men Tales: one Abomination at a time (the one on the board gets an Extra Activation), or the Abomination Fest. */
 export type BossRule = 'oneAtATime' | 'fest';

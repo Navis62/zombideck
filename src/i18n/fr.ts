@@ -38,6 +38,8 @@ export const fr = {
   'boss.necromancer': 'Nécromancien : {name}. S’il est déjà en jeu, il gagne une activation supplémentaire.',
   'boss.abominationNone': 'Toutes les Abominations sont déjà en jeu : elles gagnent une activation supplémentaire.',
   'boss.necromancerNone': 'Tous les Nécromanciens sont déjà en jeu : ils gagnent une activation supplémentaire.',
+  'boss.abominationNoDeck': 'Il n’y a aucune Abomination dans cette partie.',
+  'boss.necromancerNoDeck': 'Il n’y a aucun Nécromancien dans cette partie.',
   'options.deck': 'Cartes Zombie',
   'options.easy': 'Cartes faciles',
   'options.easyDetail': '#001 à #018 : moins de zombies, pas d’Abomination au Bleu',

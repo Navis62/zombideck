@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { CARD_SETS, OPTIONAL_SETS } from '../data/decks.ts';
-import { FANTASY_SETS } from '../data/fantasy.ts';
-import { DEFAULT_THREAT, parseThreat, tailorFantasyDeck, type Threat } from '../data/threat.ts';
+import { BOSS_RULE_IDS, FANTASY_SETS } from '../data/fantasy.ts';
+import { BOSS_IDS, DEFAULT_THREAT, parseThreat, tailorFantasyDeck, type Threat } from '../data/threat.ts';
 import { allExpansions, bossTrigger as fantasyBossTrigger, CARDS_BY_ID, cardEffect, cardIdsOf, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
 import {
   activeSetIds,
@@ -29,7 +29,7 @@ import {
   zonesOf,
 } from './engine.ts';
 import type { BossKind, CardSet, GameState, Piles, ZombieCard } from './types.ts';
-import { NO_BOSS } from './types.ts';
+import { NO_BOSS, NO_DECK } from './types.ts';
 
 const sets: CardSet[] = [
   {
@@ -716,11 +716,30 @@ test('Frozen Fortress adds sixteen Abominations and six Necromancers to the boss
   assert.deepEqual(deck.bosses?.necromancer, ['defilerNecromancer', 'bomoh', 'deathNotes', 'hannya', 'kaguya', 'yukiOnna']);
 });
 
+test('every boss but the two generic Necromancers has a rule, written once and translated in every language', async () => {
+  const { TRANSLATIONS } = await import('../i18n/translations.ts');
+  const texts = TRANSLATIONS as Record<string, Record<string, string>>;
+  const params = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((match) => match[1]).sort();
+  assert.equal(new Set(BOSS_RULE_IDS).size, BOSS_RULE_IDS.length, 'duplicate in BOSS_RULE_IDS');
+  assert.deepEqual([...BOSS_IDS].filter((id) => !(BOSS_RULE_IDS as readonly string[]).includes(id)).sort(), ['necromancer', 'orcNecromancer']);
+  for (const id of BOSS_RULE_IDS) {
+    const key = `card.${id}Rule`;
+    assert.ok(texts.en[key]?.trim(), `en: ${key}`);
+    for (const [language, language_texts] of Object.entries(texts)) {
+      assert.ok(language_texts[key]?.trim(), `${language}: ${key}`);
+      assert.deepEqual(params(language_texts[key]), params(texts.en[key]), `${language}: ${key} parameters`);
+    }
+  }
+});
+
 test('a new game deals the tailored deck', () => {
-  const game = newGame(FANTASY_SETS, ['blackPlague', 'hordeBox'], ALL_PARTS, () => 0, 1, 'fantasy', (cards) =>
-    tailorFantasyDeck(cards, DEFAULT_THREAT),
+  const setIds = ['blackPlague', 'hordeBox', 'frozenFortress'];
+  const game = newGame(FANTASY_SETS, setIds, ALL_PARTS, () => 0, 1, 'fantasy', (cards) =>
+    tailorFantasyDeck(cards, DEFAULT_THREAT, new Set(setIds)),
   );
-  assert.equal(game.piles.draw.length, fantasyDeck(['blackPlague', 'hordeBox']).cards.length);
+  assert.equal(game.piles.draw.length, fantasyDeck(setIds).cards.length);
+  // Frozen Fortress prints no spawn card, yet its bosses are in the boss decks.
+  assert.ok(game.piles.bosses?.abomination.draw.includes('yeti'));
 });
 
 test('stored boss choices are checked, every boss in and one at a time by default', () => {
@@ -806,6 +825,18 @@ test('a card calling on an empty boss deck still says the bosses on the board ge
   // The empty reveal is not a card: the next step puts only x back in its deck.
   const next = drawCards(state, undefined, () => 0, dangerTrigger);
   assert.ok(next.piles.bosses?.abomination.draw.concat(next.piles.bosses.abomination.discard).every((boss) => boss === 'x'));
+});
+
+test('a card calling on a boss deck that never held a boss says so, not that the bosses are on the board', () => {
+  const game = newGame(sets, ['a'], ALL_PARTS, () => 0, 3, 'modern', (cards) => ({
+    cards,
+    bosses: { rule: 'oneAtATime', abomination: ['x'], necromancer: [] },
+  }));
+  const state = drawCards(game, undefined, () => 0, dangerTrigger);
+  assert.equal(state.piles.bosses?.revealed.a2?.boss, NO_DECK);
+  // An exhausted deck is another thing: its bosses are on display.
+  assert.equal(drawCards(oneBossGame(), undefined, () => 0, dangerTrigger).piles.bosses?.revealed.a2?.boss, 'n');
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(state)), () => new Set(['a1', 'a2', 'a3']), new Set(['x'])));
 });
 
 test('changing the Danger Level gives back the bosses no card calls on and reveals the new ones', () => {

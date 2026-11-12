@@ -110,11 +110,7 @@ const namedZombie = (card: ZombieCard) =>
  * and Abominations included, and loses every named boss (the Wolfbomination too); each boss of the sets switched on
  * is one card of its deck, Frozen Fortress's too though it prints no spawn card (hence `setIds`).
  */
-export function tailorFantasyDeck(
-  cards: readonly ZombieCard[],
-  threat: Threat,
-  setIds: ReadonlySet<string> = new Set(cards.map((card) => card.setId)),
-): Deck {
+export function tailorFantasyDeck(cards: readonly ZombieCard[], threat: Threat, setIds: ReadonlySet<string>): Deck {
   const inPlay = (boss: { setId: string }) => setIds.has(boss.setId);
   const chosen = (boss: Boss) => inPlay(boss) && !threat.off.includes(boss.zombie);
   // The named bosses leave the Zombie deck for their own; the rest stays, Fatty Bursters too.

@@ -279,7 +279,7 @@ export const ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
  * Bosses with a rule of their own (`card.<id>Rule`), shown when they are revealed from their deck: the boss cards of
  * Frozen Fortress, White Death and Eternal Empire, and the named Necromancers.
  */
-export const BOSS_RULE_IDS: readonly string[] = [
+export const BOSS_RULE_IDS = [
   'fantasyAbomination',
   'orcAbomination',
   'taintedAbomination',
@@ -340,7 +340,8 @@ export const BOSS_RULE_IDS: readonly string[] = [
   'countTemeraire',
   'queenSevera',
   'ratKing',
-];
+] as const;
+export type BossRuleId = (typeof BOSS_RULE_IDS)[number];
 /** Necromancers with a name: the normal Necromancer rules, plus one of their own. */
 export const NAMED_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<NamedNecromancer>([
   'countTemeraire',

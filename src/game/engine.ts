@@ -13,7 +13,7 @@ import type {
   UniverseId,
   ZombieCard,
 } from './types';
-import { NO_BOSS } from './types.ts';
+import { NO_BOSS, NO_DECK } from './types.ts';
 
 export type Rng = () => number;
 
@@ -149,7 +149,7 @@ function revealBosses(
   for (const card of leaving) {
     const gone = revealed[card];
     if (!gone) continue;
-    if (gone.boss !== NO_BOSS) decks[gone.kind] = { ...decks[gone.kind], discard: [...decks[gone.kind].discard, gone.boss] };
+    if (gone.boss !== NO_BOSS && gone.boss !== NO_DECK) decks[gone.kind] = { ...decks[gone.kind], discard: [...decks[gone.kind].discard, gone.boss] };
     delete revealed[card];
   }
   for (const card of dealt) {
@@ -158,7 +158,9 @@ function revealBosses(
     const { boss, deck } = drawBoss(decks[kind], rng);
     decks[kind] = deck;
     // Every boss of the deck is on display already: the card still calls on it, they get an Extra Activation.
-    revealed[card] = { kind, boss: boss ?? NO_BOSS };
+    // With none on display either, the game never had a boss of this kind.
+    const onDisplay = Object.values(revealed).some((shown) => shown.kind === kind && shown.boss !== NO_BOSS && shown.boss !== NO_DECK);
+    revealed[card] = { kind, boss: boss ?? (onDisplay ? NO_BOSS : NO_DECK) };
   }
   return { ...decks, revealed };
 }
@@ -393,7 +395,7 @@ function isValidBosses(bosses: BossPiles | null | undefined, bossIds?: ReadonlyS
   return (
     decks.every(known) &&
     Object.values(bosses.revealed).every(
-      (shown) => !!shown && BOSS_KINDS.includes(shown.kind) && typeof shown.boss === 'string' && (shown.boss === NO_BOSS || known(shown.boss)),
+      (shown) => !!shown && BOSS_KINDS.includes(shown.kind) && typeof shown.boss === 'string' && (shown.boss === NO_BOSS || shown.boss === NO_DECK || known(shown.boss)),
     )
   );
 }

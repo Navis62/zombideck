@@ -1,9 +1,9 @@
 import { createContext, useContext, useMemo } from 'react';
-import { Image, type ImageSourcePropType, type ImageStyle, Platform, StyleSheet, Text, View } from 'react-native';
+import { Image, type ImageSourcePropType, type ImageStyle, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path, Polygon } from 'react-native-svg';
 
 import { type ArtSubject, artSubject, ZombieFigure } from '@/components/zombie-art';
-import { ABOMINATIONS, BOSS_RULE_IDS, NAMED_NECROMANCERS, NAMED_ZOMBIES } from '@/data/fantasy';
+import { ABOMINATIONS, BOSS_RULE_IDS, type BossRuleId, NAMED_NECROMANCERS, NAMED_ZOMBIES } from '@/data/fantasy';
 import { DANGER_LEVELS } from '@/game/engine';
 import { useApp } from '@/game/store';
 import {
@@ -18,11 +18,12 @@ import {
   type NamedNecromancer,
   isFantasyCard,
   NO_BOSS,
+  NO_DECK,
   type ModernCard,
   type ZombieCard,
   type ZombieType,
 } from '@/game/types';
-import type { Translate, TranslationKey } from '@/i18n/translations';
+import type { Translate } from '@/i18n/translations';
 import { CARD_COLORS, DANGER_COLORS } from '@/theme';
 
 // Printed top-down on the cards, red first.
@@ -53,9 +54,12 @@ export function CardFace({ card, danger, width, reveal }: { card: ZombieCard; da
 
 type CardText = { title: string; footer?: string; spoken: string };
 
+/** The reveal names a boss (neither an exhausted deck nor a deck the game never had). */
+const isBoss = (reveal: Reveal) => reveal.boss !== NO_BOSS && reveal.boss !== NO_DECK;
+
 /** A Necromancer card shows the Necromancer it revealed: its name, picture and rules (an Orc one keeps no Horde banner). */
 const asRevealed = (card: ZombieCard, reveal?: Reveal): ZombieCard =>
-  card.kind === 'necromancer' && reveal?.kind === 'necromancer' && reveal.boss !== NO_BOSS
+  card.kind === 'necromancer' && reveal?.kind === 'necromancer' && isBoss(reveal)
     ? { ...card, zombie: reveal.boss as FantasyNecromancer }
     : card;
 
@@ -314,7 +318,9 @@ function Frame(props: {
       <View style={styles.body}>{props.children}</View>
       {footer && (
         <View style={[styles.footer, { backgroundColor: props.headerColor.background }]}>
-          <Text style={[styles.footerText, { color: props.headerColor.text }]}>{footer}</Text>
+          <ScrollView>
+            <Text style={[styles.footerText, { color: props.headerColor.text }]}>{footer}</Text>
+          </ScrollView>
         </View>
       )}
     </View>
@@ -421,7 +427,7 @@ function ruleArt(card: FantasyCard, reveal?: Reveal): ArtSubject {
     case 'necromancer':
       return card.zombie;
     case 'bossCall':
-      if (reveal && reveal.boss !== NO_BOSS) return reveal.boss as ArtSubject;
+      if (reveal && isBoss(reveal)) return reveal.boss as ArtSubject;
       if (card.boss === 'necromancer') return card.setId === 'eternalEmpire' ? 'necromancer' : 'defilerNecromancer';
       return card.setId === 'eternalEmpire' ? 'godEaterAbomination' : 'khanAbomination';
     case 'enterHorde':
@@ -480,18 +486,20 @@ function fantasyText(card: FantasyCard, danger: DangerLevel, t: Translate): Card
   }
 }
 
-/** The boss revealed from its deck, named under the card with the way it arrives. */
 /** Bosses with a rule of their own, printed on their boss card (Frozen Fortress, White Death, Eternal Empire). */
 const BOSS_RULED: ReadonlySet<string> = new Set(BOSS_RULE_IDS);
+const hasRule = (boss: string): boss is BossRuleId => BOSS_RULED.has(boss);
 
+/** The boss revealed from its deck, named under the card with the way it arrives. */
 function withReveal(text: CardText, reveal: Reveal | undefined, t: Translate, withRule = true): CardText {
   if (!reveal) return text;
   const isNecromancer = reveal.kind === 'necromancer';
+  if (reveal.boss === NO_DECK) return { ...text, footer: t(isNecromancer ? 'boss.necromancerNoDeck' : 'boss.abominationNoDeck') };
   if (reveal.boss === NO_BOSS) return { ...text, footer: t(isNecromancer ? 'boss.necromancerNone' : 'boss.abominationNone') };
   const name = t(`zombie.${reveal.boss as FantasyZombieName}.one`);
   const rule = isNecromancer ? 'boss.necromancer' : reveal.rule === 'fest' ? 'boss.abominationFest' : 'boss.abomination';
   // A Necromancer card already reads as the Necromancer it revealed, its rule included.
-  const own = withRule && BOSS_RULED.has(reveal.boss) ? ` ${t(`card.${reveal.boss}Rule` as TranslationKey)}` : '';
+  const own = withRule && hasRule(reveal.boss) ? ` ${t(`card.${reveal.boss}Rule`)}` : '';
   return { ...text, footer: `${t(rule, { name })}${own}` };
 }
 
@@ -520,7 +528,7 @@ function FantasyFace({ card, danger, text, reveal }: { card: FantasyCard; danger
             // The Abomination revealed from its deck takes the place of the one printed.
             // It was drawn for the current Danger Level only: the other levels keep the Abomination printed.
             const boss =
-              reveal && reveal.boss !== NO_BOSS && at === danger && level && ABOMINATIONS.has(level.zombie)
+              reveal && isBoss(reveal) && at === danger && level && ABOMINATIONS.has(level.zombie)
                 ? (reveal.boss as ArtSubject)
                 : undefined;
             return (
@@ -708,7 +716,8 @@ function makeStyles(s: number) {
     levelTextWideLarge: { fontSize: 15 * s, lineHeight: 18 * s },
     levelTextWide: { color: CARD_COLORS.ink, fontSize: 10 * s, lineHeight: 12 * s, fontWeight: '600', textAlign: 'center' },
     levelTextWideActive: { fontSize: 11 * s, fontWeight: '900' },
-    footer: { paddingHorizontal: 8 * s, paddingVertical: 5 * s },
+    // A long boss rule (200-300 characters) scrolls inside the footer instead of squeezing the body and the levels.
+    footer: { paddingHorizontal: 8 * s, paddingVertical: 5 * s, maxHeight: '40%' },
     footerText: { fontSize: 11 * s, fontWeight: '700', textAlign: 'center' },
   });
 }
