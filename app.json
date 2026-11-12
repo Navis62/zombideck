@@ -21,7 +21,7 @@
       "supportsTablet": true,
       "requireFullScreen": true,
       "infoPlist": {
-        "CFBundleLocalizations": ["en", "fr", "de", "es", "it", "pl", "pt-BR", "ru"],
+        "CFBundleLocalizations": ["en", "fr", "de", "es", "it", "pl", "pt-BR", "ru", "uk", "cs"],
         "ITSAppUsesNonExemptEncryption": false
       }
     },
