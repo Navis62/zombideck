@@ -121,6 +121,7 @@ export const cs: Record<TranslationKey, string> = {
   'set.zombivor': 'Lost Zombivors',
   'set.python': "Monty Python's Flying Circus",
   'card.seekerRule': 'Nejprve aktivujte všechny Seekers, poté oživte.',
+  'card.shooterSymbol': 'Symbol Zombie střelců',
   'card.spam1': 'Do začátku příští fáze zombií musí hráči při mluvení nahrazovat každé podstatné jméno slovem „SPAM“. Jinak se aktivují všichni chodci.',
   'card.spam2': 'Vytáhněte další kartu.',
   'zombie.berserkerRunner.other': 'Berserker běžci',

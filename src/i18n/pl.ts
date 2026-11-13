@@ -120,6 +120,7 @@ export const pl: Record<TranslationKey, string> = {
   'set.zombivor': 'Lost Zombivors',
   'set.python': "Monty Python's Flying Circus",
   'card.seekerRule': 'Najpierw aktywujcie wszystkich Poszukiwaczy, potem namnóżcie.',
+  'card.shooterSymbol': 'Symbol Zombie Strzelców',
   'card.spam1': 'Do początku następnej Fazy Zombie gracze muszą zastępować każdy rzeczownik słowem „SPAM”. W przeciwnym razie aktywują się wszystkie Szwendacze.',
   'card.spam2': 'Dobierzcie następną kartę.',
   'zombie.berserkerRunner.other': 'Biegacze Berserkerzy',

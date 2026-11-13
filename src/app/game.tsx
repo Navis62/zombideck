@@ -166,10 +166,12 @@ export default function GameScreen() {
   const zoomedCard = zoomed?.step === drawnKey ? CARDS_BY_ID.get(drawn[zoomed.index]) : undefined;
   const dealt = drawn.map((id, index) => {
     const card = CARDS_BY_ID.get(id);
+    const zoomable = shown > 1;
     return (
       <View key={`${id}-${index}`} style={{ width: column, alignItems: 'center' }}>
         {label > 0 && (
-          <Text style={[styles.zone, styles.zoneLine]} numberOfLines={1}>
+          // The zone is read with the card of its button below.
+          <Text style={[styles.zone, styles.zoneLine]} numberOfLines={1} importantForAccessibility={zoomable ? 'no' : 'auto'}>
             {t('game.zone', { n: cardZones[index] })}
           </Text>
         )}
@@ -177,11 +179,17 @@ export default function GameScreen() {
           style={({ pressed }) => [slot, pressed && PRESSED]}
           disabled={!card || shown === 1}
           onPress={() => setZoomed({ step: drawnKey, index })}
-          accessibilityRole={shown > 1 ? 'button' : undefined}
-          accessibilityHint={shown > 1 ? t('game.zoom') : undefined}
+          accessibilityRole={zoomable ? 'button' : undefined}
+          // One announcement per card: a button hides what it holds from TalkBack, so it carries the whole card.
+          accessibilityLabel={zoomable && card ? `${t('game.zone', { n: cardZones[index] })}: ${cardLabel(card, danger, t, reveal(id))}` : undefined}
+          accessibilityHint={zoomable ? t('game.zoom') : undefined}
         >
           {card && (
-            <Animated.View style={[styles.drawn, { transform: [{ perspective: 800 }, { rotateY }] }]}>
+            <Animated.View
+              style={[styles.drawn, { transform: [{ perspective: 800 }, { rotateY }] }]}
+              accessibilityElementsHidden={zoomable}
+              importantForAccessibility={zoomable ? 'no-hide-descendants' : 'auto'}
+            >
               <CardFace card={card} danger={danger} width={width} reveal={reveal(id)} />
             </Animated.View>
           )}
@@ -321,17 +329,19 @@ export default function GameScreen() {
           statusBarTranslucent
           navigationBarTranslucent
         >
-          <Pressable
-            style={styles.zoom}
-            onPress={() => setZoomed(null)}
-            accessibilityRole="button"
-            accessibilityLabel={t('game.close')}
-          >
+          <View style={styles.zoom}>
             {label > 0 && <Text style={styles.zone}>{t('game.zone', { n: cardZones[zoomed.index] })}</Text>}
-            <View style={{ width: zoomWidth(window), aspectRatio: CARD_RATIO }}>
+            {/* Touches go through the card to the close button over the whole screen; the card stays readable. */}
+            <View style={{ width: zoomWidth(window), aspectRatio: CARD_RATIO }} pointerEvents="none">
               <CardFace card={zoomedCard} danger={danger} width={zoomWidth(window)} reveal={reveal(zoomedCard.id)} />
             </View>
-          </Pressable>
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={() => setZoomed(null)}
+              accessibilityRole="button"
+              accessibilityLabel={t('game.close')}
+            />
+          </View>
         </Modal>
       )}
       {showDiscard && (

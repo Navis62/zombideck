@@ -118,6 +118,7 @@ export const en: Record<TranslationKey, string> = {
   'set.zombivor': 'Lost Zombivors',
   'set.python': "Monty Python's Flying Circus",
   'card.seekerRule': 'First, activate all Seekers, then spawn.',
+  'card.shooterSymbol': 'Zombie Shooter symbol',
   'card.spam1': 'Until the start of the next Zombie Phase, players must speak replacing any noun with "SPAM". Otherwise, all Walkers activate.',
   'card.spam2': 'Draw the next card.',
   'zombie.berserkerRunner.other': 'Berserker Runners',

@@ -116,6 +116,7 @@ export const fr = {
   'set.zombivor': 'Lost Zombivors',
   'set.python': "Monty Python's Flying Circus",
   'card.seekerRule': "D'abord, activez tous les Traqueurs, puis générez.",
+  'card.shooterSymbol': 'Symbole Flingueurs',
   'card.spam1': "Jusqu'au début de la prochaine phase des zombies, les joueurs doivent remplacer chaque nom par « SPAM ». Sinon, tous les Rôdeurs s'activent.",
   'card.spam2': 'Piochez la carte suivante.',
   'zombie.berserkerRunner.other': 'Forcenés berserkers',

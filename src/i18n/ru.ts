@@ -120,6 +120,7 @@ export const ru: Record<TranslationKey, string> = {
   'set.zombivor': 'Lost Zombivors',
   'set.python': "Monty Python's Flying Circus",
   'card.seekerRule': 'Сначала активируются все зомби-ищейки, затем появляются новые.',
+  'card.shooterSymbol': 'Символ зомби-стрелков',
   'card.spam1': 'До начала следующей фазы зомби игроки должны заменять в речи каждое существительное словом «SPAM». Иначе все ходоки активируются.',
   'card.spam2': 'Возьмите следующую карту.',
   'zombie.berserkerRunner.other': 'Бегуны-берсерки',

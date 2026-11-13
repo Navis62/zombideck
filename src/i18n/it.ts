@@ -120,6 +120,7 @@ export const it: Record<TranslationKey, string> = {
   'set.zombivor': 'Lost Zombivors',
   'set.python': "Monty Python's Flying Circus",
   'card.seekerRule': 'Prima attivate tutti i Cercatori, poi generate.',
+  'card.shooterSymbol': 'Simbolo Zombie Tiratori',
   'card.spam1': "Fino all'inizio della prossima Fase degli Zombie, i giocatori devono sostituire ogni nome con «SPAM». Altrimenti, tutti i Deambulanti si attivano.",
   'card.spam2': 'Pescate la carta successiva.',
   'zombie.berserkerRunner.other': 'Corridori Berserker',

@@ -91,7 +91,8 @@ function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: 
       return {
         title: card.kind === 'rush' ? t('card.rushTitle', { zombies: t(`zombie.${card.zombie}.rush`) }) : zombies,
         footer: isRush ? t('card.rushRule') : card.zombie === 'seeker' ? t('card.seekerRule') : undefined,
-        spoken: `${level}: ${card.counts[DANGER_LEVELS.indexOf(danger)]} ${zombies}`,
+        // The Fort Hendrix Zombie Shooter symbol is printed as a picture only: say it with the counts.
+        spoken: sentences([`${level}: ${card.counts[DANGER_LEVELS.indexOf(danger)]} ${zombies}`, card.shooter && t('card.shooterSymbol')]),
       };
     }
   }
@@ -292,7 +293,7 @@ function SymbolDrawing({ kind }: { kind: DrawnSymbol }) {
 }
 
 // Joins the parts into sentences without doubling the punctuation of titles such as "Walker Rush!".
-const sentences = (parts: (string | undefined)[]) =>
+const sentences = (parts: (string | false | undefined)[]) =>
   parts
     .filter((part): part is string => !!part)
     .map((part) => (/[.!?:]$/.test(part) ? part : `${part}.`))
