@@ -514,6 +514,35 @@ function withReveal(text: CardText, reveal: Reveal | undefined, t: Translate, wi
   return { ...text, footer: `${t(rule, { name })}${own}` };
 }
 
+/**
+ * One Danger Level of a fantasy card as drawn: the zombie printed there, or the Abomination revealed from its deck in
+ * its place (drawn for the current Danger Level only, so the other levels keep the Abomination printed).
+ */
+function revealedLevel(card: FantasyCard, at: DangerLevel, danger: DangerLevel, reveal: Reveal | undefined, t: Translate) {
+  const line = fantasyLine(card, at, t);
+  const level = card.kind === 'levels' ? card.levels[DANGER_LEVELS.indexOf(at)] : null;
+  const boss =
+    reveal && isBoss(reveal) && at === danger && level && ABOMINATIONS.has(level.zombie) ? (reveal.boss as ArtSubject) : undefined;
+  return {
+    line,
+    level,
+    subject: card.kind === 'activation' ? (card.zombie as ArtSubject) : (boss ?? level?.zombie),
+    label: boss ? t(`zombie.${boss as FantasyZombieName}.one`) : line.label,
+  };
+}
+
+/**
+ * What the modern layout shows for the current level of a fantasy card: the zombie to draw large, its type above the
+ * count (none for an Extra Activation, which prints a sentence). Empty for "Nothing in sight!" and the rule cards.
+ */
+function bigLevel(card: FantasyCard, danger: DangerLevel, reveal: Reveal | undefined, t: Translate) {
+  if (card.kind !== 'levels' && card.kind !== 'activation') return undefined;
+  const { line, level, subject, label } = revealedLevel(card, danger, danger, reveal, t);
+  if (card.kind === 'activation') return { subject: subject as ArtSubject, label: undefined, value: line.value, horde: false };
+  if (!level || !subject) return undefined;
+  return { subject, label, value: line.value, horde: feedsHorde(card, level) };
+}
+
 /** Fantasy era card: parchment stock, the printed title, then the Danger Levels red first, or the rule of the card. */
 function FantasyFace({ card, danger, text, reveal }: { card: FantasyCard; danger: DangerLevel; text: CardText; reveal?: Reveal }) {
   const { t, cardDisplay } = useApp();
@@ -525,9 +554,34 @@ function FantasyFace({ card, danger, text, reveal }: { card: FantasyCard; danger
     card.kind === 'levels' && (card.title === 'named' || card.plural)
       ? (card.boss ?? card.levels.find((level) => level !== null)?.zombie)
       : undefined;
+  const big = current && !named ? bigLevel(card, danger, reveal, t) : undefined;
   return (
     <Frame card={card} text={text} headerColor={FANTASY_HEADER} faceColor={CARD_COLORS.parchment}>
-      {card.kind === 'levels' || card.kind === 'activation' ? (
+      {big ? (
+        // Only the current level: the modern layout, the zombie large beside its count.
+        <View style={styles.spawnBody}>
+          <View style={styles.art}>
+            <ZombieFigure subject={big.subject} anchor="center" />
+          </View>
+          <View style={[styles.levels, { backgroundColor: CARD_COLORS.fantasyFrame }]}>
+            {big.label !== undefined && (
+              <View style={styles.fantasyBigLabelRow}>
+                <Text style={styles.fantasyBigLabel} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.6}>
+                  {big.label}
+                </Text>
+                {big.horde && (
+                  <View style={styles.hordeBadge}>
+                    <Text style={styles.hordeText}>+1</Text>
+                  </View>
+                )}
+              </View>
+            )}
+            <Level level={danger} active wide={big.label === undefined} large>
+              {big.value}
+            </Level>
+          </View>
+        </View>
+      ) : card.kind === 'levels' || card.kind === 'activation' ? (
         <View style={styles.fantasyLevels}>
           {named && (
             <View style={styles.fantasyNamedArt}>
@@ -536,22 +590,15 @@ function FantasyFace({ card, danger, text, reveal }: { card: FantasyCard; danger
             </View>
           )}
           {shown.map((at) => {
-            const line = fantasyLine(card, at, t);
-            const level = card.kind === 'levels' ? card.levels[DANGER_LEVELS.indexOf(at)] : null;
-            // The Abomination revealed from its deck takes the place of the one printed.
-            // It was drawn for the current Danger Level only: the other levels keep the Abomination printed.
-            const boss =
-              reveal && isBoss(reveal) && at === danger && level && ABOMINATIONS.has(level.zombie)
-                ? (reveal.boss as ArtSubject)
-                : undefined;
+            const { line, level, subject, label } = revealedLevel(card, at, danger, reveal, t);
             return (
               <FantasyRow
                 key={at}
                 level={at}
                 active={at === danger}
                 large={current}
-                subject={card.kind === 'activation' ? card.zombie : named ? undefined : (boss ?? level?.zombie)}
-                label={boss ? t(`zombie.${boss as FantasyZombieName}.one`) : line.label}
+                subject={named && card.kind !== 'activation' ? undefined : subject}
+                label={label}
                 value={line.value}
                 horde={feedsHorde(card, level)}
               />
@@ -653,6 +700,20 @@ function makeStyles(s: number) {
     fantasyCount: { color: CARD_COLORS.parchmentInk, fontSize: 16 * s, fontWeight: '900' },
     fantasyCountActive: { fontSize: 24 * s },
     fantasyCountLarge: { fontSize: 52 * s },
+    // Type of the zombie above its large count, on a parchment strip so it reads on the red frame.
+    fantasyBigLabelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 * s, minWidth: 0 },
+    fantasyBigLabel: {
+      flexShrink: 1,
+      color: CARD_COLORS.parchmentInk,
+      backgroundColor: CARD_COLORS.parchmentRow,
+      borderRadius: 3 * s,
+      paddingHorizontal: 6 * s,
+      paddingVertical: 2 * s,
+      fontSize: 13 * s,
+      fontWeight: '800',
+      fontStyle: 'italic',
+      textAlign: 'center',
+    },
     fantasyNote: { alignSelf: 'center', color: CARD_COLORS.parchmentInk, fontSize: 11 * s, fontWeight: '700', fontStyle: 'italic', textAlign: 'center' },
     fantasyNoteLarge: { fontSize: 18 * s },
     hordeBadge: {
