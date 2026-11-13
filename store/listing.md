@@ -20,7 +20,7 @@ Zombie Deck replaces the zombie spawn deck of Zombicide 2nd Edition on your phon
 • Rush, Extra Activation and Abomination cards, just like the real ones
 • Choose the Danger Level in one tap; show only the current level or all four
 • Shuffle the draw pile or reshuffle everything, and undo a draw
-• Your game is saved automatically: close the app and pick up where you left off
+• Your game is saved automatically: close the app and pick up where you left off; each universe keeps its own game
 • The screen stays on during the game
 • Works offline, no ads, no account, no data collected
 
@@ -51,7 +51,7 @@ Zombie Deck remplace la pioche zombie de Zombicide 2e édition sur votre télép
 • Les cartes Ruée, Activation supplémentaire et Abomination, comme les vraies
 • Choisissez le niveau de danger d'un geste ; affichez seulement le niveau en cours ou les quatre
 • Mélangez la pioche ou remélangez tout, et annulez une pioche
-• La partie est sauvegardée automatiquement : fermez l'appli et reprenez où vous en étiez
+• La partie est sauvegardée automatiquement : fermez l'appli et reprenez où vous en étiez ; chaque univers garde sa propre partie
 • L'écran reste allumé pendant la partie
 • Fonctionne hors ligne, sans publicité, sans compte, sans collecte de données
 
@@ -82,7 +82,7 @@ Zombie Deck ersetzt den Zombie-Stapel von Zombicide Zweite Edition auf deinem Ha
 • Ansturm-, Zusätzliche-Aktivierung- und Monstrum-Karten wie im echten Spiel
 • Gefahrenstufe mit einem Tippen wählen; nur die aktuelle Stufe oder alle vier anzeigen
 • Nachziehstapel mischen oder alles neu mischen, und einen Zug rückgängig machen
-• Die Partie wird automatisch gespeichert: App schließen und später weiterspielen
+• Die Partie wird automatisch gespeichert: App schließen und später weiterspielen; jedes Universum behält seine eigene Partie
 • Der Bildschirm bleibt während der Partie an
 • Funktioniert offline, ohne Werbung, ohne Konto, ohne Datensammlung
 
@@ -113,7 +113,7 @@ Zombie Deck sustituye el mazo de zombis de Zombicide Segunda Edición en tu móv
 • Cartas de Avance impetuoso, Activación adicional y Abominación, como las de verdad
 • Elige el nivel de peligro con un toque; muestra solo el nivel actual o los cuatro
 • Baraja el mazo o vuelve a barajarlo todo, y deshaz un robo
-• La partida se guarda sola: cierra la app y continúa donde lo dejaste
+• La partida se guarda sola: cierra la app y continúa donde lo dejaste; cada universo conserva su propia partida
 • La pantalla se mantiene encendida durante la partida
 • Funciona sin conexión, sin anuncios, sin cuenta y sin recoger datos
 
@@ -144,7 +144,7 @@ Zombie Deck sostituisce il mazzo Zombie di Zombicide 2a Edizione sul tuo telefon
 • Carte Assalto, Attivazione Extra e Abominio, come quelle vere
 • Scegli il Livello di Pericolo con un tocco; mostra solo il livello attuale o tutti e quattro
 • Mescola il mazzo o rimescola tutto, e annulla una pescata
-• La partita si salva da sola: chiudi l'app e riprendi da dove eri rimasto
+• La partita si salva da sola: chiudi l'app e riprendi da dove eri rimasto; ogni universo conserva la sua partita
 • Lo schermo resta acceso durante la partita
 • Funziona offline, senza pubblicità, senza account, senza raccolta di dati
 
@@ -175,7 +175,7 @@ Zombie Deck zastępuje talię Zombie z Zombicide 2. edycja na twoim telefonie lu
 • Karty Zrywu, Dodatkowej Aktywacji i Abominacji, jak prawdziwe
 • Wybierz poziom zagrożenia jednym dotknięciem; pokaż tylko bieżący poziom lub wszystkie cztery
 • Potasuj talię lub przetasuj wszystko i cofnij dobranie karty
-• Gra zapisuje się automatycznie: zamknij aplikację i wróć do rozgrywki później
+• Gra zapisuje się automatycznie: zamknij aplikację i wróć do rozgrywki później; każdy świat ma własną zapisaną grę
 • Ekran nie gaśnie podczas gry
 • Działa offline, bez reklam, bez konta, bez zbierania danych
 
@@ -206,7 +206,7 @@ Zombie Deck substitui o baralho de zumbis de Zombicide 2ª Edição no seu celul
 • Cartas de Investida, Ativação Extra e Abominação, iguais às de verdade
 • Escolha o Nível de Perigo com um toque; mostre só o nível atual ou os quatro
 • Embaralhe o baralho ou embaralhe tudo de novo, e desfaça uma compra
-• A partida é salva automaticamente: feche o app e continue de onde parou
+• A partida é salva automaticamente: feche o app e continue de onde parou; cada universo guarda a sua própria partida
 • A tela fica ligada durante a partida
 • Funciona offline, sem anúncios, sem conta e sem coleta de dados
 
@@ -237,7 +237,7 @@ Zombie Deck заменяет колоду зомби из «Зомбицид. В
 • Карты натиска, дополнительного хода и отродий — как настоящие
 • Выбирайте уровень опасности одним касанием; показывайте только текущий уровень или все четыре
 • Перемешайте колоду или перемешайте всё, отмените взятие карты
-• Партия сохраняется автоматически: закройте приложение и продолжите позже
+• Партия сохраняется автоматически: закройте приложение и продолжите позже; в каждом мире своя партия
 • Экран не гаснет во время партии
 • Работает офлайн, без рекламы, без аккаунта и без сбора данных
 
@@ -268,7 +268,7 @@ Zombie Deck замінює колоду зомбі з «Зомбіцид. Дру
 • Карти натиску, додаткової активації та потвор — як справжні
 • Обирайте рівень небезпеки одним дотиком; показуйте лише поточний рівень або всі чотири
 • Перетасуйте колоду або перетасуйте все, скасуйте взяття карти
-• Гру збережено автоматично: закрийте застосунок і продовжте пізніше
+• Гру збережено автоматично: закрийте застосунок і продовжте пізніше; у кожному світі своя гра
 • Працює офлайн, без реклами, без облікового запису й без збору даних
 
 Доповнення та промо (вмикаються в меню «Доповнення та промо»):
@@ -298,7 +298,7 @@ Zombie Deck nahrazuje balíček karet zombií ze hry Zombicide 2. edice ve vaše
 • Karty Horda, Extra aktivace a zrůd, přesně jako ty skutečné
 • Úroveň nebezpečí vyberete jedním klepnutím; zobrazte jen aktuální úroveň, nebo všechny čtyři
 • Zamíchejte balíček nebo vše znovu zamíchejte a vraťte vytažení karty zpět
-• Hra se ukládá automaticky: zavřete aplikaci a pokračujte později
+• Hra se ukládá automaticky: zavřete aplikaci a pokračujte později; každý svět si drží vlastní hru
 • Obrazovka zůstává během hry zapnutá
 • Funguje offline, bez reklam, bez účtu a bez sběru dat
 
@@ -320,101 +320,91 @@ Fanouškovský, neoficiální projekt. Zombicide je ochranná známka společnos
 Play Console, 500 characters per language.
 
 <en-US>
-New: the complete Fantasy universe. Pick Zombicide 2nd Edition, or Black Plague, Green Horde, White Death and Eternal Empire, alone or mixed.
-• Fantasy expansions, Kickstarter packs and Special Guests, Frozen Fortress bosses
-• Named Abominations and Necromancers, drawn the White Death / Dead Men Tales way, with the rule of each boss
-• New illustrations for bosses and zombies
-• Ukrainian and Czech added
-• Tap a card to zoom; bigger deck on two rows
-• Fixes to cards and translations
+New: the Fantasy universe. Black Plague, Green Horde, White Death and Eternal Empire, alone or mixed.
+• All official Fantasy expansions: Wulfsburg, NPC, Zombie Bosses, No Rest for the Wicked, Warlords, Kickstarter & Special Guests…
+• Named bosses drawn the White Death / Dead Men Tales way, with each boss's rule
+• New illustrations; current level on a big picture
+• Ukrainian and Czech added; one saved game per universe
+• Card zoom, better accessibility, fixes
 </en-US>
 
 <fr-FR>
-Nouveau : l'univers Fantasy complet. Choisissez Zombicide 2e édition, ou Black Plague, Green Horde, White Death et Eternal Empire, seuls ou mélangés.
-• Extensions, packs Kickstarter et invités spéciaux, boss de Frozen Fortress
-• Abominations et Nécromanciens nommés, tirés à la façon White Death / Dead Men Tales, avec la règle de chaque boss
-• Nouvelles illustrations de boss et de zombies
-• Ukrainien et tchèque ajoutés
-• Touchez une carte pour l'agrandir
-• Corrections de cartes et de traductions
+Nouveau : l'univers Fantasy. Black Plague, Green Horde, White Death et Eternal Empire, seuls ou mélangés.
+• Toutes les extensions Fantasy officielles : Wulfsburg, NPC, Zombie Bosses, No Rest for the Wicked, Warlords, Kickstarter et invités spéciaux…
+• Boss nommés tirés façon White Death / Dead Men Tales, avec la règle de chaque boss
+• Nouvelles illustrations ; niveau en cours en grand
+• Ukrainien et tchèque ajoutés ; une partie par univers
+• Zoom sur une carte, accessibilité, corrections
 </fr-FR>
 
 <de-DE>
-Neu: die komplette Fantasy-Welt. Wähle Zombicide Zweite Edition oder Black Plague, Green Horde, White Death und Eternal Empire, einzeln oder gemischt.
-• Erweiterungen, Kickstarter-Pakete und Special Guests, Bosse von Frozen Fortress
-• Benannte Monstren und Nekromanten, gezogen wie bei White Death / Dead Men Tales, mit der Regel jedes Bosses
-• Neue Illustrationen für Bosse und Zombies
-• Ukrainisch und Tschechisch neu dabei
-• Karte antippen zum Vergrößern
-• Korrekturen an Karten und Übersetzungen
+Neu: die Fantasy-Welt. Black Plague, Green Horde, White Death und Eternal Empire, einzeln oder gemischt.
+• Alle offiziellen Fantasy-Erweiterungen: Wulfsburg, NPC, Zombie Bosses, No Rest for the Wicked, Warlords, Kickstarter & Special Guests …
+• Benannte Bosse, gezogen wie bei White Death / Dead Men Tales, mit der Regel jedes Bosses
+• Neue Illustrationen; aktuelle Stufe groß dargestellt
+• Ukrainisch, Tschechisch; eine Partie pro Welt
+• Kartenzoom, mehr Barrierefreiheit, Korrekturen
 </de-DE>
 
 <es-ES>
-Novedad: el universo Fantasía completo. Elige Zombicide Segunda Edición, o Black Plague, Green Horde, White Death y Eternal Empire, por separado o mezclados.
-• Expansiones, packs de Kickstarter e invitados especiales, jefes de Frozen Fortress
-• Abominaciones y Nigromantes con nombre, al estilo White Death / Dead Men Tales, con la regla de cada jefe
-• Nuevas ilustraciones de jefes y zombis
-• Ucraniano y checo añadidos
-• Toca una carta para ampliarla
-• Correcciones de cartas y traducciones
+Novedad: el universo Fantasía. Black Plague, Green Horde, White Death y Eternal Empire, por separado o mezclados.
+• Todas las expansiones oficiales de Fantasía: Wulfsburg, NPC, Zombie Bosses, No Rest for the Wicked, Warlords, Kickstarter e invitados especiales…
+• Jefes con nombre, al estilo White Death / Dead Men Tales, con la regla de cada jefe
+• Nuevas ilustraciones; nivel actual en grande
+• Ucraniano y checo añadidos; una partida por universo
+• Zoom en las cartas, accesibilidad, correcciones
 </es-ES>
 
 <it-IT>
-Novità: l'universo Fantasy completo. Scegli Zombicide 2a Edizione, oppure Black Plague, Green Horde, White Death ed Eternal Empire, da soli o insieme.
-• Espansioni, pacchetti Kickstarter e ospiti speciali, boss di Frozen Fortress
-• Abomini e Negromanti con nome, alla maniera di White Death / Dead Men Tales, con la regola di ogni boss
-• Nuove illustrazioni di boss e zombie
-• Aggiunti ucraino e ceco
-• Tocca una carta per ingrandirla
-• Correzioni a carte e traduzioni
+Novità: l'universo Fantasy. Black Plague, Green Horde, White Death ed Eternal Empire, da soli o insieme.
+• Tutte le espansioni Fantasy ufficiali: Wulfsburg, NPC, Zombie Bosses, No Rest for the Wicked, Warlords, Kickstarter e ospiti speciali…
+• Boss con nome, alla maniera di White Death / Dead Men Tales, con la regola di ogni boss
+• Nuove illustrazioni; livello attuale in grande
+• Aggiunti ucraino e ceco; una partita per universo
+• Zoom sulle carte, accessibilità, correzioni
 </it-IT>
 
 <pl-PL>
-Nowość: pełny świat fantasy. Wybierz Zombicide 2. edycja albo Czarna Plaga, Zielona Horda, White Death i Eternal Empire, osobno lub razem.
-• Dodatki fantasy, zestawy Kickstarter i goście specjalni, bossowie z Frozen Fortress
-• Nazwane Abominacje i Nekromanci, dobierani jak w White Death / Dead Men Tales, z zasadą każdego bossa
-• Nowe ilustracje bossów i zombie
-• Dodano ukraiński i czeski
-• Dotknij karty, aby ją powiększyć; większa talia w dwóch rzędach
-• Poprawki kart i tłumaczeń
+Nowość: świat fantasy. Czarna Plaga, Zielona Horda, White Death i Eternal Empire, osobno lub razem.
+• Wszystkie oficjalne dodatki fantasy: Wulfsburg, NPC, Zombie Bosses, No Rest for the Wicked, Warlords, Kickstarter i goście specjalni…
+• Nazwani bossowie, dobierani jak w White Death / Dead Men Tales, z zasadą każdego bossa
+• Nowe ilustracje; bieżący poziom w dużym widoku
+• Dodano ukraiński i czeski; osobny zapis na świat
+• Powiększanie kart, dostępność, poprawki
 </pl-PL>
 
 <pt-BR>
-Novidade: o universo Fantasia completo. Escolha Zombicide 2ª Edição, ou Black Plague, Green Horde, White Death e Eternal Empire, separados ou misturados.
-• Expansões, pacotes Kickstarter e convidados especiais, chefes de Frozen Fortress
-• Abominações e Necromantes nomeados, no estilo White Death / Dead Men Tales, com a regra de cada chefe
-• Novas ilustrações de chefes e zumbis
-• Ucraniano e tcheco adicionados
-• Toque numa carta para ampliá-la
-• Correções de cartas e traduções
+Novidade: o universo Fantasia. Black Plague, Green Horde, White Death e Eternal Empire, separados ou misturados.
+• Todas as expansões oficiais de Fantasia: Wulfsburg, NPC, Zombie Bosses, No Rest for the Wicked, Warlords, Kickstarter e convidados especiais…
+• Chefes nomeados, no estilo White Death / Dead Men Tales, com a regra de cada chefe
+• Novas ilustrações; nível atual em destaque
+• Ucraniano e tcheco adicionados; um jogo salvo por universo
+• Zoom nas cartas, acessibilidade, correções
 </pt-BR>
 
 <ru-RU>
-Новое: полный мир фэнтези. Выберите «Зомбицид. Вторая редакция» или «Чёрную чуму», «Зелёную орду», White Death и Eternal Empire, по отдельности или вместе.
-• Дополнения фэнтези, наборы Kickstarter и особые гости, боссы Frozen Fortress
-• Именные отродья и некроманты, как в White Death / Dead Men Tales, с правилом каждого босса
-• Новые иллюстрации боссов и зомби
-• Добавлены украинский и чешский
-• Коснитесь карты, чтобы увеличить; колода крупнее в два ряда
-• Исправления карт и переводов
+Новое: мир фэнтези. «Чёрная чума», «Зелёная орда», White Death и Eternal Empire, по отдельности или вместе.
+• Все официальные дополнения фэнтези: Wulfsburg, NPC, Zombie Bosses, No Rest for the Wicked, Warlords, наборы Kickstarter и особые гости…
+• Именные боссы, как в White Death / Dead Men Tales, с правилом каждого босса
+• Новые иллюстрации; текущий уровень крупно
+• Добавлены украинский и чешский; своя партия в каждом мире
+• Увеличение карт, доступность, исправления
 </ru-RU>
 
 <uk-UA>
-Нове: повний світ фентезі. Оберіть «Зомбіцид. Друга редакція» або «Чорну чуму», «Зелену орду», «Білу смерть» і «Нескорену Імперію», окремо чи разом.
-• Доповнення фентезі, набори Kickstarter і Special Guests, боси Frozen Fortress
-• Іменні потвори й некроманти, як у «Білій смерті» / Dead Men Tales, з правилом кожного боса
-• Нові ілюстрації босів і зомбі
-• Додано українську та чеську
-• Торкніться карти, щоб збільшити; більша колода у два ряди
-• Виправлення карт і перекладів
+Нове: світ фентезі. «Чорна чума», «Зелена орда», «Біла смерть» і «Нескорена Імперія», окремо чи разом.
+• Усі офіційні доповнення фентезі: Вульфсбург, NPC, Zombie Bosses, No Rest for the Wicked, Warlords, набори Kickstarter і Special Guests…
+• Іменні боси, як у «Білій смерті» / Dead Men Tales, з правилом кожного боса
+• Нові ілюстрації; поточний рівень у великому форматі
+• Додано українську та чеську; своя гра в кожному світі
+• Збільшення карт, доступність, виправлення
 </uk-UA>
 
 <cs-CZ>
-Novinka: kompletní fantasy svět. Vyberte Zombicide 2. edice, nebo Černý mor, Zelenou hordu, Bílou smrt a Věčné císařství, samostatně či smíchané.
-• Fantasy rozšíření, balíčky z Kickstarteru a Special Guests, bossové z Frozen Fortress
-• Pojmenované zrůdy a nekromanti, tažení jako v Bílé smrti / Dead Men Tales, s pravidlem každého bosse
-• Nové ilustrace bossů a zombií
-• Přidána ukrajinština a čeština
-• Klepnutím na kartu ji zvětšíte; větší balíček ve dvou řadách
-• Opravy karet a překladů
+Novinka: fantasy svět. Černý mor, Zelená horda, Bílá smrt a Věčné císařství, samostatně či smíchané.
+• Všechna oficiální fantasy rozšíření: Wulfsburg, NPC, Zombie Bosses, No Rest for the Wicked, Warlords, Kickstarter a speciální hosté…
+• Pojmenovaní bossové, tažení jako v Bílé smrti / Dead Men Tales, s pravidlem každého bosse
+• Nové ilustrace; aktuální úroveň velkou
+• Přidána ukrajinština a čeština; vlastní hra v každém světě
+• Zvětšení karet, přístupnost, opravy
 </cs-CZ>

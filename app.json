@@ -3,7 +3,7 @@
     "name": "Zombie Deck",
     "slug": "zombie-deck",
     "scheme": "zombiedeck",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "landscape",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
