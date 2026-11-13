@@ -3,7 +3,7 @@ import { Image, type ImageSourcePropType, type ImageStyle, Platform, ScrollView,
 import Svg, { Path, Polygon } from 'react-native-svg';
 
 import { type ArtSubject, artSubject, ZombieFigure } from '@/components/zombie-art';
-import { ABOMINATIONS, BOSS_RULE_IDS, type BossRuleId, NAMED_NECROMANCERS, NAMED_ZOMBIES } from '@/data/fantasy';
+import { ABOMINATIONS, BOSS_RULE_IDS, type BossRuleId, NAMED_NECROMANCERS, NAMED_ZOMBIES, PLAIN_RULE_NECROMANCERS } from '@/data/fantasy';
 import { DANGER_LEVELS } from '@/game/engine';
 import { useApp } from '@/game/store';
 import {
@@ -318,7 +318,7 @@ function Frame(props: {
         <Text style={[styles.title, { color: props.headerColor.text }]} numberOfLines={3}>
           {title}
         </Text>
-        <Text style={[styles.number, { color: props.headerColor.text }]}>#{props.card.id.slice(-3)}</Text>
+        <Text style={[styles.number, { color: props.headerColor.text }]}>{/\d{3}$/.test(props.card.id) ? `#${props.card.id.slice(-3)}` : ''}</Text>
       </View>
       <View style={styles.body}>{props.children}</View>
       {footer && (
@@ -381,7 +381,10 @@ const feedsHorde = (card: FantasyCard, level: FantasyLevel) =>
 function fantasyRule(card: FantasyCard, t: Translate): string[] {
   switch (card.kind) {
     case 'necromancer':
-      if (isNamedNecromancer(card.zombie)) return [t('card.namedNecromancerRule'), t(`card.${card.zombie}Rule`)];
+      if (isNamedNecromancer(card.zombie)) {
+        const own = t(`card.${card.zombie}Rule`);
+        return PLAIN_RULE_NECROMANCERS.has(card.zombie) ? [own] : [t('card.namedNecromancerRule'), own];
+      }
       return [t(card.zombie === 'orcNecromancer' ? 'card.orcNecromancerRule' : 'card.necromancerRule')];
     case 'doubleSpawn':
       return [t('card.doubleSpawnRule')];
@@ -407,10 +410,13 @@ function fantasyLine(card: FantasyCard, at: DangerLevel, t: Translate): { label?
   }
   if (card.kind !== 'levels') return { value: '', spoken: '' };
   const level = card.levels[DANGER_LEVELS.indexOf(at)];
-  if (!level) return { value: t('card.nothingInSight'), spoken: t('card.nothingInSight') };
+  if (!level) {
+    const nothing = t(card.plural ? 'card.nothing' : 'card.nothingInSight');
+    return { value: nothing, spoken: nothing };
+  }
   // Named Abominations are printed as a picture across the levels, without a count.
   if (NAMED_ZOMBIES.has(level.zombie)) {
-    const name = t(`zombie.${level.zombie}.one`);
+    const name = t(`zombie.${level.zombie}.${card.plural ? 'other' : 'one'}`);
     return { value: name, spoken: name };
   }
   const horde = feedsHorde(card, level) ? `, ${t('card.hordeBonus')}` : '';
@@ -468,7 +474,7 @@ function fantasyText(card: FantasyCard, danger: DangerLevel, t: Translate): Card
     case 'levels':
       return {
         title: levelsTitle(card, t),
-        footer: card.adds ? t('card.addsOne', { name: t(`zombie.${card.adds}.one`) }) : undefined,
+        footer: card.adds ? t('card.addsOne', { name: t(`zombie.${card.adds}.one`) }) : card.note ? t(`card.${card.note}`) : undefined,
         spoken: `${t(`danger.${danger}`)}: ${fantasyLine(card, danger, t).spoken}`,
       };
     case 'activation':
@@ -516,7 +522,9 @@ function FantasyFace({ card, danger, text, reveal }: { card: FantasyCard; danger
   const shown = current ? [danger] : PRINTED_LEVELS;
   // A named Abomination is printed as one picture across its levels: shown above them, so it stays in view at Blue too.
   const named =
-    card.kind === 'levels' && card.title === 'named' ? (card.boss ?? card.levels.find((level) => level !== null)?.zombie) : undefined;
+    card.kind === 'levels' && (card.title === 'named' || card.plural)
+      ? (card.boss ?? card.levels.find((level) => level !== null)?.zombie)
+      : undefined;
   return (
     <Frame card={card} text={text} headerColor={FANTASY_HEADER} faceColor={CARD_COLORS.parchment}>
       {card.kind === 'levels' || card.kind === 'activation' ? (

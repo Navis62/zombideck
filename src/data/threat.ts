@@ -17,7 +17,8 @@ export type Threat = { bossRule: BossRule; off: string[] };
 export const DEFAULT_THREAT: Threat = { bossRule: 'oneAtATime', off: [] };
 
 /** Bosses picked one by one, in the order of the expansions menu. */
-export type Boss = { zombie: NamedAbomination | NamedNecromancer; setId: string };
+/** `copies`: how many identical cards of this boss the box holds in its boss deck (one by default). */
+export type Boss = { zombie: NamedAbomination | NamedNecromancer; setId: string; copies?: number };
 export const ABOMINATION_BOSSES: readonly Boss[] = [
   { zombie: 'ablobination', setId: 'zombieBosses' },
   { zombie: 'abominatroll', setId: 'zombieBosses' },
@@ -50,6 +51,23 @@ export const ABOMINATION_BOSSES: readonly Boss[] = [
   { zombie: 'takemikazuchi', setId: 'frozenFortress' },
   { zombie: 'toyol', setId: 'frozenFortress' },
   { zombie: 'yeti', setId: 'frozenFortress' },
+  { zombie: 'reaper', setId: 'massiveDarkness2' },
+  { zombie: 'baalberith', setId: 'massiveDarkness2' },
+  { zombie: 'horseman', setId: 'massiveDarkness2' },
+  { zombie: 'queenCaenedra', setId: 'massiveDarkness2' },
+  { zombie: 'hugBear', setId: 'massiveDarkness2' },
+  { zombie: 'banshee', setId: 'massiveDarkness2' },
+  { zombie: 'cerberus', setId: 'massiveDarkness2' },
+  { zombie: 'pharaohEddie', setId: 'ironMaiden' },
+  { zombie: 'samuraiEddie', setId: 'ironMaiden' },
+  { zombie: 'mummyEddie', setId: 'ironMaiden' },
+  { zombie: 'wickerManEddie', setId: 'ironMaiden' },
+  { zombie: 'fearEddie', setId: 'ironMaiden' },
+  { zombie: 'lordJanas', setId: 'comicBookExtras2' },
+  { zombie: 'marike', setId: 'comicBookExtras2' },
+  { zombie: 'bebop', setId: 'bebopRocksteady' },
+  { zombie: 'dongZhuo', setId: 'warlordsMiddleKingdom' },
+  { zombie: 'rocksteady', setId: 'bebopRocksteady' },
 ];
 /** Not Abominations by the rules, but they join the Abomination deck all the same. */
 export const BIG_BOSSES: readonly Boss[] = [
@@ -78,6 +96,15 @@ export const NECROMANCER_BOSSES: readonly Boss[] = [
   { zombie: 'kaguya', setId: 'frozenFortress' },
   { zombie: 'tengu', setId: 'frozenFortress' },
   { zombie: 'yukiOnna', setId: 'frozenFortress' },
+  { zombie: 'mummRa', setId: 'thundercats' },
+  { zombie: 'grandVizier', setId: 'compagniaDellaForca' },
+  { zombie: 'theSparrow', setId: 'compagniaDellaForca' },
+  { zombie: 'reaperEddie', setId: 'ironMaiden' },
+  { zombie: 'shamanEddie', setId: 'ironMaiden' },
+  { zombie: 'erinn', setId: 'comicBookExtras2' },
+  { zombie: 'zhangJiao', setId: 'warlordsMiddleKingdom' },
+  // Three identical cards, all in the Necromancer deck.
+  { zombie: 'fumaKotaro', setId: 'warlordsRisingSun', copies: 3 },
 ];
 
 const CORE_NECROMANCERS: readonly { zombie: FantasyNecromancer; setId: string }[] = [
@@ -127,7 +154,10 @@ export function tailorFantasyDeck(cards: readonly ZombieCard[], threat: Threat, 
         ...ABOMINATION_BOSSES.filter(chosen),
         ...BIG_BOSSES.filter(chosen),
       ].map((boss) => boss.zombie),
-      necromancer: [...CORE_NECROMANCERS.filter(inPlay), ...NECROMANCER_BOSSES.filter(chosen)].map((boss) => boss.zombie),
+      necromancer: [
+        ...CORE_NECROMANCERS.filter(inPlay),
+        ...NECROMANCER_BOSSES.filter(chosen).flatMap((boss) => Array<Boss>(boss.copies ?? 1).fill(boss)),
+      ].map((boss) => boss.zombie),
     },
   };
 }

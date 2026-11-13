@@ -7,8 +7,10 @@ import type {
   FantasyNecromancer,
   FantasyTitle,
   FantasyZombie,
+  FantasyNote,
   NamedAbomination,
   NamedNecromancer,
+  SpawnedZombie,
   ZombieCard,
 } from '../game/types';
 
@@ -33,6 +35,20 @@ const SPECIAL_GUESTS = 'specialGuests';
 const RAT_KING = 'ratKingSwampTroll';
 const WHITE_DEATH = 'whiteDeath';
 const ETERNAL_EMPIRE = 'eternalEmpire';
+// Kickstarter packs and Special Guest boxes printed after Eternal Empire, one entry each. Their printed
+// numbers overlap (the Massive Darkness 2 Crossover, Compagnia della Forca and Iron Maiden cards all start in the #360s-#370s),
+// which the set prefix of the ids keeps apart.
+const MASSIVE_DARKNESS_2 = 'massiveDarkness2';
+const THUNDERCATS = 'thundercats';
+const COMPAGNIA = 'compagniaDellaForca';
+const IRON_MAIDEN = 'ironMaiden';
+const COMIC_BOOK_EXTRAS_2 = 'comicBookExtras2';
+const TIMECRASH = 'timecrash';
+const BERSERKER_WALKERS = 'berserkerWalkers';
+const CLIMBERS_TERRORCOTTA = 'climbersTerrorcotta';
+const CROSSFIRE = 'crossfirePack';
+const BEBOP_ROCKSTEADY = 'bebopRocksteady';
+const DIVINE_BEASTS = 'divineBeasts';
 
 type Letter = 'W' | 'R' | 'F' | 'A';
 /** The zombies a set prints; a letter it has none of cannot be read. */
@@ -73,7 +89,7 @@ const levels = (
   id: string,
   specs: Specs,
   zombies: Zombies,
-  extra: { horde?: true; title?: FantasyTitle; boss?: FantasyZombie; adds?: FantasyZombie } = {},
+  extra: { horde?: true; title?: FantasyTitle; boss?: FantasyZombie; adds?: FantasyZombie; note?: FantasyNote; plural?: true } = {},
 ): FantasyCard => ({
   id: `${setId}-${id}`,
   setId,
@@ -229,10 +245,14 @@ const crowzCards: ZombieCard[] = copies(105, 12, (id) =>
   levels(FANTASY_CROWZ, id, ['W2', 'W3', 'W4', 'W5'], CROWZ, { title: 'murderOfCrowz' }),
 );
 
-/** Named Abominations: their picture across Yellow to Red, "Nothing in sight!" at Blue, and their name as the title. */
-const namedAbomination = (setId: string, id: string, zombie: NamedAbomination): FantasyCard =>
-  levels(setId, id, ['-', 'A', 'A', 'A'], { A: zombie }, { title: 'named' });
-const NAMED_ABOMINATIONS: readonly (readonly [NamedAbomination, string, number, number])[] = [
+/**
+ * Named Abominations: their picture across Yellow to Red, "Nothing in sight!" at Blue, and their name as the title.
+ * Some cards print no text at Blue: the picture covers it, and the boss spawns at every level.
+ */
+const namedAbomination = (setId: string, id: string, zombie: NamedAbomination, atBlue = false): FantasyCard =>
+  levels(setId, id, [atBlue ? 'A' : '-', 'A', 'A', 'A'], { A: zombie }, { title: 'named' });
+/** Boss, set, first printed number, copies, and how many of the first copies spawn at Blue too. */
+const NAMED_ABOMINATIONS: readonly (readonly [NamedAbomination, string, number, number, number?])[] = [
   ['ablobination', 'zombieBosses', 87, 4],
   ['abominatroll', 'zombieBosses', 91, 4],
   ['abominotaur', 'zombieBosses', 95, 4],
@@ -252,21 +272,52 @@ const NAMED_ABOMINATIONS: readonly (readonly [NamedAbomination, string, number, 
   ['werezombie', 'hordeBox', 331, 4],
   ['chromatiz', 'hordeBox', 347, 4],
   ['swampTroll', RAT_KING, 357, 4],
+  // Massive Darkness 2: seven bosses, four cards each.
+  ['reaper', MASSIVE_DARKNESS_2, 361, 4],
+  ['baalberith', MASSIVE_DARKNESS_2, 365, 4],
+  ['horseman', MASSIVE_DARKNESS_2, 369, 4],
+  ['queenCaenedra', MASSIVE_DARKNESS_2, 373, 4],
+  ['hugBear', MASSIVE_DARKNESS_2, 377, 4],
+  ['banshee', MASSIVE_DARKNESS_2, 381, 4],
+  ['cerberus', MASSIVE_DARKNESS_2, 385, 4],
+  ['lordJanas', COMIC_BOOK_EXTRAS_2, 409, 4],
+  ['marike', COMIC_BOOK_EXTRAS_2, 413, 4],
+  ['bebop', BEBOP_ROCKSTEADY, 583, 3, 3],
+  ['rocksteady', BEBOP_ROCKSTEADY, 586, 3, 3],
+  ['divineBeast', DIVINE_BEASTS, 589, 4],
 ];
 const namedCards = (setId: string) =>
-  NAMED_ABOMINATIONS.filter(([, set]) => set === setId).flatMap(([zombie, , first, count]) =>
-    copies(first, count, (id) => namedAbomination(setId, id, zombie)),
+  NAMED_ABOMINATIONS.filter(([, set]) => set === setId).flatMap(([zombie, , first, count, atBlue = 0]) =>
+    copies(first, count, (id) => namedAbomination(setId, id, zombie, Number(id) < first + atBlue)),
   );
-const namedNecromancers = (setId: string, first: number, zombie: NamedNecromancer) =>
-  copies(first, 6, (id) => necromancer(setId, id, zombie));
+const namedNecromancers = (setId: string, first: number, zombie: NamedNecromancer, count = 6) =>
+  copies(first, count, (id) => necromancer(setId, id, zombie));
 
+/**
+ * The Iron Maiden Eddies printed as one picture: they are not in the table above (see `eddie` below), but they are
+ * named Abominations all the same.
+ */
+const IRON_MAIDEN_ABOMINATIONS: readonly NamedAbomination[] = [
+  'pharaohEddie', 'samuraiEddie', 'mummyEddie', 'wickerManEddie', 'fearEddie',
+];
 /** The zombies printed without a count: their picture stands for one. */
-export const NAMED_ZOMBIES: ReadonlySet<FantasyZombie> = new Set(['wolfbomination', ...NAMED_ABOMINATIONS.map(([zombie]) => zombie)]);
+export const NAMED_ZOMBIES: ReadonlySet<FantasyZombie> = new Set([
+  'wolfbomination',
+  ...NAMED_ABOMINATIONS.map(([zombie]) => zombie),
+  ...IRON_MAIDEN_ABOMINATIONS,
+]);
 /**
  * Abominations, named or not: the Horde symbol never adds one to the Horde. The Horde Box makes Fatty Bursters
  * Fatties, and gives the Feral Dragon and the Zombie Giant rules of their own.
  */
-const NOT_ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set(['fattyBurster', 'feralDragon', 'zombieGiant', 'necromanticDragon']);
+const NOT_ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
+  'fattyBurster',
+  'feralDragon',
+  'zombieGiant',
+  'necromanticDragon',
+  // Printed "Divine Beasts", not as an Abomination: an ordinary spawn card with a picture.
+  'divineBeast',
+]);
 export const ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
   'fantasyAbomination',
   'orcAbomination',
@@ -340,6 +391,24 @@ export const BOSS_RULE_IDS = [
   'countTemeraire',
   'queenSevera',
   'ratKing',
+  'erinn',
+  'grandVizier',
+  'theSparrow',
+  'mummRa',
+  'reaperEddie',
+  'shamanEddie',
+  'dongZhuo',
+  'zhangJiao',
+  'fumaKotaro',
+] as const;
+/**
+ * Bosses whose cards print no rule, only a picture: there is nothing to show when they are revealed. Their rules are on
+ * the rules cards of their boxes, which are not transcribed.
+ */
+export const BOSSES_WITHOUT_RULE = [
+  'reaper', 'baalberith', 'horseman', 'queenCaenedra', 'hugBear', 'banshee', 'cerberus',
+  'lordJanas', 'marike', 'bebop', 'rocksteady',
+  'pharaohEddie', 'samuraiEddie', 'mummyEddie', 'wickerManEddie', 'fearEddie',
 ] as const;
 export type BossRuleId = (typeof BOSS_RULE_IDS)[number];
 /** Necromancers with a name: the normal Necromancer rules, plus one of their own. */
@@ -363,7 +432,20 @@ export const NAMED_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<Named
   'kaguya',
   'tengu',
   'yukiOnna',
+  'erinn',
+  'grandVizier',
+  'theSparrow',
+  'mummRa',
+  'reaperEddie',
+  'shamanEddie',
+  'zhangJiao',
+  'fumaKotaro',
 ]);
+/**
+ * Necromancers whose card does not start with "Normal Necromancer rules": the Mumm-Ra, Zhang Jiao and Fūma Kotarō cards
+ * print their own rule alone.
+ */
+export const PLAIN_RULE_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<NamedNecromancer>(['mummRa', 'zhangJiao', 'fumaKotaro']);
 
 // Friends and Foes: the levels as printed (the fan wiki adds the Horde zombie to most counts, not to Red on #253).
 const TAINTED_SPAWNS: readonly Specs[] = [
@@ -482,6 +564,75 @@ const eternalEmpireCards: ZombieCard[] = [
 
 // Frozen Fortress prints boss cards only, for the Abomination and Necromancer decks: no spawn card.
 const FROZEN_FORTRESS = 'frozenFortress';
+// Warlords of the Middle Kingdom (Dong Zhuo, Zhang Jiao) and of the Rising Sun (Fūma Kotarō) print boss cards only too.
+const WARLORDS_MIDDLE_KINGDOM = 'warlordsMiddleKingdom';
+const WARLORDS_RISING_SUN = 'warlordsRisingSun';
+
+// The packs below are transcribed from the printed cards (sheets of 12 cards, checked card by card). Spawn cards print
+// one zombie type, Red first, so the counts here are Blue to Red.
+const spawned = (setId: string, first: number, specs: readonly Specs[], zombie: SpawnedZombie, extra: { note?: FantasyNote } = {}) =>
+  specs.map((spec, i) => levels(setId, number(first + i), spec, { W: zombie }, { title: 'zombies', ...extra }));
+const SPAWNS_2468: Specs = ['W2', 'W4', 'W6', 'W8'];
+const SPAWNS_46810: Specs = ['W4', 'W6', 'W8', 'W10'];
+
+// Berserker Walkers: #547-#552 as 2/4/6/8, #553-#558 as 4/6/8/10.
+const berserkerWalkerCards: ZombieCard[] = [
+  ...spawned(BERSERKER_WALKERS, 547, Array(6).fill(SPAWNS_2468), 'fantasyBerserkerWalker'),
+  ...spawned(BERSERKER_WALKERS, 553, Array(6).fill(SPAWNS_46810), 'fantasyBerserkerWalker'),
+];
+
+// Terrorcotta Walkers (always 5, "All Terrorcotta Walker groups under 5, are set to 5!"), then Climbers.
+const climbersTerrorcottaCards: ZombieCard[] = [
+  ...spawned(CLIMBERS_TERRORCOTTA, 559, Array(6).fill(['W5', 'W5', 'W5', 'W5']), 'terrorcottaWalker', { note: 'terrorcottaNote' }),
+  ...spawned(CLIMBERS_TERRORCOTTA, 565, Array(6).fill(SPAWNS_2468), 'climber'),
+  ...spawned(CLIMBERS_TERRORCOTTA, 571, Array(6).fill(SPAWNS_46810), 'climber'),
+];
+
+// Crossfire Pack: Deadbolt Walkers, #577-#579 as 2/4/6/8, #580-#582 as 4/6/8/10.
+const crossfireCards: ZombieCard[] = [
+  ...spawned(CROSSFIRE, 577, Array(3).fill(SPAWNS_2468), 'deadboltWalker'),
+  ...spawned(CROSSFIRE, 580, Array(3).fill(SPAWNS_46810), 'deadboltWalker'),
+];
+
+// Timecrash: Foot Ninjas, six identical cards.
+const timecrashCards: ZombieCard[] = spawned(TIMECRASH, 541, Array(6).fill(['W1', 'W2', 'W3', 'W4']), 'footNinja', {
+  note: 'footNinjasNote',
+});
+
+const massiveDarkness2Cards: ZombieCard[] = namedCards(MASSIVE_DARKNESS_2);
+const comicBookExtras2Cards: ZombieCard[] = [
+  ...namedNecromancers(COMIC_BOOK_EXTRAS_2, 403, 'erinn'),
+  ...namedCards(COMIC_BOOK_EXTRAS_2),
+];
+const compagniaCards: ZombieCard[] = [
+  ...namedNecromancers(COMPAGNIA, 371, 'grandVizier'),
+  ...namedNecromancers(COMPAGNIA, 377, 'theSparrow'),
+];
+const thundercatsCards: ZombieCard[] = namedNecromancers(THUNDERCATS, 367, 'mummRa', 4);
+const bebopRocksteadyCards: ZombieCard[] = namedCards(BEBOP_ROCKSTEADY);
+// The Divine Beasts pack has one spawn card, printed without a number (hence the id): "Divine Beasts" as title and in
+// the boxes of Yellow to Red, and "Nothing" at Blue.
+const divineBeastCards: ZombieCard[] = [
+  levels(DIVINE_BEASTS, 'card', ['-', 'A', 'A', 'A'], { A: 'divineBeast' }, { title: 'zombies', plural: true }),
+];
+
+// Iron Maiden: the official Fantasy Eddies (Iron Maiden packs 1 to 3), #371-#402. The ids keep the printed number.
+const eddie = (first: number, zombie: NamedAbomination | NamedNecromancer, count: number): ZombieCard[] =>
+  copies(first, count, (id) =>
+    NAMED_NECROMANCERS.has(zombie as NamedNecromancer)
+      ? necromancer(IRON_MAIDEN, id, zombie as NamedNecromancer)
+      : namedAbomination(IRON_MAIDEN, id, zombie as NamedAbomination),
+  );
+const ironMaidenCards: ZombieCard[] = [
+  // Reaper, Pharaoh, Samurai, Shaman, Mummy, Wicker Man, Fear.
+  ...eddie(371, 'reaperEddie', 6),
+  ...eddie(377, 'pharaohEddie', 4),
+  ...eddie(381, 'samuraiEddie', 4),
+  ...eddie(385, 'shamanEddie', 6),
+  ...eddie(391, 'mummyEddie', 4),
+  ...eddie(395, 'wickerManEddie', 4),
+  ...eddie(399, 'fearEddie', 4),
+];
 
 const noHardCards = () => false;
 
@@ -506,4 +657,17 @@ export const FANTASY_SETS: readonly CardSet[] = [
   { id: SPECIAL_GUESTS, optional: true, isHard: noHardCards, cards: specialGuestCards },
   { id: RAT_KING, optional: true, isHard: noHardCards, cards: ratKingCards },
   { id: FROZEN_FORTRESS, optional: true, isHard: noHardCards, cards: [] },
+  { id: WARLORDS_MIDDLE_KINGDOM, optional: true, isHard: noHardCards, cards: [] },
+  { id: WARLORDS_RISING_SUN, optional: true, isHard: noHardCards, cards: [] },
+  { id: MASSIVE_DARKNESS_2, optional: true, isHard: noHardCards, cards: massiveDarkness2Cards },
+  { id: THUNDERCATS, optional: true, isHard: noHardCards, cards: thundercatsCards },
+  { id: COMPAGNIA, optional: true, isHard: noHardCards, cards: compagniaCards },
+  { id: IRON_MAIDEN, optional: true, isHard: noHardCards, cards: ironMaidenCards },
+  { id: COMIC_BOOK_EXTRAS_2, optional: true, isHard: noHardCards, cards: comicBookExtras2Cards },
+  { id: TIMECRASH, optional: true, isHard: noHardCards, cards: timecrashCards },
+  { id: BERSERKER_WALKERS, optional: true, isHard: noHardCards, cards: berserkerWalkerCards },
+  { id: CLIMBERS_TERRORCOTTA, optional: true, isHard: noHardCards, cards: climbersTerrorcottaCards },
+  { id: CROSSFIRE, optional: true, isHard: noHardCards, cards: crossfireCards },
+  { id: BEBOP_ROCKSTEADY, optional: true, isHard: noHardCards, cards: bebopRocksteadyCards },
+  { id: DIVINE_BEASTS, optional: true, isHard: noHardCards, cards: divineBeastCards },
 ];

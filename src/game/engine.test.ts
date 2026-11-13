@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { CARD_SETS, OPTIONAL_SETS } from '../data/decks.ts';
-import { BOSS_RULE_IDS, FANTASY_SETS } from '../data/fantasy.ts';
+import { BOSS_RULE_IDS, BOSSES_WITHOUT_RULE, FANTASY_SETS } from '../data/fantasy.ts';
 import { BOSS_IDS, DEFAULT_THREAT, parseThreat, tailorFantasyDeck, type Threat } from '../data/threat.ts';
 import { allExpansions, bossTrigger as fantasyBossTrigger, CARDS_BY_ID, cardEffect, cardIdsOf, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
 import {
@@ -716,12 +716,31 @@ test('Frozen Fortress adds sixteen Abominations and six Necromancers to the boss
   assert.deepEqual(deck.bosses?.necromancer, ['defilerNecromancer', 'bomoh', 'deathNotes', 'hannya', 'kaguya', 'yukiOnna']);
 });
 
-test('every boss but the two generic Necromancers has a rule, written once and translated in every language', async () => {
+// Warlords of the Middle Kingdom (Abomination card Dong Zhuo, Necromancer card Zhang Jiao) and of the Rising Sun (three
+// identical Fūma Kotarō Necromancer cards): boss cards only, no spawn card (components listed on the Zombicide wiki).
+test('the Warlords boxes add their boss cards to the boss decks, three copies of Fūma Kotarō, and no spawn card', () => {
+  const sets = ['whiteDeath', 'warlordsMiddleKingdom', 'warlordsRisingSun'];
+  const deck = fantasyDeck(sets);
+  assert.equal(deck.cards.length, fantasyDeck(['whiteDeath']).cards.length);
+  assert.deepEqual(deck.bosses?.abomination, ['khanAbomination', 'dongZhuo']);
+  assert.deepEqual(deck.bosses?.necromancer, ['defilerNecromancer', 'zhangJiao', 'fumaKotaro', 'fumaKotaro', 'fumaKotaro']);
+  assert.deepEqual(fantasyDeck(['whiteDeath']).bosses?.necromancer, ['defilerNecromancer']);
+  // One switch per boss: turning Fūma Kotarō off removes his three cards.
+  const off = fantasyDeck(sets, { bossRule: 'oneAtATime', off: ['fumaKotaro', 'dongZhuo'] });
+  assert.deepEqual(off.bosses?.necromancer, ['defilerNecromancer', 'zhangJiao']);
+  assert.deepEqual(off.bosses?.abomination, ['khanAbomination']);
+});
+
+test('every boss but the two generic Necromancers and those whose cards print no rule has a rule, translated in every language', async () => {
   const { TRANSLATIONS } = await import('../i18n/translations.ts');
   const texts = TRANSLATIONS as Record<string, Record<string, string>>;
   const params = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((match) => match[1]).sort();
   assert.equal(new Set(BOSS_RULE_IDS).size, BOSS_RULE_IDS.length, 'duplicate in BOSS_RULE_IDS');
-  assert.deepEqual([...BOSS_IDS].filter((id) => !(BOSS_RULE_IDS as readonly string[]).includes(id)).sort(), ['necromancer', 'orcNecromancer']);
+  // The Abominations of the Kickstarter packs print a picture and no rule: nothing to show for them.
+  assert.deepEqual(
+    [...BOSS_IDS].filter((id) => !(BOSS_RULE_IDS as readonly string[]).includes(id)).sort(),
+    ['necromancer', 'orcNecromancer', ...BOSSES_WITHOUT_RULE].sort(),
+  );
   for (const id of BOSS_RULE_IDS) {
     const key = `card.${id}Rule`;
     assert.ok(texts.en[key]?.trim(), `en: ${key}`);
@@ -860,3 +879,112 @@ test('a save keeps its boss decks and its rule together, with known bosses only'
   assert.equal(isValidSave(state, known, new Set(['n'])), false);
 });
 
+
+// Kickstarter packs and Special Guest boxes: transcribed from sheets of 12 printed cards, Red first on the
+// cards and Blue first here. Every total below is the count of cards printed on those sheets.
+const NEW_SETS: readonly (readonly [string, number])[] = [
+  ['massiveDarkness2', 28],
+  ['thundercats', 4],
+  ['compagniaDellaForca', 12],
+  ['ironMaiden', 32],
+  ['comicBookExtras2', 14],
+  ['timecrash', 6],
+  ['berserkerWalkers', 12],
+  ['climbersTerrorcotta', 18],
+  ['crossfirePack', 6],
+  ['bebopRocksteady', 6],
+  ['divineBeasts', 1],
+];
+const setCards = (setId: string) => FANTASY_SETS.find((set) => set.id === setId)?.cards ?? [];
+const printedNumbers = (setId: string) => setCards(setId).map((card) => Number(card.id.slice(-3)));
+const rangeOf = (first: number, last: number) => Array.from({ length: last - first + 1 }, (_, i) => first + i);
+
+test('the Kickstarter packs have the cards printed on their sheets, numbered without gaps', () => {
+  for (const [setId, total] of NEW_SETS) {
+    assert.equal(setCards(setId).length, total, setId);
+    assert.ok(UNIVERSES.fantasy.optionalSets.some((set) => set.id === setId && !set.core), setId);
+  }
+  assert.deepEqual(printedNumbers('massiveDarkness2'), rangeOf(361, 388));
+  assert.deepEqual(printedNumbers('thundercats'), rangeOf(367, 370));
+  assert.deepEqual(printedNumbers('compagniaDellaForca'), rangeOf(371, 382));
+  assert.deepEqual(printedNumbers('comicBookExtras2'), rangeOf(403, 416));
+  assert.deepEqual(printedNumbers('timecrash'), rangeOf(541, 546));
+  assert.deepEqual(printedNumbers('berserkerWalkers'), rangeOf(547, 558));
+  assert.deepEqual(printedNumbers('climbersTerrorcotta'), rangeOf(559, 576));
+  assert.deepEqual(printedNumbers('crossfirePack'), rangeOf(577, 582));
+  assert.deepEqual(printedNumbers('bebopRocksteady'), rangeOf(583, 588));
+  // The Divine Beasts card is printed without a number: its id is divineBeasts-card.
+  assert.deepEqual(setCards('divineBeasts').map((card) => card.id), ['divineBeasts-card']);
+  // Iron Maiden: the 32 official Fantasy Eddies, #371-#402.
+  assert.deepEqual(printedNumbers('ironMaiden'), rangeOf(371, 402));
+});
+
+test('the spawn cards of the packs match the printed counts, Blue to Red', () => {
+  const counts = (id: string) => levelsOf(id).map((level) => level && `${level.zombie} ${level.count}`);
+  assert.deepEqual(counts('berserkerWalkers-547'), ['fantasyBerserkerWalker 2', 'fantasyBerserkerWalker 4', 'fantasyBerserkerWalker 6', 'fantasyBerserkerWalker 8']);
+  assert.deepEqual(counts('berserkerWalkers-558'), ['fantasyBerserkerWalker 4', 'fantasyBerserkerWalker 6', 'fantasyBerserkerWalker 8', 'fantasyBerserkerWalker 10']);
+  assert.deepEqual(counts('crossfirePack-579'), ['deadboltWalker 2', 'deadboltWalker 4', 'deadboltWalker 6', 'deadboltWalker 8']);
+  assert.deepEqual(counts('crossfirePack-580'), ['deadboltWalker 4', 'deadboltWalker 6', 'deadboltWalker 8', 'deadboltWalker 10']);
+  assert.deepEqual(counts('climbersTerrorcotta-559'), Array(4).fill('terrorcottaWalker 5'));
+  assert.deepEqual(counts('climbersTerrorcotta-564'), Array(4).fill('terrorcottaWalker 5'));
+  assert.deepEqual(counts('climbersTerrorcotta-565'), ['climber 2', 'climber 4', 'climber 6', 'climber 8']);
+  assert.deepEqual(counts('climbersTerrorcotta-576'), ['climber 4', 'climber 6', 'climber 8', 'climber 10']);
+  assert.deepEqual(counts('timecrash-546'), ['footNinja 1', 'footNinja 2', 'footNinja 3', 'footNinja 4']);
+  // The footers printed under the levels.
+  const note = (id: string) => {
+    const card = fantasyCard(id);
+    return card.kind === 'levels' ? card.note : undefined;
+  };
+  assert.deepEqual([note('climbersTerrorcotta-562'), note('climbersTerrorcotta-565'), note('timecrash-541')], ['terrorcottaNote', undefined, 'footNinjasNote']);
+});
+
+test('bosses printed as one picture spawn at Blue only where the card prints no "Nothing in sight!"', () => {
+  const counts = (id: string) => levelsOf(id).map((level) => level && `${level.zombie} ${level.count}`);
+  assert.deepEqual(counts('massiveDarkness2-361'), [null, 'reaper 1', 'reaper 1', 'reaper 1']);
+  assert.deepEqual(counts('massiveDarkness2-388'), [null, 'cerberus 1', 'cerberus 1', 'cerberus 1']);
+  for (const id of ['583', '585', '586', '588']) assert.equal(levelsOf(`bebopRocksteady-${id}`)[0]?.count, 1, id);
+  assert.deepEqual(counts('divineBeasts-card'), [null, 'divineBeast 1', 'divineBeast 1', 'divineBeast 1']);
+  // Divine Beasts print their plural name as title and in the boxes, "Nothing" at Blue: no "!" and no singular.
+  const beasts = fantasyCard('divineBeasts-card');
+  assert.equal(beasts.kind === 'levels' && beasts.title === 'zombies' && beasts.plural, true);
+  assert.deepEqual(counts('comicBookExtras2-413'), [null, 'marike 1', 'marike 1', 'marike 1']);
+  assert.deepEqual(counts('ironMaiden-377'), [null, 'pharaohEddie 1', 'pharaohEddie 1', 'pharaohEddie 1']);
+  assert.deepEqual(counts('ironMaiden-399'), [null, 'fearEddie 1', 'fearEddie 1', 'fearEddie 1']);
+});
+
+test('the Necromancers of the packs sit where their sheets print them', () => {
+  const necromancerOf = (id: string) => {
+    const card = fantasyCard(id);
+    return card.kind === 'necromancer' ? card.zombie : card.kind;
+  };
+  assert.deepEqual(
+    ['comicBookExtras2-403', 'comicBookExtras2-408', 'compagniaDellaForca-371', 'compagniaDellaForca-376', 'compagniaDellaForca-377', 'compagniaDellaForca-382',
+      'thundercats-367', 'thundercats-370',
+      'ironMaiden-371', 'ironMaiden-376', 'ironMaiden-385', 'ironMaiden-390'].map(necromancerOf),
+    ['erinn', 'erinn', 'grandVizier', 'grandVizier', 'theSparrow', 'theSparrow', 'mummRa', 'mummRa',
+      'reaperEddie', 'reaperEddie', 'shamanEddie', 'shamanEddie'],
+  );
+  assert.equal(setCards('ironMaiden').filter((card) => card.kind === 'necromancer').length, 12);
+});
+
+test('the bosses of the packs join their decks, the Divine Beasts and the spawned zombies stay in the Zombie deck', () => {
+  const setIds = ['blackPlague', ...NEW_SETS.map(([id]) => id)];
+  const deck = fantasyDeck(setIds);
+  const bosses = [...(deck.bosses?.abomination ?? []), ...(deck.bosses?.necromancer ?? [])];
+  for (const boss of BOSSES_WITHOUT_RULE) assert.ok(bosses.includes(boss), boss);
+  for (const boss of ['mummRa', 'grandVizier', 'theSparrow', 'erinn', 'reaperEddie', 'shamanEddie']) {
+    assert.ok(deck.bosses?.necromancer.includes(boss), boss);
+  }
+  assert.equal(deck.bosses?.abomination.length, 1 + BOSSES_WITHOUT_RULE.length);
+  assert.equal(deck.bosses?.necromancer.length, 1 + 6);
+  // Only Black Plague's 54 cards, the spawn cards (12 Berserker + 18 Climbers and Terrorcotta + 6 Crossfire + 6 Foot Ninjas) and the Divine Beasts card stay.
+  assert.equal(deck.cards.length, 54 + 12 + 18 + 6 + 6 + 1);
+  assert.ok(deck.cards.some((card) => card.id === 'divineBeasts-card'));
+  assert.equal(fantasyBossTrigger('divineBeasts-card', 'red'), undefined);
+  // The Iron Maiden Eddies are Abominations like the other named bosses.
+  assert.equal(fantasyBossTrigger('ironMaiden-377', 'yellow'), 'abomination');
+  assert.equal(fantasyBossTrigger('ironMaiden-377', 'blue'), undefined);
+  assert.equal(fantasyBossTrigger('ironMaiden-399', 'red'), 'abomination');
+  assert.equal(fantasyBossTrigger('ironMaiden-371', 'red'), 'necromancer');
+  assert.equal(fantasyBossTrigger('ironMaiden-385', 'blue'), 'necromancer');
+});

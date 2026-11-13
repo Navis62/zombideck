@@ -87,7 +87,15 @@ export type FantasyZombie =
   | 'godEaterAbomination'
   | 'ratz'
   | 'ratKing'
+  | SpawnedZombie
   | NamedAbomination;
+/** Zombies of the Kickstarter packs, spawned by count like the Walkers of the core boxes. */
+export type SpawnedZombie =
+  | 'fantasyBerserkerWalker'
+  | 'deadboltWalker'
+  | 'terrorcottaWalker'
+  | 'climber'
+  | 'footNinja';
 /** Abominations with a name, printed as a picture across the levels instead of a count. */
 export type NamedAbomination =
   | 'ablobination'
@@ -124,7 +132,25 @@ export type NamedAbomination =
   | 'susanoWo'
   | 'takemikazuchi'
   | 'toyol'
-  | 'yeti';
+  | 'yeti'
+  | 'divineBeast'
+  | 'reaper'
+  | 'baalberith'
+  | 'horseman'
+  | 'queenCaenedra'
+  | 'hugBear'
+  | 'banshee'
+  | 'cerberus'
+  | 'lordJanas'
+  | 'marike'
+  | 'bebop'
+  | 'rocksteady'
+  | 'pharaohEddie'
+  | 'samuraiEddie'
+  | 'mummyEddie'
+  | 'wickerManEddie'
+  | 'fearEddie'
+  | 'dongZhuo';
 /** Zombies an Extra Activation card can name. */
 export type FantasyActivated =
   | 'fantasyWalker'
@@ -159,7 +185,15 @@ export type NamedNecromancer =
   | 'erikSummoner'
   | 'innsmouth'
   | 'faolan'
-  | 'lordOfSkulls';
+  | 'lordOfSkulls'
+  | 'erinn'
+  | 'grandVizier'
+  | 'theSparrow'
+  | 'mummRa'
+  | 'reaperEddie'
+  | 'shamanEddie'
+  | 'zhangJiao'
+  | 'fumaKotaro';
 export type FantasyNecromancer = 'necromancer' | 'orcNecromancer' | 'defilerNecromancer' | NamedNecromancer;
 
 /** Title printed on a fantasy spawn card when it is not the core box one ("Zombies Invasion", "Assemble the HORDE!"). */
@@ -174,6 +208,9 @@ export type FantasyTitle =
   /** The zombie type its levels spawn, as White Death prints "Walkers". */
   | 'zombies'
   | 'named';
+
+/** A line printed under the Danger Levels of some cards ("All Terrorcotta Walker groups under 5 are set to 5!"). */
+export type FantasyNote = 'terrorcottaNote' | 'footNinjasNote';
 
 /** What one Danger Level of a fantasy card spawns; `null` is "Nothing in sight!". */
 export type FantasyLevel = { zombie: FantasyZombie; count: number } | null;
@@ -194,6 +231,10 @@ export type FantasyCard =
       boss?: FantasyZombie;
       /** One more zombie the card adds, printed under the levels (Eternal Empire: "Add 1 Warden Brute."). */
       adds?: FantasyZombie;
+      /** The rule printed under the levels, when it is not one extra zombie. */
+      note?: FantasyNote;
+      /** A named zombie printed in the plural ("Divine Beasts"), with "Nothing" at Blue: no "!" after its name. */
+      plural?: true;
     })
   | (FantasyBase & { kind: 'activation'; zombie: FantasyActivated })
   | (FantasyBase & { kind: 'necromancer'; zombie: FantasyNecromancer })
