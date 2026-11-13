@@ -2,6 +2,8 @@
 
 Text for the Google Play and App Store listings, one section per language. Limits: title 30 characters, short description 80 characters, full description 4000 characters.
 
+Language codes are the Play Console ones (Ukrainian is `uk`, not `uk-UA`).
+
 Images: `feature-graphic.png` (Play Store banner, 1024×500) and `screenshots/` (1920×1080, in display order: the universes, Fantasy, then Modern).
 
 ---
@@ -254,7 +256,7 @@ Zombie Deck заменяет колоду зомби из «Зомбицид. В
 
 ---
 
-## Українська (uk-UA)
+## Українська (uk)
 
 **Назва:** Zombie Deck
 
@@ -391,14 +393,14 @@ Novidade: o universo Fantasia. Black Plague, Green Horde, White Death e Eternal 
 • Увеличение карт, доступность, исправления
 </ru-RU>
 
-<uk-UA>
+<uk>
 Нове: світ фентезі. «Чорна чума», «Зелена орда», «Біла смерть» і «Нескорена Імперія», окремо чи разом.
 • Усі офіційні доповнення фентезі: Вульфсбург, NPC, Zombie Bosses, No Rest for the Wicked, Warlords, набори Kickstarter і Special Guests…
 • Іменні боси, як у «Білій смерті» / Dead Men Tales, з правилом кожного боса
 • Нові ілюстрації; поточний рівень у великому форматі
 • Додано українську та чеську; своя гра в кожному світі
 • Збільшення карт, доступність, виправлення
-</uk-UA>
+</uk>
 
 <cs-CZ>
 Novinka: fantasy svět. Černý mor, Zelená horda, Bílá smrt a Věčné císařství, samostatně či smíchané.
