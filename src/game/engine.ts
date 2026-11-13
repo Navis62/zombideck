@@ -19,6 +19,9 @@ export type Rng = () => number;
 
 export const DANGER_LEVELS: readonly DangerLevel[] = ['blue', 'yellow', 'orange', 'red'];
 export const UNIVERSE_IDS: readonly UniverseId[] = ['modern', 'fantasy'];
+
+/** Each universe keeps its own game: starting one never replaces another's. */
+export const gameKey = (universe: UniverseId) => `zombideck.game.${universe}`;
 export const MAX_UNDO = 20;
 export const MAX_ZONES = 8;
 

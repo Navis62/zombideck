@@ -15,10 +15,11 @@ import { BOSS_IDS, DEFAULT_THREAT, parseThreat, type Threat } from '@/data/threa
 import { cardIdsOf, UNIVERSES, withCoreBox } from '@/data/universes';
 import { deviceLanguage } from '@/i18n/device-language';
 import { isLanguage, type Language, type Translate, translator } from '@/i18n/translations';
-import { ALL_PARTS, isValidSave, UNIVERSE_IDS, upgradeSave } from './engine';
+import { ALL_PARTS, gameKey, isValidSave, UNIVERSE_IDS, upgradeSave } from './engine';
 import type { DeckParts, GameState, UniverseId } from './types';
 
-const GAME_KEY = 'zombideck.game';
+/** The single save of the first betas: no longer read, removed at startup. */
+const OLD_GAME_KEY = 'zombideck.game';
 const LANGUAGE_KEY = 'zombideck.language';
 const EXPANSIONS_KEY = 'zombideck.expansions';
 const CARD_DISPLAY_KEY = 'zombideck.cardDisplay';
@@ -40,6 +41,9 @@ const defaultExpansions = (): ByUniverse<string[]> =>
     UNIVERSE_IDS.map((universe) => [universe, [...UNIVERSES[universe].defaultExpansions]]),
   ) as unknown as ByUniverse<string[]>;
 
+const noGames = (): ByUniverse<GameState | null> =>
+  Object.fromEntries(UNIVERSE_IDS.map((universe) => [universe, null])) as unknown as ByUniverse<GameState | null>;
+
 const defaultThreats = (): ByUniverse<Threat> =>
   Object.fromEntries(UNIVERSE_IDS.map((universe) => [universe, DEFAULT_THREAT])) as unknown as ByUniverse<Threat>;
 
@@ -52,7 +56,10 @@ export type ZoneDisplay = 'row' | 'sequence';
 const isZoneDisplay = (value: string | null): value is ZoneDisplay => value === 'row' || value === 'sequence';
 
 type AppContextValue = {
+  /** The game of the current universe. */
   game: GameState | null;
+  /** The game of every universe, for the carousel. */
+  games: ByUniverse<GameState | null>;
   setGame: (update: (game: GameState | null) => GameState | null) => void;
   language: Language;
   setLanguage: (language: Language) => void;
@@ -85,11 +92,11 @@ function save(key: string, value: string, what: string) {
   AsyncStorage.setItem(key, value).catch((error) => console.warn(`Could not save the ${what}`, error));
 }
 
-function parseSave(raw: string | null): GameState | null {
+function parseSave(raw: string | null, universe: UniverseId): GameState | null {
   if (!raw) return null;
   try {
     const parsed = upgradeSave(JSON.parse(raw));
-    return isValidSave(parsed, cardIdsOf, BOSS_IDS) ? parsed : null;
+    return isValidSave(parsed, cardIdsOf, BOSS_IDS) && parsed.universe === universe ? parsed : null;
   } catch {
     return null;
   }
@@ -120,7 +127,7 @@ function parseDeckParts(raw: string | null): DeckParts {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [loaded, setLoaded] = useState(false);
-  const [game, setGame] = useState<GameState | null>(null);
+  const [games, setGames] = useState<ByUniverse<GameState | null>>(noGames);
   const [language, setLanguage] = useState<Language>(deviceLanguage);
   const [universe, setUniverse] = useState<UniverseId>('modern');
   const [allExpansions, setAllExpansions] = useState<ByUniverse<string[]>>(defaultExpansions);
@@ -131,12 +138,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [zoneDisplay, setZoneDisplay] = useState<ZoneDisplay>('row');
 
   useEffect(() => {
-    const keys = [GAME_KEY, LANGUAGE_KEY, UNIVERSE_KEY, CARD_DISPLAY_KEY, DECK_PARTS_KEY, HAPTICS_KEY, ZONE_DISPLAY_KEY];
-    AsyncStorage.multiGet([...keys, ...UNIVERSE_IDS.map(expansionsKey), ...UNIVERSE_IDS.map(threatKey)])
+    const keys = [LANGUAGE_KEY, UNIVERSE_KEY, CARD_DISPLAY_KEY, DECK_PARTS_KEY, HAPTICS_KEY, ZONE_DISPLAY_KEY];
+    AsyncStorage.multiGet([...keys, ...UNIVERSE_IDS.map(gameKey), ...UNIVERSE_IDS.map(expansionsKey), ...UNIVERSE_IDS.map(threatKey)])
       .then((entries) => {
         const stored = new Map(entries);
         const read = (key: string) => stored.get(key) ?? null;
-        setGame(parseSave(read(GAME_KEY)));
+        setGames(
+          Object.fromEntries(UNIVERSE_IDS.map((id) => [id, parseSave(read(gameKey(id)), id)])) as unknown as ByUniverse<GameState | null>,
+        );
+        AsyncStorage.removeItem(OLD_GAME_KEY).catch(() => {});
         const savedLanguage = read(LANGUAGE_KEY);
         if (isLanguage(savedLanguage)) setLanguage(savedLanguage);
         const savedUniverse = read(UNIVERSE_KEY);
@@ -164,9 +174,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // No game can mean the save failed to load: leave it in storage until a new game replaces it.
-    if (!loaded || !game) return;
-    save(GAME_KEY, JSON.stringify(game), 'game');
-  }, [game, loaded]);
+    if (!loaded) return;
+    for (const id of UNIVERSE_IDS) {
+      const game = games[id];
+      if (game) save(gameKey(id), JSON.stringify(game), 'game');
+    }
+  }, [games, loaded]);
+
+  const game = games[universe];
+  const setGame = useCallback(
+    (update: (game: GameState | null) => GameState | null) =>
+      setGames((all) => ({ ...all, [universe]: update(all[universe]) })),
+    [universe],
+  );
 
   const chooseLanguage = useCallback((next: Language) => {
     setLanguage(next);
@@ -232,6 +252,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       game,
+      games,
       setGame,
       language,
       setLanguage: chooseLanguage,
@@ -253,6 +274,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }),
     [
       game,
+      games,
+      setGame,
       language,
       chooseLanguage,
       universe,

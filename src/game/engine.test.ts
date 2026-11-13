@@ -12,6 +12,7 @@ import {
   DANGER_LEVELS,
   drawCards,
   drawNextCard,
+  gameKey,
   isValidSave,
   MAX_UNDO,
   MAX_ZONES,
@@ -25,6 +26,7 @@ import {
   startsNewStep,
   pendingZones,
   undo,
+  UNIVERSE_IDS,
   upgradeSave,
   zonesOf,
 } from './engine.ts';
@@ -987,4 +989,13 @@ test('the bosses of the packs join their decks, the Divine Beasts and the spawne
   assert.equal(fantasyBossTrigger('ironMaiden-399', 'red'), 'abomination');
   assert.equal(fantasyBossTrigger('ironMaiden-371', 'red'), 'necromancer');
   assert.equal(fantasyBossTrigger('ironMaiden-385', 'blue'), 'necromancer');
+});
+
+test('each universe saves its game under its own key, apart from the old shared one', () => {
+  const keys = UNIVERSE_IDS.map(gameKey);
+  assert.equal(new Set(keys).size, UNIVERSE_IDS.length);
+  for (const key of keys) {
+    assert.ok(key.startsWith('zombideck.game.'));
+    assert.notEqual(key, 'zombideck.game');
+  }
 });

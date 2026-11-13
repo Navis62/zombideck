@@ -21,8 +21,8 @@ const REVIEW_DELAY_MS = 1000;
 export default function MenuScreen() {
   const { game, setGame, universe, expansions, threat, deckParts, t } = useApp();
   const { sets, deckParts: hasDeckParts, tagline, heroes } = UNIVERSES[universe];
-  // A game from another universe is not resumed here, but starting a new one still replaces it.
-  const resumable = game?.universe === universe ? game : null;
+  // Each universe keeps its own game: this menu only sees, resumes and replaces its own.
+  const resumable = game;
   const parts = hasDeckParts ? deckParts : ALL_PARTS;
   const [confirming, setConfirming] = useState(false);
   // The illustrations keep their shape: as wide as the row allows, as tall as the space left under the title.

@@ -63,7 +63,7 @@ const SLIDES: readonly Slide[] = [
 
 /** Opens the app: the players pick the era of the game on the table, then reach its menu. */
 export default function UniverseScreen() {
-  const { universe, setUniverse, game, t } = useApp();
+  const { universe, setUniverse, games, t } = useApp();
   const window = useWindowDimensions();
   const cardWidth = Math.min(MAX_CARD_WIDTH, Math.round(window.width * CARD_SHARE));
   const interval = cardWidth + GAP;
@@ -111,7 +111,7 @@ export default function UniverseScreen() {
                 style={({ pressed }) => [styles.card, { width: cardWidth }, pressed && PRESSED]}
                 onPress={() => open(slide.id)}
                 accessibilityRole="button"
-                accessibilityLabel={[t(slide.name), t(slide.detail), game?.universe === slide.id ? t('universe.inProgress') : '']
+                accessibilityLabel={[t(slide.name), t(slide.detail), games[slide.id] !== null ? t('universe.inProgress') : '']
                   .filter(Boolean)
                   .join(', ')}
               >
@@ -133,7 +133,7 @@ export default function UniverseScreen() {
                     <Text style={styles.detail}>{t(slide.detail)}</Text>
                   </View>
                   {/* In the caption, clear of the illustrations. */}
-                  {game?.universe === slide.id && (
+                  {games[slide.id] !== null && (
                     <View style={styles.badge}>
                       <Text style={styles.badgeText}>{t('universe.inProgress')}</Text>
                     </View>
