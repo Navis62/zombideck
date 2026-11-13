@@ -26,8 +26,8 @@ Tu travailles sur le moteur de **Zombie Deck**. Lis `src/game/types.ts`, `src/ga
 
 1. Fonctions pures dans `engine.ts` ; React et AsyncStorage seulement dans `store.tsx` / `review.ts`.
 2. Toute nouvelle action annulable passe par `remember` ; elle s'annule d'un coup.
-3. Changer la forme sauvegardée : `version` + 1, migration dans `upgradeSave`, `isValidSave` étendu, test de
-   rechargement d'une sauvegarde à l'ancien format. Ne jamais perdre une partie en cours.
+3. Changer la forme sauvegardée : `version` + 1, `isValidSave` étendu, test. Bêta fermée : pas de migration pour
+   l'instant (l'ancienne partie est rejetée) ; `upgradeSave` + test de rechargement après stabilisation.
 4. Fichiers importés par les tests : pas d'alias `@/`, imports de valeurs avec `.ts`, pas d'`enum` (Node exécute le
    TypeScript par suppression de types).
 5. Test d'abord : le test qui décrit le comportement, vu échouer, puis le code.

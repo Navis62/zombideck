@@ -21,9 +21,9 @@ npx expo install <paquet>   # jamais npm install <paquet>
 - Code, commentaires, noms de tests, README et commits **en anglais** ; on échange avec l'utilisateur dans sa langue.
 - Les cartes (`src/data/decks.ts`) sont une transcription des paquets imprimés : on ne devine rien, on demande la
   carte. Un id de carte existant ne change jamais.
-- Une partie sauvegardée doit survivre à toute mise à jour : forme de la sauvegarde changée = `version` +
-  `upgradeSave` + `isValidSave` + test.
-- Toute clé de traduction existe dans les 8 langues, avec les termes officiels de chaque édition.
+- Sauvegarde (une partie par univers) : tant que l'app est en bêta fermée (stabilisation), pas de migration : forme de la sauvegarde changée = `version` + `isValidSave` (l'ancienne partie est rejetée) + test ; la migration (`upgradeSave` + test de rechargement) reviendra après stabilisation.
+  Un id de carte existant ne change jamais.
+- Toute clé de traduction existe dans les 10 langues, avec les termes officiels de chaque édition.
 - `android/` est généré : configurer dans `app.json`. Un changement natif impose un build store (fingerprint).
 - Pas de publication (`eas update`, `eas build`, `eas submit`) ni de push sans demande : `/release`, `/ship`.
 

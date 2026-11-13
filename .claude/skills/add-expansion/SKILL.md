@@ -1,6 +1,6 @@
 ---
 name: add-expansion
-description: "Ajoute une extension ou une promo de Zombicide 2e édition au paquet de Zombie Deck : transcription des cartes dans src/data/decks.ts, nom dans les 8 langues, nouveaux types de zombies (illustration, symbole), tests de totaux, README et fiche store. À utiliser quand l'utilisateur veut ajouter un set de cartes."
+description: "Ajoute une extension ou une promo de Zombicide 2e édition au paquet de Zombie Deck : transcription des cartes dans src/data/decks.ts, nom dans les 10 langues, nouveaux types de zombies (illustration, symbole), tests de totaux, README et fiche store. À utiliser quand l'utilisateur veut ajouter un set de cartes."
 argument-hint: "<nom de l'extension> [photos ou liste des cartes]"
 ---
 
@@ -27,7 +27,7 @@ kit) ? Comment son livret trie-t-il la partie difficile (`isHard`) ?
 3. **Nouveau type de zombie** s'il y en a un : `ZombieType` (et `RushZombie` / `ExtraZombie`), illustration
    `assets/zombies/<type>-cartoon.jpg` dans `ART` (`zombie-art.tsx`), symbole dans `assets/icons/` et
    `ZOMBIE_SYMBOLS` (`card-face.tsx`). Sans illustration fournie, dis-le : n'en fabrique pas.
-4. **Traductions** : `set.<id>` et, pour un nouveau type, `zombie.<type>.other` (+ `.rush`, `.all`) dans les 8
+4. **Traductions** : `set.<id>` et, pour un nouveau type, `zombie.<type>.other` (+ `.rush`, `.all`) dans les 10
    fichiers de `src/i18n/`, avec le nom officiel de l'édition de chaque langue ; liste ceux dont tu n'es pas sûr.
 5. **Tests** (`engine.test.ts`) : ajoute le set à « every set splits into easier and harder cards » et mets à jour
    les totaux (174 cartes d'extension, numérotation jusqu'au dernier numéro, part des Abominations) d'après les

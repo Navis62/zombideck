@@ -17,7 +17,7 @@ vérifiés.
 
 ## À vérifier
 
-- **Sauvegarde** : forme de `GameState` / `Piles` changée sans `version` + `upgradeSave` + `isValidSave` ; id de
+- **Sauvegarde** : forme de `GameState` / `Piles` changée sans `version` + `isValidSave` (migration `upgradeSave` pas exigée en bêta fermée) ; id de
   carte renommé ou supprimé (une partie en cours serait jetée) ; clé `zombideck.*` renommée.
 - **Moteur** : action annulable sans `remember` ; remélange qui reprend les cartes en cours de distribution ;
   hasard non injectable ; React ou Expo importé dans `engine.ts`.

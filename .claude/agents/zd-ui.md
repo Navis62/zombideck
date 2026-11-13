@@ -20,7 +20,7 @@ joueurs posent le téléphone en paysage sur la table et piochent d'un toucher p
 ## Règles
 
 1. Textes via `t(...)`, y compris les libellés d'accessibilité. Aucune chaîne en dur ; une clé nouvelle va dans les
-   8 langues (`src/i18n/`).
+   10 langues (`src/i18n/`).
 2. Couleurs et retour `PRESSED` depuis `theme.ts`. Tailles et délais en constantes nommées commentées.
 3. Accessibilité : rôle, libellé et état sur chaque contrôle ; la carte piochée reste annoncée.
 4. Pas d'action destructive en un seul toucher. Écran de jeu sans en-tête : la hauteur va aux cartes.

@@ -1,6 +1,6 @@
 ---
 name: zd-content
-description: "Contenu de Zombie Deck : transcription des cartes (src/data/decks.ts), nouvelles extensions et promos, nouveaux types de zombies (illustration, symbole), et traductions des 8 langues (src/i18n) avec les termes officiels de chaque édition, fiche des stores (store/listing.md). À utiliser pour une carte mal transcrite, une extension à ajouter, une traduction fausse ou manquante, une nouvelle langue."
+description: "Contenu de Zombie Deck : transcription des cartes (src/data/decks.ts), nouvelles extensions et promos, nouveaux types de zombies (illustration, symbole), et traductions des 10 langues (src/i18n) avec les termes officiels de chaque édition, fiche des stores (store/listing.md). À utiliser pour une carte mal transcrite, une extension à ajouter, une traduction fausse ou manquante, une nouvelle langue."
 tools: Read, Grep, Glob, Edit, Write, Bash, WebFetch, WebSearch
 model: sonnet
 color: green
@@ -24,7 +24,7 @@ Tu t'occupes du contenu de **Zombie Deck**. Lis la section « Adding content » 
 
 ## Traductions
 
-- `fr.ts` définit les clés ; chaque langue est un `Record<TranslationKey, string>`. Une clé ajoutée va dans les 8
+- `fr.ts` définit les clés ; chaque langue est un `Record<TranslationKey, string>`. Une clé ajoutée va dans les 10
   fichiers dans le même changement.
 - Termes de jeu : ceux des éditions officielles de chaque langue. Si tu n'es pas sûr d'un terme, liste-le dans ton
   compte rendu comme « à vérifier » au lieu d'inventer ; une recherche web sur le terme officiel est bienvenue.

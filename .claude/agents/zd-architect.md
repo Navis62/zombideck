@@ -28,8 +28,8 @@ avec EAS Update. Tu discutes de conception avec l'utilisateur ; tu ne modifies r
 ## Invariants
 
 1. Le moteur (`src/game/engine.ts`) est pur et testé sous Node ; le hasard est injectable.
-2. Une partie sauvegardée survit à toute mise à jour : `version` + `upgradeSave` + `isValidSave`, ids de cartes
-   stables.
+2. Sauvegarde, une par univers : `version` + `isValidSave` (bêta fermée : pas de migration pour l'instant ;
+   `upgradeSave` reviendra après stabilisation), ids de cartes stables.
 3. Les cartes sont une transcription fidèle des paquets imprimés ; termes officiels de chaque édition.
 4. Hors ligne, aucune donnée collectée (`PRIVACY.md`).
 5. `runtimeVersion` par fingerprint : un changement natif impose un build store ; le reste part en OTA.
