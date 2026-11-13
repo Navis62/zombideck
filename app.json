@@ -21,7 +21,18 @@
       "supportsTablet": true,
       "requireFullScreen": true,
       "infoPlist": {
-        "CFBundleLocalizations": ["en", "fr", "de", "es", "it", "pl", "pt-BR", "ru", "uk", "cs"],
+        "CFBundleLocalizations": [
+          "en",
+          "fr",
+          "de",
+          "es",
+          "it",
+          "pl",
+          "pt-BR",
+          "ru",
+          "uk",
+          "cs"
+        ],
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -48,7 +59,8 @@
           "imageWidth": 200
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "expo-status-bar"
     ],
     "extra": {
       "eas": {
