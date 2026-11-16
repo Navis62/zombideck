@@ -31,6 +31,7 @@ export const en: Record<TranslationKey, string> = {
   'threat.necromancers': 'Necromancers',
   'threat.rules': 'Rules',
   'threat.deadMenTalesDetail': 'The deck keeps its Abominations and Necromancers; they reveal a boss drawn from their own deck, one card per chosen boss.',
+  'threat.abominationDeckDetail': "Cards that spawn an Abomination draw from the Abomination deck: each one reveals an Abomination, one card for each one chosen.",
   'threat.oneAtATime': 'One at a time',
   'threat.fest': 'Abomination Fest',
   'threat.oneAtATimeDetail': 'If an Abomination is already on the board, it gets an Extra Activation instead.',

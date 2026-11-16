@@ -31,6 +31,7 @@ export const es: Record<TranslationKey, string> = {
   'threat.necromancers': 'Nigromantes',
   'threat.rules': 'Reglas',
   'threat.deadMenTalesDetail': 'El mazo conserva sus Abominaciones y Nigromantes; revelan un jefe robado de su propio mazo, una carta por jefe elegido.',
+  'threat.abominationDeckDetail': "Las cartas que hacen aparecer una Abominación roban del mazo de Abominaciones: cada una revela una Abominación, una carta por cada una elegida.",
   'threat.oneAtATime': 'Una a la vez',
   'threat.fest': 'Abomination Fest',
   'threat.oneAtATimeDetail': 'Si ya hay una Abominación en el tablero, obtiene una Activación adicional en su lugar.',

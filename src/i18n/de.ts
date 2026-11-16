@@ -31,6 +31,7 @@ export const de: Record<TranslationKey, string> = {
   'threat.necromancers': 'Nekromanten',
   'threat.rules': 'Regeln',
   'threat.deadMenTalesDetail': 'Der Stapel behält seine Monstren und Nekromanten; sie decken einen Boss aus ihrem eigenen Stapel auf, eine Karte pro gewähltem Boss.',
+  'threat.abominationDeckDetail': "Karten, die ein Monstrum erscheinen lassen, ziehen aus dem Monstren-Stapel: Jede deckt ein Monstrum auf, je eine Karte pro gewähltem Monstrum.",
   'threat.oneAtATime': 'Eins nach dem anderen',
   'threat.fest': 'Abomination Fest',
   'threat.oneAtATimeDetail': 'Ist bereits ein Monstrum auf dem Spielplan, erhält es stattdessen eine Extra-Aktivierung.',

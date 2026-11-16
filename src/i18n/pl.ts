@@ -33,6 +33,7 @@ export const pl: Record<TranslationKey, string> = {
   'threat.necromancers': 'Nekromanci',
   'threat.rules': 'Zasady',
   'threat.deadMenTalesDetail': 'Talia zachowuje swoje Abominacje i Nekromantów; odkrywają bossa z własnej talii, jedna karta na wybranego bossa.',
+  'threat.abominationDeckDetail': "Karty, które przywołują Abominację, dobierają z talii Abominacji: każda odsłania jedną Abominację, po jednej karcie na każdą wybraną.",
   'threat.oneAtATime': 'Po jednej',
   'threat.fest': 'Abomination Fest',
   'threat.oneAtATimeDetail': 'Jeśli Abominacja jest już na planszy, zamiast tego otrzymuje Dodatkową Aktywację.',

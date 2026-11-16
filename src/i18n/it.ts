@@ -33,6 +33,7 @@ export const it: Record<TranslationKey, string> = {
   'threat.necromancers': 'Negromanti',
   'threat.rules': 'Regole',
   'threat.deadMenTalesDetail': 'Il mazzo tiene i suoi Abomini e Negromanti; rivelano un boss pescato dal loro mazzo, una carta per boss scelto.',
+  'threat.abominationDeckDetail': "Le carte che fanno comparire un’Abominio pescano dal mazzo degli Abomini: ognuna ne rivela uno, una carta per ogni Abominio scelto.",
   'threat.oneAtATime': 'Uno alla volta',
   'threat.fest': 'Abomination Fest',
   'threat.oneAtATimeDetail': 'Se un Abominio è già sul tabellone, ottiene invece un’Attivazione Extra.',

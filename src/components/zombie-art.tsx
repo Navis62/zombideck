@@ -1,13 +1,38 @@
 import { useState } from 'react';
 import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
-import type { FantasyNecromancer, FantasyZombie, ModernCard, ZombieType } from '@/game/types';
+import type { FantasyNecromancer, FantasyZombie, ModernCard, NamedModernAbomination, ZombieType } from '@/game/types';
 
-export type ArtSubject = ZombieType | FantasyZombie | FantasyNecromancer | 'trejo' | 'spam';
+export type ArtSubject = ZombieType | FantasyZombie | FantasyNecromancer | NamedModernAbomination | 'trejo' | 'spam';
 
 // One illustration per subject, upscaled to 1280 px tall and compressed to JPEG.
 // Tall portrait illustrations, shown in the panel beside the Danger Levels.
-const ART: Record<ArtSubject, ImageSourcePropType> = {
+const MODERN_ART: Record<ZombieType | 'trejo' | 'spam' | NamedModernAbomination, ImageSourcePropType> = {
+  walker: require('../../assets/zombies/walker-cartoon.jpg'),
+  fatty: require('../../assets/zombies/fatty-cartoon.jpg'),
+  runner: require('../../assets/zombies/runner-cartoon.jpg'),
+  abomination: require('../../assets/zombies/abomination-cartoon.jpg'),
+  toxicWalker: require('../../assets/zombies/toxic-walker-cartoon.jpg'),
+  toxicFatty: require('../../assets/zombies/toxic-fatty-cartoon.jpg'),
+  toxicRunner: require('../../assets/zombies/toxic-runner-cartoon.jpg'),
+  berserkerWalker: require('../../assets/zombies/berserker-walker-cartoon.jpg'),
+  berserkerFatty: require('../../assets/zombies/berserker-fatty-cartoon.jpg'),
+  berserkerRunner: require('../../assets/zombies/berserker-runner-cartoon.jpg'),
+  skinnerWalker: require('../../assets/zombies/skinner-walker-cartoon.jpg'),
+  skinnerFatty: require('../../assets/zombies/skinner-fatty-cartoon.jpg'),
+  skinnerRunner: require('../../assets/zombies/skinner-runner-cartoon.jpg'),
+  dog: require('../../assets/zombies/dog-cartoon.jpg'),
+  crow: require('../../assets/zombies/crow-cartoon.jpg'),
+  seeker: require('../../assets/zombies/seeker-cartoon.jpg'),
+  vip: require('../../assets/zombies/vip-cartoon.jpg'),
+  lostZombivor: require('../../assets/zombies/lost-zombivor-cartoon.jpg'),
+  sillyWalker: require('../../assets/zombies/silly-walker-cartoon.jpg'),
+  inquisitor: require('../../assets/zombies/inquisitor-cartoon.jpg'),
+  trejo: require('../../assets/zombies/trejo-cartoon.jpg'),
+  spam: require('../../assets/zombies/spam-cartoon.jpg'),
+};
+
+const FANTASY_ART: Record<FantasyZombie | FantasyNecromancer, ImageSourcePropType> = {
   wolfz: require('../../assets/zombies/wolfz-cartoon.jpg'),
   wolfbomination: require('../../assets/zombies/wolfbomination-cartoon.jpg'),
   npcWalker: require('../../assets/zombies/npc-walker-cartoon.jpg'),
@@ -123,29 +148,9 @@ const ART: Record<ArtSubject, ImageSourcePropType> = {
   orcAbomination: require('../../assets/zombies/orc-abomination-cartoon.jpg'),
   necromancer: require('../../assets/zombies/necromancer-cartoon.jpg'),
   orcNecromancer: require('../../assets/zombies/orc-necromancer-cartoon.jpg'),
-  walker: require('../../assets/zombies/walker-cartoon.jpg'),
-  fatty: require('../../assets/zombies/fatty-cartoon.jpg'),
-  runner: require('../../assets/zombies/runner-cartoon.jpg'),
-  abomination: require('../../assets/zombies/abomination-cartoon.jpg'),
-  toxicWalker: require('../../assets/zombies/toxic-walker-cartoon.jpg'),
-  toxicFatty: require('../../assets/zombies/toxic-fatty-cartoon.jpg'),
-  toxicRunner: require('../../assets/zombies/toxic-runner-cartoon.jpg'),
-  berserkerWalker: require('../../assets/zombies/berserker-walker-cartoon.jpg'),
-  berserkerFatty: require('../../assets/zombies/berserker-fatty-cartoon.jpg'),
-  berserkerRunner: require('../../assets/zombies/berserker-runner-cartoon.jpg'),
-  skinnerWalker: require('../../assets/zombies/skinner-walker-cartoon.jpg'),
-  skinnerFatty: require('../../assets/zombies/skinner-fatty-cartoon.jpg'),
-  skinnerRunner: require('../../assets/zombies/skinner-runner-cartoon.jpg'),
-  dog: require('../../assets/zombies/dog-cartoon.jpg'),
-  crow: require('../../assets/zombies/crow-cartoon.jpg'),
-  seeker: require('../../assets/zombies/seeker-cartoon.jpg'),
-  vip: require('../../assets/zombies/vip-cartoon.jpg'),
-  lostZombivor: require('../../assets/zombies/lost-zombivor-cartoon.jpg'),
-  sillyWalker: require('../../assets/zombies/silly-walker-cartoon.jpg'),
-  inquisitor: require('../../assets/zombies/inquisitor-cartoon.jpg'),
-  trejo: require('../../assets/zombies/trejo-cartoon.jpg'),
-  spam: require('../../assets/zombies/spam-cartoon.jpg'),
 };
+
+const ART: Record<ArtSubject, ImageSourcePropType> = { ...MODERN_ART, ...FANTASY_ART };
 
 export const artSubject = (card: ModernCard): ArtSubject =>
   card.kind === 'trejo' || card.kind === 'trejoRush' ? 'trejo' : card.kind === 'spam' ? 'spam' : card.zombie;

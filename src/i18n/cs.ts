@@ -34,6 +34,7 @@ export const cs: Record<TranslationKey, string> = {
   'threat.necromancers': 'Nekromanti',
   'threat.rules': 'Pravidla',
   'threat.deadMenTalesDetail': 'Balíček si ponechává své zrůdy a nekromanty; ti odhalí bosse z vlastního balíčku, jednu kartu za každého vybraného bosse.',
+  'threat.abominationDeckDetail': "Karty, které přivolají zrůdu, berou z balíčku zrůd: každá odhalí jednu zrůdu, po jedné kartě na každou vybranou.",
   'threat.oneAtATime': 'Po jednom',
   'threat.fest': 'Abomination Fest',
   'threat.oneAtATimeDetail': 'Pokud už je ve hře nějaká zrůda, získá místo toho extra aktivaci.',

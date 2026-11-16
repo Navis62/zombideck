@@ -1,5 +1,15 @@
 import type { Deck } from '../game/engine.ts';
-import type { BossRule, FantasyNecromancer, FantasyZombie, NamedAbomination, NamedNecromancer, ZombieCard } from '../game/types';
+import type {
+  BossRule,
+  CardSet,
+  FantasyNecromancer,
+  FantasyZombie,
+  NamedAbomination,
+  NamedModernAbomination,
+  NamedNecromancer,
+  ZombieCard,
+} from '../game/types';
+import { CARD_SETS } from './decks.ts';
 
 // The fantasy deck and its bosses, as White Death prints it and Dead Men Tales (work-in-progress rulebook) extends it
 // to every fantasy box; Frozen Fortress gives each Black Plague and Green Horde boss a card of that kind.
@@ -18,7 +28,9 @@ export const DEFAULT_THREAT: Threat = { bossRule: 'oneAtATime', off: [] };
 
 /** Bosses picked one by one, in the order of the expansions menu. */
 /** `copies`: how many identical cards of this boss the box holds in its boss deck (one by default). */
-export type Boss = { zombie: NamedAbomination | NamedNecromancer; setId: string; copies?: number };
+/** The bosses the players switch on and off one by one. */
+export type ListedBoss = NamedAbomination | NamedNecromancer | NamedModernAbomination;
+export type Boss<Zombie extends string = ListedBoss> = { zombie: Zombie; setId: string; copies?: number };
 export const ABOMINATION_BOSSES: readonly Boss[] = [
   { zombie: 'ablobination', setId: 'zombieBosses' },
   { zombie: 'abominatroll', setId: 'zombieBosses' },
@@ -126,8 +138,8 @@ const SET_ABOMINATIONS: readonly { zombie: FantasyZombie; setId: string }[] = [
 const DECK_BOSSES = new Set<string>(
   [...SET_ABOMINATIONS, ...ABOMINATION_BOSSES, ...BIG_BOSSES, ...CORE_NECROMANCERS, ...NECROMANCER_BOSSES].map((boss) => boss.zombie),
 );
-/** The bosses a saved boss deck may hold. */
-export const BOSS_IDS: ReadonlySet<string> = DECK_BOSSES;
+/** The bosses a saved fantasy boss deck may hold. */
+export const FANTASY_BOSS_IDS: ReadonlySet<string> = DECK_BOSSES;
 
 const namedZombie = (card: ZombieCard) =>
   card.kind === 'levels' && card.title === 'named' ? (card.boss ?? card.levels.find((level) => level)?.zombie) : undefined;
@@ -161,6 +173,58 @@ export function tailorFantasyDeck(cards: readonly ZombieCard[], threat: Threat, 
     },
   };
 }
+
+/**
+ * The named Abominations of the modern era (Zombicide 2nd edition rulebook p.17: "If there is no Abomination on the
+ * board, draw a card from the Abomination deck. Then, place the corresponding Abomination in the Spawn Zone. If there
+ * is already an Abomination on the board, it gets an extra Activation."; p.30 for the Abomination Fest). Each one
+ * belongs to the set whose box holds it; the ones of the core box belong to `core2e`, and stay when Fort Hendrix
+ * replaces it. Empty until the cards are transcribed: the modern deck then has no Abomination deck at all.
+ */
+export const MODERN_ABOMINATIONS: readonly Boss<NamedModernAbomination>[] = [];
+
+/**
+ * The sets whose boxes are in play: those switched on, and the ones they replace (Fort Hendrix brings the core box's
+ * Abominations along, though `activeSetIds` leaves the core set out). Menu and deck use it alike.
+ */
+export function presentSetIds(sets: readonly CardSet[], setIds: Iterable<string>): Set<string> {
+  const present = new Set(setIds);
+  for (const set of sets) if (set.replaces && present.has(set.id)) present.add(set.replaces);
+  return present;
+}
+
+/**
+ * Builds the modern deck: no card leaves it (the generic Abomination cards, the upgrade kit's included, are the ones
+ * that call on the Abomination deck). With no named Abomination available and switched on, there is no boss deck and
+ * the game plays as the printed deck does. The Necromancer deck stays empty: the era has no Necromancers.
+ */
+export function tailorModernDeck(
+  cards: readonly ZombieCard[],
+  threat: Threat,
+  setIds: ReadonlySet<string>,
+  abominations: readonly Boss<string>[] = MODERN_ABOMINATIONS,
+): Deck {
+  const present = presentSetIds(CARD_SETS, setIds);
+  const chosen = abominations.filter((boss) => present.has(boss.setId) && !threat.off.includes(boss.zombie));
+  // Once the deck runs out, its discard is reshuffled as in Fantasy; the 2nd edition rulebook gives no rule for it.
+  if (chosen.length === 0) return { cards: [...cards] };
+  return {
+    cards: [...cards],
+    bosses: {
+      rule: threat.bossRule,
+      abomination: chosen.flatMap((boss) => Array<string>(boss.copies ?? 1).fill(boss.zombie)),
+      necromancer: [],
+    },
+  };
+}
+
+/** The bosses a saved modern boss deck may hold. */
+export const MODERN_BOSS_IDS: ReadonlySet<string> = new Set(MODERN_ABOMINATIONS.map((boss) => boss.zombie));
+
+/** Every boss a boss deck can reveal: a card shows its name, picture and rule. */
+export type BossName = FantasyZombie | FantasyNecromancer | NamedModernAbomination;
+export const isBossName = (boss: string): boss is BossName => FANTASY_BOSS_IDS.has(boss) || MODERN_BOSS_IDS.has(boss);
+export const isModernAbomination = (boss: string): boss is NamedModernAbomination => MODERN_BOSS_IDS.has(boss);
 
 const isBossRule = (value: unknown): value is BossRule => BOSS_RULES.includes(value as BossRule);
 

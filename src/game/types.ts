@@ -36,6 +36,9 @@ export type DangerLevel = 'blue' | 'yellow' | 'orange' | 'red';
 /** A Zombicide era with its own boxes, zombies and cards, chosen when the app opens. */
 export type UniverseId = 'modern' | 'fantasy';
 
+/** Named Abominations of the modern era; none transcribed yet (see `MODERN_ABOMINATIONS`). */
+export type NamedModernAbomination = never;
+
 /** Zombie counts, in Danger Level order: blue, yellow, orange, red. */
 export type SpawnCounts = readonly [number, number, number, number];
 

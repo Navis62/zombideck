@@ -33,6 +33,7 @@ export const ru: Record<TranslationKey, string> = {
   'threat.necromancers': 'Некроманты',
   'threat.rules': 'Правила',
   'threat.deadMenTalesDetail': 'Колода сохраняет своих отродий и некромантов; они открывают босса из собственной колоды, по карте на выбранного босса.',
+  'threat.abominationDeckDetail': "Карты, призывающие отродье, берутся из колоды отродий: каждая открывает одно отродье, по одной карте на каждое выбранное.",
   'threat.oneAtATime': 'По одному',
   'threat.fest': 'Abomination Fest',
   'threat.oneAtATimeDetail': 'Если отродье уже на поле, вместо этого оно получает дополнительный ход.',

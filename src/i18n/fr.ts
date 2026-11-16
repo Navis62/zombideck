@@ -29,6 +29,7 @@ export const fr = {
   'threat.necromancers': 'Nécromanciens',
   'threat.rules': 'Règles',
   'threat.deadMenTalesDetail': 'La pioche garde ses Abominations et Nécromanciens ; ils révèlent un boss tiré de leur paquet, une carte par boss choisi.',
+  'threat.abominationDeckDetail': "Les cartes qui font apparaître une Abomination piochent dans le paquet d’Abominations : chaque carte en révèle une, une par Abomination choisie.",
   'threat.oneAtATime': 'Une à la fois',
   'threat.fest': 'Abomination Fest',
   'threat.oneAtATimeDetail': 'Si une Abomination est déjà en jeu, elle gagne une activation supplémentaire à la place.',

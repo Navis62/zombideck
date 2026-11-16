@@ -31,6 +31,7 @@ export const uk: Record<TranslationKey, string> = {
   'threat.necromancers': 'Некроманти',
   'threat.rules': 'Правила',
   'threat.deadMenTalesDetail': 'У колоді залишаються потвори й некроманти; вони відкривають боса з власної колоди, по одній карті на кожного вибраного боса.',
+  'threat.abominationDeckDetail': "Карти, що призивають потвору, беруться з колоди потвор: кожна відкриває одну потвору, по одній карті на кожну обрану.",
   'threat.oneAtATime': 'По одній',
   'threat.fest': 'Фест потвор',
   'threat.oneAtATimeDetail': 'Якщо потвора вже є на полі, вона отримує додаткову активацію.',

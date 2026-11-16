@@ -31,6 +31,7 @@ export const pt: Record<TranslationKey, string> = {
   'threat.necromancers': 'Necromantes',
   'threat.rules': 'Regras',
   'threat.deadMenTalesDetail': 'O baralho mantém suas Abominações e Necromantes; eles revelam um chefe tirado do próprio baralho, uma carta por chefe escolhido.',
+  'threat.abominationDeckDetail': "As cartas que fazem surgir uma Abominação compram do baralho de Abominações: cada uma revela uma Abominação, uma carta para cada uma escolhida.",
   'threat.oneAtATime': 'Uma por vez',
   'threat.fest': 'Abomination Fest',
   'threat.oneAtATimeDetail': 'Se uma Abominação já estiver no tabuleiro, ela ganha uma Ativação Extra em vez disso.',

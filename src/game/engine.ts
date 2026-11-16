@@ -123,6 +123,8 @@ const plainCards: CardEffect = () => 'spawn';
 export type BossTrigger = (cardId: string, danger: DangerLevel) => BossKind | undefined;
 const noBosses: BossTrigger = () => undefined;
 
+// An exhausted deck reshuffles its discard, in every era. The 2nd edition rulebook gives no rule for it: this extends
+// the Dead Men Tales one to the modern Abomination deck.
 function drawBoss(deck: BossDeck, rng: Rng): { boss?: string; deck: BossDeck } {
   let { draw, discard } = deck;
   if (draw.length === 0) {
@@ -365,8 +367,8 @@ function upgradeFromV3(value: unknown): unknown {
 export function isValidSave(
   value: unknown,
   cardIdsOf: (universe: UniverseId) => ReadonlySet<string>,
-  /** The bosses a boss deck may hold; any name when not given. */
-  bossIds?: ReadonlySet<string>,
+  /** The bosses a boss deck of each universe may hold; any name when not given. */
+  bossIdsOf?: (universe: UniverseId) => ReadonlySet<string>,
 ): value is GameState {
   const state = value as GameState | null;
   if (state?.version !== 4 || !DANGER_LEVELS.includes(state.danger) || !UNIVERSE_IDS.includes(state.universe)) return false;
@@ -375,6 +377,7 @@ export function isValidSave(
   if (!Array.isArray(state.setIds) || !state.setIds.every((id) => typeof id === 'string')) return false;
   if (!Array.isArray(state.history)) return false;
   const knownCardIds = cardIdsOf(state.universe);
+  const bossIds = bossIdsOf?.(state.universe);
   return [state.piles, ...state.history].every(
     (piles) => isValidPiles(piles, knownCardIds) && (piles.bosses === null) === (state.bossRule === null) && isValidBosses(piles.bosses, bossIds),
   );

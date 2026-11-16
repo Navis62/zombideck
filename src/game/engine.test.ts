@@ -3,8 +3,8 @@ import { test } from 'node:test';
 
 import { CARD_SETS, OPTIONAL_SETS } from '../data/decks.ts';
 import { BOSS_RULE_IDS, BOSSES_WITHOUT_RULE, FANTASY_SETS } from '../data/fantasy.ts';
-import { BOSS_IDS, DEFAULT_THREAT, parseThreat, tailorFantasyDeck, type Threat } from '../data/threat.ts';
-import { allExpansions, bossTrigger as fantasyBossTrigger, CARDS_BY_ID, cardEffect, cardIdsOf, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
+import { type Boss, DEFAULT_THREAT, FANTASY_BOSS_IDS, MODERN_ABOMINATIONS, parseThreat, presentSetIds, tailorFantasyDeck, tailorModernDeck, type Threat } from '../data/threat.ts';
+import { allExpansions, bossIdsOf, bossTrigger as fantasyBossTrigger, CARDS_BY_ID, cardEffect, cardIdsOf, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
 import {
   activeSetIds,
   ALL_PARTS,
@@ -740,7 +740,7 @@ test('every boss but the two generic Necromancers and those whose cards print no
   assert.equal(new Set(BOSS_RULE_IDS).size, BOSS_RULE_IDS.length, 'duplicate in BOSS_RULE_IDS');
   // The Abominations of the Kickstarter packs print a picture and no rule: nothing to show for them.
   assert.deepEqual(
-    [...BOSS_IDS].filter((id) => !(BOSS_RULE_IDS as readonly string[]).includes(id)).sort(),
+    [...FANTASY_BOSS_IDS].filter((id) => !(BOSS_RULE_IDS as readonly string[]).includes(id)).sort(),
     ['necromancer', 'orcNecromancer', ...BOSSES_WITHOUT_RULE].sort(),
   );
   for (const id of BOSS_RULE_IDS) {
@@ -857,7 +857,7 @@ test('a card calling on a boss deck that never held a boss says so, not that the
   assert.equal(state.piles.bosses?.revealed.a2?.boss, NO_DECK);
   // An exhausted deck is another thing: its bosses are on display.
   assert.equal(drawCards(oneBossGame(), undefined, () => 0, dangerTrigger).piles.bosses?.revealed.a2?.boss, 'n');
-  assert.ok(isValidSave(JSON.parse(JSON.stringify(state)), () => new Set(['a1', 'a2', 'a3']), new Set(['x'])));
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(state)), () => new Set(['a1', 'a2', 'a3']), () => new Set(['x'])));
 });
 
 test('changing the Danger Level gives back the bosses no card calls on and reveals the new ones', () => {
@@ -874,11 +874,11 @@ test('changing the Danger Level gives back the bosses no card calls on and revea
 test('a save keeps its boss decks and its rule together, with known bosses only', () => {
   const state = drawCards(oneBossGame(), undefined, () => 0, dangerTrigger);
   const known = () => new Set(['a1', 'a2', 'a3']);
-  const bosses = new Set(['x', 'n']);
+  const bosses = () => new Set(['x', 'n']);
   assert.ok(isValidSave(JSON.parse(JSON.stringify(state)), known, bosses));
   assert.equal(isValidSave({ ...state, bossRule: null }, known, bosses), false);
   assert.equal(isValidSave({ ...newGame(sets, ['a']), bossRule: 'fest' }, known, bosses), false);
-  assert.equal(isValidSave(state, known, new Set(['n'])), false);
+  assert.equal(isValidSave(state, known, () => new Set(['n'])), false);
 });
 
 
@@ -998,4 +998,148 @@ test('each universe saves its game under its own key, apart from the old shared 
     assert.ok(key.startsWith('zombideck.game.'));
     assert.notEqual(key, 'zombideck.game');
   }
+});
+
+// Modern Abomination deck (2nd edition rulebook p.17): the generic Abomination cards call on named ones.
+const modernSetIds = ['core2e', 'abomination'];
+const modernDeck = (setIds: string[], abominations: readonly Boss<string>[], threat: Threat = DEFAULT_THREAT) =>
+  tailorModernDeck(selectCards(CARD_SETS, setIds), threat, new Set(setIds), abominations);
+const TEST_ABOMINATIONS: Boss<string>[] = [
+  { zombie: 'testA', setId: 'core2e' },
+  { zombie: 'testB', setId: 'core2e' },
+  { zombie: 'testC', setId: 'toxic' },
+];
+
+test('the modern deck has no boss deck while no named Abomination exists, and keeps every card', () => {
+  const deck = tailorModernDeck(selectCards(CARD_SETS, modernSetIds), DEFAULT_THREAT, new Set(modernSetIds));
+  assert.equal(deck.bosses, undefined);
+  assert.equal(deck.cards.length, selectCards(CARD_SETS, modernSetIds).length);
+  const game = newGame(CARD_SETS, modernSetIds, ALL_PARTS, () => 0, 1, 'modern', (cards) => tailorModernDeck(cards, DEFAULT_THREAT, new Set(modernSetIds)));
+  assert.equal(game.bossRule, null);
+  assert.equal(game.piles.bosses, null);
+  // The guard holds for an empty list whatever the sets in play, and the era has no Necromancers.
+  assert.equal(modernDeck(modernSetIds, []).bosses, undefined);
+  assert.equal(UNIVERSES.modern.bosses?.necromancers.length, 0);
+});
+
+test('the modern Abomination deck holds the named Abominations of the boxes in play, the Necromancer deck stays empty', () => {
+  const deck = modernDeck(['core2e', 'abomination'], TEST_ABOMINATIONS);
+  assert.deepEqual(deck.bosses?.abomination, ['testA', 'testB']);
+  assert.deepEqual(deck.bosses?.necromancer, []);
+  assert.equal(deck.cards.length, selectCards(CARD_SETS, ['core2e', 'abomination']).length, 'no card leaves the Zombie deck');
+  assert.deepEqual(modernDeck(['core2e', 'toxic'], TEST_ABOMINATIONS).bosses?.abomination, ['testA', 'testB', 'testC']);
+  assert.deepEqual(modernDeck(['core2e'], TEST_ABOMINATIONS, { bossRule: 'fest', off: ['testA'] }).bosses, {
+    rule: 'fest',
+    abomination: ['testB'],
+    necromancer: [],
+  });
+  // Every Abomination switched off: back to the printed deck.
+  assert.equal(modernDeck(['core2e'], TEST_ABOMINATIONS, { bossRule: 'oneAtATime', off: ['testA', 'testB'] }).bosses, undefined);
+});
+
+test('the Abominations of the core box stay when Fort Hendrix replaces it', () => {
+  const setIds = activeSetIds(CARD_SETS, ['fortHendrix']);
+  assert.ok(!setIds.includes('core2e'));
+  assert.deepEqual(modernDeck(setIds, TEST_ABOMINATIONS).bosses?.abomination, ['testA', 'testB']);
+});
+
+test('a modern card spawning an Abomination calls on its deck from the first Danger Level it spawns at', () => {
+  // core2e-017 is 0/1/1/1, core2e-035 is 1/1/1/1.
+  assert.equal(fantasyBossTrigger('core2e-017', 'blue'), undefined);
+  assert.equal(fantasyBossTrigger('core2e-017', 'yellow'), 'abomination');
+  assert.equal(fantasyBossTrigger('core2e-035', 'blue'), 'abomination');
+  assert.equal(fantasyBossTrigger('fortHendrix-057', 'blue'), undefined);
+  assert.equal(fantasyBossTrigger('fortHendrix-075', 'blue'), 'abomination');
+  // Other modern cards call on nothing.
+  assert.equal(fantasyBossTrigger('core2e-001', 'red'), undefined);
+});
+
+test('a modern game reveals an Abomination at Yellow for a 0/1/1/1 card and at Blue for a 1/1/1/1 card', () => {
+  const ids = ['core2e-017', 'core2e-035'];
+  const game = (card: string) => {
+    const start = newGame(CARD_SETS, ['core2e'], ALL_PARTS, () => 0, 1, 'modern', (cards) => ({
+      cards: cards.filter((c) => c.id === card),
+      bosses: { rule: 'oneAtATime', abomination: ['testA'], necromancer: [] },
+    }));
+    return drawCards(start, cardEffect, () => 0, fantasyBossTrigger);
+  };
+  const slow = game(ids[0]);
+  assert.deepEqual(slow.piles.bosses?.revealed, {});
+  const yellow = setDanger(slow, 'yellow', fantasyBossTrigger, () => 0);
+  assert.deepEqual(yellow.piles.bosses?.revealed[ids[0]], { kind: 'abomination', boss: 'testA' });
+  assert.deepEqual(game(ids[1]).piles.bosses?.revealed[ids[1]], { kind: 'abomination', boss: 'testA' });
+});
+
+test('saves keep their boss decks to the bosses of their own universe', () => {
+  const modernSave = (bosses: Piles['bosses'], bossRule: GameState['bossRule']) => {
+    const game = newGame(CARD_SETS, ['core2e'], ALL_PARTS, () => 0, 1, 'modern');
+    return JSON.parse(JSON.stringify({ ...game, bossRule, piles: { ...game.piles, bosses } }));
+  };
+  // An old modern game (no boss decks) reloads.
+  const old = newGame(CARD_SETS, ['core2e'], ALL_PARTS, () => 0, 1, 'modern');
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(old)), cardIdsOf, bossIdsOf));
+  const deck = (boss: string) => ({ draw: [boss], discard: [] });
+  const withBoss = (boss: string) => modernSave({ abomination: deck(boss), necromancer: { draw: [], discard: [] }, revealed: {} }, 'oneAtATime');
+  assert.equal(isValidSave(withBoss('abominalpha'), cardIdsOf, bossIdsOf), false, 'a Fantasy boss in a modern save');
+  assert.equal(isValidSave(withBoss('abominalpha'), cardIdsOf), true, 'any boss when no list is given');
+  // The same boss deck is valid in a Fantasy save.
+  const fantasy = newGame(FANTASY_SETS, ['blackPlague'], ALL_PARTS, () => 0, 1, 'fantasy', (cards) => tailorFantasyDeck(cards, DEFAULT_THREAT, new Set(['blackPlague'])));
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(fantasy)), cardIdsOf, bossIdsOf));
+});
+
+test('the sets in play include the ones they replace, for the menu and the deck alike', () => {
+  assert.deepEqual([...presentSetIds(CARD_SETS, ['fortHendrix', 'toxic'])].sort(), ['core2e', 'fortHendrix', 'toxic']);
+  assert.deepEqual([...presentSetIds(CARD_SETS, ['core2e'])], ['core2e']);
+  assert.deepEqual([...presentSetIds(CARD_SETS, [])], []);
+  assert.deepEqual([...presentSetIds(FANTASY_SETS, ['blackPlague', 'greenHorde'])], ['blackPlague', 'greenHorde']);
+});
+
+test('every modern Abomination has a name and a rule in every language, in a set of its universe', async () => {
+  const { TRANSLATIONS } = await import('../i18n/translations.ts');
+  const texts = TRANSLATIONS as Record<string, Record<string, string>>;
+  const params = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((match) => match[1]).sort();
+  const setIds = CARD_SETS.map((set) => set.id);
+  const names = MODERN_ABOMINATIONS.map((boss) => boss.zombie);
+  assert.equal(new Set(names).size, names.length, 'duplicate in MODERN_ABOMINATIONS');
+  for (const boss of MODERN_ABOMINATIONS) {
+    assert.ok(setIds.includes(boss.setId), `${boss.zombie}: unknown set ${boss.setId}`);
+    for (const key of [`zombie.${boss.zombie}.one`, `zombie.${boss.zombie}.other`, `card.${boss.zombie}Rule`]) {
+      assert.ok(texts.en[key]?.trim(), `en: ${key}`);
+      for (const [language, language_texts] of Object.entries(texts)) {
+        assert.ok(language_texts[key]?.trim(), `${language}: ${key}`);
+        assert.deepEqual(params(language_texts[key]), params(texts.en[key]), `${language}: ${key} parameters`);
+      }
+    }
+  }
+  // The picture of each one is checked by the compiler: `ART` holds every `ArtSubject`, `NamedModernAbomination` included.
+});
+
+test('a modern game with Abominations reveals, undoes, reshuffles and follows the Danger Level', () => {
+  const cardIds = ['core2e-017', 'core2e-035'];
+  const abominations: Boss<string>[] = [
+    { zombie: 'testA', setId: 'core2e' },
+    { zombie: 'testB', setId: 'fortHendrix' },
+  ];
+  const setIds = ['core2e'];
+  const start = newGame(CARD_SETS, setIds, ALL_PARTS, () => 0, 2, 'modern', (cards) => {
+    const deck = tailorModernDeck(cards, DEFAULT_THREAT, new Set(setIds), abominations);
+    return { ...deck, cards: deck.cards.filter((card) => cardIds.includes(card.id)) };
+  });
+  assert.equal(start.bossRule, 'oneAtATime');
+  assert.deepEqual(start.piles.bosses?.abomination.draw, ['testA']);
+  const dealt = drawCards(start, cardEffect, () => 0, fantasyBossTrigger);
+  // At Blue only the 1/1/1/1 card calls on the deck; with a single boss, the deck is then empty.
+  assert.deepEqual(dealt.piles.bosses?.revealed, { 'core2e-035': { kind: 'abomination', boss: 'testA' } });
+  assert.deepEqual(dealt.piles.bosses?.abomination.draw, []);
+  // The 0/1/1/1 card calls at Yellow: every boss is on display already, so it still says they get an Extra Activation.
+  const yellow = setDanger(dealt, 'yellow', fantasyBossTrigger, () => 0);
+  assert.deepEqual(Object.keys(yellow.piles.bosses?.revealed ?? {}).sort(), cardIds);
+  assert.equal(yellow.piles.bosses?.revealed['core2e-017']?.boss, NO_BOSS);
+  // Back to Blue, it gives its call back; undo restores the piles before the draw.
+  const blue = setDanger(yellow, 'blue', fantasyBossTrigger, () => 0);
+  assert.deepEqual(Object.keys(blue.piles.bosses?.revealed ?? {}), ['core2e-035']);
+  assert.deepEqual(undo(dealt).piles, start.piles);
+  const reshuffled = reshuffleAll(dealt, () => 0).piles.bosses;
+  assert.deepEqual(reshuffled?.abomination.draw, ['testA']);
+  assert.deepEqual(reshuffled?.revealed, {});
 });

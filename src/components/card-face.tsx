@@ -4,6 +4,7 @@ import Svg, { Path, Polygon } from 'react-native-svg';
 
 import { type ArtSubject, artSubject, ZombieFigure } from '@/components/zombie-art';
 import { ABOMINATIONS, BOSS_RULE_IDS, type BossRuleId, NAMED_NECROMANCERS, NAMED_ZOMBIES, PLAIN_RULE_NECROMANCERS } from '@/data/fantasy';
+import { type BossName, isBossName, isModernAbomination } from '@/data/threat';
 import { DANGER_LEVELS } from '@/game/engine';
 import { useApp } from '@/game/store';
 import {
@@ -14,7 +15,7 @@ import {
   type FantasyCard,
   type FantasyLevel,
   type FantasyNecromancer,
-  type FantasyZombie,
+  type NamedModernAbomination,
   type NamedNecromancer,
   isFantasyCard,
   NO_BOSS,
@@ -68,6 +69,17 @@ const asRevealed = (card: ZombieCard, reveal?: Reveal): ZombieCard =>
     ? { ...card, zombie: reveal.boss as FantasyNecromancer }
     : card;
 
+/** A modern card whose Abomination comes from the Abomination deck (see `bossTrigger`). */
+const callsAbominationDeck = (card: ZombieCard): card is Extract<ModernCard, { kind: 'spawn' }> =>
+  card.kind === 'spawn' && card.zombie === 'abomination';
+
+/** The Abomination a modern card revealed, to draw in place of the generic one. */
+const revealedAbomination = (card: ZombieCard, reveal?: Reveal): NamedModernAbomination | undefined =>
+  callsAbominationDeck(card) && reveal?.kind === 'abomination' && isBoss(reveal) && isModernAbomination(reveal.boss) ? reveal.boss : undefined;
+
+/** The name of the boss a reveal holds, if it names one the decks know. */
+const revealedName = (reveal?: Reveal): BossName | undefined => (reveal && isBoss(reveal) && isBossName(reveal.boss) ? reveal.boss : undefined);
+
 /** Title, footer and what a screen reader says about the body of a card, at the given Danger Level. */
 function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: Reveal): CardText {
   if (isFantasyCard(card)) return withReveal(fantasyText(card, danger, t), reveal, t, card.kind !== 'necromancer');
@@ -88,12 +100,14 @@ function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: 
     default: {
       const zombies = t(`zombie.${card.zombie}.other`);
       const isRush = card.kind === 'rush';
-      return {
+      const text: CardText = {
         title: card.kind === 'rush' ? t('card.rushTitle', { zombies: t(`zombie.${card.zombie}.rush`) }) : zombies,
         footer: isRush ? t('card.rushRule') : card.zombie === 'seeker' ? t('card.seekerRule') : undefined,
         // The Fort Hendrix Zombie Shooter symbol is printed as a picture only: say it with the counts.
         spoken: sentences([`${level}: ${card.counts[DANGER_LEVELS.indexOf(danger)]} ${zombies}`, card.shooter && t('card.shooterSymbol')]),
       };
+      // A modern card spawning the generic Abomination calls on the Abomination deck (2nd edition rulebook p.17).
+      return callsAbominationDeck(card) ? withReveal(text, reveal, t, true, isModernAbomination) : text;
     }
   }
 }
@@ -169,12 +183,24 @@ function Card({ card: printed, danger, reveal }: { card: ZombieCard; danger: Dan
 
   const isRush = card.kind === 'rush';
   const { counts } = card;
+  const abomination = revealedAbomination(card, reveal);
   return (
     <Frame card={card} text={text} headerColor={isRush ? CARD_COLORS.rush : CARD_COLORS.spawn}>
       <View style={styles.spawnBody}>
-        <Art card={card} />
+        {abomination ? (
+          <View style={styles.art}>
+            <ZombieFigure subject={abomination} anchor="center" />
+          </View>
+        ) : (
+          <Art card={card} />
+        )}
         <View style={styles.levels}>
           <LevelSymbol kind={symbol} />
+          {abomination && (
+            <Text style={styles.fantasyBigLabel} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.6}>
+              {t(`zombie.${abomination}.one`)}
+            </Text>
+          )}
           {cardDisplay === 'current' ? (
             <Level level={danger} active large>
               ×{counts[DANGER_LEVELS.indexOf(danger)]}
@@ -428,10 +454,13 @@ function fantasyLine(card: FantasyCard, at: DangerLevel, t: Translate): { label?
   };
 }
 
-/** Zombies with a name in every language, as `zombie.<type>.one`. */
-type FantasyZombieName = FantasyZombie | FantasyNecromancer;
-
 const isNamedNecromancer = (zombie: FantasyNecromancer): zombie is NamedNecromancer => NAMED_NECROMANCERS.has(zombie);
+
+/** The boss a call card shows while none is revealed: the one of its core box. */
+function bossCallArt(card: Extract<FantasyCard, { kind: 'bossCall' }>): ArtSubject {
+  if (card.boss === 'necromancer') return card.setId === 'eternalEmpire' ? 'necromancer' : 'defilerNecromancer';
+  return card.setId === 'eternalEmpire' ? 'godEaterAbomination' : 'khanAbomination';
+}
 
 /** The picture of a card without Danger Levels: its Necromancer, the boss a White Death card revealed, or a horde. */
 function ruleArt(card: FantasyCard, reveal?: Reveal): ArtSubject {
@@ -439,9 +468,7 @@ function ruleArt(card: FantasyCard, reveal?: Reveal): ArtSubject {
     case 'necromancer':
       return card.zombie;
     case 'bossCall':
-      if (reveal && isBoss(reveal)) return reveal.boss as ArtSubject;
-      if (card.boss === 'necromancer') return card.setId === 'eternalEmpire' ? 'necromancer' : 'defilerNecromancer';
-      return card.setId === 'eternalEmpire' ? 'godEaterAbomination' : 'khanAbomination';
+      return revealedName(reveal) ?? bossCallArt(card);
     case 'enterHorde':
       return 'orcWalker';
     case 'zombieSiege':
@@ -501,17 +528,27 @@ function fantasyText(card: FantasyCard, danger: DangerLevel, t: Translate): Card
 /** Bosses with a rule of their own, printed on their boss card (Frozen Fortress, White Death, Eternal Empire). */
 const BOSS_RULED: ReadonlySet<string> = new Set(BOSS_RULE_IDS);
 const hasRule = (boss: string): boss is BossRuleId => BOSS_RULED.has(boss);
+type RuledBoss = BossRuleId | NamedModernAbomination;
 
 /** The boss revealed from its deck, named under the card with the way it arrives. */
-function withReveal(text: CardText, reveal: Reveal | undefined, t: Translate, withRule = true): CardText {
+function withReveal(
+  text: CardText,
+  reveal: Reveal | undefined,
+  t: Translate,
+  withRule = true,
+  // Whether the boss prints a rule of its own: the fantasy ones are listed, every modern Abomination has one.
+  ruled: (boss: BossName) => boss is RuledBoss = hasRule,
+): CardText {
   if (!reveal) return text;
   const isNecromancer = reveal.kind === 'necromancer';
   if (reveal.boss === NO_DECK) return { ...text, footer: t(isNecromancer ? 'boss.necromancerNoDeck' : 'boss.abominationNoDeck') };
   if (reveal.boss === NO_BOSS) return { ...text, footer: t(isNecromancer ? 'boss.necromancerNone' : 'boss.abominationNone') };
-  const name = t(`zombie.${reveal.boss as FantasyZombieName}.one`);
+  const boss = revealedName(reveal);
+  if (!boss) return text;
+  const name = t(`zombie.${boss}.one`);
   const rule = isNecromancer ? 'boss.necromancer' : reveal.rule === 'fest' ? 'boss.abominationFest' : 'boss.abomination';
   // A Necromancer card already reads as the Necromancer it revealed, its rule included.
-  const own = withRule && hasRule(reveal.boss) ? ` ${t(`card.${reveal.boss}Rule`)}` : '';
+  const own = withRule && ruled(boss) ? ` ${t(`card.${boss}Rule`)}` : '';
   return { ...text, footer: `${t(rule, { name })}${own}` };
 }
 
@@ -522,13 +559,12 @@ function withReveal(text: CardText, reveal: Reveal | undefined, t: Translate, wi
 function revealedLevel(card: FantasyCard, at: DangerLevel, danger: DangerLevel, reveal: Reveal | undefined, t: Translate) {
   const line = fantasyLine(card, at, t);
   const level = card.kind === 'levels' ? card.levels[DANGER_LEVELS.indexOf(at)] : null;
-  const boss =
-    reveal && isBoss(reveal) && at === danger && level && ABOMINATIONS.has(level.zombie) ? (reveal.boss as ArtSubject) : undefined;
+  const boss = at === danger && level && ABOMINATIONS.has(level.zombie) ? revealedName(reveal) : undefined;
   return {
     line,
     level,
     subject: card.kind === 'activation' ? (card.zombie as ArtSubject) : (boss ?? level?.zombie),
-    label: boss ? t(`zombie.${boss as FantasyZombieName}.one`) : line.label,
+    label: boss ? t(`zombie.${boss}.one`) : line.label,
   };
 }
 

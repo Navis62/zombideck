@@ -2,13 +2,7 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
-import {
-  ABOMINATION_BOSSES,
-  BIG_BOSSES,
-  type Boss,
-  BOSS_RULES,
-  NECROMANCER_BOSSES,
-} from '@/data/threat';
+import { type Boss, BOSS_RULES, presentSetIds } from '@/data/threat';
 import { allExpansions, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '@/data/universes';
 import { activeSetIds } from '@/game/engine';
 import type { BossRule } from '@/game/types';
@@ -68,7 +62,7 @@ export default function ExpansionsScreen() {
             {pair.length === 1 && <View style={styles.cell} />}
           </View>
         ))}
-        {current.threat && <ThreatOptions />}
+        {!!current.bosses && current.bosses.abominations.length > 0 && <ThreatOptions />}
       </ScrollView>
     </SafeAreaView>
   );
@@ -104,10 +98,13 @@ function Choices<T extends string>(props: { options: readonly T[]; selected: T; 
  */
 function ThreatOptions() {
   const { universe, expansions, threat, setThreat, t } = useApp();
-  const setIds = activeSetIds(UNIVERSES[universe].sets, expansions);
-  const available = (bosses: readonly Boss[]) => bosses.filter((boss) => setIds.includes(boss.setId));
-  const abominations = [...available(ABOMINATION_BOSSES), ...available(BIG_BOSSES)];
-  const necromancers = available(NECROMANCER_BOSSES);
+  // The same boxes the deck is built from: Fort Hendrix keeps the core box's bosses.
+  const setIds = presentSetIds(UNIVERSES[universe].sets, activeSetIds(UNIVERSES[universe].sets, expansions));
+  const decks = UNIVERSES[universe].bosses;
+  const available = (bosses: readonly Boss[] = []) => bosses.filter((boss) => setIds.has(boss.setId));
+  const abominations = available(decks?.abominations);
+  const necromancers = available(decks?.necromancers);
+  const necromancerListed = (decks?.necromancers.length ?? 0) > 0;
 
   const toggle = (zombie: string, on: boolean) =>
     setThreat((current) => ({
@@ -142,7 +139,8 @@ function ThreatOptions() {
   return (
     <>
       <Text style={styles.heading}>{t('threat.rules')}</Text>
-      <Text style={styles.muted}>{t('threat.deadMenTalesDetail')}</Text>
+      {/* Modern has no Necromancers: its own sentence says the Abomination deck is the only one. */}
+      <Text style={styles.muted}>{t(necromancerListed ? 'threat.deadMenTalesDetail' : 'threat.abominationDeckDetail')}</Text>
       <Choices
         options={BOSS_RULES}
         selected={threat.bossRule}

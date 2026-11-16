@@ -11,8 +11,8 @@ import {
   type ReactNode,
 } from 'react';
 
-import { BOSS_IDS, DEFAULT_THREAT, parseThreat, type Threat } from '@/data/threat';
-import { cardIdsOf, UNIVERSES, withCoreBox } from '@/data/universes';
+import { DEFAULT_THREAT, parseThreat, type Threat } from '@/data/threat';
+import { bossIdsOf, cardIdsOf, UNIVERSES, withCoreBox } from '@/data/universes';
 import { deviceLanguage } from '@/i18n/device-language';
 import { isLanguage, type Language, type Translate, translator } from '@/i18n/translations';
 import { ALL_PARTS, gameKey, isValidSave, UNIVERSE_IDS, upgradeSave } from './engine';
@@ -27,7 +27,7 @@ const DECK_PARTS_KEY = 'zombideck.deckParts';
 const HAPTICS_KEY = 'zombideck.haptics';
 const ZONE_DISPLAY_KEY = 'zombideck.zoneDisplay';
 const UNIVERSE_KEY = 'zombideck.universe';
-/** The bosses and Threat of each universe that doses them (see `Universe.threat`). */
+/** The bosses and Threat of each universe that doses them (see `Universe.bosses`). */
 const threatKey = (universe: UniverseId) => `zombideck.threat.${universe}`;
 
 /** Each universe has its own list; the modern one keeps the key it had before there were universes. */
@@ -96,7 +96,7 @@ function parseSave(raw: string | null, universe: UniverseId): GameState | null {
   if (!raw) return null;
   try {
     const parsed = upgradeSave(JSON.parse(raw));
-    return isValidSave(parsed, cardIdsOf, BOSS_IDS) && parsed.universe === universe ? parsed : null;
+    return isValidSave(parsed, cardIdsOf, bossIdsOf) && parsed.universe === universe ? parsed : null;
   } catch {
     return null;
   }
