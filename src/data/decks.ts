@@ -60,6 +60,9 @@ const ZOMBIVOR = 'zombivor';
 const ABOMINATION = 'abomination';
 const PYTHON = 'python';
 
+/** An expansion that only supplies named Abominations: no Zombie card, so nothing to sort into easier or harder. */
+const abominationBox = (id: string): CardSet => ({ id, optional: true, isHard: () => false, cards: [] });
+
 export const CARD_SETS: readonly CardSet[] = [
   {
     id: CORE,
@@ -379,6 +382,14 @@ export const CARD_SETS: readonly CardSet[] = [
       special(PYTHON, '214', 'spam'),
     ],
   },
+  // Boxes that only supply named Abominations (see `MODERN_ABOMINATIONS`): they add no card to the Zombie deck.
+  abominationBox('theBoys'),
+  abominationBox('supernatural'),
+  abominationBox('ghostbusters'),
+  abominationBox('ironMaidenModern'),
+  abominationBox('kickstarterAbominations'),
+  abominationBox('urbanLegends'),
+  abominationBox('darkNightsMetal'),
 ];
 
 /** Expansions and promos the players switch on for the next game. */

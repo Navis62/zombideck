@@ -36,8 +36,68 @@ export type DangerLevel = 'blue' | 'yellow' | 'orange' | 'red';
 /** A Zombicide era with its own boxes, zombies and cards, chosen when the app opens. */
 export type UniverseId = 'modern' | 'fantasy';
 
-/** Named Abominations of the modern era; none transcribed yet (see `MODERN_ABOMINATIONS`). */
-export type NamedModernAbomination = never;
+/** Named Abominations transcribed for the modern era (see `MODERN_ABOMINATIONS`). */
+export type NamedModernAbomination =
+  | 'hobomination'
+  | 'abominawild'
+  | 'abominacop'
+  | 'patientZero'
+  | 'abombAbomination'
+  | 'berserkerAbomination'
+  | 'toxicAbomination'
+  | 'homelander'
+  | 'aTrain'
+  | 'blackNoir'
+  | 'queenMaeve'
+  | 'soldierBoy'
+  | 'theDeep'
+  | 'starlight'
+  | 'translucent'
+  | 'alphaVampire'
+  | 'wendigo'
+  | 'leviathan'
+  | 'blackDog'
+  | 'crowley'
+  | 'archangelMichael'
+  | 'zuul'
+  | 'vinzClortho'
+  | 'stayPuft'
+  | 'gozer'
+  | 'nudeOrganist'
+  | 'undeadParrot'
+  | 'gumbys'
+  | 'theFoot'
+  | 'fishSlappingDancer'
+  | 'hellsGrannies'
+  | 'greenwichCrew'
+  | 'spam'
+  | 'eddieAsylum'
+  | 'eddieOriginal'
+  | 'eddieCyborg'
+  | 'eddieMummy'
+  | 'eddieUndead'
+  | 'eddieTrooper'
+  | 'eddieBassist'
+  | 'eddieReaper'
+  | 'eddieFear'
+  | 'eddieWicker'
+  | 'eddiePharaoh'
+  | 'eddieKiller'
+  | 'batabomination'
+  | 'bigfoot'
+  | 'cthulhu'
+  | 'bearmanboar'
+  | 'lankyman'
+  | 'actualCannibal'
+  | 'sewerCrocodile'
+  | 'killerClown'
+  | 'chupacabra'
+  | 'abductor'
+  | 'batmanEarth12'
+  | 'batmanEarth44'
+  | 'batmanWhoLaughs'
+  | 'theRobins'
+  | 'loboBatman';
 
 /** Zombie counts, in Danger Level order: blue, yellow, orange, red. */
 export type SpawnCounts = readonly [number, number, number, number];
@@ -293,11 +353,28 @@ export type BossDeck = { draw: string[]; discard: string[] };
  * which, from its deck. `revealed` holds the boss revealed for each card of `drawn`.
  */
 /** `boss` is empty when every boss of the deck is already on display: the ones on the board get an Extra Activation. */
-export type Revealed = { kind: BossKind; boss: string };
+export type Revealed = {
+  kind: BossKind;
+  boss: string;
+  /** Cantrip cards (SPAM) drawn on the way to `boss`: they leave with it. Absent in Fantasy. */
+  spam?: string[];
+  /** Bosses the revealed one brings along (Batman Who Laughs and The Robins). */
+  along?: string[];
+  /** Candidates of a boss that absorbs others (Gozer): `keep` of the `offered` ones stay, until the players choose. */
+  choice?: { offered: string[]; keep: number };
+  /** Bosses a boss absorbed (Gozer); they leave with it. */
+  gained?: string[];
+};
 export const NO_BOSS = '';
 /** `boss` when the game never had a boss of that kind (an empty deck from the start, not an exhausted one). */
 export const NO_DECK = '-';
-export type BossPiles = { abomination: BossDeck; necromancer: BossDeck; revealed: Record<string, Revealed> };
+export type BossPiles = {
+  abomination: BossDeck;
+  necromancer: BossDeck;
+  revealed: Record<string, Revealed>;
+  /** Abominations drawn by hand, not by a card: they leave with the next Spawn step. Empty in Fantasy. */
+  manual: Revealed[];
+};
 /** Dead Men Tales: one Abomination at a time (the one on the board gets an Extra Activation), or the Abomination Fest. */
 export type BossRule = 'oneAtATime' | 'fest';
 
@@ -312,7 +389,7 @@ export type Piles = {
 };
 
 export type GameState = {
-  version: 4;
+  version: 5;
   /** Boss decks in play and how their bosses arrive; `null`: the bosses are cards of the Zombie deck. */
   bossRule: BossRule | null;
   /** The game's era: its sets, its cards and the menu it is resumed from. */

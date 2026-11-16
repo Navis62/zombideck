@@ -12,7 +12,7 @@ import {
 } from 'react';
 
 import { DEFAULT_THREAT, parseThreat, type Threat } from '@/data/threat';
-import { bossIdsOf, cardIdsOf, UNIVERSES, withCoreBox } from '@/data/universes';
+import { bossCopiesOf, bossIdsOf, cardIdsOf, UNIVERSES, withCoreBox } from '@/data/universes';
 import { deviceLanguage } from '@/i18n/device-language';
 import { isLanguage, type Language, type Translate, translator } from '@/i18n/translations';
 import { ALL_PARTS, gameKey, isValidSave, UNIVERSE_IDS, upgradeSave } from './engine';
@@ -96,7 +96,7 @@ function parseSave(raw: string | null, universe: UniverseId): GameState | null {
   if (!raw) return null;
   try {
     const parsed = upgradeSave(JSON.parse(raw));
-    return isValidSave(parsed, cardIdsOf, bossIdsOf) && parsed.universe === universe ? parsed : null;
+    return isValidSave(parsed, cardIdsOf, bossIdsOf, bossCopiesOf) && parsed.universe === universe ? parsed : null;
   } catch {
     return null;
   }

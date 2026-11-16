@@ -45,7 +45,16 @@ const CardStyle = createContext<{ styles: CardStyles; scale: number }>({ styles:
  * The boss a card revealed from its deck (Dead Men Tales rules), its kind and how it arrives; `boss` is empty when
  * every boss of the deck was already on display.
  */
-export type Reveal = { kind: BossKind; boss: string; rule: BossRule };
+export type Reveal = {
+  kind: BossKind;
+  boss: string;
+  rule: BossRule;
+  /** Modern Abomination powers: SPAMs set aside, bosses brought along, bosses gained, a choice still to make (Gozer). */
+  spam?: readonly string[];
+  along?: readonly string[];
+  gained?: readonly string[];
+  choosing?: boolean;
+};
 
 /** `width` is the width the card is drawn at: text, symbols and Danger Levels grow with it. */
 export function CardFace({ card, danger, width, reveal }: { card: ZombieCard; danger: DangerLevel; width: number; reveal?: Reveal }) {
@@ -80,6 +89,36 @@ const revealedAbomination = (card: ZombieCard, reveal?: Reveal): NamedModernAbom
 /** The name of the boss a reveal holds, if it names one the decks know. */
 const revealedName = (reveal?: Reveal): BossName | undefined => (reveal && isBoss(reveal) && isBossName(reveal.boss) ? reveal.boss : undefined);
 
+/** A modern Abomination with its rule, as written under a card: "Gozer: When Gozer spawns...". */
+const ruleLine = (id: string, t: Translate) => (isModernAbomination(id) ? `${t(`zombie.${id}.one`)}: ${t(`card.${id}Rule`)}` : undefined);
+
+/**
+ * What the modern Abomination powers add to a revealed boss: the SPAMs come first (they were drawn before it), then
+ * the bosses brought along, then what Gozer gained or the invitation to choose.
+ */
+function groupLines(reveal: Reveal, t: Translate): { before: string[]; after: string[] } {
+  const named = (ids: readonly string[] | undefined) => (ids ?? []).flatMap((id) => ruleLine(id, t) ?? []);
+  const bossName = isModernAbomination(reveal.boss) ? t(`zombie.${reveal.boss}.one`) : '';
+  const along = named(reveal.along);
+  const gained = named(reveal.gained);
+  return {
+    before: named(reveal.spam),
+    after: [
+      ...(along.length > 0 ? [t('boss.along'), ...along] : []),
+      ...(gained.length > 0 ? [t('boss.gained', { name: bossName }), ...gained] : []),
+      ...(reveal.choosing ? [t('boss.tapToChoose')] : []),
+    ],
+  };
+}
+
+/** The footer of a card with the powers of its boss around it; unchanged without any (Fantasy). */
+function withPowers(text: CardText, reveal: Reveal | undefined, t: Translate): CardText {
+  if (!reveal) return text;
+  const { before, after } = groupLines(reveal, t);
+  if (before.length === 0 && after.length === 0) return text;
+  return { ...text, footer: [...before, text.footer, ...after].filter(Boolean).join('\n') };
+}
+
 /** Title, footer and what a screen reader says about the body of a card, at the given Danger Level. */
 function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: Reveal): CardText {
   if (isFantasyCard(card)) return withReveal(fantasyText(card, danger, t), reveal, t, card.kind !== 'necromancer');
@@ -110,6 +149,41 @@ function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: 
       return callsAbominationDeck(card) ? withReveal(text, reveal, t, true, isModernAbomination) : text;
     }
   }
+}
+
+/** What an Abomination drawn by hand shows: its name, then its rule and what its powers add. */
+function bossFaceText(reveal: Reveal, t: Translate): CardText {
+  const named = isModernAbomination(reveal.boss) ? reveal.boss : undefined;
+  const none = t(reveal.boss === NO_DECK ? 'boss.abominationNoDeck' : 'boss.abominationNone');
+  const { before, after } = groupLines(reveal, t);
+  return {
+    title: named ? t(`zombie.${named}.one`) : t('game.manualBoss'),
+    spoken: '',
+    footer: [...before, named ? t(`card.${named}Rule`) : none, ...after].join('\n'),
+  };
+}
+
+/** An Abomination drawn by hand, as a screen reader says it. */
+export function bossLabel(reveal: Reveal, t: Translate): string {
+  const { title, footer } = bossFaceText(reveal, t);
+  return sentences([title, footer]);
+}
+
+/** The face of an Abomination drawn by hand: its picture, its rule and the powers it carries. */
+export function BossFace({ reveal, width }: { reveal: Reveal; width: number }) {
+  const { t } = useApp();
+  const scale = Math.max(0.5, width / DESIGN_WIDTH);
+  const style = useMemo(() => ({ styles: makeStyles(scale), scale }), [scale]);
+  const { styles } = style;
+  return (
+    <CardStyle.Provider value={style}>
+      <Frame text={bossFaceText(reveal, t)} headerColor={CARD_COLORS.spawn} tallFooter>
+        <View style={styles.artShort}>
+          <ZombieFigure subject={isModernAbomination(reveal.boss) ? reveal.boss : 'abomination'} anchor="upper" />
+        </View>
+      </Frame>
+    </CardStyle.Provider>
+  );
 }
 
 /** The whole card as a screen reader says it, to announce a card as it is drawn. */
@@ -326,11 +400,14 @@ const sentences = (parts: (string | false | undefined)[]) =>
     .join(' ');
 
 function Frame(props: {
-  card: ZombieCard;
+  /** Absent on the face of an Abomination drawn by hand, which has no card number. */
+  card?: ZombieCard;
   text: CardText;
   headerColor: { background: string; text: string };
   /** The card stock: orange for the modern cards, parchment for the fantasy ones. */
   faceColor?: string;
+  /** A long text under the picture (an Abomination with its powers): the footer may take more of the card. */
+  tallFooter?: boolean;
   children: React.ReactNode;
 }) {
   const { styles } = useContext(CardStyle);
@@ -345,11 +422,11 @@ function Frame(props: {
         <Text style={[styles.title, { color: props.headerColor.text }]} numberOfLines={3}>
           {title}
         </Text>
-        <Text style={[styles.number, { color: props.headerColor.text }]}>{/\d{3}$/.test(props.card.id) ? `#${props.card.id.slice(-3)}` : ''}</Text>
+        <Text style={[styles.number, { color: props.headerColor.text }]}>{props.card && /\d{3}$/.test(props.card.id) ? `#${props.card.id.slice(-3)}` : ''}</Text>
       </View>
       <View style={styles.body}>{props.children}</View>
       {footer && (
-        <View style={[styles.footer, { backgroundColor: props.headerColor.background }]}>
+        <View style={[styles.footer, props.tallFooter && styles.footerTall, { backgroundColor: props.headerColor.background }]}>
           <ScrollView>
             <Text style={[styles.footerText, { color: props.headerColor.text }]}>{footer}</Text>
           </ScrollView>
@@ -531,7 +608,11 @@ const hasRule = (boss: string): boss is BossRuleId => BOSS_RULED.has(boss);
 type RuledBoss = BossRuleId | NamedModernAbomination;
 
 /** The boss revealed from its deck, named under the card with the way it arrives. */
-function withReveal(
+function withReveal(text: CardText, reveal: Reveal | undefined, t: Translate, withRule = true, ruled: (boss: BossName) => boss is RuledBoss = hasRule): CardText {
+  return withPowers(revealedText(text, reveal, t, withRule, ruled), reveal, t);
+}
+
+function revealedText(
   text: CardText,
   reveal: Reveal | undefined,
   t: Translate,
@@ -831,6 +912,8 @@ function makeStyles(s: number) {
     levelTextWideActive: { fontSize: 11 * s, fontWeight: '900' },
     // A long boss rule (200-300 characters) scrolls inside the footer instead of squeezing the body and the levels.
     footer: { paddingHorizontal: 8 * s, paddingVertical: 5 * s, maxHeight: '40%' },
+    // An Abomination drawn by hand: its rule, SPAMs and what it gained matter more than its picture.
+    footerTall: { maxHeight: '65%' },
     footerText: { fontSize: 11 * s, fontWeight: '700', textAlign: 'center' },
   });
 }

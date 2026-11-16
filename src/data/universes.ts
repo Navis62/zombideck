@@ -1,5 +1,14 @@
 import type { ArtSubject } from '../components/zombie-art';
-import { type BossTrigger, type CardEffect, DANGER_LEVELS, type Deck, type Tailor } from '../game/engine.ts';
+import {
+  type BossPowers,
+  type BossTrigger,
+  type CardEffect,
+  DANGER_LEVELS,
+  type Deck,
+  noPowers,
+  powersOf,
+  type Tailor,
+} from '../game/engine.ts';
 import type { CardSet, UniverseId, ZombieCard } from '../game/types';
 import type { TranslationKey } from '../i18n/fr.ts';
 import { CARD_SETS } from './decks.ts';
@@ -8,8 +17,10 @@ import {
   ABOMINATION_BOSSES,
   BIG_BOSSES,
   type Boss,
+  FANTASY_BOSS_COPIES,
   FANTASY_BOSS_IDS,
   MODERN_ABOMINATIONS,
+  MODERN_BOSS_COPIES,
   MODERN_BOSS_IDS,
   NECROMANCER_BOSSES,
   tailorFantasyDeck,
@@ -45,8 +56,14 @@ export type BossDecks = {
   necromancers: readonly Boss[];
   /** Every boss a saved boss deck of the era may hold. */
   ids: ReadonlySet<string>;
+  /** How many cards of a boss a saved boss deck may hold at most, for the bosses whose count is known. */
+  copies: ReadonlyMap<string, number>;
   /** The deck of a new game, with its boss decks if the sets in play bring bosses. */
   tailor: (cards: readonly ZombieCard[], threat: Threat, setIds: ReadonlySet<string>) => Deck;
+  /** The special powers of the bosses of the era, read when one is revealed. */
+  bossPowers: BossPowers;
+  /** The players draw Abominations by hand, besides the cards that call on the deck (Modern). */
+  manualDraw: boolean;
 };
 
 /** The cards of a new deck once the era has set its bosses apart, as the players chose them. */
@@ -69,7 +86,10 @@ export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {
       abominations: MODERN_ABOMINATIONS,
       necromancers: [],
       ids: MODERN_BOSS_IDS,
+      copies: MODERN_BOSS_COPIES,
       tailor: tailorModernDeck,
+      bossPowers: powersOf(MODERN_ABOMINATIONS),
+      manualDraw: true,
     },
   },
   fantasy: {
@@ -85,7 +105,10 @@ export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {
       abominations: [...ABOMINATION_BOSSES, ...BIG_BOSSES],
       necromancers: NECROMANCER_BOSSES,
       ids: FANTASY_BOSS_IDS,
+      copies: FANTASY_BOSS_COPIES,
       tailor: tailorFantasyDeck,
+      bossPowers: noPowers,
+      manualDraw: false,
     },
   },
 };
@@ -107,6 +130,8 @@ const CARD_IDS: Readonly<Record<UniverseId, ReadonlySet<string>>> = {
 export const cardIdsOf = (universe: UniverseId): ReadonlySet<string> => CARD_IDS[universe];
 /** The bosses a saved boss deck of each universe may hold: a fantasy boss in a modern save rejects it. */
 export const bossIdsOf = (universe: UniverseId): ReadonlySet<string> => UNIVERSES[universe].bosses?.ids ?? new Set();
+/** The most cards of each boss a saved game of the universe may hold, for the bosses whose count is known. */
+export const bossCopiesOf = (universe: UniverseId): ReadonlyMap<string, number> => UNIVERSES[universe].bosses?.copies ?? new Map();
 
 /** What a card does to the Spawn step: SPAM draws again, Double Spawn doubles the next zone, Enter the Horde ends it. */
 export const cardEffect: CardEffect = (cardId) => {

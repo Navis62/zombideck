@@ -8,6 +8,7 @@ Unofficial companion app for Zombicide 2nd Edition: it replaces the physical zom
 - Fantasy: Black Plague, Green Horde, White Death and Eternal Empire, alone or mixed, with Double Spawn, Enter the Horde, the Horde symbol and White Death's Zombie Siege on the cards.
 - Fantasy expansions: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, the Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, the Kickstarter packs and Special Guest boxes, and the boss cards of Frozen Fortress and the Warlords boxes, with named Abominations and Necromancers.
 - Fantasy bosses are picked one by one and dealt the White Death and Dead Men Tales way: the deck keeps its core Abominations and Necromancers, and each one drawn reveals a boss from an Abomination or Necromancer deck, one at a time or as an Abomination Fest; a revealed boss shows the rule of its boss card.
+- Modern Abominations come from a deck of named Abominations: the core box, the upgrade kit, The Boys, Supernatural, Ghostbusters, Monty Python, Iron Maiden, Urban Legends, Dark Nights: Metal and the Kickstarter exclusives. SPAM cards are set aside and play their cantrip (draw the next card), Gozer draws three candidates and the players choose which two it keeps, Batman Who Laughs arrives with The Robins, and a "Draw an Abomination" button deals one by hand beside the cards.
 - Draw, undo, shuffle the deck or reshuffle everything; the discard is reshuffled automatically when the deck runs out.
 - Danger Level chosen by the players; cards show only the current level, or all four. Showing only the current level, fantasy cards draw their zombie large beside its count, like modern cards.
 - Core box, Fort Hendrix (replaces the core deck) and expansions or promos switched on in their own menu, reached from the main menu; they apply to the next game.
@@ -39,7 +40,7 @@ npm run lint
 - `src/game/`: game engine, types and saved state
 - `src/i18n/`: one file per language; `fr.ts` defines the keys every language must provide
 - `assets/<universe>/`: the artwork of each universe (`modern/`, `fantasy/`), so a new universe gets its own folder
-  - `zombies/`: one illustration per zombie type, 1280 px tall JPEGs
+  - `zombies/`, `abominations/` and (Fantasy only) `necromancers/`: one illustration per zombie type, 1280 px tall JPEGs; named bosses go in `abominations/` or `necromancers/`, everything else in `zombies/`
   - `icons/`: expansion symbols printed above the Danger Levels
   - `backgrounds/` and `cards/`: its carousel and menu background, its card back (the modern one stays in `assets/cards/`, see below)
 - `assets/*.png` and `assets/cards/back.jpg`: app icon, adaptive icon, favicon and splash image (also the modern card back), referenced by `app.json` (moving them changes the native build)
@@ -47,7 +48,7 @@ npm run lint
 ## Adding content
 
 - **Cards:** add a set to `CARD_SETS` in `src/data/decks.ts` (`optional: true` for an expansion, `replaces` if it swaps out another set, `addsZombies: true` if it should bring its share of the upgrade kit's Abomination cards, and `isHard` for its harder cards), then its `set.<id>` name in every file of `src/i18n/`. The tests check that every expansion has a name in every language.
-- **Zombie type:** add it to `ZombieType` in `src/game/types.ts`, its `zombie.<type>.other` name in every language (plus `zombie.<type>.rush` if it has Rush cards and `zombie.<type>.all` if it has Extra Activation cards), its illustration in `assets/<universe>/zombies/` and in `MODERN_ART` or `FANTASY_ART` (`src/components/zombie-art.tsx`) and, if the cards print one, its symbol in `ZOMBIE_SYMBOLS` (`src/components/card-face.tsx`).
+- **Zombie type:** add it to `ZombieType` in `src/game/types.ts`, its `zombie.<type>.other` name in every language (plus `zombie.<type>.rush` if it has Rush cards and `zombie.<type>.all` if it has Extra Activation cards), its illustration in `assets/<universe>/zombies/` (`abominations/` or `necromancers/` for a boss) and in `MODERN_ART` or `FANTASY_ART` (`src/components/zombie-art.tsx`) and, if the cards print one, its symbol in `ZOMBIE_SYMBOLS` (`src/components/card-face.tsx`).
 - **Universe:** add its id to `UniverseId` (`src/game/types.ts`) and `UNIVERSE_IDS` (`src/game/engine.ts`), its sets, the zombies it shows and whether its core boxes replace each other to `UNIVERSES` (`src/data/universes.ts`), its carousel card to `PLAYABLE` (`src/app/index.tsx`) and its `universe.*` names in every language.
 - **Language:** copy `src/i18n/en.ts`, translate it, then add it to `TRANSLATIONS` and `LANGUAGE_NAMES` in `src/i18n/translations.ts`.
 

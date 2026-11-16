@@ -1,4 +1,4 @@
-import type { Deck } from '../game/engine.ts';
+import type { BossPower, Deck } from '../game/engine.ts';
 import type {
   BossRule,
   CardSet,
@@ -30,7 +30,13 @@ export const DEFAULT_THREAT: Threat = { bossRule: 'oneAtATime', off: [] };
 /** `copies`: how many identical cards of this boss the box holds in its boss deck (one by default). */
 /** The bosses the players switch on and off one by one. */
 export type ListedBoss = NamedAbomination | NamedNecromancer | NamedModernAbomination;
-export type Boss<Zombie extends string = ListedBoss> = { zombie: Zombie; setId: string; copies?: number };
+export type Boss<Zombie extends string = ListedBoss> = {
+  zombie: Zombie;
+  setId: string;
+  copies?: number;
+  /** What the boss does when revealed (SPAM, Batman Who Laughs, Gozer): see `BossPower`. */
+  power?: BossPower<Zombie>;
+};
 export const ABOMINATION_BOSSES: readonly Boss[] = [
   { zombie: 'ablobination', setId: 'zombieBosses' },
   { zombie: 'abominatroll', setId: 'zombieBosses' },
@@ -141,6 +147,18 @@ const DECK_BOSSES = new Set<string>(
 /** The bosses a saved fantasy boss deck may hold. */
 export const FANTASY_BOSS_IDS: ReadonlySet<string> = DECK_BOSSES;
 
+/** How many cards of each boss the boxes can hold at most; a boss absent from the map has no known bound. */
+function copiesOf(bosses: readonly Boss[]): ReadonlyMap<string, number> {
+  const total = new Map<string, number>();
+  for (const boss of bosses) total.set(boss.zombie, (total.get(boss.zombie) ?? 0) + (boss.copies ?? 1));
+  return total;
+}
+// The generic Abominations and Necromancers of the core boxes are not bounded here: their cards are those of the deck.
+const GENERIC_BOSSES = new Set<string>([...SET_ABOMINATIONS, ...CORE_NECROMANCERS].map((boss) => boss.zombie));
+export const FANTASY_BOSS_COPIES: ReadonlyMap<string, number> = new Map(
+  [...copiesOf([...ABOMINATION_BOSSES, ...BIG_BOSSES, ...NECROMANCER_BOSSES])].filter(([boss]) => !GENERIC_BOSSES.has(boss)),
+);
+
 const namedZombie = (card: ZombieCard) =>
   card.kind === 'levels' && card.title === 'named' ? (card.boss ?? card.levels.find((level) => level)?.zombie) : undefined;
 
@@ -179,9 +197,72 @@ export function tailorFantasyDeck(cards: readonly ZombieCard[], threat: Threat, 
  * board, draw a card from the Abomination deck. Then, place the corresponding Abomination in the Spawn Zone. If there
  * is already an Abomination on the board, it gets an extra Activation."; p.30 for the Abomination Fest). Each one
  * belongs to the set whose box holds it; the ones of the core box belong to `core2e`, and stay when Fort Hendrix
- * replaces it. Empty until the cards are transcribed: the modern deck then has no Abomination deck at all.
+ * replaces it. Only transcribed bosses are available. Not yet in: Batman Earth-1, -11, -32, -52
+ * (their card text is not transcribed). The card text is in the translations
+ * (`card.<id>Rule`); the Kit's Abominations belong to `abomination` (its box is always in play).
  */
-export const MODERN_ABOMINATIONS: readonly Boss<NamedModernAbomination>[] = [];
+export const MODERN_ABOMINATIONS: readonly Boss<NamedModernAbomination>[] = [
+  { zombie: 'hobomination', setId: 'core2e' },
+  { zombie: 'abominawild', setId: 'core2e' },
+  { zombie: 'abominacop', setId: 'core2e' },
+  { zombie: 'patientZero', setId: 'core2e' },
+  { zombie: 'abombAbomination', setId: 'abomination' },
+  { zombie: 'berserkerAbomination', setId: 'abomination' },
+  { zombie: 'toxicAbomination', setId: 'abomination' },
+  { zombie: 'homelander', setId: 'theBoys' },
+  { zombie: 'aTrain', setId: 'theBoys' },
+  { zombie: 'blackNoir', setId: 'theBoys' },
+  { zombie: 'queenMaeve', setId: 'theBoys' },
+  { zombie: 'soldierBoy', setId: 'theBoys' },
+  { zombie: 'theDeep', setId: 'theBoys' },
+  { zombie: 'starlight', setId: 'theBoys' },
+  { zombie: 'translucent', setId: 'theBoys' },
+  { zombie: 'alphaVampire', setId: 'supernatural' },
+  { zombie: 'wendigo', setId: 'supernatural' },
+  { zombie: 'leviathan', setId: 'supernatural' },
+  { zombie: 'blackDog', setId: 'supernatural' },
+  { zombie: 'crowley', setId: 'supernatural' },
+  { zombie: 'archangelMichael', setId: 'supernatural' },
+  { zombie: 'zuul', setId: 'ghostbusters' },
+  { zombie: 'vinzClortho', setId: 'ghostbusters' },
+  { zombie: 'stayPuft', setId: 'ghostbusters' },
+  { zombie: 'gozer', setId: 'ghostbusters', power: { kind: 'absorb', draw: 3, keep: 2 } },
+  { zombie: 'nudeOrganist', setId: 'python' },
+  { zombie: 'undeadParrot', setId: 'python' },
+  { zombie: 'gumbys', setId: 'python' },
+  { zombie: 'theFoot', setId: 'python' },
+  { zombie: 'fishSlappingDancer', setId: 'python' },
+  { zombie: 'hellsGrannies', setId: 'python' },
+  { zombie: 'greenwichCrew', setId: 'python' },
+  { zombie: 'spam', setId: 'python', copies: 2, power: { kind: 'cantrip' } },
+  { zombie: 'eddieAsylum', setId: 'ironMaidenModern' },
+  { zombie: 'eddieOriginal', setId: 'ironMaidenModern' },
+  { zombie: 'eddieCyborg', setId: 'ironMaidenModern' },
+  { zombie: 'eddieMummy', setId: 'ironMaidenModern' },
+  { zombie: 'eddieUndead', setId: 'ironMaidenModern' },
+  { zombie: 'eddieTrooper', setId: 'ironMaidenModern' },
+  { zombie: 'eddieBassist', setId: 'ironMaidenModern' },
+  { zombie: 'eddieReaper', setId: 'ironMaidenModern' },
+  { zombie: 'eddieFear', setId: 'ironMaidenModern' },
+  { zombie: 'eddieWicker', setId: 'ironMaidenModern' },
+  { zombie: 'eddiePharaoh', setId: 'ironMaidenModern' },
+  { zombie: 'eddieKiller', setId: 'ironMaidenModern' },
+  { zombie: 'batabomination', setId: 'kickstarterAbominations' },
+  { zombie: 'bigfoot', setId: 'kickstarterAbominations' },
+  { zombie: 'cthulhu', setId: 'kickstarterAbominations' },
+  { zombie: 'bearmanboar', setId: 'kickstarterAbominations' },
+  { zombie: 'lankyman', setId: 'kickstarterAbominations' },
+  { zombie: 'actualCannibal', setId: 'kickstarterAbominations' },
+  { zombie: 'sewerCrocodile', setId: 'urbanLegends' },
+  { zombie: 'killerClown', setId: 'urbanLegends' },
+  { zombie: 'chupacabra', setId: 'urbanLegends' },
+  { zombie: 'abductor', setId: 'urbanLegends' },
+  { zombie: 'batmanEarth12', setId: 'darkNightsMetal' },
+  { zombie: 'batmanEarth44', setId: 'darkNightsMetal' },
+  { zombie: 'batmanWhoLaughs', setId: 'darkNightsMetal', power: { kind: 'bringsAlong', boss: 'theRobins' } },
+  { zombie: 'theRobins', setId: 'darkNightsMetal' },
+  { zombie: 'loboBatman', setId: 'darkNightsMetal' },
+];
 
 /**
  * The sets whose boxes are in play: those switched on, and the ones they replace (Fort Hendrix brings the core box's
@@ -220,6 +301,7 @@ export function tailorModernDeck(
 
 /** The bosses a saved modern boss deck may hold. */
 export const MODERN_BOSS_IDS: ReadonlySet<string> = new Set(MODERN_ABOMINATIONS.map((boss) => boss.zombie));
+export const MODERN_BOSS_COPIES: ReadonlyMap<string, number> = copiesOf(MODERN_ABOMINATIONS);
 
 /** Every boss a boss deck can reveal: a card shows its name, picture and rule. */
 export type BossName = FantasyZombie | FantasyNecromancer | NamedModernAbomination;
