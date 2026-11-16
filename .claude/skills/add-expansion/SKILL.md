@@ -25,7 +25,7 @@ kit) ? Comment son livret trie-t-il la partie difficile (`isHard`) ?
 2. **Cartes** avec `spawn`, `rush`, `extra`, `special`, `shooter` ; `counts` dans l'ordre Bleu, Jaune, Orange,
    Rouge (la carte imprime le Rouge en haut).
 3. **Nouveau type de zombie** s'il y en a un : `ZombieType` (et `RushZombie` / `ExtraZombie`), illustration
-   `assets/zombies/<type>-cartoon.jpg` dans `ART` (`zombie-art.tsx`), symbole dans `assets/icons/` et
+   `assets/<univers>/zombies/<type>-cartoon.jpg` dans `MODERN_ART` ou `FANTASY_ART` (`zombie-art.tsx`), symbole dans `assets/<univers>/icons/` et
    `ZOMBIE_SYMBOLS` (`card-face.tsx`). Sans illustration fournie, dis-le : n'en fabrique pas.
 4. **Traductions** : `set.<id>` et, pour un nouveau type, `zombie.<type>.other` (+ `.rush`, `.all`) dans les 10
    fichiers de `src/i18n/`, avec le nom officiel de l'édition de chaque langue ; liste ceux dont tu n'es pas sûr.

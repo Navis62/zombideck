@@ -19,7 +19,7 @@ export function CardBack(props: { count: number; label: string; width: number; u
       <View style={[styles.edge, styles.edgeFar]} />
       <View style={[styles.edge, styles.edgeNear]} />
       <View style={styles.back}>
-        <Image source={props.universe === 'fantasy' ? require('../../assets/cards/back-fantasy.jpg') : require('../../assets/cards/back.jpg')} style={styles.image} resizeMode="cover" />
+        <Image source={props.universe === 'fantasy' ? require('../../assets/fantasy/cards/back-fantasy.jpg') : require('../../assets/cards/back.jpg')} style={styles.image} resizeMode="cover" />
         <View
           style={[
             styles.badge,

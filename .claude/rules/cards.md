@@ -4,8 +4,8 @@ paths:
   - "src/game/types.ts"
   - "src/components/card-face.tsx"
   - "src/components/zombie-art.tsx"
-  - "assets/zombies/**"
-  - "assets/icons/**"
+  - "assets/*/zombies/**"
+  - "assets/*/icons/**"
 ---
 
 # Cartes (transcription des paquets physiques)
@@ -23,8 +23,8 @@ paths:
   Abominations du kit (`scaled`), et `isHard` (partie difficile) comme le livret de règles la trie. Puis
   `set.<id>` dans **chaque** fichier de `src/i18n/`. Suis `/add-expansion`.
 - Nouveau type de zombie : `ZombieType` (`types.ts`), noms `zombie.<type>.other` (+ `.rush`, `.all` si ces cartes
-  existent) dans chaque langue, illustration dans `ART` (`zombie-art.tsx`), symbole dans `ZOMBIE_SYMBOLS`
+  existent) dans chaque langue, illustration dans `MODERN_ART` ou `FANTASY_ART` (`zombie-art.tsx`), symbole dans `ZOMBIE_SYMBOLS`
   (`card-face.tsx`) si la carte en imprime un.
-- Illustrations : `assets/zombies/<type>-cartoon.jpg`, JPEG de 1280 px de haut. Symboles : `assets/icons/`, PNG.
+- Illustrations : `assets/<univers>/zombies/<type>-cartoon.jpg` (`modern` ou `fantasy`), JPEG de 1280 px de haut. Symboles : `assets/<univers>/icons/`, PNG. Un asset propre à un univers va dans son dossier ; seuls les fichiers que cite `app.json` restent hors des dossiers d'univers (icônes à la racine de `assets/`, et `assets/cards/back.jpg`, à la fois écran de démarrage et dos des cartes Modern) : les déplacer changerait l'empreinte native.
 - Quand un total change (cartes par set, parties facile / difficile), mets à jour le test correspondant dans
   `engine.test.ts` **avec la source** du nouveau chiffre, pas pour le faire passer.

@@ -233,25 +233,25 @@ type DrawnSymbol = 'vip';
 type SymbolKind = ImageSymbol | DrawnSymbol;
 
 const SYMBOL_IMAGES: Record<ImageSymbol, { source: ImageSourcePropType; style: ImageStyle }> = {
-  toxic: { source: require('../../assets/icons/toxic-biohazard-symbol.png'), style: { width: 48, height: 48 } },
+  toxic: { source: require('../../assets/modern/icons/toxic-biohazard-symbol.png'), style: { width: 48, height: 48 } },
   berserker: {
-    source: require('../../assets/icons/berserker-bowie-symbol.png'),
+    source: require('../../assets/modern/icons/berserker-bowie-symbol.png'),
     style: { width: 48, height: 48, marginTop: -1 },
   },
   skinner: {
-    source: require('../../assets/icons/skinner-razor-symbol.png'),
+    source: require('../../assets/modern/icons/skinner-razor-symbol.png'),
     style: { width: 44, height: 44, transform: [{ rotate: '-90deg' }, { scaleX: -1 }] },
   },
-  dog: { source: require('../../assets/icons/dog-paw-symbol.png'), style: { width: 50, height: 50 } },
-  crow: { source: require('../../assets/icons/crow-real-symbol.png'), style: { width: 62, height: 62, marginTop: -2 } },
-  seeker: { source: require('../../assets/icons/seeker-eye-symbol.png'), style: { width: 50, height: 50 } },
+  dog: { source: require('../../assets/modern/icons/dog-paw-symbol.png'), style: { width: 50, height: 50 } },
+  crow: { source: require('../../assets/modern/icons/crow-real-symbol.png'), style: { width: 62, height: 62, marginTop: -2 } },
+  seeker: { source: require('../../assets/modern/icons/seeker-eye-symbol.png'), style: { width: 50, height: 50 } },
   lostZombivor: {
-    source: require('../../assets/icons/lost-zombivor-chain-symbol.png'),
+    source: require('../../assets/modern/icons/lost-zombivor-chain-symbol.png'),
     style: { width: 62, height: 62, tintColor: '#6a2c91', transform: [{ rotate: '-45deg' }] },
   },
   // Printed on the Fort Hendrix cards as an M4A1 in a red circle, barrel up-left.
   shooter: {
-    source: require('../../assets/icons/shooter-m4a1-symbol.png'),
+    source: require('../../assets/modern/icons/shooter-m4a1-symbol.png'),
     style: { width: 46, height: 46, transform: [{ rotate: '20deg' }] },
   },
 };

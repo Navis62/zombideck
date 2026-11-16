@@ -2,8 +2,8 @@ import { memo } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import type { UniverseId } from '@/game/types';
 
-const RUINED_CITY = require('../../assets/backgrounds/ruined-city.jpg');
-const RUINED_CASTLE = require('../../assets/backgrounds/ruined-castle.jpg');
+const RUINED_CITY = require('../../assets/modern/backgrounds/ruined-city.jpg');
+const RUINED_CASTLE = require('../../assets/fantasy/backgrounds/ruined-castle.jpg');
 
 // Bundled scenery stays available offline; a scrim preserves foreground contrast.
 export const AppBackground = memo(function AppBackground({ universe, vivid = false }: { universe: UniverseId; vivid?: boolean }) {

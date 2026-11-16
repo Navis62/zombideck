@@ -46,11 +46,11 @@ const PLAYABLE: Record<UniverseId, Omit<Extract<Slide, { kind: 'playable' }>, 'k
   modern: {
     name: 'universe.modern',
     detail: 'universe.modernGame',
-    art: require('../../assets/backgrounds/ruined-city.jpg'),
+    art: require('../../assets/modern/backgrounds/ruined-city.jpg'),
   },
   fantasy: {
     name: 'universe.fantasy', detail: 'universe.fantasyGame',
-    art: require('../../assets/backgrounds/ruined-castle.jpg'),
+    art: require('../../assets/fantasy/backgrounds/ruined-castle.jpg'),
   },
 };
 
