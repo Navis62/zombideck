@@ -1557,7 +1557,7 @@ test('powers come from the boss lists, and only Modern draws its Abominations by
   assert.equal(lookup('b'), undefined);
   assert.equal(lookup('unknown'), undefined);
   assert.equal(UNIVERSES.modern.bosses?.manualDraw, true);
-  assert.equal(UNIVERSES.fantasy.bosses?.manualDraw, false);
+  assert.equal(UNIVERSES.fantasy.bosses?.manualDraw, true);
   assert.equal(UNIVERSES.fantasy.bosses?.bossPowers('abominalpha'), undefined);
   assert.equal(UNIVERSES.modern.bosses?.bossPowers('queenMaeve'), undefined);
 });

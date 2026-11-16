@@ -151,15 +151,19 @@ function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: 
   }
 }
 
-/** What an Abomination drawn by hand shows: its name, then its rule and what its powers add. */
+/**
+ * What an Abomination drawn by hand shows: its name, then its rule and what its powers add. A modern Abomination
+ * always prints a rule, a fantasy one only if its boss card does.
+ */
 function bossFaceText(reveal: Reveal, t: Translate): CardText {
-  const named = isModernAbomination(reveal.boss) ? reveal.boss : undefined;
+  const named = revealedName(reveal);
+  const rule = named && (isModernAbomination(named) || hasRule(named)) ? t(`card.${named}Rule`) : '';
   const none = t(reveal.boss === NO_DECK ? 'boss.abominationNoDeck' : 'boss.abominationNone');
   const { before, after } = groupLines(reveal, t);
   return {
     title: named ? t(`zombie.${named}.one`) : t('game.manualBoss'),
     spoken: '',
-    footer: [...before, named ? t(`card.${named}Rule`) : none, ...after].join('\n'),
+    footer: [...before, named ? rule : none, ...after].filter(Boolean).join('\n'),
   };
 }
 
@@ -170,16 +174,21 @@ export function bossLabel(reveal: Reveal, t: Translate): string {
 }
 
 /** The face of an Abomination drawn by hand: its picture, its rule and the powers it carries. */
-export function BossFace({ reveal, width }: { reveal: Reveal; width: number }) {
+export function BossFace({ reveal, width, fantasy = false }: { reveal: Reveal; width: number; fantasy?: boolean }) {
   const { t } = useApp();
   const scale = Math.max(0.5, width / DESIGN_WIDTH);
   const style = useMemo(() => ({ styles: makeStyles(scale), scale }), [scale]);
   const { styles } = style;
   return (
     <CardStyle.Provider value={style}>
-      <Frame text={bossFaceText(reveal, t)} headerColor={CARD_COLORS.spawn} tallFooter>
+      <Frame
+        text={bossFaceText(reveal, t)}
+        headerColor={fantasy ? FANTASY_HEADER : CARD_COLORS.spawn}
+        faceColor={fantasy ? CARD_COLORS.parchment : undefined}
+        tallFooter
+      >
         <View style={styles.artShort}>
-          <ZombieFigure subject={isModernAbomination(reveal.boss) ? reveal.boss : 'abomination'} anchor="upper" />
+          <ZombieFigure subject={revealedName(reveal) ?? 'abomination'} anchor="upper" />
         </View>
       </Frame>
     </CardStyle.Provider>

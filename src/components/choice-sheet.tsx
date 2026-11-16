@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
 import { ZombieFigure } from '@/components/zombie-art';
-import { isModernAbomination } from '@/data/threat';
+import { isBossName, isModernAbomination } from '@/data/threat';
 import { useApp } from '@/game/store';
 import type { Translate } from '@/i18n/translations';
 import { COLORS, PRESSED } from '@/theme';
@@ -19,8 +19,8 @@ const ART_SHARE = 0.45;
 /** Width of the column showing the Abomination that absorbs the others, its rule under its picture. */
 const BOSS_WIDTH = 160;
 
-/** The name of an Abomination, or the generic one for a card that is not a named modern Abomination. */
-export const abominationName = (id: string, t: Translate) => (isModernAbomination(id) ? t(`zombie.${id}.one`) : t('game.manualBoss'));
+/** The name of an Abomination, or the generic one for a card that is not a named boss of either era. */
+export const abominationName = (id: string, t: Translate) => (isBossName(id) ? t(`zombie.${id}.one`) : t('game.manualBoss'));
 
 /**
  * Gozer draws candidates and the players keep some of them: tap `keep` of the `offered` Abominations, then confirm.

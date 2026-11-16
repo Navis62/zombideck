@@ -62,7 +62,7 @@ export type BossDecks = {
   tailor: (cards: readonly ZombieCard[], threat: Threat, setIds: ReadonlySet<string>) => Deck;
   /** The special powers of the bosses of the era, read when one is revealed. */
   bossPowers: BossPowers;
-  /** The players draw Abominations by hand, besides the cards that call on the deck (Modern). */
+  /** The players draw Abominations by hand, besides the cards that call on the deck (both eras). */
   manualDraw: boolean;
 };
 
@@ -108,7 +108,7 @@ export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {
       copies: FANTASY_BOSS_COPIES,
       tailor: tailorFantasyDeck,
       bossPowers: noPowers,
-      manualDraw: false,
+      manualDraw: true,
     },
   },
 };
