@@ -297,7 +297,7 @@ export default function GameScreen() {
           hint={waiting ? t('boss.tapToChoose') : t('game.zoom')}
         >
           <View style={styles.drawn} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-            <BossFace reveal={groupFace} width={width} fantasy={game.universe === 'fantasy'} />
+            <BossFace reveal={groupFace} width={width} universe={game.universe} />
           </View>
         </CardButton>
       </View>
@@ -348,7 +348,7 @@ export default function GameScreen() {
               }}
               renderExtra={(i) => {
                 const { group, reveal: groupFace } = manualGroups[i];
-                const face = <BossFace reveal={groupFace} width={width} fantasy={game.universe === 'fantasy'} />;
+                const face = <BossFace reveal={groupFace} width={width} universe={game.universe} />;
                 return group.choice ? (
                   <CardButton style={styles.drawn} onPress={reopenChoice} button label={bossLabel(groupFace, t)} hint={t('boss.tapToChoose')}>
                     {face}
@@ -482,7 +482,7 @@ export default function GameScreen() {
             {/* Touches go through the card to the close button over the whole screen; the card stays readable. */}
             <View style={{ width: zoomWidth(window), aspectRatio: CARD_RATIO }} pointerEvents="none">
               {zoomedGroup ? (
-                <BossFace reveal={zoomedGroup.reveal} width={zoomWidth(window)} fantasy={game.universe === 'fantasy'} />
+                <BossFace reveal={zoomedGroup.reveal} width={zoomWidth(window)} universe={game.universe} />
               ) : (
                 zoomedCard && <CardFace card={zoomedCard} danger={danger} width={zoomWidth(window)} reveal={reveal(zoomedCard.id)} />
               )}

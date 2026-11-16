@@ -25,6 +25,19 @@ export const CARD_COLORS = {
   horde: '#2f7d3a',
 };
 
+/** Sci-fi era (Invader, Dark Side): cold steel blue and teal, with the red of the warning lights. */
+export const INVADER_COLORS = {
+  header: { background: '#0d2230', text: '#e8f6fa' },
+  /** Card stock. */
+  face: '#2a7f95',
+  /** Panel beside the picture, under the counts. */
+  panel: '#0d2230',
+  /** Border: dark steel with teal and red hazard stripes. */
+  hazardBase: '#0d2230',
+  hazardStripe: '#2fb5c4',
+  hazardAlert: '#e5261f',
+};
+
 export const DANGER_COLORS: Record<DangerLevel, { background: string; text: string }> = {
   blue: { background: '#2f6fb5', text: '#ffffff' },
   yellow: { background: '#e8c53a', text: '#1b1a15' },

@@ -610,6 +610,85 @@ test('a save holds only cards of its own universe', () => {
   assert.equal(isValidSave({ ...fantasy, universe: 'modern' }, cardIdsOf), false);
 });
 
+test('an Invader save is valid and refuses a card of another universe', () => {
+  const invader = newGame(UNIVERSES.invader.sets, ['invader'], ALL_PARTS, () => 0, 1, 'invader');
+  assert.equal(invader.universe, 'invader');
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(invader)), cardIdsOf));
+  const modernId = CARD_SETS[0].cards[0].id;
+  assert.equal(isValidSave({ ...invader, piles: { ...invader.piles, draw: [modernId] } }, cardIdsOf), false);
+  assert.equal(isValidSave({ ...invader, universe: 'modern', piles: { ...invader.piles, draw: [modernId] } }, cardIdsOf), true);
+});
+
+test('the Invader and Dark Side boxes combine, with no boss deck', () => {
+  const invader = UNIVERSES.invader;
+  assert.deepEqual(invader.sets.map((set) => set.id), ['invader', 'darkSide']);
+  assert.equal(invader.exclusiveCores, false);
+  assert.equal(invader.bosses, null);
+  assert.deepEqual(invader.defaultExpansions, ['invader']);
+  assert.ok(UNIVERSE_IDS.includes('invader'));
+});
+
+test('an Invader Extra Activation card is its own part of the deck', () => {
+  const [set] = UNIVERSES.invader.sets;
+  const extra: ZombieCard = { id: 'invader-051', setId: 'invader', kind: 'xenoExtra', zombie: 'worker' };
+  const spawn: ZombieCard = { id: 'invader-001', setId: 'invader', kind: 'xeno', zombie: 'worker', counts: [2, 4, 6, 8] };
+  const hardSpawn: ZombieCard = { ...spawn, id: 'invader-026' };
+  assert.equal(cardPart(set, extra), 'extra');
+  assert.equal(cardPart(set, spawn), 'easy');
+  assert.equal(cardPart(set, hardSpawn), 'hard');
+  assert.equal(cardPart(UNIVERSES.invader.sets[1], { ...spawn, id: 'darkSide-086', setId: 'darkSide' }), 'hard');
+  assert.equal(cardPart(UNIVERSES.invader.sets[1], { ...spawn, id: 'darkSide-061', setId: 'darkSide' }), 'easy');
+});
+
+test('each Invader box has 54 cards: 25 easy, 25 hard and 4 Extra Activation, numbered without gaps', () => {
+  // Source: Invader rulebook p.37 and Dark Side rulebook p.37 (25 easy / 25 hard / 4 extra per box).
+  const firstNumber = { invader: 1, darkSide: 61 };
+  for (const set of UNIVERSES.invader.sets) {
+    assert.equal(set.cards.length, 54, set.id);
+    const parts = { easy: 0, hard: 0, extra: 0 };
+    for (const card of set.cards) parts[cardPart(set, card)] += 1;
+    assert.deepEqual(parts, { easy: 25, hard: 25, extra: 4 }, set.id);
+    const first = firstNumber[set.id as keyof typeof firstNumber];
+    const expected = Array.from({ length: 54 }, (_, i) => `${set.id}-${String(first + i).padStart(3, '0')}`);
+    assert.deepEqual(set.cards.map((card) => card.id).sort(), expected, set.id);
+    assert.ok(set.cards.every((card) => card.setId === set.id));
+  }
+});
+
+test('the Invader and Dark Side boxes hold the same kinds of cards (Atomic Asteroidz card images, 2026-11-16)', () => {
+  const [invader, darkSide] = UNIVERSES.invader.sets;
+  const count = (set: typeof invader, test: (card: ZombieCard) => boolean) => set.cards.filter(test).length;
+  const workers = (card: ZombieCard) => card.kind === 'xeno' && card.zombie.endsWith('orker');
+  const tanks = (card: ZombieCard) => card.kind === 'xeno' && card.zombie.endsWith('ank');
+  const hunters = (card: ZombieCard) => card.kind === 'xeno' && card.zombie.endsWith('unter');
+  for (const set of [invader, darkSide]) {
+    assert.equal(count(set, workers), 12, set.id);
+    assert.equal(count(set, tanks), 8, set.id);
+    assert.equal(count(set, hunters), 10, set.id);
+    assert.equal(count(set, (card) => card.kind === 'xenoAbomination'), 12, set.id);
+    assert.equal(count(set, (card) => card.kind === 'zoneSpawn'), 8, set.id);
+    assert.equal(count(set, (card) => card.kind === 'xenoExtra'), 4, set.id);
+  }
+  assert.ok(invader.cards.every((card) => card.kind !== 'zoneSpawn' || card.zone === 'mold'));
+  assert.ok(darkSide.cards.every((card) => card.kind !== 'zoneSpawn' || card.zone === 'pit'));
+});
+
+test('Invader counts are listed Blue, Yellow, Orange, Red (the printed card lists Red first)', () => {
+  const byId = (id: string) => CARDS_BY_ID.get(id);
+  const countsOf = (id: string) => {
+    const card = byId(id);
+    assert.equal(card?.kind, 'xeno');
+    return card?.kind === 'xeno' ? card.counts : [];
+  };
+  assert.deepEqual(byId('invader-001'), { id: 'invader-001', setId: 'invader', kind: 'xeno', zombie: 'worker', counts: [2, 4, 6, 8] });
+  assert.deepEqual(countsOf('invader-026'), [4, 6, 8, 10]);
+  assert.deepEqual(countsOf('invader-007'), [2, 2, 6, 8]);
+  assert.deepEqual(countsOf('invader-032'), [4, 4, 6, 8]);
+  assert.deepEqual(countsOf('darkSide-096'), [4, 4, 6, 8]);
+  assert.deepEqual(byId('darkSide-083'), { id: 'darkSide-083', setId: 'darkSide', kind: 'zoneSpawn', zone: 'pit', zombie: 'drillerWorker', count: 2 });
+  assert.deepEqual(byId('invader-053'), { id: 'invader-053', setId: 'invader', kind: 'xenoExtra', zombie: 'tank' });
+});
+
 test('card ids are unique across every universe', () => {
   const ids = Object.values(UNIVERSES).flatMap((universe) => universe.sets.flatMap((set) => set.cards.map((card) => card.id)));
   assert.equal(new Set(ids).size, ids.length);
@@ -757,6 +836,21 @@ test('every boss but the two generic Necromancers and those whose cards print no
     for (const [language, language_texts] of Object.entries(texts)) {
       assert.ok(language_texts[key]?.trim(), `${language}: ${key}`);
       assert.deepEqual(params(language_texts[key]), params(texts.en[key]), `${language}: ${key} parameters`);
+    }
+  }
+});
+
+test('every translation key uses the same {placeholders} in every language as in French', async () => {
+  const { TRANSLATIONS } = await import('../i18n/translations.ts');
+  const texts = TRANSLATIONS as Record<string, Record<string, string>>;
+  const params = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((match) => match[1]).sort();
+  // The spawn-zone cards fill {count} and {zombies} at draw time: a language that drops or renames one shows it raw.
+  for (const key of ['card.moldSpawnTitle', 'card.moldSpawnRule', 'card.pitSpawnTitle', 'card.pitSpawnRule']) {
+    assert.ok(texts.fr[key]?.trim(), `fr: ${key}`);
+  }
+  for (const key of Object.keys(texts.fr)) {
+    for (const [language, language_texts] of Object.entries(texts)) {
+      assert.deepEqual(params(language_texts[key] ?? ''), params(texts.fr[key]), `${language}: ${key} placeholders`);
     }
   }
 });

@@ -52,6 +52,11 @@ const PLAYABLE: Record<UniverseId, Omit<Extract<Slide, { kind: 'playable' }>, 'k
     name: 'universe.fantasy', detail: 'universe.fantasyGame',
     art: require('../../assets/fantasy/backgrounds/ruined-castle.jpg'),
   },
+  invader: {
+    name: 'universe.invader',
+    detail: 'universe.invaderGame',
+    art: require('../../assets/invader/backgrounds/mining-outpost.jpg'),
+  },
 };
 
 const UPCOMING: Record<UpcomingUniverse, TranslationKey> = {};

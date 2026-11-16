@@ -1,28 +1,43 @@
-import { memo } from 'react';
+import { memo, type ReactElement } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { CARD_COLORS } from '@/theme';
+import { CARD_COLORS, INVADER_COLORS } from '@/theme';
 import type { UniverseId } from '@/game/types';
 
 /** Decorative border matching the selected era. */
 export const Hazard = memo(function Hazard({ universe, stripes }: { universe: UniverseId; stripes: number }) {
-  if (universe === 'fantasy') {
-    return (
-      <View style={styles.medieval} pointerEvents="none" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <View style={styles.ornament}><View style={styles.diamond} /><View style={styles.smallDiamond} /></View>
-        <View style={styles.goldThread} />
-        <View style={styles.ornament}><View style={styles.smallDiamond} /><View style={styles.diamond} /></View>
-      </View>
-    );
-  }
-  return (
+  return BORDERS[universe](stripes);
+});
+
+/** One border per universe: a new UniverseId must pick its own. */
+const BORDERS: Record<UniverseId, (stripes: number) => ReactElement> = {
+  fantasy: () => (
+    <View style={styles.medieval} pointerEvents="none" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={styles.ornament}><View style={styles.diamond} /><View style={styles.smallDiamond} /></View>
+      <View style={styles.goldThread} />
+      <View style={styles.ornament}><View style={styles.smallDiamond} /><View style={styles.diamond} /></View>
+    </View>
+  ),
+  invader: (stripes) => (
+    <View style={styles.scifi} pointerEvents="none" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      {/* Teal stripes with a red warning stripe every fourth one. */}
+      {Array.from({ length: stripes }, (_, index) => (
+        <View key={index} style={[styles.stripe, { backgroundColor: index % ALERT_EVERY === ALERT_EVERY - 1 ? INVADER_COLORS.hazardAlert : INVADER_COLORS.hazardStripe }]} />
+      ))}
+    </View>
+  ),
+  modern: (stripes) => (
     <View style={styles.hazard}>
       {Array.from({ length: stripes }, (_, index) => <View key={index} style={styles.stripe} />)}
     </View>
-  );
-});
+  ),
+};
+
+/** One stripe in this many is red on the sci-fi border. */
+const ALERT_EVERY = 4;
 
 const styles = StyleSheet.create({
+  scifi: { height: 18, flexDirection: 'row', overflow: 'hidden', backgroundColor: INVADER_COLORS.hazardBase },
   medieval: {
     height: 18,
     flexDirection: 'row',

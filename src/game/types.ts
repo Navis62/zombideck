@@ -34,7 +34,7 @@ export type ExtraZombie = 'walker' | 'runner' | 'fatty' | 'skinnerWalker' | 'ski
 export type DangerLevel = 'blue' | 'yellow' | 'orange' | 'red';
 
 /** A Zombicide era with its own boxes, zombies and cards, chosen when the app opens. */
-export type UniverseId = 'modern' | 'fantasy';
+export type UniverseId = 'modern' | 'fantasy' | 'invader';
 
 /** Named Abominations transcribed for the modern era (see `MODERN_ABOMINATIONS`). */
 export type NamedModernAbomination =
@@ -311,7 +311,29 @@ export type FantasyCard =
   | (FantasyBase & { kind: 'bossCall'; boss: BossKind; chi?: true })
   | (FantasyBase & { kind: 'zombieSiege' });
 
-export type ZombieCard = ModernCard | FantasyCard;
+/** Xenos of the sci-fi era (Invader and its Dark Side box). */
+export type InvaderXeno = 'worker' | 'tank' | 'hunter' | 'drillerWorker' | 'drillerTank' | 'drillerHunter';
+/** Abominations of the sci-fi era, one per box. */
+export type InvaderAbomination = 'spoilerAbomination' | 'drillerAbomination';
+/** Where a Mold Spawn (Invader) or Pit Spawn (Dark Side) card spawns its Xenos. */
+export type InvaderZone = 'mold' | 'pit';
+
+type InvaderBase = { id: string; setId: string };
+/**
+ * Cards of the sci-fi era. Card ids are `<setId>-<printed number on 3 digits>`: `invader-001`..`invader-054`,
+ * `darkSide-061`..`darkSide-114` (numbers 055-060 are unused).
+ */
+export type InvaderCard =
+  /** One Xeno type, a count per Danger Level: the Modern spawn card. */
+  | (InvaderBase & { kind: 'xeno'; zombie: InvaderXeno; counts: SpawnCounts })
+  /** No levels: all Abominations on the board get one Activation, then this Abomination spawns (if any). */
+  | (InvaderBase & { kind: 'xenoAbomination'; zombie: InvaderAbomination })
+  /** No levels: `count` Xenos on each Active Mold Zone / in each Open Pit Zone. */
+  | (InvaderBase & { kind: 'zoneSpawn'; zone: InvaderZone; zombie: InvaderXeno; count: number })
+  /** All Xenos of this type on Red, Orange and Yellow get an Activation; no one on Blue. */
+  | (InvaderBase & { kind: 'xenoExtra'; zombie: InvaderXeno });
+
+export type ZombieCard = ModernCard | FantasyCard | InvaderCard;
 
 const FANTASY_KINDS: ReadonlySet<ZombieCard['kind']> = new Set([
   'levels',
@@ -323,6 +345,9 @@ const FANTASY_KINDS: ReadonlySet<ZombieCard['kind']> = new Set([
   'zombieSiege',
 ]);
 export const isFantasyCard = (card: ZombieCard): card is FantasyCard => FANTASY_KINDS.has(card.kind);
+
+const INVADER_KINDS: ReadonlySet<ZombieCard['kind']> = new Set(['xeno', 'xenoAbomination', 'zoneSpawn', 'xenoExtra']);
+export const isInvaderCard = (card: ZombieCard): card is InvaderCard => INVADER_KINDS.has(card.kind);
 
 export type CardSet = {
   id: string;

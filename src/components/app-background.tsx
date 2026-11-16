@@ -4,6 +4,10 @@ import type { UniverseId } from '@/game/types';
 
 const RUINED_CITY = require('../../assets/modern/backgrounds/ruined-city.jpg');
 const RUINED_CASTLE = require('../../assets/fantasy/backgrounds/ruined-castle.jpg');
+const MINING_OUTPOST = require('../../assets/invader/backgrounds/mining-outpost.jpg');
+
+/** One scenery per universe: a new UniverseId must pick its own. */
+const SCENERY: Record<UniverseId, number> = { modern: RUINED_CITY, fantasy: RUINED_CASTLE, invader: MINING_OUTPOST };
 
 // Bundled scenery stays available offline; a scrim preserves foreground contrast.
 export const AppBackground = memo(function AppBackground({ universe, vivid = false }: { universe: UniverseId; vivid?: boolean }) {
@@ -15,7 +19,7 @@ export const AppBackground = memo(function AppBackground({ universe, vivid = fal
       importantForAccessibility="no-hide-descendants"
       style={[StyleSheet.absoluteFill, styles.base]}
     >
-      <Image source={universe === 'fantasy' ? RUINED_CASTLE : RUINED_CITY} resizeMode="cover" style={styles.image} fadeDuration={0} />
+      <Image source={SCENERY[universe]} resizeMode="cover" style={styles.image} fadeDuration={0} />
       <View style={[StyleSheet.absoluteFill, vivid ? styles.menuShade : styles.playShade]} />
     </View>
   );

@@ -18,7 +18,7 @@ import { NO_BOSS, NO_DECK } from './types.ts';
 export type Rng = () => number;
 
 export const DANGER_LEVELS: readonly DangerLevel[] = ['blue', 'yellow', 'orange', 'red'];
-export const UNIVERSE_IDS: readonly UniverseId[] = ['modern', 'fantasy'];
+export const UNIVERSE_IDS: readonly UniverseId[] = ['modern', 'fantasy', 'invader'];
 
 /** Each universe keeps its own game: starting one never replaces another's. */
 export const gameKey = (universe: UniverseId) => `zombideck.game.${universe}`;
@@ -46,7 +46,7 @@ export function activeSetIds(sets: readonly CardSet[], expansions: readonly stri
 export const ALL_PARTS: DeckParts = { easy: true, hard: true, extra: true };
 
 export function cardPart(set: CardSet, card: ZombieCard): CardPart {
-  if (card.kind === 'extra') return 'extra';
+  if (card.kind === 'extra' || card.kind === 'xenoExtra') return 'extra';
   return set.isHard(card) ? 'hard' : 'easy';
 }
 

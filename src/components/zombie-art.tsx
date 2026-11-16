@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
-import type { FantasyNecromancer, FantasyZombie, ModernCard, NamedModernAbomination, ZombieType } from '@/game/types';
+import type { FantasyNecromancer, FantasyZombie, InvaderAbomination, InvaderXeno, ModernCard, NamedModernAbomination, ZombieType } from '@/game/types';
 
-export type ArtSubject = ZombieType | FantasyZombie | FantasyNecromancer | NamedModernAbomination | 'trejo' | 'spam';
+export type ArtSubject = ZombieType | InvaderXeno | InvaderAbomination | FantasyZombie | FantasyNecromancer | NamedModernAbomination | 'trejo' | 'spam';
 
 // One illustration per subject, upscaled to 1280 px tall and compressed to JPEG.
 // Tall portrait illustrations, shown in the panel beside the Danger Levels.
@@ -213,7 +213,18 @@ const FANTASY_ART: Record<FantasyZombie | FantasyNecromancer, ImageSourcePropTyp
   orcNecromancer: require('../../assets/fantasy/necromancers/orc-necromancer-cartoon.jpg'),
 };
 
-const ART: Record<ArtSubject, ImageSourcePropType> = { ...MODERN_ART, ...FANTASY_ART };
+const INVADER_ART: Record<InvaderXeno | InvaderAbomination, ImageSourcePropType> = {
+  worker: require('../../assets/invader/zombies/xeno-worker-cartoon.jpg'),
+  tank: require('../../assets/invader/zombies/xeno-tank-cartoon.jpg'),
+  hunter: require('../../assets/invader/zombies/xeno-hunter-cartoon.jpg'),
+  spoilerAbomination: require('../../assets/invader/abominations/spoiler-abomination-cartoon.jpg'),
+  drillerWorker: require('../../assets/invader/zombies/driller-worker-cartoon.jpg'),
+  drillerTank: require('../../assets/invader/zombies/driller-tank-cartoon.jpg'),
+  drillerHunter: require('../../assets/invader/zombies/driller-hunter-cartoon.jpg'),
+  drillerAbomination: require('../../assets/invader/abominations/driller-abomination-cartoon.jpg'),
+};
+
+const ART: Record<ArtSubject, ImageSourcePropType> = { ...MODERN_ART, ...FANTASY_ART, ...INVADER_ART };
 
 export const artSubject = (card: ModernCard): ArtSubject =>
   card.kind === 'trejo' || card.kind === 'trejoRush' ? 'trejo' : card.kind === 'spam' ? 'spam' : card.zombie;

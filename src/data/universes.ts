@@ -13,6 +13,7 @@ import type { CardSet, UniverseId, ZombieCard } from '../game/types';
 import type { TranslationKey } from '../i18n/fr.ts';
 import { CARD_SETS } from './decks.ts';
 import { ABOMINATIONS, FANTASY_SETS } from './fantasy.ts';
+import { INVADER_SETS } from './invader.ts';
 import {
   ABOMINATION_BOSSES,
   BIG_BOSSES,
@@ -111,6 +112,17 @@ export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {
       manualDraw: true,
     },
   },
+  invader: {
+    id: 'invader',
+    sets: INVADER_SETS,
+    optionalSets: INVADER_SETS.filter((set) => set.optional),
+    exclusiveCores: false,
+    defaultExpansions: ['invader'],
+    deckParts: true,
+    tagline: 'menu.taglineInvader',
+    heroes: ['hunter', 'tank', 'worker'],
+    bosses: null,
+  },
 };
 
 /** Shown in the carousel, in this order, after the playable universes. */
@@ -126,6 +138,7 @@ export const CARDS_BY_ID: ReadonlyMap<string, ZombieCard> = new Map(
 const CARD_IDS: Readonly<Record<UniverseId, ReadonlySet<string>>> = {
   modern: new Set(UNIVERSES.modern.sets.flatMap((set) => set.cards.map((card) => card.id))),
   fantasy: new Set(UNIVERSES.fantasy.sets.flatMap((set) => set.cards.map((card) => card.id))),
+  invader: new Set(UNIVERSES.invader.sets.flatMap((set) => set.cards.map((card) => card.id))),
 };
 export const cardIdsOf = (universe: UniverseId): ReadonlySet<string> => CARD_IDS[universe];
 /** The bosses a saved boss deck of each universe may hold: a fantasy boss in a modern save rejects it. */

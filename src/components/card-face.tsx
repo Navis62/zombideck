@@ -15,9 +15,13 @@ import {
   type FantasyCard,
   type FantasyLevel,
   type FantasyNecromancer,
+  type InvaderCard,
+  type InvaderXeno,
   type NamedModernAbomination,
   type NamedNecromancer,
+  type UniverseId,
   isFantasyCard,
+  isInvaderCard,
   NO_BOSS,
   NO_DECK,
   type ModernCard,
@@ -25,7 +29,7 @@ import {
   type ZombieType,
 } from '@/game/types';
 import type { Translate } from '@/i18n/translations';
-import { CARD_COLORS, DANGER_COLORS } from '@/theme';
+import { CARD_COLORS, DANGER_COLORS, INVADER_COLORS } from '@/theme';
 
 // Printed top-down on the cards, red first.
 const PRINTED_LEVELS = [...DANGER_LEVELS].reverse();
@@ -122,6 +126,7 @@ function withPowers(text: CardText, reveal: Reveal | undefined, t: Translate): C
 /** Title, footer and what a screen reader says about the body of a card, at the given Danger Level. */
 function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: Reveal): CardText {
   if (isFantasyCard(card)) return withReveal(fantasyText(card, danger, t), reveal, t, card.kind !== 'necromancer');
+  if (isInvaderCard(card)) return invaderText(card, danger, t);
   const level = t(`danger.${danger}`);
   switch (card.kind) {
     case 'trejo':
@@ -174,7 +179,7 @@ export function bossLabel(reveal: Reveal, t: Translate): string {
 }
 
 /** The face of an Abomination drawn by hand: its picture, its rule and the powers it carries. */
-export function BossFace({ reveal, width, fantasy = false }: { reveal: Reveal; width: number; fantasy?: boolean }) {
+export function BossFace({ reveal, width, universe }: { reveal: Reveal; width: number; universe: UniverseId }) {
   const { t } = useApp();
   const scale = Math.max(0.5, width / DESIGN_WIDTH);
   const style = useMemo(() => ({ styles: makeStyles(scale), scale }), [scale]);
@@ -183,8 +188,8 @@ export function BossFace({ reveal, width, fantasy = false }: { reveal: Reveal; w
     <CardStyle.Provider value={style}>
       <Frame
         text={bossFaceText(reveal, t)}
-        headerColor={fantasy ? FANTASY_HEADER : CARD_COLORS.spawn}
-        faceColor={fantasy ? CARD_COLORS.parchment : undefined}
+        headerColor={BOSS_LOOK[universe].header}
+        faceColor={BOSS_LOOK[universe].face}
         tallFooter
       >
         <View style={styles.artShort}>
@@ -203,7 +208,27 @@ export function cardLabel(card: ZombieCard, danger: DangerLevel, t: Translate, r
 
 const trejoChoices = (isRush: boolean) => ['card.trejo1', 'card.trejo2', isRush ? 'card.trejo3Rush' : 'card.trejo3'] as const;
 
-const extraLine = (zombie: ExtraZombie, at: DangerLevel, t: Translate) =>
+/** Title, footer and spoken body of a sci-fi card: Xeno counts, an Abomination's order, a Mold or Pit Spawn, an Extra Activation. */
+function invaderText(card: InvaderCard, danger: DangerLevel, t: Translate): CardText {
+  const level = t(`danger.${danger}`);
+  switch (card.kind) {
+    case 'xeno': {
+      const zombies = t(`zombie.${card.zombie}.other`);
+      return { title: zombies, spoken: `${level}: ${card.counts[DANGER_LEVELS.indexOf(danger)]} ${zombies}` };
+    }
+    case 'xenoAbomination':
+      return { title: t(`zombie.${card.zombie}.other`), footer: t(`card.${card.zombie}Rule`), spoken: '' };
+    case 'zoneSpawn': {
+      const params = { count: card.count, zombies: t(`zombie.${card.zombie}.${card.count === 1 ? 'one' : 'other'}`) };
+      const mold = card.zone === 'mold';
+      return { title: t(mold ? 'card.moldSpawnTitle' : 'card.pitSpawnTitle', params), footer: t(mold ? 'card.moldSpawnRule' : 'card.pitSpawnRule', params), spoken: '' };
+    }
+    case 'xenoExtra':
+      return { title: t('card.extra'), footer: t('card.extraRule'), spoken: `${level}: ${extraLine(card.zombie, danger, t)}` };
+  }
+}
+
+const extraLine = (zombie: ExtraZombie | InvaderXeno, at: DangerLevel, t: Translate) =>
   at === 'blue' ? t('card.extraNobody') : t(`zombie.${zombie}.all`);
 
 function Card({ card: printed, danger, reveal }: { card: ZombieCard; danger: DangerLevel; reveal?: Reveal }) {
@@ -213,6 +238,7 @@ function Card({ card: printed, danger, reveal }: { card: ZombieCard; danger: Dan
   const text = cardText(card, danger, t, reveal);
 
   if (isFantasyCard(card)) return <FantasyFace card={card} danger={danger} text={text} reveal={reveal} />;
+  if (isInvaderCard(card)) return <InvaderFace card={card} danger={danger} text={text} />;
 
   if (card.kind === 'trejo' || card.kind === 'trejoRush') {
     const isRush = card.kind === 'trejoRush';
@@ -295,6 +321,54 @@ function Card({ card: printed, danger, reveal }: { card: ZombieCard; danger: Dan
               </Level>
             ))
           )}
+        </View>
+      </View>
+    </Frame>
+  );
+}
+
+/** Sci-fi card: Modern layout (picture, Danger Levels) in cold colours; the cards without levels print their rule below. */
+function InvaderFace({ card, danger, text }: { card: InvaderCard; danger: DangerLevel; text: CardText }) {
+  const { t, cardDisplay } = useApp();
+  const { styles } = useContext(CardStyle);
+  const current = cardDisplay === 'current';
+  const header = card.kind === 'xenoExtra' ? CARD_COLORS.extra : INVADER_COLORS.header;
+  const panel = { backgroundColor: INVADER_COLORS.panel };
+  if (card.kind === 'xenoAbomination') {
+    return (
+      <Frame card={card} text={text} headerColor={header} faceColor={INVADER_COLORS.face} tallFooter>
+        <View style={styles.artShort}>
+          <ZombieFigure subject={card.zombie} anchor="upper" />
+        </View>
+      </Frame>
+    );
+  }
+  return (
+    <Frame card={card} text={text} headerColor={header} faceColor={INVADER_COLORS.face}>
+      <View style={styles.spawnBody}>
+        <View style={styles.art}>
+          <ZombieFigure subject={card.zombie} anchor="center" />
+        </View>
+        <View style={[styles.levels, panel]}>
+          {card.kind === 'zoneSpawn' && <Text style={styles.zoneCount}>×{card.count}</Text>}
+          {card.kind === 'xeno' &&
+            (current ? (
+              <Level level={danger} active large>
+                ×{card.counts[DANGER_LEVELS.indexOf(danger)]}
+              </Level>
+            ) : (
+              PRINTED_LEVELS.map((shown) => (
+                <Level key={shown} level={shown} active={shown === danger}>
+                  ×{card.counts[DANGER_LEVELS.indexOf(shown)]}
+                </Level>
+              ))
+            ))}
+          {card.kind === 'xenoExtra' &&
+            (current ? [danger] : PRINTED_LEVELS).map((shown) => (
+              <Level key={shown} level={shown} active={shown === danger} wide large={current}>
+                {extraLine(card.zombie, shown, t)}
+              </Level>
+            ))}
         </View>
       </View>
     </Frame>
@@ -485,6 +559,13 @@ function Level(props: {
 }
 
 const FANTASY_HEADER = { background: CARD_COLORS.parchment, text: CARD_COLORS.parchmentInk };
+
+/** Header and stock of a hand-drawn Abomination, per universe: a new UniverseId must pick its own. */
+const BOSS_LOOK: Record<UniverseId, { header: { background: string; text: string }; face: string | undefined }> = {
+  modern: { header: CARD_COLORS.spawn, face: undefined },
+  fantasy: { header: FANTASY_HEADER, face: CARD_COLORS.parchment },
+  invader: { header: INVADER_COLORS.header, face: INVADER_COLORS.face },
+};
 
 /** The Horde symbol applies to every zombie a level spawns, but not to an Abomination. */
 const feedsHorde = (card: FantasyCard, level: FantasyLevel) =>
@@ -829,6 +910,8 @@ function makeStyles(s: number) {
     fantasyCountLarge: { fontSize: 52 * s },
     // Type of the zombie above its large count, on a parchment strip so it reads on the red frame.
     fantasyBigLabelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 * s, minWidth: 0 },
+    // The count of a Mold / Pit Spawn card, which has no Danger Levels: alone in the dark panel.
+    zoneCount: { color: INVADER_COLORS.header.text, fontSize: 56 * s, fontWeight: '900', textAlign: 'center' },
     fantasyBigLabel: {
       flexShrink: 1,
       color: CARD_COLORS.parchmentInk,

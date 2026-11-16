@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppBackground } from '@/components/app-background';
 import { UNIVERSES } from '@/data/universes';
 import { type CardDisplay, useApp, type ZoneDisplay } from '@/game/store';
-import type { DeckParts } from '@/game/types';
+import type { DeckParts, UniverseId } from '@/game/types';
 import { LANGUAGE_NAMES, type Language, type TranslationKey } from '@/i18n/translations';
 import { COLORS, PRESSED } from '@/theme';
 
@@ -18,10 +18,15 @@ const ZONE_DISPLAYS: { value: ZoneDisplay; label: TranslationKey }[] = [
   { value: 'sequence', label: 'options.zoneSequence' },
 ];
 
-const DECK_PARTS: { part: keyof DeckParts; label: TranslationKey; detail: TranslationKey }[] = [
-  { part: 'easy', label: 'options.easy', detail: 'options.easyDetail' },
-  { part: 'hard', label: 'options.hard', detail: 'options.hardDetail' },
-  { part: 'extra', label: 'options.extra', detail: 'options.extraDetail' },
+/** The card numbers and what sets each part apart differ per universe: Invader has its own details. */
+const DECK_PARTS: {
+  part: keyof DeckParts;
+  label: TranslationKey;
+  detail: Partial<Record<UniverseId, TranslationKey>> & { modern: TranslationKey };
+}[] = [
+  { part: 'easy', label: 'options.easy', detail: { modern: 'options.easyDetail', invader: 'options.easyDetailInvader' } },
+  { part: 'hard', label: 'options.hard', detail: { modern: 'options.hardDetail', invader: 'options.hardDetailInvader' } },
+  { part: 'extra', label: 'options.extra', detail: { modern: 'options.extraDetail', invader: 'options.extraDetailInvader' } },
 ];
 
 /** The deck needs easier or harder cards: switching off the last of them switches on the other. */
@@ -82,7 +87,7 @@ export default function OptionsScreen() {
             selected={zoneDisplay}
             onSelect={setZoneDisplay}
           />
-          {hasDeckParts && <DeckPartsOptions />}
+          {hasDeckParts && <DeckPartsOptions universe={universe} />}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -90,7 +95,7 @@ export default function OptionsScreen() {
 }
 
 /** Only for a universe whose rulebook sorts the deck into easier and harder cards. */
-function DeckPartsOptions() {
+function DeckPartsOptions({ universe }: { universe: UniverseId }) {
   const { deckParts, setDeckParts, t } = useApp();
   return (
     <>
@@ -99,7 +104,7 @@ function DeckPartsOptions() {
         <View key={part} style={styles.row}>
           <View style={styles.rowLabel}>
             <Text style={styles.rowText}>{t(label)}</Text>
-            <Text style={styles.rowDetail}>{t(detail)}</Text>
+            <Text style={styles.rowDetail}>{t(detail[universe] ?? detail.modern)}</Text>
           </View>
           <Switch
             value={deckParts[part]}
