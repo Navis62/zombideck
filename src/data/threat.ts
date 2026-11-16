@@ -197,8 +197,7 @@ export function tailorFantasyDeck(cards: readonly ZombieCard[], threat: Threat, 
  * board, draw a card from the Abomination deck. Then, place the corresponding Abomination in the Spawn Zone. If there
  * is already an Abomination on the board, it gets an extra Activation."; p.30 for the Abomination Fest). Each one
  * belongs to the set whose box holds it; the ones of the core box belong to `core2e`, and stay when Fort Hendrix
- * replaces it. Only transcribed bosses are available. Not yet in: Batman Earth-1, -11, -32, -52
- * (their card text is not transcribed). The card text is in the translations
+ * replaces it. Only transcribed bosses are available. The card text is in the translations
  * (`card.<id>Rule`); the Kit's Abominations belong to `abomination` (its box is always in play).
  */
 export const MODERN_ABOMINATIONS: readonly Boss<NamedModernAbomination>[] = [
@@ -262,6 +261,10 @@ export const MODERN_ABOMINATIONS: readonly Boss<NamedModernAbomination>[] = [
   { zombie: 'batmanWhoLaughs', setId: 'darkNightsMetal', power: { kind: 'bringsAlong', boss: 'theRobins' } },
   { zombie: 'theRobins', setId: 'darkNightsMetal' },
   { zombie: 'loboBatman', setId: 'darkNightsMetal' },
+  { zombie: 'batmanEarth1', setId: 'darkNightsMetal' },
+  { zombie: 'batmanEarth11', setId: 'darkNightsMetal' },
+  { zombie: 'batmanEarth32', setId: 'darkNightsMetal' },
+  { zombie: 'batmanEarth52', setId: 'darkNightsMetal' },
 ];
 
 /**

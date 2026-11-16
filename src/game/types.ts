@@ -97,7 +97,11 @@ export type NamedModernAbomination =
   | 'batmanEarth44'
   | 'batmanWhoLaughs'
   | 'theRobins'
-  | 'loboBatman';
+  | 'loboBatman'
+  | 'batmanEarth1'
+  | 'batmanEarth11'
+  | 'batmanEarth32'
+  | 'batmanEarth52';
 
 /** Zombie counts, in Danger Level order: blue, yellow, orange, red. */
 export type SpawnCounts = readonly [number, number, number, number];

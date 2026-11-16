@@ -89,6 +89,10 @@ const MODERN_ART: Record<ZombieType | 'trejo' | 'spam' | NamedModernAbomination,
   batmanWhoLaughs: require('../../assets/modern/abominations/batman-who-laughs-cartoon.jpg'),
   theRobins: require('../../assets/modern/abominations/the-robins-cartoon.jpg'),
   loboBatman: require('../../assets/modern/abominations/lobo-batman-cartoon.jpg'),
+  batmanEarth1: require('../../assets/modern/abominations/batman-earth-1-cartoon.jpg'),
+  batmanEarth11: require('../../assets/modern/abominations/batman-earth-11-cartoon.jpg'),
+  batmanEarth32: require('../../assets/modern/abominations/batman-earth-32-cartoon.jpg'),
+  batmanEarth52: require('../../assets/modern/abominations/batman-earth-52-cartoon.jpg'),
 };
 
 const FANTASY_ART: Record<FantasyZombie | FantasyNecromancer, ImageSourcePropType> = {
