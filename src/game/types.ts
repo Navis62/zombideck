@@ -312,22 +312,61 @@ export type FantasyCard =
   | (FantasyBase & { kind: 'zombieSiege' });
 
 /** Xenos of the sci-fi era (Invader and its Dark Side box). */
-export type InvaderXeno = 'worker' | 'tank' | 'hunter' | 'drillerWorker' | 'drillerTank' | 'drillerHunter';
-/** Abominations of the sci-fi era, one per box. */
-export type InvaderAbomination = 'spoilerAbomination' | 'drillerAbomination';
+export type InvaderXeno =
+  | 'worker'
+  | 'tank'
+  | 'hunter'
+  | 'drillerWorker'
+  | 'drillerTank'
+  | 'drillerHunter'
+  // Expansions: Persephone (Driller Blitzer), Civilian Pack (Flinger, Seeker Worker, Xenomoth), Project: ELITE (Biter).
+  | 'drillerBlitzer'
+  | 'flinger'
+  | 'seekerWorker'
+  | 'xenomoth'
+  | 'biter';
+/** Abominations of the sci-fi era: one per core box, then the named ones of the expansions. */
+export type InvaderAbomination =
+  | 'spoilerAbomination'
+  | 'drillerAbomination'
+  | 'juggernaut'
+  | 'babyface'
+  | 'buddyBot'
+  | 'irisSentryGun'
+  | 'motherInLaw'
+  | 'shadow'
+  | 'stomper'
+  | 'widowmaker'
+  | 'broodMother'
+  | 'xeniumHorror'
+  | 'thraex'
+  | 'gutslug'
+  | 'stepmother'
+  | 'shaila'
+  | 'dimbutcher'
+  | 'synkrasis'
+  // Iron Maiden Packs 1 and 2 (the same Eddies as the other eras, as Abominations of this one).
+  | 'cyborgEddieAbomination'
+  | 'samuraiEddieAbomination'
+  | 'bassistEddieAbomination'
+  | 'bountyHunterEddieAbomination';
 /** Where a Mold Spawn (Invader) or Pit Spawn (Dark Side) card spawns its Xenos. */
 export type InvaderZone = 'mold' | 'pit';
 
 type InvaderBase = { id: string; setId: string };
 /**
  * Cards of the sci-fi era. Card ids are `<setId>-<printed number on 3 digits>`: `invader-001`..`invader-054`,
- * `darkSide-061`..`darkSide-114` (numbers 055-060 are unused).
+ * `darkSide-061`..`darkSide-114`, then the expansions (`blackOps-055`..`blackOps-060`, `promoXenos-184`..): the
+ * number is the one printed on the card, so two sets may share a number (the id still differs).
  */
 export type InvaderCard =
   /** One Xeno type, a count per Danger Level: the Modern spawn card. */
   | (InvaderBase & { kind: 'xeno'; zombie: InvaderXeno; counts: SpawnCounts })
-  /** No levels: all Abominations on the board get one Activation, then this Abomination spawns (if any). */
-  | (InvaderBase & { kind: 'xenoAbomination'; zombie: InvaderAbomination })
+  /**
+   * No levels: all Abominations on the board get one Activation, then this Abomination spawns (if any).
+   * `spawnZone`: a third step follows (Comic Book Extras Stepmother: "Spawn the Stepmother's Zone").
+   */
+  | (InvaderBase & { kind: 'xenoAbomination'; zombie: InvaderAbomination; spawnZone?: true })
   /** No levels: `count` Xenos on each Active Mold Zone / in each Open Pit Zone. */
   | (InvaderBase & { kind: 'zoneSpawn'; zone: InvaderZone; zombie: InvaderXeno; count: number })
   /** All Xenos of this type on Red, Orange and Yellow get an Activation; no one on Blue. */

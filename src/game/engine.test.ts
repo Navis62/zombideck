@@ -40,7 +40,7 @@ import {
   powersOf,
 } from './engine.ts';
 import type { BossKind, BossPiles, CardSet, GameState, Piles, ZombieCard } from './types.ts';
-import { NO_BOSS, NO_DECK } from './types.ts';
+import { isInvaderCard, NO_BOSS, NO_DECK } from './types.ts';
 
 const sets: CardSet[] = [
   {
@@ -621,7 +621,8 @@ test('an Invader save is valid and refuses a card of another universe', () => {
 
 test('the Invader and Dark Side boxes combine, with no boss deck', () => {
   const invader = UNIVERSES.invader;
-  assert.deepEqual(invader.sets.map((set) => set.id), ['invader', 'darkSide']);
+  assert.deepEqual(invader.sets.filter((set) => set.core).map((set) => set.id), ['invader', 'darkSide']);
+  assert.ok(invader.sets.filter((set) => !set.core).every((set) => set.optional));
   assert.equal(invader.exclusiveCores, false);
   assert.equal(invader.bosses, null);
   assert.deepEqual(invader.defaultExpansions, ['invader']);
@@ -643,7 +644,7 @@ test('an Invader Extra Activation card is its own part of the deck', () => {
 test('each Invader box has 54 cards: 25 easy, 25 hard and 4 Extra Activation, numbered without gaps', () => {
   // Source: Invader rulebook p.37 and Dark Side rulebook p.37 (25 easy / 25 hard / 4 extra per box).
   const firstNumber = { invader: 1, darkSide: 61 };
-  for (const set of UNIVERSES.invader.sets) {
+  for (const set of UNIVERSES.invader.sets.filter((set) => set.core)) {
     assert.equal(set.cards.length, 54, set.id);
     const parts = { easy: 0, hard: 0, extra: 0 };
     for (const card of set.cards) parts[cardPart(set, card)] += 1;
@@ -687,6 +688,102 @@ test('Invader counts are listed Blue, Yellow, Orange, Red (the printed card list
   assert.deepEqual(countsOf('darkSide-096'), [4, 4, 6, 8]);
   assert.deepEqual(byId('darkSide-083'), { id: 'darkSide-083', setId: 'darkSide', kind: 'zoneSpawn', zone: 'pit', zombie: 'drillerWorker', count: 2 });
   assert.deepEqual(byId('invader-053'), { id: 'invader-053', setId: 'invader', kind: 'xenoExtra', zombie: 'tank' });
+});
+
+// Source: the owner's transcription of 2026-11-17 from the Atomic Asteroidz card images (printed numbers from the file
+// names); [set, first number, last number, easy, hard]. No rulebook sorts these cards: the split is the owner's choice
+// of 2026-11-17 (see src/data/invader.ts): higher-count Xenos (Driller Blitzer 2/2/4/6, Biters) are hard, 2/4/6/8
+// Xenos and Mold Spawn are easy, each named Abomination is half easy (lower numbers) and half hard.
+const INVADER_EXPANSIONS: readonly (readonly [string, number, number, number, number])[] = [
+  ['blackOps', 55, 60, 3, 3],
+  ['darkSideExtras', 115, 120, 3, 3],
+  ['civilianExtras', 121, 173, 38, 15],
+  ['soldierExtras', 174, 183, 5, 5],
+  ['promoXenos', 184, 212, 26, 3],
+  ['projectElite', 213, 230, 6, 12],
+  ['comicBook1', 231, 236, 3, 3],
+  ['comicBook2', 135, 146, 6, 6],
+  ['comicBook2Android', 129, 134, 3, 3],
+  ['ironMaiden1', 121, 128, 4, 4],
+  ['ironMaiden2', 121, 128, 4, 4],
+];
+
+test('the Invader expansions hold the printed cards, numbered without gaps, and sort easy / hard as the owner chose', () => {
+  const sets = UNIVERSES.invader.sets;
+  assert.deepEqual(sets.filter((set) => !set.core).map((set) => set.id), INVADER_EXPANSIONS.map(([id]) => id));
+  for (const [id, first, last, easy, hard] of INVADER_EXPANSIONS) {
+    const set = sets.find((candidate) => candidate.id === id);
+    assert.ok(set?.optional && !set.core && !set.replaces, id);
+    const parts = { easy: 0, hard: 0, extra: 0 };
+    for (const card of set.cards) parts[cardPart(set, card)] += 1;
+    assert.deepEqual(parts, { easy, hard, extra: 0 }, id);
+    const expected = Array.from({ length: last - first + 1 }, (_, i) => `${id}-${String(first + i).padStart(3, '0')}`);
+    assert.deepEqual(set.cards.map((card) => card.id).sort(), expected, id);
+    assert.ok(set.cards.every((card) => card.setId === id), id);
+  }
+  // 6 + 6 + 53 + 10 + 29 + 18 + 6 + 12 + 6 + 8 + 8 cards over the eleven expansions.
+  assert.equal(sets.filter((set) => !set.core).reduce((total, set) => total + set.cards.length, 0), 162);
+});
+
+test('each Invader expansion holds the cards of its box (Atomic Asteroidz card images, 2026-11-17)', () => {
+  const cards = (id: string) => UNIVERSES.invader.sets.find((set) => set.id === id)?.cards ?? [];
+  const tally = (id: string) => {
+    const result: Record<string, number> = {};
+    for (const card of cards(id)) {
+      assert.ok(isInvaderCard(card), card.id);
+      const key = card.kind === 'zoneSpawn' ? `${card.zombie} mold×${card.count}` : card.zombie;
+      result[key] = (result[key] ?? 0) + 1;
+    }
+    return result;
+  };
+  assert.deepEqual(tally('blackOps'), { juggernaut: 6 });
+  assert.deepEqual(tally('darkSideExtras'), { drillerBlitzer: 6 });
+  assert.deepEqual(tally('civilianExtras'), {
+    babyface: 4, buddyBot: 4, irisSentryGun: 4, motherInLaw: 4, shadow: 4, stomper: 6, widowmaker: 4,
+    flinger: 6, seekerWorker: 9, 'seekerWorker mold×1': 2, xenomoth: 6,
+  });
+  assert.deepEqual(tally('soldierExtras'), { broodMother: 6, xeniumHorror: 4 });
+  assert.deepEqual(tally('promoXenos'), { drillerBlitzer: 6, flinger: 6, seekerWorker: 9, 'seekerWorker mold×1': 2, xenomoth: 6 });
+  assert.deepEqual(tally('projectElite'), { biter: 6, thraex: 6, gutslug: 6 });
+  assert.deepEqual(tally('comicBook1'), { stepmother: 6 });
+  assert.deepEqual(tally('comicBook2'), { shaila: 6, dimbutcher: 6 });
+  assert.deepEqual(tally('comicBook2Android'), { synkrasis: 6 });
+  // Iron Maiden Packs 1 and 2: photos of the printed cards (CMON unboxing video, 2026-11-17), both numbered 121-128.
+  assert.deepEqual(tally('ironMaiden1'), { cyborgEddieAbomination: 4, samuraiEddieAbomination: 4 });
+  assert.deepEqual(tally('ironMaiden2'), { bassistEddieAbomination: 4, bountyHunterEddieAbomination: 4 });
+  // The Promo Xenos repeat the Dark Side Extras and Civilian Extras Xenos with numbers of their own.
+  const shape = (card: ZombieCard) =>
+    isInvaderCard(card) ? (card.kind === 'xeno' ? [card.zombie, ...card.counts] : [card.kind, card.zombie]) : [];
+  const promo = cards('promoXenos').map(shape).sort();
+  const twin = [...cards('darkSideExtras'), ...cards('civilianExtras').filter((card) => card.kind !== 'xenoAbomination')].map(shape).sort();
+  assert.deepEqual(promo, twin);
+});
+
+test('the Invader expansions pin which cards are easy and which are hard (owner choice, 2026-11-17)', () => {
+  const partOf = (id: string) => {
+    const card = CARDS_BY_ID.get(id);
+    const set = UNIVERSES.invader.sets.find((candidate) => candidate.id === card?.setId);
+    assert.ok(card && set, id);
+    return cardPart(set, card);
+  };
+  for (const id of ['civilianExtras-121', 'civilianExtras-122', 'civilianExtras-151', 'civilianExtras-166', 'ironMaiden1-121', 'ironMaiden1-122', 'ironMaiden1-125', 'ironMaiden1-126', 'ironMaiden2-122', 'projectElite-219', 'blackOps-057']) {
+    assert.equal(partOf(id), 'easy', id);
+  }
+  for (const id of ['civilianExtras-123', 'civilianExtras-124', 'promoXenos-187', 'projectElite-213', 'projectElite-224', 'ironMaiden1-123', 'ironMaiden1-124', 'ironMaiden1-127', 'ironMaiden1-128', 'ironMaiden2-123', 'blackOps-058']) {
+    assert.equal(partOf(id), 'hard', id);
+  }
+});
+
+test('Invader expansion counts are listed Blue, Yellow, Orange, Red, and only the Stepmother has a third step', () => {
+  const byId = (id: string) => CARDS_BY_ID.get(id);
+  assert.deepEqual(byId('darkSideExtras-115'), { id: 'darkSideExtras-115', setId: 'darkSideExtras', kind: 'xeno', zombie: 'drillerBlitzer', counts: [1, 2, 3, 4] });
+  assert.deepEqual(byId('darkSideExtras-118'), { id: 'darkSideExtras-118', setId: 'darkSideExtras', kind: 'xeno', zombie: 'drillerBlitzer', counts: [2, 2, 4, 6] });
+  assert.deepEqual(byId('promoXenos-187'), { id: 'promoXenos-187', setId: 'promoXenos', kind: 'xeno', zombie: 'drillerBlitzer', counts: [2, 2, 4, 6] });
+  assert.deepEqual(byId('projectElite-213'), { id: 'projectElite-213', setId: 'projectElite', kind: 'xeno', zombie: 'biter', counts: [4, 6, 8, 10] });
+  assert.deepEqual(byId('civilianExtras-166'), { id: 'civilianExtras-166', setId: 'civilianExtras', kind: 'zoneSpawn', zone: 'mold', zombie: 'seekerWorker', count: 1 });
+  assert.deepEqual(byId('comicBook1-231'), { id: 'comicBook1-231', setId: 'comicBook1', kind: 'xenoAbomination', zombie: 'stepmother', spawnZone: true });
+  const thirdStep = UNIVERSES.invader.sets.flatMap((set) => set.cards).filter((card) => card.kind === 'xenoAbomination' && card.spawnZone);
+  assert.deepEqual([...new Set(thirdStep.map((card) => (isInvaderCard(card) ? card.zombie : '')))], ['stepmother']);
 });
 
 test('card ids are unique across every universe', () => {

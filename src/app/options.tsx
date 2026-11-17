@@ -113,7 +113,7 @@ function DeckPartsOptions({ universe }: { universe: UniverseId }) {
           />
         </View>
       ))}
-      <Text style={styles.muted}>{t('options.deckHint')}</Text>
+      <Text style={styles.muted}>{t(universe === 'invader' ? 'options.deckHintInvader' : 'options.deckHint')}</Text>
     </>
   );
 }

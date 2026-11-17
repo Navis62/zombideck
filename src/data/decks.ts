@@ -1,4 +1,5 @@
 import type { CardSet, ExtraZombie, RushZombie, SpawnCounts, ZombieCard, ZombieType } from '../game/types';
+import { hardBetween, numberOf } from './card-number.ts';
 
 // Transcribed from the physical cards; ids follow the numbers printed on them.
 // Counts are in Danger Level order: blue, yellow, orange, red (the cards print them top-down, red first).
@@ -27,8 +28,6 @@ const extra = (setId: string, id: string, zombie: ExtraZombie): ZombieCard => ({
 });
 
 // Harder part of each set (see the core rulebook: "Zombie cards #019 to #036 are the harder part").
-const numberOf = (card: ZombieCard) => Number(card.id.slice(-3));
-const hardBetween = (from: number, to: number) => (card: ZombieCard) => numberOf(card) >= from && numberOf(card) <= to;
 const hardNumbers =
   (...numbers: number[]) =>
   (card: ZombieCard) =>

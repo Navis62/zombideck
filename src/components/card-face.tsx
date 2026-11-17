@@ -15,6 +15,7 @@ import {
   type FantasyCard,
   type FantasyLevel,
   type FantasyNecromancer,
+  type InvaderAbomination,
   type InvaderCard,
   type InvaderXeno,
   type NamedModernAbomination,
@@ -28,7 +29,7 @@ import {
   type ZombieCard,
   type ZombieType,
 } from '@/game/types';
-import type { Translate } from '@/i18n/translations';
+import type { Translate, TranslationKey } from '@/i18n/translations';
 import { CARD_COLORS, DANGER_COLORS, INVADER_COLORS } from '@/theme';
 
 // Printed top-down on the cards, red first.
@@ -208,16 +209,20 @@ export function cardLabel(card: ZombieCard, danger: DangerLevel, t: Translate, r
 
 const trejoChoices = (isRush: boolean) => ['card.trejo1', 'card.trejo2', isRush ? 'card.trejo3Rush' : 'card.trejo3'] as const;
 
+/** The rule a Xeno prints under its levels (the Seeker Workers: every Seeker Xeno card activates those on the board). */
+const XENO_RULES: Partial<Record<InvaderXeno, TranslationKey>> = { seekerWorker: 'card.seekerWorkerRule' };
+
 /** Title, footer and spoken body of a sci-fi card: Xeno counts, an Abomination's order, a Mold or Pit Spawn, an Extra Activation. */
 function invaderText(card: InvaderCard, danger: DangerLevel, t: Translate): CardText {
   const level = t(`danger.${danger}`);
   switch (card.kind) {
     case 'xeno': {
       const zombies = t(`zombie.${card.zombie}.other`);
-      return { title: zombies, spoken: `${level}: ${card.counts[DANGER_LEVELS.indexOf(danger)]} ${zombies}` };
+      const rule = XENO_RULES[card.zombie];
+      return { title: zombies, footer: rule && t(rule), spoken: `${level}: ${card.counts[DANGER_LEVELS.indexOf(danger)]} ${zombies}` };
     }
     case 'xenoAbomination':
-      return { title: t(`zombie.${card.zombie}.other`), footer: t(`card.${card.zombie}Rule`), spoken: '' };
+      return { title: t(`zombie.${card.zombie}.other`), footer: abominationRule(card, t), spoken: '' };
     case 'zoneSpawn': {
       const params = { count: card.count, zombies: t(`zombie.${card.zombie}.${card.count === 1 ? 'one' : 'other'}`) };
       const mold = card.zone === 'mold';
@@ -226,6 +231,22 @@ function invaderText(card: InvaderCard, danger: DangerLevel, t: Translate): Card
     case 'xenoExtra':
       return { title: t('card.extra'), footer: t('card.extraRule'), spoken: `${level}: ${extraLine(card.zombie, danger, t)}` };
   }
+}
+
+/** Abominations whose title has no word Abomination in it. */
+const BARE_TITLES: readonly InvaderAbomination[] = ['synkrasis'];
+
+/**
+ * The order an Abomination card gives: the Spoiler and Driller ones have their own sentence, a card with a third step
+ * (`spawnZone`, the Stepmother) has its own, every other named Abomination reads "Spawn a <name> (if any)".
+ * A title without the word Abomination (Synkrasis) gets a sentence without article, which no gender can break.
+ */
+function abominationRule(card: Extract<InvaderCard, { kind: 'xenoAbomination' }>, t: Translate): string {
+  const name = t(`zombie.${card.zombie}.other`);
+  if (card.spawnZone) return t('card.zoneStepAbominationRule', { name });
+  if (card.zombie === 'spoilerAbomination') return t('card.spoilerAbominationRule');
+  if (card.zombie === 'drillerAbomination') return t('card.drillerAbominationRule');
+  return t(BARE_TITLES.includes(card.zombie) ? 'card.bareAbominationRule' : 'card.namedAbominationRule', { name });
 }
 
 const extraLine = (zombie: ExtraZombie | InvaderXeno, at: DangerLevel, t: Translate) =>
