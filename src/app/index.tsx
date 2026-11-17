@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { type ComponentRef, useRef, useState } from 'react';
 import {
   Image,
   type ImageSourcePropType,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -28,6 +29,8 @@ import { CARD_COLORS, COLORS, PRESSED } from '@/theme';
 const GAP = 16;
 /** A universe card never grows wider than this, so a tablet still shows its neighbours. */
 const MAX_CARD_WIDTH = 420;
+/** Minimum ms between two scroll events (iOS only, Android ignores it): about one per frame, so the centred card is spotted as it passes the middle. */
+const SCROLL_EVENT_THROTTLE = 16;
 /** Share of the screen width one card takes: the next one peeks in, which tells the row scrolls. */
 const CARD_SHARE = 0.46;
 
@@ -76,8 +79,23 @@ export default function UniverseScreen() {
   const inset = Math.max(0, (window.width - cardWidth) / 2);
   const startIndex = Math.max(0, SLIDES.findIndex((slide) => slide.id === universe));
   const [index, setIndex] = useState(startIndex);
+  // The scenery follows the focused card; on a "soon" card it keeps the last universe shown.
+  const focused = SLIDES[index];
+  const [scenery, setScenery] = useState<UniverseId>(universe);
+  if (focused.kind === 'playable' && focused.id !== scenery) setScenery(focused.id);
 
-  const onScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) =>
+  const scroller = useRef<ComponentRef<typeof ScrollView>>(null);
+  const placed = useRef(false);
+
+  // react-native-web ignores `contentOffset` and never fires momentum events: place the row by hand once it is laid out.
+  const placeOnWeb = () => {
+    if (Platform.OS !== 'web' || placed.current) return;
+    placed.current = true;
+    scroller.current?.scrollTo({ x: startIndex * interval, y: 0, animated: false });
+  };
+
+  // Follows the card nearest the middle while scrolling (setState bails out when the index is unchanged).
+  const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) =>
     setIndex(Math.min(SLIDES.length - 1, Math.max(0, Math.round(event.nativeEvent.contentOffset.x / interval))));
 
   const open = (id: UniverseId) => {
@@ -87,8 +105,8 @@ export default function UniverseScreen() {
 
   return (
     <View style={styles.screen}>
-      <AppBackground universe={universe} />
-      <Hazard universe={universe} stripes={48} />
+      <AppBackground universe={scenery} />
+      <Hazard universe={scenery} stripes={48} />
       <SafeAreaView style={styles.content} edges={['left', 'right']}>
         <View style={styles.header}>
           <Text style={styles.title}>
@@ -104,8 +122,11 @@ export default function UniverseScreen() {
           showsHorizontalScrollIndicator={false}
           snapToInterval={interval}
           decelerationRate="fast"
+          ref={scroller}
           contentOffset={{ x: startIndex * interval, y: 0 }}
-          onMomentumScrollEnd={onScrollEnd}
+          onContentSizeChange={placeOnWeb}
+          scrollEventThrottle={SCROLL_EVENT_THROTTLE}
+          onScroll={onScroll}
           contentContainerStyle={[styles.row, { paddingHorizontal: inset }]}
           style={styles.carousel}
         >
@@ -172,7 +193,7 @@ export default function UniverseScreen() {
           </View>
         )}
       </SafeAreaView>
-      <Hazard universe={universe} stripes={48} />
+      <Hazard universe={scenery} stripes={48} />
     </View>
   );
 }
