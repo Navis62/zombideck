@@ -4,7 +4,7 @@ Text for the Google Play and App Store listings, one section per language. Limit
 
 Language codes are the Play Console ones (Ukrainian is `uk`, not `uk-UA`).
 
-Images: `feature-graphic.png` (Play Store banner, 1024×500) and `screenshots/` (1920×1080, in display order: the universes, Fantasy, then Modern).
+Images: `feature-graphic.png` (Play Store banner, 1024×500) and `screenshots/` (1920×1080, in display order: the universes, Fantasy, then Modern; Invader screenshots are still to be made, TODO before the Invader release).
 
 ---
 
@@ -32,6 +32,8 @@ Expansions and promos (switch them on in the Expansions & promos menu):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, the extra Abomination cards, Danny Trejo, Monty Python's Flying Circus, The Boys, Supernatural, Ghostbusters, Urban Legends, Dark Nights: Metal, Iron Maiden and the Kickstarter exclusives.
 
 The medieval-fantasy era. When the app opens, pick your universe: Zombicide 2nd Edition, or Black Plague, Green Horde, White Death and Eternal Empire, alone or mixed. Every spawn card of the core boxes, with Double Spawn, Enter the Horde, the Horde symbol and White Death's Zombie Siege; each universe has its own expansions. Fantasy expansions: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, the Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, the Kickstarter packs and Special Guest boxes, and Frozen Fortress's bosses, with named Abominations and Necromancers.
+
+The sci-fi universe. Invader: the Invader and Dark Side core boxes, alone or together, with Xeno Workers, Tanks and Hunters (Drillers in Dark Side), Spoiler and Driller Abominations, Mold Spawn and Pit Spawn cards and Extra Activations. Switch on the easier or the harder half of the cards in the options. Invader expansions: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 and the Comic Book Extras, with named Abominations.
 
 Available in English, French, German, Spanish, Italian, Polish, Brazilian Portuguese, Russian, Ukrainian and Czech, with the official zombie names of each edition.
 
@@ -66,6 +68,8 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 
 L'univers médiéval-fantastique. À l'ouverture, choisissez votre univers : Zombicide 2e édition, ou Black Plague, Green Horde, White Death et Eternal Empire, seuls ou mélangés. Toutes les cartes d'invasion des boîtes de base, avec Double invasion, La Horde arrive, le symbole de la Horde et le Siège zombie de White Death ; chaque univers a ses propres extensions. Extensions Fantasy : Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, la Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, les packs Kickstarter et invités spéciaux, et les boss de Frozen Fortress, avec des Abominations et des Nécromanciens nommés.
 
+L'univers science-fiction. Invader : les boîtes de base Invader et Dark Side, seules ou ensemble, avec des Ouvriers, Tanks et Chasseurs Xenos (Fouisseurs dans Dark Side), les Abominations Putrescentes et Fouisseuses, les cartes Invasion de Fonge et Invasion de Tunnel et les Activations supplémentaires. Activez dans les options la moitié facile ou la moitié difficile des cartes. Extensions Invader : Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 et les Comic Book Extras, avec des Abominations nommées.
+
 Disponible en français, anglais, allemand, espagnol, italien, polonais, portugais (Brésil), russe, ukrainien et tchèque, avec les noms officiels des zombies de chaque édition.
 
 Vous avez besoin de votre propre exemplaire du jeu : l'appli remplace seulement la pioche zombie.
@@ -98,6 +102,8 @@ Erweiterungen und Promos (im Menü Erweiterungen & Promos einschalten):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, die zusätzlichen Monstrum-Karten, Danny Trejo, Monty Python's Flying Circus, The Boys, Supernatural, Ghostbusters, Urban Legends, Dark Nights: Metal, Iron Maiden und die Kickstarter-Exklusives.
 
 Die Fantasy-Welt. Beim Start wählst du dein Universum: Zombicide Zweite Edition oder Black Plague, Green Horde, White Death und Eternal Empire, einzeln oder gemischt. Alle Spawnkarten der Grundboxen, mit Doppel-Spawn, „Die Horde kommt!“, dem Horden-Symbol und der Zombie-Belagerung von White Death; jedes Universum hat seine eigenen Erweiterungen. Fantasy-Erweiterungen: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, die Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, die Kickstarter-Pakete und Special-Guest-Boxen sowie die Bosse von Frozen Fortress, mit benannten Monstren und Nekromanten.
+
+Das Science-Fiction-Universum. Invader: die Grundboxen Invader und Dark Side, einzeln oder zusammen, mit Xeno-Arbeitern, -Berserkern und -Jägern (Minen-Varianten in Dark Side), Fauligen und Minen-Monstren, Fäulnis-Brut- und Schacht-Brut-Karten und Zusätzlichen Aktivierungen. Schalte in den Optionen die leichtere oder die schwerere Kartenhälfte ein. Invader-Erweiterungen: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 und die Comic Book Extras, mit benannten Monstren.
 
 Verfügbar auf Deutsch, Englisch, Französisch, Spanisch, Italienisch, Polnisch, brasilianischem Portugiesisch, Russisch, Ukrainisch und Tschechisch, mit den offiziellen Zombienamen jeder Ausgabe.
 
@@ -132,6 +138,8 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 
 El universo de fantasía medieval. Al abrir la app, elige tu universo: Zombicide Segunda Edición, o Black Plague, Green Horde, White Death y Eternal Empire, por separado o mezclados. Todas las cartas de aparición de las cajas básicas, con Aparición doble, ¡Llega la Horda!, el símbolo de la Horda y el Asedio zombi de White Death; cada universo tiene sus propias expansiones. Expansiones de fantasía: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, la Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, los packs de Kickstarter y las cajas de invitados especiales, y los jefes de Frozen Fortress, con Abominaciones y Nigromantes con nombre.
 
+El universo de ciencia ficción. Invader: las cajas básicas Invader y Dark Side, por separado o juntas, con Obreros, Tanques y Cazadores Xeno (Driller en Dark Side), Abominaciones supurantes y Driller, cartas de Aparición micótica y de Aparición en Pit y Activaciones adicionales. Activa en las opciones la mitad fácil o la difícil de las cartas. Expansiones de Invader: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 y los Comic Book Extras, con Abominaciones con nombre.
+
 Disponible en español, inglés, francés, alemán, italiano, polaco, portugués de Brasil, ruso, ucraniano y checo, con los nombres oficiales de los zombis de cada edición.
 
 Necesitas tu propio ejemplar del juego: la app solo sustituye el mazo de zombis.
@@ -164,6 +172,8 @@ Espansioni e promo (da attivare nel menu Espansioni e promo):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, le carte Abominio aggiuntive, Danny Trejo, Monty Python's Flying Circus, The Boys, Supernatural, Ghostbusters, Urban Legends, Dark Nights: Metal, Iron Maiden e le esclusive Kickstarter.
 
 L'universo fantasy medievale. All'apertura, scegli il tuo universo: Zombicide 2a Edizione, oppure Black Plague, Green Horde, White Death ed Eternal Empire, da soli o insieme. Tutte le carte Zombie delle scatole base, con Generazione doppia, Arriva l'Orda!, il simbolo dell'Orda e l'Assedio zombie di White Death; ogni universo ha le sue espansioni. Espansioni fantasy: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, la Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, i pacchetti Kickstarter e le scatole degli ospiti speciali, e i boss di Frozen Fortress, con Abomini e Negromanti con nome.
+
+L'universo fantascientifico. Invader: le scatole base Invader e Dark Side, da sole o insieme, con Operai, Tank e Cacciatori Xeno (Scavatori in Dark Side), Abomini Corruttori e Scavatori, carte Generazione nella Melma e nella Fossa e Attivazioni Extra. Attiva nelle opzioni la metà facile o la metà difficile delle carte. Espansioni Invader: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 e i Comic Book Extras, con Abomini con nome.
 
 Disponibile in italiano, inglese, francese, tedesco, spagnolo, polacco, portoghese brasiliano, russo, ucraino e ceco, con i nomi ufficiali degli zombie di ogni edizione.
 
@@ -198,6 +208,8 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 
 Świat fantasy. Po uruchomieniu wybierz swój świat: Zombicide 2. edycja albo Czarna Plaga, Zielona Horda, White Death i Eternal Empire, osobno lub razem. Wszystkie karty namnażania z podstawowych pudełek, z Podwójnym namnażaniem, kartami „Nadchodzi Horda!”, symbolem Hordy i Oblężeniem zombie z White Death; każdy świat ma własne dodatki. Dodatki fantasy: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, zestawy Kickstarter i pudełka gości specjalnych oraz bossowie z Frozen Fortress, z nazwanymi Abominacjami i Nekromantami.
 
+Świat science fiction. Invader: podstawowe pudełka Invader i Dark Side, osobno lub razem, z Robotnikami, Mięśniakami i Łowcami Xeno (Driller w Dark Side), Gnijącymi Abominacjami i Abominacjami Driller, kartami Namnażania z Pleśni i z Pit oraz Dodatkowymi Aktywacjami. W opcjach włączysz łatwiejszą lub trudniejszą połowę kart. Dodatki Invader: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 i Comic Book Extras, z nazwanymi Abominacjami.
+
 Dostępna po polsku, angielsku, francusku, niemiecku, hiszpańsku, włosku, w portugalskim brazylijskim, rosyjskim, ukraińskim i czeskim.
 
 Potrzebujesz własnego egzemplarza gry: aplikacja zastępuje tylko talię Zombie.
@@ -230,6 +242,8 @@ Expansões e promos (ative no menu Expansões e promos):
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, as cartas de Abominação extras, Danny Trejo, Monty Python's Flying Circus, The Boys, Supernatural, Ghostbusters, Urban Legends, Dark Nights: Metal, Iron Maiden e os exclusivos do Kickstarter.
 
 O universo de fantasia medieval. Ao abrir o app, escolha seu universo: Zombicide 2ª Edição, ou Black Plague, Green Horde, White Death e Eternal Empire, separados ou misturados. Todas as cartas de entrada das caixas básicas, com Entrada dupla, A Horda chegou!, o símbolo da Horda e o Cerco zumbi de White Death; cada universo tem suas próprias expansões. Expansões de fantasia: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, a Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, os pacotes Kickstarter e as caixas de convidados especiais, e os chefes de Frozen Fortress, com Abominações e Necromantes nomeados.
+
+O universo de ficção científica. Invader: as caixas básicas Invader e Dark Side, separadas ou juntas, com Operários, Tanques e Corredores Xeno (Driller em Dark Side), Abominações Destruidoras e Driller, cartas de Entrada no Mofo e no Pit e Ativações Extras. Ative nas opções a metade fácil ou a difícil das cartas. Expansões de Invader: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 e os Comic Book Extras, com Abominações nomeadas.
 
 Disponível em português do Brasil, inglês, francês, alemão, espanhol, italiano, polonês, russo, ucraniano e tcheco, com os nomes oficiais dos zumbis de cada edição.
 
@@ -264,6 +278,8 @@ Zombie Deck заменяет колоду зомби из «Зомбицид. В
 
 Мир фэнтези. При запуске выберите свой мир: «Зомбицид. Вторая редакция» или «Чёрная чума», «Зелёная орда», White Death и Eternal Empire, по отдельности или вместе. Все карты появления из базовых коробок, с двойным появлением, картами «Орда идёт!», символом орды и осадой зомби из White Death; у каждого мира свои дополнения. Дополнения фэнтези: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, наборы Kickstarter и коробки особых гостей, а также боссы Frozen Fortress, с именными отродьями и некромантами.
 
+Научно-фантастический мир. Invader: базовые коробки Invader и Dark Side, по отдельности или вместе, с Xeno Workers, Tanks и Hunters (Drillers в Dark Side), Отродья Spoiler и Driller, картами появления Mold и Pit и дополнительными ходами. В настройках включается лёгкая или сложная половина карт. Дополнения Invader: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 и Comic Book Extras, с именными отродьями.
+
 Доступно на русском, английском, французском, немецком, испанском, итальянском, польском и бразильском португальском, украинском и чешском, с официальными названиями зомби каждого издания.
 
 Для игры нужен свой экземпляр игры: приложение заменяет только колоду зомби.
@@ -295,6 +311,8 @@ Zombie Deck замінює колоду зомбі з «Зомбіцид. Дру
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, додаткові карти потвор, Danny Trejo, Monty Python's Flying Circus, The Boys, Supernatural, Ghostbusters, Urban Legends, Dark Nights: Metal, Iron Maiden і ексклюзиви Kickstarter.
 
 Світ фентезі. Під час запуску оберіть свій світ: «Зомбіцид. Друга редакція» або «Чорна чума», «Зелена орда», «Біла смерть» і «Нескорена Імперія», окремо чи разом. Усі карти появи з базових коробок, із подвійною появою, картами «Орда надходить!», символом орди та облогою зомбі з «Білої смерті»; кожен світ має свої доповнення. Доповнення фентезі: Вульфсбург, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, набори Kickstarter і коробки Special Guests, а також боси Frozen Fortress, з іменними потворами й некромантами.
+
+Науково-фантастичний світ. Invader: базові коробки Invader і Dark Side, окремо чи разом, з Xeno Workers, Tanks і Hunters (Drillers у Dark Side), Потвори Spoiler і Driller, картами появи Mold і Pit та додатковими активаціями. У налаштуваннях вмикається легка або складна половина карт. Доповнення Invader: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 і Comic Book Extras, з іменними потворами.
 
 Доступно українською, англійською, французькою, німецькою, іспанською, італійською, польською, бразильською португальською, російською та чеською, з офіційними назвами зомбі кожного видання.
 
@@ -329,6 +347,8 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 
 Středověký fantasy svět. Po spuštění aplikace si vyberete svůj svět: Zombicide 2. edice, nebo Černý mor, Zelená horda, Bílá smrt a Věčné císařství, samostatně či smíchané. Všechny karty oživení ze základních krabic, s dvojitým oživením, kartami Příchod hordy, symbolem hordy a Obléháním zombií z Bílé smrti; každý svět má vlastní rozšíření. Fantasy rozšíření: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, balíčky z Kickstarteru a krabice Special Guests, a také bossové z Frozen Fortress, s pojmenovanými zrůdami a nekromanty.
 
+Sci-fi svět. Invader: základní krabice Invader a Dark Side, samostatně či spolu, s Xeno Workers, Tanks a Hunters (Drillers v Dark Side), Zrůdy Spoiler a Driller, kartami oživení Mold a Pit a Extra aktivacemi. V nastavení zapnete lehčí nebo těžší polovinu karet. Rozšíření Invaderu: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 a Comic Book Extras, s pojmenovanými zrůdami.
+
 Dostupné v češtině, angličtině, francouzštině, němčině, španělštině, italštině, polštině, brazilské portugalštině, ruštině a ukrajinštině, s oficiálními názvy zombií z každého vydání.
 
 K hraní potřebujete vlastní kopii hry: aplikace nahrazuje pouze balíček zombií.
@@ -342,71 +362,61 @@ Fanouškovský, neoficiální projekt. Zombicide je ochranná známka společnos
 Play Console, 500 characters per language.
 
 <en-US>
-New: the Abomination deck in Modern. Named Abominations from the core box, the upgrade kit, The Boys, Supernatural, Ghostbusters, Monty Python, Iron Maiden, Urban Legends, Dark Nights: Metal and the Kickstarter exclusives, each with its rule, drawn when a Zombie card spawns one.
-• SPAM, Gozer and Batman Who Laughs special cards
-• “Draw an Abomination” button, in Modern and in Fantasy
-• Ongoing games are reset by this update
+New: the Invader universe, third in the opening carousel. The Invader and Dark Side core boxes, alone or together, plus 11 expansions and promos (Black Ops, Civilian and Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 and more) with named Abominations and new Xenos.
+• Easier or harder half of the deck, in the options
+• The opening carousel's background now follows the universe shown
 </en-US>
 
 <fr-FR>
-Nouveau : le paquet d'Abominations en Moderne. Abominations nommées de la boîte de base, du kit d'amélioration, The Boys, Supernatural, Ghostbusters, Monty Python, Iron Maiden, Urban Legends, Dark Nights: Metal et des exclusivités Kickstarter, chacune avec sa règle, piochées quand une carte Zombie en fait apparaître une.
-• Cartes spéciales SPAM, Gozer et Batman Who Laughs
-• Bouton « Piocher une Abomination », en Moderne et en Fantasy
-• Parties en cours réinitialisées par cette mise à jour
+Nouveau : l'univers Invader, troisième du carrousel d'ouverture. Les boîtes de base Invader et Dark Side, seules ou ensemble, plus 11 extensions et promos (Black Ops, Civilian et Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 et d'autres) avec des Abominations nommées et de nouveaux Xenos.
+• Moitié facile ou difficile du paquet, dans les options
+• Le fond du carrousel d'ouverture suit désormais l'univers affiché
 </fr-FR>
 
 <de-DE>
-Neu: der Monstrum-Stapel in Moderne. Benannte Monstren aus Grundbox, Upgrade-Kit, The Boys, Supernatural, Ghostbusters, Monty Python, Iron Maiden, Urban Legends, Dark Nights: Metal und den Kickstarter-Exklusives, jedes mit seiner Regel, gezogen, wenn eine Zombiekarte eines erscheinen lässt.
-• Spezialkarten SPAM, Gozer und Batman Who Laughs
-• Button „Monstrum ziehen“ in Moderne und Fantasy
-• Laufende Partien werden durch dieses Update zurückgesetzt
+Neu: das Invader-Universum, das dritte im Auswahl-Karussell. Die Grundboxen Invader und Dark Side, einzeln oder zusammen, dazu 11 Erweiterungen und Promos (Black Ops, Civilian und Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 u. a.) mit benannten Monstren und neuen Xenos.
+• Leichtere oder schwerere Stapelhälfte in den Optionen
+• Der Hintergrund des Auswahl-Karussells folgt jetzt dem gezeigten Universum
 </de-DE>
 
 <es-ES>
-Novedad: el mazo de Abominaciones en Moderno. Abominaciones con nombre de la caja básica, el kit de mejora, The Boys, Supernatural, Ghostbusters, Monty Python, Iron Maiden, Urban Legends, Dark Nights: Metal y los exclusivos de Kickstarter, cada una con su regla, que se roban cuando una carta de Zombi hace aparecer una.
-• Cartas especiales SPAM, Gozer y Batman Who Laughs
-• Botón «Robar una Abominación», en Moderno y en Fantasía
-• Las partidas en curso se reinician con esta actualización
+Novedad: el universo Invader, el tercero del carrusel de inicio. Las cajas básicas Invader y Dark Side, por separado o juntas, más 11 expansiones y promos (Black Ops, Civilian y Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 y más) con Abominaciones con nombre y nuevos Xenos.
+• Mitad fácil o difícil del mazo, en las opciones
+• El fondo del carrusel de inicio ahora sigue al universo mostrado
 </es-ES>
 
 <it-IT>
-Novità: il mazzo Abomini in Moderno. Abomini con nome della scatola base, del kit di potenziamento, The Boys, Supernatural, Ghostbusters, Monty Python, Iron Maiden, Urban Legends, Dark Nights: Metal e delle esclusive Kickstarter, ciascuno con la sua regola, pescati quando una carta Zombie ne genera uno.
-• Carte speciali SPAM, Gozer e Batman Who Laughs
-• Pulsante «Pesca un Abominio», in Moderno e in Fantasy
-• Le partite in corso vengono azzerate da questo aggiornamento
+Novità: l'universo Invader, il terzo del carosello iniziale. Le scatole base Invader e Dark Side, da sole o insieme, più 11 espansioni e promo (Black Ops, Civilian e Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 e altre) con Abomini con nome e nuovi Xeno.
+• Metà facile o difficile del mazzo, nelle opzioni
+• Lo sfondo del carosello iniziale ora segue l'universo mostrato
 </it-IT>
 
 <pl-PL>
-Nowość: talia Abominacji we Współczesności. Nazwane Abominacje z podstawowego pudełka, zestawu ulepszeń, The Boys, Supernatural, Ghostbusters, Monty Python, Iron Maiden, Urban Legends, Dark Nights: Metal i ekskluzywów Kickstarter, każda z własną zasadą, dobierane, gdy karta Zombie je namnaża.
-• Karty specjalne SPAM, Gozer i Batman Who Laughs
-• Przycisk „Dobierz Abominację” we Współczesności i w Fantasy
-• Trwające gry zostaną zresetowane przez tę aktualizację
+Nowość: świat Invader, trzeci w karuzeli startowej. Podstawowe pudełka Invader i Dark Side, osobno lub razem, plus 11 dodatków i promo (Black Ops, Civilian i Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 i inne) z nazwanymi Abominacjami i nowymi Xenos.
+• Łatwiejsza lub trudniejsza połowa talii w opcjach
+• Tło karuzeli startowej podąża teraz za pokazywanym światem
 </pl-PL>
 
 <pt-BR>
-Novidade: o baralho de Abominações no Moderno. Abominações nomeadas da caixa básica, do kit de melhoria, The Boys, Supernatural, Ghostbusters, Monty Python, Iron Maiden, Urban Legends, Dark Nights: Metal e dos exclusivos do Kickstarter, cada uma com sua regra, compradas quando uma carta de Zumbi gera uma.
-• Cartas especiais SPAM, Gozer e Batman Who Laughs
-• Botão “Comprar uma Abominação”, no Moderno e na Fantasia
-• As partidas em andamento são reiniciadas por esta atualização
+Novidade: o universo Invader, o terceiro do carrossel inicial. As caixas básicas Invader e Dark Side, separadas ou juntas, mais 11 expansões e promos (Black Ops, Civilian e Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 e outras) com Abominações nomeadas e novos Xenos.
+• Metade fácil ou difícil do baralho, nas opções
+• O fundo do carrossel inicial agora acompanha o universo exibido
 </pt-BR>
 
 <ru-RU>
-Новое: колода отродий в «Современности». Именные отродья из базовой коробки, набора улучшений, The Boys, Supernatural, Ghostbusters, Monty Python, Iron Maiden, Urban Legends, Dark Nights: Metal и эксклюзивов Kickstarter, у каждого своё правило; берутся, когда карта зомби их порождает.
-• Особые карты SPAM, Gozer и Batman Who Laughs
-• Кнопка «Взять отродье» в «Современности» и в фэнтези
-• Текущие партии этим обновлением сбрасываются
+Новое: мир Invader, третий в стартовой карусели. Базовые коробки Invader и Dark Side, по отдельности или вместе, плюс 11 дополнений и промо (Black Ops, Civilian и Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 и другие) с именными отродьями и новыми Xenos.
+• Лёгкая или сложная половина колоды в настройках
+• Фон стартовой карусели теперь меняется вместе с показанным миром
 </ru-RU>
 
 <uk>
-Нове: колода потвор у «Сучасності». Іменні потвори з базової коробки, набору покращень, The Boys, Supernatural, Ghostbusters, Monty Python, Iron Maiden, Urban Legends, Dark Nights: Metal та ексклюзивів Kickstarter, кожна зі своїм правилом; беруться, коли карта зомбі їх породжує.
-• Особливі карти SPAM, Gozer і Batman Who Laughs
-• Кнопка «Взяти потвору» в «Сучасності» і у фентезі
-• Поточні ігри цим оновленням скидаються
+Нове: світ Invader, третій у стартовій каруселі. Базові коробки Invader і Dark Side, окремо чи разом, плюс 11 доповнень і промо (Black Ops, Civilian і Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 та інші) з іменними потворами та новими Xenos.
+• Легка або складна половина колоди в налаштуваннях
+• Тло стартової каруселі тепер змінюється разом із показаним світом
 </uk>
 
 <cs-CZ>
-Novinka: balíček zrůd v Moderním světě. Pojmenované zrůdy ze základní krabice, sady vylepšení, The Boys, Supernatural, Ghostbusters, Monty Python, Iron Maiden, Urban Legends, Dark Nights: Metal a exkluzivit Kickstarter, každá se svým pravidlem; tažené, když je karta zombie oživí.
-• Zvláštní karty SPAM, Gozer a Batman Who Laughs
-• Tlačítko „Vytáhnout zrůdu“ v Moderním světě i ve Fantasy
-• Rozehrané hry se touto aktualizací resetují
+Novinka: svět Invader, třetí v úvodním karuselu. Základní krabice Invader a Dark Side, samostatně či spolu, plus 11 rozšíření a promo (Black Ops, Civilian a Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 a další) s pojmenovanými zrůdami a novými Xenos.
+• Lehčí nebo těžší polovina balíčku v nastavení
+• Pozadí úvodního karuselu teď sleduje zobrazený svět
 </cs-CZ>
