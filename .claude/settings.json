@@ -42,7 +42,8 @@
       "PowerShell(git diff *)",
       "PowerShell(git log *)",
       "PowerShell(git show *)",
-      "PowerShell(git branch --show-current)"
+      "PowerShell(git branch --show-current)",
+      "mcp__claude-in-chrome"
     ],
     "ask": [
       "Bash(git commit *)",
