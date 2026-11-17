@@ -4,7 +4,7 @@ Text for the Google Play and App Store listings, one section per language. Limit
 
 Language codes are the Play Console ones (Ukrainian is `uk`, not `uk-UA`).
 
-Images: `feature-graphic.png` (Play Store banner, 1024×500) and `screenshots/` (1920×1080, in display order: the universes, Fantasy, then Modern; Invader screenshots are still to be made, TODO before the Invader release).
+Images: `feature-graphic.png` (Play Store banner, 1024×500) and `screenshots/` (1920×1080, in display order: the universes carousel on Invader, an Invader game on four zones, a Fantasy game, the card zoom, an Invader game with an Iron Maiden Eddie, two Modern games, then the Invader expansions).
 
 ---
 
