@@ -300,7 +300,7 @@ export const de: Record<TranslationKey, string> = {
   'about.title': 'Über die App',
   'about.version': 'Version {v}',
   'about.disclaimer': 'Inoffizielle Fan-App. Zombicide ist eine Marke von CMON Global Limited; diese App steht in keiner Verbindung zu CMON und wird nicht von CMON unterstützt. Du brauchst ein eigenes Exemplar des Spiels: Die App ersetzt nur den Zombie-Kartenstapel.',
-  'about.artwork': 'Illustrationen des Western-Universums und offizielle Invader-Illustrationen (Xenos, Abominations, Kartenrückseite) © CMON Global Limited, verwendet in dieser nichtkommerziellen Fan-App. Die Illustrationen von Modern und Fantasy, die Invader-Kartenrahmen und die Invader-Biters sind eigene Werke.',
+  'about.artwork': 'Illustrationen des Western-Universums und offizielle Invader-Illustrationen (Xenos, Abominations, Kartenrückseite) © CMON Global Limited, verwendet in dieser nichtkommerziellen Fan-App. Die Illustrationen von Modern und Fantasy und die Invader-Kartenrahmen sind eigene Werke.',
   'about.privacy': 'Datenschutzerklärung',
   'about.privacyDetail': 'Es werden keine personenbezogenen Daten erhoben.',
   'about.report': 'Fehler melden',

@@ -229,10 +229,10 @@ const INVADER_EDDIE_ART = {
 /*
  * The pictures of the Invader cards: the official Zombicide Xeno renders (zombicide.com, cut inside their frame, the
  * logo rubbed out) or, for the Xenos the site has no render of, the art of the printed card cut to the picture. They are
- * padded to the shape of the picture window of a card (a Xeno one is portrait, an Abomination one landscape). A subject
- * with no entry here (Biters) keeps its drawn illustration.
+ * padded to the shape of the picture window of a card (a Xeno one is portrait, an Abomination one landscape).
  */
 const INVADER_XENO_ART = {
+  biter: require('../../assets/invader/zombies/biter-official.png'), // restored from the French printed card
   worker: require('../../assets/invader/zombies/xeno-worker-official.jpg'),
   tank: require('../../assets/invader/zombies/xeno-tank-official.jpg'),
   hunter: require('../../assets/invader/zombies/xeno-hunter-official.jpg'),
@@ -285,37 +285,10 @@ const INVADER_BLURRED_FILL: Partial<Record<ArtSubject, { scale: number; down: `$
   dimbutcher: { scale: 1.15, down: '5%' },
 };
 
+// The same artwork is used in the carousel and menu.
 const INVADER_ART: Record<InvaderXeno | InvaderAbomination, ImageSourcePropType> = {
-  ...INVADER_EDDIE_ART,
-  worker: require('../../assets/invader/zombies/xeno-worker-cartoon.jpg'),
-  tank: require('../../assets/invader/zombies/xeno-tank-cartoon.jpg'),
-  hunter: require('../../assets/invader/zombies/xeno-hunter-cartoon.jpg'),
-  spoilerAbomination: require('../../assets/invader/abominations/spoiler-abomination-cartoon.jpg'),
-  drillerWorker: require('../../assets/invader/zombies/driller-worker-cartoon.jpg'),
-  drillerTank: require('../../assets/invader/zombies/driller-tank-cartoon.jpg'),
-  drillerHunter: require('../../assets/invader/zombies/driller-hunter-cartoon.jpg'),
-  drillerAbomination: require('../../assets/invader/abominations/driller-abomination-cartoon.jpg'),
-  drillerBlitzer: require('../../assets/invader/zombies/driller-blitzer-cartoon.jpg'),
-  flinger: require('../../assets/invader/zombies/flinger-cartoon.jpg'),
-  seekerWorker: require('../../assets/invader/zombies/seeker-worker-cartoon.jpg'),
-  xenomoth: require('../../assets/invader/zombies/xenomoth-cartoon.jpg'),
-  biter: require('../../assets/invader/zombies/biter-cartoon.jpg'),
-  juggernaut: require('../../assets/invader/abominations/juggernaut-abomination-cartoon.jpg'),
-  babyface: require('../../assets/invader/abominations/babyface-abomination-cartoon.jpg'),
-  buddyBot: require('../../assets/invader/abominations/buddybot-abomination-cartoon.jpg'),
-  irisSentryGun: require('../../assets/invader/abominations/iris-sentry-gun-abomination-cartoon.jpg'),
-  motherInLaw: require('../../assets/invader/abominations/mother-in-law-abomination-cartoon.jpg'),
-  shadow: require('../../assets/invader/abominations/shadow-abomination-cartoon.jpg'),
-  stomper: require('../../assets/invader/abominations/stomper-abomination-cartoon.jpg'),
-  widowmaker: require('../../assets/invader/abominations/widowmaker-abomination-cartoon.jpg'),
-  broodMother: require('../../assets/invader/abominations/brood-mother-abomination-cartoon.jpg'),
-  xeniumHorror: require('../../assets/invader/abominations/xenium-horror-abomination-cartoon.jpg'),
-  thraex: require('../../assets/invader/abominations/thraex-abomination-cartoon.jpg'),
-  gutslug: require('../../assets/invader/abominations/gutslug-abomination-cartoon.jpg'),
-  stepmother: STEPMOTHER_ART,
-  shaila: require('../../assets/invader/abominations/shaila-abomination-cartoon.jpg'),
-  dimbutcher: require('../../assets/invader/abominations/dimbutcher-abomination-cartoon.jpg'),
-  synkrasis: require('../../assets/invader/abominations/synkrasis-cartoon.jpg'),
+  ...INVADER_XENO_ART,
+  ...INVADER_ABOMINATION_ART,
 };
 
 const WESTERN_HEROES: Record<Exclude<WesternSubject, WesternAbomination>, ImageSourcePropType> = {
@@ -455,6 +428,8 @@ export function ZombieFigure({
   const source = isWesternBoss(subject) ? WESTERN_WINDOWS[subject].source : ART[subject];
   // The Western heroes are cut for their panel: cover, whatever its shape.
   if ((isWesternBoss(subject) || subject in WESTERN_HEROES) && anchor !== 'full') return <Image source={source} style={styles.fullFigure} resizeMode="cover" />;
+  // The official Invader pictures are framed renders, not cut-outs: they cover their panel too (carousel, menu).
+  if (subject in INVADER_OFFICIAL && anchor !== 'full' && anchor !== 'fill') return <Image source={source} style={styles.fullFigure} resizeMode="cover" />;
   if (anchor === 'fill') {
     // The face of an Invader card: its official picture covers the window, which spans the whole card under the title.
     const official = INVADER_OFFICIAL[subject];

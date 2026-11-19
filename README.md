@@ -65,7 +65,7 @@ npm run lint
 
 Fan-made and unofficial. Zombicide is a trademark of CMON Global Limited; this app is not affiliated with or endorsed by CMON. Card counts and terms are transcribed from the published games for players who own them.
 
-The Western artwork (`assets/western/`: zombies, Abominations, card back) is cropped from the official Zombicide: Undead or Alive and promo artwork and from scans of the printed cards (Tabletop Simulator mod). The Invader Xeno and Abomination artwork and card back (`assets/invader/`) come from the official renders on zombicide.com, from CMON pack preview illustrations (Iron Maiden Eddies, Stepmother) and from scans or photos of the printed cards (Seeker Workers, Xenomoths, Thraex, Gutslug, Shaila, Synkrasis, Dim Butcher). All of it is © CMON Global Limited, used in this non-commercial fan app; the About screen credits it. The Modern and Fantasy artwork, the Invader card frame parts, the Invader Biters and the carousel and menu heroes are original.
+The Western artwork (`assets/western/`: zombies, Abominations, card back) is cropped from the official Zombicide: Undead or Alive and promo artwork and from scans of the printed cards (Tabletop Simulator mod). The Invader Xeno and Abomination artwork, carousel and menu heroes and card back (`assets/invader/`) come from the official renders on zombicide.com, from CMON pack preview illustrations (Iron Maiden Eddies, Stepmother) and from scans or photos of the printed cards (Seeker Workers, Xenomoths, Thraex, Gutslug, Shaila, Synkrasis, Dim Butcher, Biters). All of it is © CMON Global Limited, used in this non-commercial fan app; the About screen credits it. The Modern and Fantasy artwork and the Invader card frame parts are original.
 
 ## License
 
