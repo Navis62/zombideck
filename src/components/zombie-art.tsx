@@ -346,34 +346,34 @@ export const westernCardArt = (card: WesternCard): ImageSourcePropType => {
 };
 
 /**
- * The picture window of each named Western Abomination, cut from its printed card (the rest of the card is the app's
- * plank and rule panel). `ratio` is the window's own width over height, kept between 1.25 and 1.75 (the printed
- * window grows or shrinks with the length of the rule).
+ * The picture of each named Western Abomination, shown in a window between the app's title plank and rule panel.
+ * `ratio` is the window's own width over height, kept between 1.25 and 1.75 (the printed window grows or shrinks with
+ * the length of the rule). `source` is either a full 63:88 illustration, framed in the window by `center`, or (no
+ * `center`) a picture already cut to the window.
  */
-const WESTERN_WINDOWS: Record<WesternAbomination, { source: ImageSourcePropType; ratio: number }> = {
-  bowlerHat: { source: require('../../assets/western/abominations/bowler-hat-window.jpg'), ratio: 1.25 },
-  nightmareHorse: { source: require('../../assets/western/abominations/nightmare-horse-window.jpg'), ratio: 1.25 },
-  abominape: { source: require('../../assets/western/abominations/abominape-window.jpg'), ratio: 1.463 },
-  crocosaur: { source: require('../../assets/western/abominations/crocosaur-window.jpg'), ratio: 1.456 },
-  abominabear: { source: require('../../assets/western/abominations/abominabear-window.jpg'), ratio: 1.25 },
-  texasDeadhorn: { source: require('../../assets/western/abominations/texas-deadhorn-window.jpg'), ratio: 1.25 },
-  bizon: { source: require('../../assets/western/abominations/bizon-window.jpg'), ratio: 1.25 },
-  bloodBull: { source: require('../../assets/western/abominations/blood-bull-window.jpg'), ratio: 1.25 },
-  littleTrickster: { source: require('../../assets/western/abominations/little-trickster-window.jpg'), ratio: 1.565 },
-  goreGeyser: { source: require('../../assets/western/abominations/gore-geyser-window.jpg'), ratio: 1.75 },
-  meltingPot: { source: require('../../assets/western/abominations/melting-pot-window.jpg'), ratio: 1.548 },
-  plymouthHound: { source: require('../../assets/western/abominations/plymouth-hound-window.jpg'), ratio: 1.628 },
-  pusbag: { source: require('../../assets/western/abominations/pusbag-window.jpg'), ratio: 1.524 },
-  greatTrickster: { source: require('../../assets/western/abominations/great-trickster-window.jpg'), ratio: 1.75 },
-  cactusQueen: { source: require('../../assets/western/abominations/cactus-queen-window.jpg'), ratio: 1.438 },
-  alphaBane: { source: require('../../assets/western/abominations/alpha-bane-window.jpg'), ratio: 1.25 },
-  deathgrasp: { source: require('../../assets/western/abominations/deathgrasp-window.jpg'), ratio: 1.524 },
-  fatMace: { source: require('../../assets/western/abominations/fat-mace-window.jpg'), ratio: 1.25 },
-  swampTongue: { source: require('../../assets/western/abominations/swamp-tongue-window.jpg'), ratio: 1.524 },
-  rottenClaw: { source: require('../../assets/western/abominations/rotten-claw-window.jpg'), ratio: 1.602 },
-  westernWendigo: { source: require('../../assets/western/abominations/wendigo-window.jpg'), ratio: 1.317 },
-  // No scan of this card: the official art, cut to its window.
-  steamMonster: { source: require('../../assets/western/abominations/steam-monster-window.jpg'), ratio: 1.448 },
+const WESTERN_WINDOWS: Record<WesternAbomination, { source: ImageSourcePropType; ratio: number; center?: number }> = {
+  bowlerHat: { source: require('../../assets/western/abominations/bowler-hat-card.jpg'), ratio: 1.25, center: 0.38 },
+  nightmareHorse: { source: require('../../assets/western/abominations/nightmare-horse-card.jpg'), ratio: 1.25, center: 0.4 },
+  abominape: { source: require('../../assets/western/abominations/abominape-card.jpg'), ratio: 1.463, center: 0.45 },
+  crocosaur: { source: require('../../assets/western/abominations/crocosaur-card.jpg'), ratio: 1.456, center: 0.5 },
+  abominabear: { source: require('../../assets/western/abominations/abominabear-card.jpg'), ratio: 1.25, center: 0.45 },
+  texasDeadhorn: { source: require('../../assets/western/abominations/texas-deadhorn-card.jpg'), ratio: 1.25, center: 0.45 },
+  bizon: { source: require('../../assets/western/abominations/bizon-card.jpg'), ratio: 1.25, center: 0.46 },
+  bloodBull: { source: require('../../assets/western/abominations/blood-bull-card.jpg'), ratio: 1.25, center: 0.48 },
+  littleTrickster: { source: require('../../assets/western/abominations/little-trickster-card.jpg'), ratio: 1.565, center: 0.42 },
+  goreGeyser: { source: require('../../assets/western/abominations/gore-geyser-card.jpg'), ratio: 1.75, center: 0.4 },
+  meltingPot: { source: require('../../assets/western/abominations/melting-pot-card.jpg'), ratio: 1.548, center: 0.43 },
+  plymouthHound: { source: require('../../assets/western/abominations/plymouth-hound-card.jpg'), ratio: 1.628, center: 0.42 },
+  pusbag: { source: require('../../assets/western/abominations/pusbag-card.jpg'), ratio: 1.524, center: 0.37 },
+  greatTrickster: { source: require('../../assets/western/abominations/great-trickster-card.jpg'), ratio: 1.75, center: 0.38 },
+  cactusQueen: { source: require('../../assets/western/abominations/cactus-queen-card.jpg'), ratio: 1.438, center: 0.45 },
+  alphaBane: { source: require('../../assets/western/abominations/alpha-bane-card.jpg'), ratio: 1.25, center: 0.5 },
+  deathgrasp: { source: require('../../assets/western/abominations/deathgrasp-card.jpg'), ratio: 1.524, center: 0.37 },
+  fatMace: { source: require('../../assets/western/abominations/fat-mace-card.jpg'), ratio: 1.25, center: 0.38 },
+  swampTongue: { source: require('../../assets/western/abominations/swamp-tongue-card.jpg'), ratio: 1.524, center: 0.44 },
+  rottenClaw: { source: require('../../assets/western/abominations/rotten-claw-card.jpg'), ratio: 1.602, center: 0.43 },
+  westernWendigo: { source: require('../../assets/western/abominations/wendigo-card.jpg'), ratio: 1.317, center: 0.4 },
+  steamMonster: { source: require('../../assets/western/abominations/steam-monster-card.jpg'), ratio: 1.448, center: 0.4 },
 };
 /** The card the text-only Abomination draws on (also the face of an Abomination drawn by hand with no name). */
 export const westernTextCardArt = WESTERN_CARD_ART.abomination;

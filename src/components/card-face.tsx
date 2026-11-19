@@ -864,9 +864,21 @@ function Plank({ style, part, children }: { style?: StyleProp<ViewStyle>; part?:
   );
 }
 
+/** Height over width of a full Abomination illustration (a 63:88 card). */
+const WESTERN_PICTURE_RATIO = 88 / 63;
+
 /**
- * A named Western Abomination, as printed: the title plank, the picture window cut from its card (its own ratio) and
- * the wooden panel with the rule. `title` is the name, `subtitle` "Abomination".
+ * Top margin, as a share of the window width (a percentage margin is relative to the width), that brings the point
+ * `center` (share of the illustration's height) to the middle of a window of `ratio` without leaving the picture.
+ */
+const framingTop = (ratio: number, center: number) => {
+  const spare = WESTERN_PICTURE_RATIO - 1 / ratio;
+  return `${-100 * Math.min(spare, Math.max(0, center * WESTERN_PICTURE_RATIO - 0.5 / ratio))}%` as const;
+};
+
+/**
+ * A named Western Abomination with a title plank, an illustration window and a wooden rule panel. A full illustration
+ * fills the width of the window and slides vertically so the creature's head and body stay in view.
  */
 function WesternWindowCard(props: {
   text: CardText;
@@ -881,12 +893,16 @@ function WesternWindowCard(props: {
   const announced = useContext(CardAnnounced);
   const fonts = westernFonts(useApp().language);
   const { footer } = props.text;
-  const { source, ratio } = westernWindow(props.boss);
+  const { source, ratio, center } = westernWindow(props.boss);
   return (
     <View style={[styles.face, { backgroundColor: WESTERN_COLORS.face }]} {...readerProps(props.text, announced)}>
       <CardHeader title={props.title} subtitle={props.subtitle} color={WESTERN_COLORS.header} badge={!!footer && !props.footerOnFront} western />
       <View style={[styles.westernWindow, { aspectRatio: ratio }]}>
-        <Image source={source} style={FILL} resizeMode="cover" />
+        {center === undefined ? (
+          <Image source={source} style={FILL} resizeMode="cover" />
+        ) : (
+          <Image source={source} style={{ width: '100%', aspectRatio: 1 / WESTERN_PICTURE_RATIO, marginTop: framingTop(ratio, center) }} resizeMode="cover" />
+        )}
       </View>
       <Plank style={styles.westernPanel} part="footer">
         {props.footerOnFront && <Text style={[styles.westernPanelText, { fontFamily: fonts.text }]}>{props.rule}</Text>}
