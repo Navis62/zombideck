@@ -1876,22 +1876,23 @@ test('the Western core box holds the printed kinds of cards, #012 being a copy o
 });
 
 test('every Western Abomination has a set that holds it, a name and its printed rule', () => {
-  assert.equal(WESTERN_ABOMINATIONS.length, 22);
-  assert.equal(new Set(WESTERN_BOSS_ID_LIST).size, 22);
+  assert.equal(WESTERN_ABOMINATIONS.length, 29);
+  assert.equal(new Set(WESTERN_BOSS_ID_LIST).size, 29);
   const text = en as Record<string, string>;
   for (const boss of WESTERN_ABOMINATIONS) {
     assert.ok(WESTERN_SETS.some((set) => set.id === boss.setId), boss.zombie);
     assert.ok(text[`zombie.${boss.zombie}.one`] && text[`zombie.${boss.zombie}.other`], boss.zombie);
     assert.ok(text[`card.${boss.zombie}Rule`], boss.zombie);
   }
+  assert.deepEqual(withCoreBox(UNIVERSES.western, ['westernIronMaiden2', 'westernIronMaiden3', 'westernIronMaiden']), ['westernIronMaiden', 'undeadOrAlive']);
   const boxes = (setId: string) => WESTERN_ABOMINATIONS.filter((boss) => boss.setId === setId).length;
   assert.deepEqual(
-    ['undeadOrAlive', 'runningWild', 'abominapeVsCrocosaur', 'deadstockAbominations', 'deadWestAbominations', 'gearsAndGuns', 'westernPromos'].map(boxes),
-    [1, 1, 2, 4, 12, 1, 1],
+    ['undeadOrAlive', 'runningWild', 'abominapeVsCrocosaur', 'deadstockAbominations', 'deadWestAbominations', 'gearsAndGuns', 'westernPromos', 'westernIronMaiden'].map(boxes),
+    [1, 1, 2, 4, 12, 1, 1, 7],
   );
   assert.equal(text['card.steamMonsterRule'], 'When the Steam Monster enters a Zone, any Steam Nozzles in it are Broken.');
   assert.deepEqual(WESTERN_SETS.filter((set) => set.cards.length === 0).map((set) => set.id).sort(), [
-    'abominapeVsCrocosaur', 'deadWestAbominations', 'deadstockAbominations', 'gearsAndGuns', 'runningWild', 'westernPromos',
+    'abominapeVsCrocosaur', 'deadWestAbominations', 'deadstockAbominations', 'gearsAndGuns', 'runningWild', 'westernIronMaiden', 'westernPromos',
   ]);
 });
 
@@ -1950,7 +1951,7 @@ test('Western Abominations: its text cards always call on the Abomination deck, 
   assert.deepEqual(deck(['undeadOrAlive', 'abominapeVsCrocosaur'])?.bosses?.abomination.sort(), ['abominape', 'bowlerHat', 'crocosaur']);
   const off = western.bosses?.tailor(selectCards(western.sets, ['undeadOrAlive']), { ...DEFAULT_THREAT, off: ['bowlerHat'] }, new Set(['undeadOrAlive']));
   assert.equal(off?.bosses, undefined);
-  assert.equal(deck(western.sets.map((set) => set.id))?.bosses?.abomination.length, 22);
+  assert.equal(deck(western.sets.map((set) => set.id))?.bosses?.abomination.length, 29);
 });
 
 // One Abomination at a time (Dead Men Tales rulebook p.17, White Death #457-462): "If there is no Abomination on the

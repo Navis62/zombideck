@@ -14,7 +14,7 @@ import type { TranslationKey } from '../i18n/fr.ts';
 import { CARD_SETS } from './decks.ts';
 import { ABOMINATIONS, FANTASY_SETS } from './fantasy.ts';
 import { INVADER_SETS } from './invader.ts';
-import { WESTERN_SETS } from './western.ts';
+import { mergeWesternIronMaidenPacks, WESTERN_SETS } from './western.ts';
 import {
   ABOMINATION_BOSSES,
   BIG_BOSSES,
@@ -223,7 +223,8 @@ export const switchableSets = (universe: Universe): readonly CardSet[] =>
  * do in the options. Where core boxes replace each other, only one stays: the changed switch wins, and old
  * preferences keep Fort Hendrix when it was enabled.
  */
-export function withCoreBox(universe: Universe, expansions: readonly string[], switchedOff?: string): string[] {
+export function withCoreBox(universe: Universe, storedExpansions: readonly string[], switchedOff?: string): string[] {
+  const expansions = universe.id === 'western' ? mergeWesternIronMaidenPacks(storedExpansions) : storedExpansions;
   const cores = coreIds(universe);
   if (universe.exclusiveCores) {
     const selected = cores.filter((id) => expansions.includes(id));

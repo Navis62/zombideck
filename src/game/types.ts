@@ -399,7 +399,14 @@ export type WesternAbomination =
   | 'swampTongue'
   | 'rottenClaw'
   | 'westernWendigo'
-  | 'steamMonster';
+  | 'steamMonster'
+  | 'westernUndeadEddie'
+  | 'westernTrooperEddie'
+  | 'westernShamanEddie'
+  | 'westernAsylumEddie'
+  | 'westernBountyHunterEddie'
+  | 'westernFearEddie'
+  | 'westernWickerEddie';
 
 type WesternBase = { id: string; setId: string };
 /**

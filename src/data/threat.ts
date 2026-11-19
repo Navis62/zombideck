@@ -11,7 +11,7 @@ import type {
   ZombieCard,
 } from '../game/types';
 import { CARD_SETS } from './decks.ts';
-import { WESTERN_SETS } from './western.ts';
+import { WESTERN_IRON_MAIDEN, WESTERN_SETS } from './western.ts';
 
 // The fantasy deck and its bosses, as White Death prints it and Dead Men Tales (work-in-progress rulebook) extends it
 // to every fantasy box; Frozen Fortress gives each Black Plague and Green Horde boss a card of that kind.
@@ -339,6 +339,13 @@ export const WESTERN_ABOMINATIONS: readonly Boss<WesternAbomination>[] = [
   { zombie: 'rottenClaw', setId: 'deadWestAbominations' },
   { zombie: 'westernWendigo', setId: 'westernPromos' },
   { zombie: 'steamMonster', setId: 'gearsAndGuns' },
+  { zombie: 'westernUndeadEddie', setId: WESTERN_IRON_MAIDEN },
+  { zombie: 'westernTrooperEddie', setId: WESTERN_IRON_MAIDEN },
+  { zombie: 'westernShamanEddie', setId: WESTERN_IRON_MAIDEN },
+  { zombie: 'westernAsylumEddie', setId: WESTERN_IRON_MAIDEN },
+  { zombie: 'westernBountyHunterEddie', setId: WESTERN_IRON_MAIDEN },
+  { zombie: 'westernFearEddie', setId: WESTERN_IRON_MAIDEN },
+  { zombie: 'westernWickerEddie', setId: WESTERN_IRON_MAIDEN },
 ];
 
 export const tailorWesternDeck = abominationTailor(WESTERN_SETS, WESTERN_ABOMINATIONS, WESTERN_BOSS_RULES);

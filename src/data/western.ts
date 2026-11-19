@@ -10,6 +10,13 @@ export const DEAD_WEST_ABOMINATIONS = 'deadWestAbominations';
 export const GEARS_AND_GUNS = 'gearsAndGuns';
 /** Promo figures given out at events (the official Western promo gallery lists the Wendigo among them), not sold at retail. */
 export const WESTERN_PROMOS = 'westernPromos';
+export const WESTERN_IRON_MAIDEN = 'westernIronMaiden';
+
+const LEGACY_IRON_MAIDEN_PACKS = new Set(['westernIronMaiden1', 'westernIronMaiden2', 'westernIronMaiden3']);
+
+/** Preserve the Western expansion preference across the Iron Maiden pack merge. */
+export const mergeWesternIronMaidenPacks = (expansions: readonly string[]): string[] =>
+  [...new Set(expansions.map((id) => LEGACY_IRON_MAIDEN_PACKS.has(id) ? WESTERN_IRON_MAIDEN : id))];
 
 /*
  * Transcribed on 2026-11-19 from the owner's photos of the printed cards (the Undead or Alive core box, #001-#037,
@@ -70,4 +77,5 @@ export const WESTERN_SETS: readonly CardSet[] = [
   abominationBox(DEAD_WEST_ABOMINATIONS),
   abominationBox(GEARS_AND_GUNS),
   abominationBox(WESTERN_PROMOS),
+  abominationBox(WESTERN_IRON_MAIDEN),
 ];

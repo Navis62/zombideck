@@ -350,7 +350,7 @@ export const westernCardArt = (card: WesternCard): ImageSourcePropType => {
  * the length of the rule). `source` is a full 63:88 illustration, framed in the window by `center`: the height (share
  * of the picture) brought to the middle of the window, so the creature's head and body stay in view.
  */
-const WESTERN_WINDOWS: Record<WesternAbomination, { source: ImageSourcePropType; ratio: number; center: number }> = {
+const WESTERN_WINDOWS: Record<WesternAbomination, { source: ImageSourcePropType; ratio: number; center: number; cropped?: true }> = {
   bowlerHat: { source: require('../../assets/western/abominations/bowler-hat-card.jpg'), ratio: 1.25, center: 0.38 },
   nightmareHorse: { source: require('../../assets/western/abominations/nightmare-horse-card.jpg'), ratio: 1.25, center: 0.4 },
   abominape: { source: require('../../assets/western/abominations/abominape-card.jpg'), ratio: 1.463, center: 0.45 },
@@ -373,6 +373,13 @@ const WESTERN_WINDOWS: Record<WesternAbomination, { source: ImageSourcePropType;
   rottenClaw: { source: require('../../assets/western/abominations/rotten-claw-card.jpg'), ratio: 1.602, center: 0.43 },
   westernWendigo: { source: require('../../assets/western/abominations/wendigo-card.jpg'), ratio: 1.317, center: 0.4 },
   steamMonster: { source: require('../../assets/western/abominations/steam-monster-card.jpg'), ratio: 1.448, center: 0.4 },
+  westernUndeadEddie: { source: require('../../assets/western/abominations/undead-eddie-card.jpg'), ratio: 1.4, center: 0.5, cropped: true },
+  westernTrooperEddie: { source: require('../../assets/western/abominations/trooper-eddie-card.jpg'), ratio: 1.4, center: 0.5, cropped: true },
+  westernShamanEddie: { source: require('../../assets/western/abominations/shaman-eddie-card.jpg'), ratio: 1.4, center: 0.5, cropped: true },
+  westernAsylumEddie: { source: require('../../assets/western/abominations/asylum-eddie-card.jpg'), ratio: 1.25, center: 0.5, cropped: true },
+  westernBountyHunterEddie: { source: require('../../assets/western/abominations/bounty-hunter-eddie-card.jpg'), ratio: 1.4, center: 0.5, cropped: true },
+  westernFearEddie: { source: require('../../assets/western/abominations/fear-eddie-card.jpg'), ratio: 1.25, center: 0.5, cropped: true },
+  westernWickerEddie: { source: require('../../assets/western/abominations/wicker-eddie-card.jpg'), ratio: 1.4, center: 0.5, cropped: true },
 };
 /** The card the text-only Abomination draws on (also the face of an Abomination drawn by hand with no name). */
 export const westernTextCardArt = WESTERN_CARD_ART.abomination;

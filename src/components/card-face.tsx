@@ -1042,7 +1042,7 @@ const framing = (ratio: number, center: number): ImageStyle => {
  * The illustration of a named Abomination framed on `center` in its picture area: a window of `ratio`, or (no `ratio`)
  * whatever room the card leaves under its header, measured once laid out.
  */
-function FramedPicture({ source, ratio, center, style }: { source: ImageSourcePropType; ratio?: number; center: number; style: StyleProp<ViewStyle> }) {
+function FramedPicture({ source, ratio, center, style, cropped }: { source: ImageSourcePropType; ratio?: number; center: number; style: StyleProp<ViewStyle>; cropped?: true }) {
   const [measured, setMeasured] = useState<number>();
   const shape = ratio ?? measured;
   const picture = useMemo(() => (shape === undefined ? undefined : framing(shape, center)), [shape, center]);
@@ -1051,8 +1051,10 @@ function FramedPicture({ source, ratio, center, style }: { source: ImageSourcePr
     if (height > 0) setMeasured(width / height);
   };
   return (
-    <View style={[style, ratio !== undefined && { aspectRatio: ratio }]} onLayout={ratio === undefined ? measure : undefined}>
-      {picture !== undefined && <Image source={source} style={picture} resizeMode="cover" />}
+    <View style={[style, ratio !== undefined && { aspectRatio: ratio }]} onLayout={ratio === undefined && !cropped ? measure : undefined}>
+      {cropped
+        ? <Image source={source} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} resizeMode="contain" />
+        : picture !== undefined && <Image source={source} style={picture} resizeMode="cover" />}
     </View>
   );
 }
@@ -1074,20 +1076,20 @@ function WesternWindowCard(props: {
   const announced = useContext(CardAnnounced);
   const fonts = westernFonts(useApp().language);
   const { footer } = props.text;
-  const { source, ratio, center } = westernWindow(props.boss);
+  const { source, ratio, center, cropped } = westernWindow(props.boss);
   return (
     <View style={[styles.face, { backgroundColor: WESTERN_COLORS.face }]} {...readerProps(props.text, announced)}>
       <CardHeader title={props.title} subtitle={props.subtitle} color={WESTERN_COLORS.header} badge={!!footer && !props.footerOnFront} western />
       {props.footerOnFront ? (
         <>
-          <FramedPicture source={source} ratio={ratio} center={center} style={styles.westernWindow} />
+          <FramedPicture source={source} ratio={ratio} center={center} cropped={cropped} style={styles.westernWindow} />
           <Plank style={styles.westernPanel} part="footer">
             <Text style={[styles.westernPanelText, { fontFamily: fonts.text }]}>{props.rule}</Text>
           </Plank>
         </>
       ) : (
         // The rule is on the back (the "i" in the header says so): no empty panel, the picture runs to the bottom.
-        <FramedPicture source={source} center={center} style={styles.westernPictureOnly} />
+        <FramedPicture source={source} center={center} cropped={cropped} style={styles.westernPictureOnly} />
       )}
     </View>
   );
@@ -1240,11 +1242,12 @@ function CardHeader(props: { card?: ZombieCard; title: string; color: Colors; ba
   const fonts = westernFonts(useApp().language);
   const number = props.card && /\d{3}$/.test(props.card.id) ? `#${props.card.id.slice(-3)}` : '';
   if (props.western) {
+    const fontScale = props.title.length >= 18 ? 0.76 : 1;
     return (
       <Plank style={styles.westernHeader} part="header">
         {!WESTERN_PARTS.headerPlank && <View style={styles.westernBrush} />}
         <View style={styles.westernTitleBox}>
-          <NameLabel style={[styles.westernTitle, { fontFamily: fonts.title }]} minimumFontScale={0.4} charEm={WESTERN_CAPS_EM[fonts.title]} text={props.title} />
+          <NameLabel style={[styles.westernTitle, { fontFamily: fonts.title, fontSize: styles.westernTitle.fontSize * fontScale, lineHeight: styles.westernTitle.lineHeight * fontScale }]} minimumFontScale={0.4} charEm={WESTERN_CAPS_EM[fonts.title]} text={props.title} />
           {!WESTERN_PARTS.headerPlank && <View style={styles.westernTitleRule} />}
           {props.subtitle !== undefined && <Text style={[styles.westernSubtitle, { fontFamily: fonts.count }]}>{props.subtitle}</Text>}
         </View>
