@@ -72,21 +72,38 @@ type WesternLayout = {
   extra?: boolean;
 };
 /**
- * The header plank of the spawn cards ends at 17.5 % of the card (its wavy lower edge), the Extra Activation one, which
- * holds two lines, at 20.5 %; the title sits between the plank's red stroke (14 % of its height) and the double rule
+ * The header plank of the spawn cards ends at 18.5 % of the card (its wavy lower edge), the Extra Activation one, which
+ * holds two lines, at 21.5 %; the title sits between the plank's red stroke (14 % of its height) and the double rule
  * it carries (75 %). On the text card the panel of wood starts at 50 % and runs to the bottom.
  */
 const WESTERN_LAYOUTS: Record<'spawn' | 'extra' | 'text', WesternLayout> = {
-  spawn: { plank: { part: 'header', top: 0, bottom: 0.175 }, title: { top: 0.03, height: 0.095, left: 0.05, width: 0.6 } },
-  extra: { plank: { part: 'header', top: 0, bottom: 0.205 }, title: { top: 0.03, height: 0.115, left: 0.05, width: 0.72 }, extra: true },
+  spawn: { plank: { part: 'header', top: 0, bottom: 0.185 }, title: { top: 0.042, height: 0.096, left: 0.05, width: 0.9 } },
+  extra: { plank: { part: 'header', top: 0, bottom: 0.215 }, title: { top: 0.045, height: 0.115, left: 0.05, width: 0.9 }, extra: true },
   text: { plank: { part: 'footer', top: 0.5, bottom: 1 }, title: { top: 0.545, height: 0.07, left: 0.07, width: 0.86 }, centered: true },
 };
-/** Width of a capital letter in each Western face, in em (the word fit shrinks a title until its longest word fits). */
-const WESTERN_CAPS_EM: Record<string, number> = { Rye: 0.95, 'ZillaSlab-Bold': 0.78, 'PTSerif-Bold': 0.82 };
-/** Number printed at the top right of every card (x of its left edge and width, y of its top and height). */
-const WESTERN_NUMBER = { left: 0.66, width: 0.28, top: 0.06, height: 0.05 };
-/** The "i" that says there is a rule on the back: just under the number. */
-const WESTERN_BADGE = { right: 0.035, top: 0.12 };
+/**
+ * Width of a capital letter in each Western face, in em (the word fit shrinks a title until its longest word fits):
+ * the widest title words measured in the browser ("DEADHORN" 0.77 in Rye, 0.69 in Zilla Slab, "ДОПОЛНИТЕЛЬНЫЙ" 0.74
+ * in PT Serif), plus about 5 % for the native text renderers.
+ */
+const WESTERN_CAPS_EM: Record<string, number> = { Rye: 0.81, 'ZillaSlab-Bold': 0.73, 'PTSerif-Bold': 0.78 };
+/** Size of a one-line printed title (`westernPrintedTitle`), in design px. */
+const WESTERN_TITLE_SIZE = 22;
+/** Whether a printed title fits on one line of its box (`width`, share of the card) at its full size. */
+const westernOneLine = (title: string, font: string, width: number) =>
+  title.length * WESTERN_CAPS_EM[font] * WESTERN_TITLE_SIZE <= width * DESIGN_WIDTH;
+/** Width of a letter of the count labels' sentences ("All Walkers"), in em, as tuned for them (`WesternLabel`). */
+const WESTERN_LABEL_EM: Record<string, number> = { Rye: 0.95 * 0.7, 'ZillaSlab-Bold': 0.78 * 0.7, 'PTSerif-Bold': 0.82 * 0.7 };
+/**
+ * Number of every card, in the top right corner above the title (x of its left edge and width, y of its top and height):
+ * the title has the whole width of the plank under it, whichever of its lines is the longest.
+ */
+const WESTERN_NUMBER = { left: 0.7, width: 0.25, top: 0.006, height: 0.036 };
+/**
+ * The "i" that says there is a rule on the back, at the right: just under a header plank (the title has the whole
+ * width of the plank), or near the top of a card whose plank is at the bottom.
+ */
+const WESTERN_BADGE = { right: 0.035, top: 0.12, belowPlank: 0.012 };
 /** Rule text of the text card, and the "One Extra Activation" line of an Extra Activation card (y of top and height). */
 const WESTERN_RULE_TEXT = { top: 0.665, height: 0.32, left: 0.07, width: 0.86 };
 const WESTERN_EXTRA_FOOTER = { top: 0.89, height: 0.075 };
@@ -121,6 +138,9 @@ const westernBossOf = (card: ZombieCard, reveal?: Reveal): WesternAbomination | 
   const named = revealedAbomination(card, reveal);
   return named && isWesternAbomination(named) ? named : undefined;
 };
+
+/** A cream halo round the ink of a Western plank, so the letters stand out from the wood grain. */
+const westernGlow = (s: number) => ({ textShadowColor: WESTERN_COLORS.inkGlow, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 * s });
 
 /** An image filling its parent: `absoluteFill` alone would leave it at its own pixel size on the web. */
 const FILL = { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' } as const;
@@ -707,8 +727,8 @@ function WesternPrinted(props: {
         <NameLabel
           style={[
             layout.extra ? styles.westernExtraTitle : styles.westernPrintedTitle,
-            // A title of several words ("Long-Dead Walkers") goes on two lines in the room of the printed one.
-            props.layout === 'spawn' && /\s/.test(title) && styles.westernPrintedTitleTwoLines,
+            // A title of several words too long for one line ("Long-Dead Walkers") goes on two in the same room.
+            props.layout === 'spawn' && /\s/.test(title) && !westernOneLine(title, fonts.title, layout.title.width) && styles.westernPrintedTitleTwoLines,
             { color: ink, fontFamily: fonts.title },
             layout.centered && styles.westernCenteredText,
           ]}
@@ -719,7 +739,7 @@ function WesternPrinted(props: {
       </View>
       {number !== '' && <Text style={[at(WESTERN_NUMBER), styles.westernNumber, { fontFamily: fonts.count }]}>{number}</Text>}
       {!!footer && !props.footerOnFront && (
-        <View style={[styles.infoBadge, { position: 'absolute', right: `${WESTERN_BADGE.right * 100}%`, top: `${WESTERN_BADGE.top * 100}%` }]}>
+        <View style={[styles.infoBadge, { position: 'absolute', right: `${WESTERN_BADGE.right * 100}%`, top: `${(layout.plank.part === 'header' ? layout.plank.bottom + WESTERN_BADGE.belowPlank : WESTERN_BADGE.top) * 100}%` }]}>
           <Text style={styles.infoBadgeText}>i</Text>
         </View>
       )}
@@ -764,7 +784,7 @@ function WesternLabel(props: {
   const twoLinesStyle = (props.sentence?.length ?? 0) > WESTERN_LABEL_ONE_LINE_CHARS;
   const textStyle = [props.sentence ? styles.westernLabelSentence : styles.westernLabelCount, props.big && (props.sentence ? styles.westernLabelSentenceBig : styles.westernLabelCountBig), twoLinesStyle && styles.westernLabelTwoLines, { fontFamily: fonts.count }];
   const twoLines = (props.sentence?.length ?? 0) > WESTERN_LABEL_ONE_LINE_CHARS;
-  const fit = useWordFit(props.sentence, textStyle, 8 * scale, WESTERN_CAPS_EM[fonts.count] * 0.7);
+  const fit = useWordFit(props.sentence, textStyle, 8 * scale, WESTERN_LABEL_EM[fonts.count]);
   return (
     <View
       pointerEvents="none"
@@ -868,13 +888,36 @@ function Plank({ style, part, children }: { style?: StyleProp<ViewStyle>; part?:
 const WESTERN_PICTURE_RATIO = 88 / 63;
 
 /**
- * Top margin, as a share of the window width (a percentage margin is relative to the width), that brings the point
- * `center` (share of the illustration's height) to the middle of a window of `ratio` without leaving the picture.
+ * Where a full illustration sits in a window of `ratio`, in shares of the window's height (an absolute `top` and
+ * `height` in percent are relative to the parent's height): it fills the width, and the point `center` (share of the
+ * illustration's height) comes to the middle of the window without the window leaving the picture.
  */
-const framingTop = (ratio: number, center: number) => {
-  const spare = WESTERN_PICTURE_RATIO - 1 / ratio;
-  return `${-100 * Math.min(spare, Math.max(0, center * WESTERN_PICTURE_RATIO - 0.5 / ratio))}%` as const;
+const framing = (ratio: number, center: number): ImageStyle => {
+  // In window widths: the picture's height, the window's height and how far the picture moves up.
+  const picture = WESTERN_PICTURE_RATIO;
+  const window = 1 / ratio;
+  const shift = Math.min(picture - window, Math.max(0, center * picture - window / 2));
+  return { position: 'absolute', left: 0, width: '100%', top: `${(-100 * shift) / window}%`, height: `${(100 * picture) / window}%` };
 };
+
+/**
+ * The illustration of a named Abomination framed on `center` in its picture area: a window of `ratio`, or (no `ratio`)
+ * whatever room the card leaves under its header, measured once laid out.
+ */
+function FramedPicture({ source, ratio, center, style }: { source: ImageSourcePropType; ratio?: number; center: number; style: StyleProp<ViewStyle> }) {
+  const [measured, setMeasured] = useState<number>();
+  const shape = ratio ?? measured;
+  const picture = useMemo(() => (shape === undefined ? undefined : framing(shape, center)), [shape, center]);
+  const measure = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    if (height > 0) setMeasured(width / height);
+  };
+  return (
+    <View style={[style, ratio !== undefined && { aspectRatio: ratio }]} onLayout={ratio === undefined ? measure : undefined}>
+      {picture !== undefined && <Image source={source} style={picture} resizeMode="cover" />}
+    </View>
+  );
+}
 
 /**
  * A named Western Abomination with a title plank, an illustration window and a wooden rule panel. A full illustration
@@ -897,16 +940,17 @@ function WesternWindowCard(props: {
   return (
     <View style={[styles.face, { backgroundColor: WESTERN_COLORS.face }]} {...readerProps(props.text, announced)}>
       <CardHeader title={props.title} subtitle={props.subtitle} color={WESTERN_COLORS.header} badge={!!footer && !props.footerOnFront} western />
-      <View style={[styles.westernWindow, { aspectRatio: ratio }]}>
-        {center === undefined ? (
-          <Image source={source} style={FILL} resizeMode="cover" />
-        ) : (
-          <Image source={source} style={{ width: '100%', aspectRatio: 1 / WESTERN_PICTURE_RATIO, marginTop: framingTop(ratio, center) }} resizeMode="cover" />
-        )}
-      </View>
-      <Plank style={styles.westernPanel} part="footer">
-        {props.footerOnFront && <Text style={[styles.westernPanelText, { fontFamily: fonts.text }]}>{props.rule}</Text>}
-      </Plank>
+      {props.footerOnFront ? (
+        <>
+          <FramedPicture source={source} ratio={ratio} center={center} style={styles.westernWindow} />
+          <Plank style={styles.westernPanel} part="footer">
+            <Text style={[styles.westernPanelText, { fontFamily: fonts.text }]}>{props.rule}</Text>
+          </Plank>
+        </>
+      ) : (
+        // The rule is on the back (the "i" in the header says so): no empty panel, the picture runs to the bottom.
+        <FramedPicture source={source} center={center} style={styles.westernPictureOnly} />
+      )}
     </View>
   );
 }
@@ -1653,21 +1697,24 @@ function makeStyles(s: number) {
     // The red brush stroke along the top edge of a printed header.
     westernBrush: { position: 'absolute', top: 0, left: 0, width: '58%', height: 5 * s, backgroundColor: WESTERN_COLORS.brush, borderBottomRightRadius: 8 * s },
     westernTitleBox: { flex: 1, minWidth: 0 },
-    westernTitle: { color: WESTERN_COLORS.header.text, fontSize: 23 * s, lineHeight: 23 * s, fontWeight: 'normal', textTransform: 'uppercase' },
+    westernTitle: { color: WESTERN_COLORS.header.text, fontSize: 23 * s, lineHeight: 23 * s, fontWeight: 'normal', textTransform: 'uppercase', ...westernGlow(s) },
     westernTitleRule: { height: 2 * s, marginTop: 2 * s, backgroundColor: WESTERN_COLORS.header.text, opacity: 0.8 },
-    westernSubtitle: { color: WESTERN_COLORS.header.text, fontSize: 10 * s, lineHeight: 12 * s, fontWeight: 'normal', textTransform: 'uppercase' },
+    westernSubtitle: { color: WESTERN_COLORS.header.text, fontSize: 10 * s, lineHeight: 12 * s, fontWeight: 'normal', textTransform: 'uppercase', ...westernGlow(s) },
     westernBody: { flex: 1 },
     // The picture of an Abomination card: the printed window is landscape (the official art is cut to this ratio).
     westernWindow: { width: '100%', overflow: 'hidden', borderBottomWidth: 2 * s, borderBottomColor: WESTERN_COLORS.plankDark },
+    westernPictureOnly: { flex: 1, width: '100%', overflow: 'hidden' },
     westernPanel: { flex: 1, justifyContent: 'center', paddingHorizontal: 10 * s, paddingVertical: 6 * s, borderBottomWidth: 0 },
     // What the app writes over a printed card (see WESTERN_LAYOUTS): the title sits on the bottom edge of its box.
     westernTitleSlot: { position: 'absolute', justifyContent: 'flex-end' },
     westernCenteredBox: { alignItems: 'center' },
     westernCenteredText: { textAlign: 'center' },
-    westernPrintedTitle: { fontSize: 19 * s, lineHeight: 21 * s, fontWeight: 'normal', textTransform: 'uppercase' },
-    westernPrintedTitleTwoLines: { fontSize: 11.5 * s, lineHeight: 12 * s },
-    westernExtraTitle: { fontSize: 18 * s, lineHeight: 17 * s, fontWeight: 'normal', textTransform: 'uppercase' },
-    westernNumber: { color: WESTERN_COLORS.paperInk, opacity: 0.55, fontSize: 12 * s, fontWeight: 'normal', textAlign: 'right' },
+    westernPrintedTitle: { fontSize: WESTERN_TITLE_SIZE * s, lineHeight: (WESTERN_TITLE_SIZE + 1) * s, fontWeight: 'normal', textTransform: 'uppercase', ...westernGlow(s) },
+    // Two lines of this fill the title box (0.096 of the card): for a title of several words that does not fit on one
+    // line at the size above (`westernOneLine`).
+    westernPrintedTitleTwoLines: { fontSize: 15 * s, lineHeight: 15 * s },
+    westernExtraTitle: { fontSize: 18 * s, lineHeight: 17 * s, fontWeight: 'normal', textTransform: 'uppercase', ...westernGlow(s) },
+    westernNumber: { color: WESTERN_COLORS.header.text, opacity: 0.9, fontSize: 11 * s, fontWeight: 'normal', textAlign: 'right', lineHeight: 11.5 * s, ...westernGlow(s) },
     westernFooterBox: { alignItems: 'center', justifyContent: 'center' },
     // Count label: cream paper, a dark edge on its left and underside as on the printed one, the strip at its end.
     westernLabel: { position: 'absolute', right: 0, overflow: 'hidden' },

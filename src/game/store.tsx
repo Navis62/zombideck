@@ -157,7 +157,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           ) as unknown as ByUniverse<string[]>,
         );
         setAllThreats(
-          Object.fromEntries(UNIVERSE_IDS.map((id) => [id, parseThreat(read(threatKey(id)))])) as unknown as ByUniverse<Threat>,
+          Object.fromEntries(UNIVERSE_IDS.map((id) => [id, parseThreat(read(threatKey(id)), UNIVERSES[id].bosses?.rules)])) as unknown as ByUniverse<Threat>,
         );
         const savedCardDisplay = read(CARD_DISPLAY_KEY);
         const savedZoneDisplay = read(ZONE_DISPLAY_KEY);

@@ -348,10 +348,10 @@ export const westernCardArt = (card: WesternCard): ImageSourcePropType => {
 /**
  * The picture of each named Western Abomination, shown in a window between the app's title plank and rule panel.
  * `ratio` is the window's own width over height, kept between 1.25 and 1.75 (the printed window grows or shrinks with
- * the length of the rule). `source` is either a full 63:88 illustration, framed in the window by `center`, or (no
- * `center`) a picture already cut to the window.
+ * the length of the rule). `source` is a full 63:88 illustration, framed in the window by `center`: the height (share
+ * of the picture) brought to the middle of the window, so the creature's head and body stay in view.
  */
-const WESTERN_WINDOWS: Record<WesternAbomination, { source: ImageSourcePropType; ratio: number; center?: number }> = {
+const WESTERN_WINDOWS: Record<WesternAbomination, { source: ImageSourcePropType; ratio: number; center: number }> = {
   bowlerHat: { source: require('../../assets/western/abominations/bowler-hat-card.jpg'), ratio: 1.25, center: 0.38 },
   nightmareHorse: { source: require('../../assets/western/abominations/nightmare-horse-card.jpg'), ratio: 1.25, center: 0.4 },
   abominape: { source: require('../../assets/western/abominations/abominape-card.jpg'), ratio: 1.463, center: 0.45 },
@@ -359,7 +359,7 @@ const WESTERN_WINDOWS: Record<WesternAbomination, { source: ImageSourcePropType;
   abominabear: { source: require('../../assets/western/abominations/abominabear-card.jpg'), ratio: 1.25, center: 0.45 },
   texasDeadhorn: { source: require('../../assets/western/abominations/texas-deadhorn-card.jpg'), ratio: 1.25, center: 0.45 },
   bizon: { source: require('../../assets/western/abominations/bizon-card.jpg'), ratio: 1.25, center: 0.46 },
-  bloodBull: { source: require('../../assets/western/abominations/blood-bull-card.jpg'), ratio: 1.25, center: 0.48 },
+  bloodBull: { source: require('../../assets/western/abominations/blood-bull-card.jpg'), ratio: 1.25, center: 0.32 },
   littleTrickster: { source: require('../../assets/western/abominations/little-trickster-card.jpg'), ratio: 1.565, center: 0.42 },
   goreGeyser: { source: require('../../assets/western/abominations/gore-geyser-card.jpg'), ratio: 1.75, center: 0.4 },
   meltingPot: { source: require('../../assets/western/abominations/melting-pot-card.jpg'), ratio: 1.548, center: 0.43 },

@@ -72,7 +72,9 @@ export const INVADER_TAB_DARK: Record<DangerLevel, string> = {
  */
 export const WESTERN_COLORS = {
   /** Title plank: its ink is the dark brown of the printed titles. */
-  header: { background: '#e0b072', text: '#3a2410' },
+  header: { background: '#e0b072', text: '#1f1208' },
+  /** Cream halo round that ink, so it stands out from the grain of the plank picture. */
+  inkGlow: 'rgba(255, 238, 205, 0.75)',
   /** Card stock behind the picture. */
   face: '#b9803f',
   /** Plank of the rule box on the back, and of the footer on the front. */

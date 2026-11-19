@@ -286,7 +286,7 @@ export function presentSetIds(sets: readonly CardSet[], setIds: Iterable<string>
  * that call on the Abomination deck). With no named Abomination available and switched on, there is no boss deck and
  * the game plays as the printed deck does. The Necromancer deck stays empty: the era has no Necromancers.
  */
-function abominationTailor(sets: readonly CardSet[], listed: readonly Boss<string>[]) {
+function abominationTailor(sets: readonly CardSet[], listed: readonly Boss<string>[], rules: readonly BossRule[] = BOSS_RULES) {
   return (
     cards: readonly ZombieCard[],
     threat: Threat,
@@ -300,7 +300,8 @@ function abominationTailor(sets: readonly CardSet[], listed: readonly Boss<strin
     return {
       cards: [...cards],
       bosses: {
-        rule: threat.bossRule,
+        // A rule the era does not have (a choice saved by an older version) falls back to its first one.
+        rule: rules.includes(threat.bossRule) ? threat.bossRule : rules[0],
         abomination: chosen.flatMap((boss) => Array<string>(boss.copies ?? 1).fill(boss.zombie)),
         necromancer: [],
       },
@@ -340,7 +341,7 @@ export const WESTERN_ABOMINATIONS: readonly Boss<WesternAbomination>[] = [
   { zombie: 'steamMonster', setId: 'gearsAndGuns' },
 ];
 
-export const tailorWesternDeck = abominationTailor(WESTERN_SETS, WESTERN_ABOMINATIONS);
+export const tailorWesternDeck = abominationTailor(WESTERN_SETS, WESTERN_ABOMINATIONS, WESTERN_BOSS_RULES);
 
 /** The bosses a saved modern boss deck may hold. */
 export const MODERN_BOSS_IDS: ReadonlySet<string> = new Set(MODERN_ABOMINATIONS.map((boss) => boss.zombie));
@@ -362,14 +363,17 @@ export const isWesternAbomination = (boss: string): boss is WesternAbomination =
 
 const isBossRule = (value: unknown): value is BossRule => BOSS_RULES.includes(value as BossRule);
 
-/** Stored choices, checked: anything unreadable falls back to the defaults (every boss in, one at a time). */
-export function parseThreat(raw: string | null): Threat {
+/**
+ * Stored choices, checked: anything unreadable falls back to the defaults (every boss in, one at a time), and a rule
+ * missing from the universe's `rules` to its first one.
+ */
+export function parseThreat(raw: string | null, rules: readonly BossRule[] = BOSS_RULES): Threat {
   try {
     const parsed: unknown = raw ? JSON.parse(raw) : null;
     if (!parsed || typeof parsed !== 'object') return DEFAULT_THREAT;
     const { bossRule, off } = parsed as Record<string, unknown>;
     return {
-      bossRule: isBossRule(bossRule) ? bossRule : DEFAULT_THREAT.bossRule,
+      bossRule: isBossRule(bossRule) && rules.includes(bossRule) ? bossRule : (rules[0] ?? DEFAULT_THREAT.bossRule),
       off: Array.isArray(off) ? off.filter((id): id is string => typeof id === 'string') : [],
     };
   } catch {

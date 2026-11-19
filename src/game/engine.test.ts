@@ -6,7 +6,7 @@ import { CARD_SETS, OPTIONAL_SETS } from '../data/decks.ts';
 import { BOSS_RULE_IDS, BOSSES_WITHOUT_RULE, FANTASY_SETS } from '../data/fantasy.ts';
 import { WESTERN_SETS } from '../data/western.ts';
 import { en } from '../i18n/en.ts';
-import { type Boss, DEFAULT_THREAT, FANTASY_BOSS_IDS, MODERN_ABOMINATIONS, MODERN_BOSS_IDS, parseThreat, WESTERN_ABOMINATIONS, WESTERN_BOSS_IDS, presentSetIds, tailorFantasyDeck, tailorModernDeck, type Threat } from '../data/threat.ts';
+import { type Boss, DEFAULT_THREAT, FANTASY_BOSS_IDS, MODERN_ABOMINATIONS, MODERN_BOSS_IDS, parseThreat, WESTERN_ABOMINATIONS, WESTERN_BOSS_IDS, WESTERN_BOSS_RULES, presentSetIds, tailorFantasyDeck, tailorModernDeck, tailorWesternDeck, type Threat } from '../data/threat.ts';
 import { allExpansions, tailorDeck, bossCopiesOf, bossIdsOf, bossTrigger as fantasyBossTrigger, CARDS_BY_ID, cardEffect, cardIdsOf, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
 import {
   activeSetIds,
@@ -962,6 +962,14 @@ test('a new game deals the tailored deck', () => {
   assert.equal(game.piles.draw.length, fantasyDeck(setIds).cards.length);
   // Frozen Fortress prints no spawn card, yet its bosses are in the boss decks.
   assert.ok(game.piles.bosses?.abomination.draw.includes('yeti'));
+});
+
+test('a Western game never plays the Abomination Fest, even from a saved choice', () => {
+  // The Western rulebooks have no Abomination Fest, and its options screen offers no choice.
+  assert.deepEqual(parseThreat('{"bossRule":"fest","off":[]}', WESTERN_BOSS_RULES), { bossRule: 'oneAtATime', off: [] });
+  const cards = WESTERN_SETS.flatMap((set) => set.cards);
+  const deck = tailorWesternDeck(cards, { bossRule: 'fest', off: [] }, new Set(['undeadOrAlive']));
+  assert.equal(deck.bosses?.rule, 'oneAtATime');
 });
 
 test('stored boss choices are checked, every boss in and one at a time by default', () => {

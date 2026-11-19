@@ -114,6 +114,7 @@ function ThreatOptions() {
   const abominations = available(decks?.abominations);
   const necromancers = available(decks?.necromancers);
   const necromancerListed = (decks?.necromancers.length ?? 0) > 0;
+  const rules = decks?.rules ?? BOSS_RULES;
 
   const toggle = (zombie: string, on: boolean) =>
     setThreat((current) => ({
@@ -150,12 +151,15 @@ function ThreatOptions() {
       <Text style={styles.heading}>{t('threat.rules')}</Text>
       {/* Modern has no Necromancers: its own sentence says the Abomination deck is the only one. */}
       <Text style={styles.muted}>{t(necromancerListed ? 'threat.deadMenTalesDetail' : 'threat.abominationDeckDetail')}</Text>
-      <Choices
-        options={decks?.rules ?? BOSS_RULES}
-        selected={threat.bossRule}
-        label={(rule) => t(RULE_LABELS[rule].label)}
-        onSelect={(bossRule) => setThreat((current) => ({ ...current, bossRule }))}
-      />
+      {/* A single way to deal the bosses (Western has no Abomination Fest): nothing to choose, only its rule is said. */}
+      {rules.length > 1 && (
+        <Choices
+          options={rules}
+          selected={threat.bossRule}
+          label={(rule) => t(RULE_LABELS[rule].label)}
+          onSelect={(bossRule) => setThreat((current) => ({ ...current, bossRule }))}
+        />
+      )}
       <Text style={styles.muted}>{t(RULE_LABELS[threat.bossRule].detail)}</Text>
       {abominations.length > 0 && <Text style={styles.heading}>{t('threat.abominations')}</Text>}
       {switches(abominations)}
