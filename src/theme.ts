@@ -37,33 +37,16 @@ export const INVADER_COLORS = {
   hazardBase: '#0d2230',
   hazardStripe: '#2fb5c4',
   hazardAlert: '#e5261f',
-  /** The printed Invader card (brushed metal frame, dark red title plate and rule box, navy grid behind the Xeno). */
-  metal: '#8a9097',
-  metalLight: '#c3c8ce',
-  metalDark: '#4a5057',
-  /** Navy panel behind the picture. */
-  background: '#0e1a2b',
-  /** Title plate and rule box: dark crimson with a lighter edge. */
-  plate: '#6a1118',
-  plateEdge: '#b53a3f',
+  /** The printed Invader card: dark red behind the picture, tinting the navy grid of the background part. */
+  backdrop: '#4a0d12',
+  /** Shadow of the count on its tab, and light red ink of a rule in its box. */
+  tabShadow: '#111820',
+  ruleInk: '#ffe3e0',
+  /** Ink of the title and of the number badge. */
   plateInk: '#ffffff',
-  /** Number badge under the title. */
-  badge: '#e8892a',
-  badgeRim: '#a8570f',
   badgeInk: '#ffffff',
-  /** Hazard stripes of the plate and the bottom band. */
-  stripeYellow: '#e6b52a',
-  stripeBlack: '#1b1b1b',
   /** Ink on a Danger Level tab. */
   tabInk: '#ffffff',
-};
-
-/** Hexagon of each Danger Level tab on a printed Invader card: the tab colour, darkened. */
-export const INVADER_TAB_DARK: Record<DangerLevel, string> = {
-  blue: '#0e3a56',
-  yellow: '#6e5509',
-  orange: '#6e330c',
-  red: '#611010',
 };
 
 /**

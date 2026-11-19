@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, useState } from 'react';
 import { Image, type ImageSourcePropType, type ImageStyle, type LayoutChangeEvent, Platform, Pressable, ScrollView, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle } from 'react-native';
 import Svg, { Path, Polygon } from 'react-native-svg';
 
+import { COUNT_TAB_HEXAGON, INVADER_PARTS } from '@/components/invader-parts';
 import { SCROLL_TRACKING } from '@/components/scroll-guard';
 import { COUNT_LABEL_STRIP, WESTERN_PARTS } from '@/components/western-parts';
 import { type ArtSubject, artSubject, westernCardArt, westernTextCardArt, westernWindow, ZombieFigure } from '@/components/zombie-art';
@@ -36,7 +37,7 @@ import {
   type ZombieType,
 } from '@/game/types';
 import type { Translate, TranslationKey } from '@/i18n/translations';
-import { CARD_COLORS, DANGER_COLORS, INVADER_COLORS, PRESSED, WESTERN_COLORS, westernFonts } from '@/theme';
+import { CARD_COLORS, DANGER_COLORS, INVADER_COLORS, PRESSED, WESTERN_COLORS, invaderFonts, westernFonts } from '@/theme';
 
 // Printed top-down on the cards, red first.
 const PRINTED_LEVELS = [...DANGER_LEVELS].reverse();
@@ -160,6 +161,70 @@ const RULE_ART_MIN_HEIGHT = 80;
 export const CardAnnounced = createContext(false);
 /** The props that take a view and everything in it out of the screen reader; touches are unaffected. */
 export const HIDDEN_FROM_READER = { accessible: false, accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' } as const;
+
+/*
+ * Card fronts follow the printed ones (Invader rulebook, pages 28 and 29). Positions are shares of the card's width
+ * and height, measured on the printed card: the four count tabs (Red, Orange, Yellow, Blue from the top) lie over the
+ * picture on the right and run out past the card edge; Extra Activation tabs start further left to hold a sentence.
+ */
+/** Top of each count tab, Red first, in % of the card height. */
+const INVADER_TAB_TOPS = [28, 44, 59, 74];
+/** Top of the lone tab of the "current level" display, in % of the card height: the middle of where the four were. */
+const INVADER_SINGLE_TAB_TOP = 46;
+/**
+ * Left edge and width of a count tab, in % of the card width (the tab is cut by the card edge). Its height follows from
+ * `INVADER_TAB_RATIO`, so the hexagon is never stretched: tabs are placed by their top only.
+ */
+const INVADER_TAB_LEFT = 68;
+const INVADER_TAB_WIDTH = 46;
+/** The same for an Extra Activation tab ("All Workers", "No one"): wider and starting further left, hence taller. */
+const INVADER_WIDE_TAB_LEFT = 55;
+const INVADER_WIDE_TAB_WIDTH = 59;
+/** The same for the lone tab of the "current level" display, larger than the four. */
+const INVADER_SINGLE_TAB_LEFT = 62;
+const INVADER_SINGLE_TAB_WIDTH = 56;
+/** Width over height of count-tab.png (520 x 150). */
+const INVADER_TAB_RATIO = 520 / 150;
+/** Width over height of number-badge.png (170 x 110), and the badge width in % of the card width. */
+const INVADER_BADGE_RATIO = 170 / 110;
+/**
+ * The rule is set as large as fits its box: web ignores adjustsFontSizeToFit, so the size comes from the text length.
+ * Text space of the box in design units squared (about 199 x 92, minus 10 % spare), width of a letter in em (Barlow
+ * Condensed Italic, then Play for Cyrillic), line height over font size, and the largest and smallest sizes.
+ */
+const INVADER_RULE_AREA = 16000;
+const INVADER_RULE_CHAR_EM = { latin: 0.52, cyrillic: 0.62 };
+const INVADER_RULE_LINE = 1.1;
+const INVADER_RULE_SIZE = { max: 14, min: 7 };
+/** Lines of a rule on native, where the text shrinks to fit (more than the box holds at the smallest size). */
+const INVADER_RULE_LINES = 12;
+/** Inset of the rule text inside the box, in % of the box: clear of the rim of text-box.png, which is opaque to its edges. */
+const INVADER_RULE_INSET = '4%';
+/** The count tint over the white tab keeps its bevel visible; an inactive tab is a little dimmer than the current one. */
+const INVADER_TAB_TINT_OPACITY = 0.76;
+const INVADER_TAB_DIM_OPACITY = 0.85;
+/** Veils over the card: the red backdrop over the navy grid, and over the picture (the official renders sit on navy). */
+const INVADER_BACKDROP_OPACITY = 0.88;
+const INVADER_ART_VEIL_OPACITY = 0.4;
+/** Shadow behind a count so it reads on the pale tab, and how far its font may shrink on native. */
+const INVADER_COUNT_SHADOW_RADIUS = 2;
+const INVADER_COUNT_MIN_SCALE = 0.45;
+const INVADER_TITLE_MIN_SCALE = 0.5;
+/** Gap between the hexagon of a wide tab and the sentence, and the width of the sentence (the part of the bar still inside the card). */
+const INVADER_ACTIVATION_WIDTH = '44%';
+/** Width of a capital of Barlow Condensed in em, for an Extra Activation sentence that must not break a word. */
+const INVADER_ACTIVATION_CHAR_EM = 0.6;
+/** Width of an uppercase letter of Play (Cyrillic titles), in em: wider than Barlow Condensed, so a long word shrinks sooner. */
+const INVADER_CYRILLIC_CHAR_EM = 0.85;
+/** Characters that fit on the two lines of the title plate at full size (web ignores adjustsFontSizeToFit): Latin, Cyrillic. */
+const INVADER_TITLE_CAPACITY = { latin: 34, cyrillic: 22 };
+/**
+ * Uppercase Barlow Condensed has no descenders, so its capitals sit below the middle of their line box: the block is
+ * lifted by this share of the font size (measured on the web preview, about 2 px on a 31 px title) to centre them.
+ */
+const INVADER_TITLE_LIFT = 0.08;
+/** Smallest share of the title size a long title is shrunk to. */
+const INVADER_MIN_TITLE_SCALE = 0.6;
 
 type CardStyles = ReturnType<typeof makeStyles>;
 const CardStyle = createContext<{ styles: CardStyles; scale: number }>({ styles: makeStyles(1), scale: 1 });
@@ -438,6 +503,8 @@ export function cardHasBack(card: ZombieCard, danger: DangerLevel, t: Translate,
   const shown = asRevealed(card, reveal);
   const { footer } = cardText(shown, danger, t, reveal);
   const printed = isFantasyCard(shown) && revealedName(reveal) && (shown.kind === 'bossCall' || shown.kind === 'necromancer');
+  // An Invader Abomination, Mold or Pit Spawn prints its rule in the red box on the front, as the printed card does.
+  if (isInvaderCard(shown) && shown.kind !== 'xeno' && shown.kind !== 'xenoExtra') return false;
   // A Western rule stays on the front as long as it fits its panel; an Extra Activation line is short anyway.
   if (isWesternCard(shown) && shown.kind !== 'westernExtra') return !!footer && !westernFits(footer, t, westernBossOf(shown, reveal));
   return !!footer && (!isShort(footer) || !!printed);
@@ -615,51 +682,112 @@ function Card({ card: printed, danger, reveal, side, onFlip }: { card: ZombieCar
   );
 }
 
-/** Sci-fi card: Modern layout (picture, Danger Levels) in cold colours; the cards without levels print their rule below. */
-function InvaderFace({ card, danger, text, footerOnFront }: { card: InvaderCard; danger: DangerLevel; text: CardText; footerOnFront: boolean }) {
-  const { t, cardDisplay } = useApp();
+/** A Danger Level tab: the neutral tab picture tinted with the level colour, with its count or sentence on it. */
+function InvaderTab(props: { style: StyleProp<ViewStyle>; tint: string; textStyle: StyleProp<TextStyle>; wide: boolean; children: string }) {
   const { styles } = useContext(CardStyle);
-  const current = cardDisplay === 'current';
-  const header = headerFor(card);
-  const panel = { backgroundColor: INVADER_COLORS.panel };
-  if (card.kind === 'xenoAbomination') {
-    return (
-      <Frame card={card} text={text} headerColor={header} faceColor={INVADER_COLORS.face} footerOnFront={footerOnFront}>
-        <View style={styles.artShort}>
-          <ZombieFigure subject={card.zombie} anchor="upper" />
-        </View>
-      </Frame>
-    );
-  }
+  // An Extra Activation sentence never breaks inside a word: it shrinks first.
+  const fit = useWordFit(props.wide ? props.children : undefined, props.textStyle, 0, INVADER_ACTIVATION_CHAR_EM);
   return (
-    <Frame card={card} text={text} headerColor={header} faceColor={INVADER_COLORS.face} footerOnFront={footerOnFront}>
-      <View style={styles.spawnBody}>
-        <View style={styles.art}>
-          <ZombieFigure subject={card.zombie} anchor="center" />
-        </View>
-        <View style={[styles.levels, panel]}>
-          {card.kind === 'zoneSpawn' && <Text style={styles.zoneCount}>×{card.count}</Text>}
-          {card.kind === 'xeno' &&
-            (current ? (
-              <Level level={danger} active large>
-                ×{card.counts[DANGER_LEVELS.indexOf(danger)]}
-              </Level>
-            ) : (
-              PRINTED_LEVELS.map((shown) => (
-                <Level key={shown} level={shown} active={shown === danger}>
-                  ×{card.counts[DANGER_LEVELS.indexOf(shown)]}
-                </Level>
-              ))
-            ))}
-          {card.kind === 'xenoExtra' &&
-            (current ? [danger] : PRINTED_LEVELS).map((shown) => (
-              <Level key={shown} level={shown} active={shown === danger} wide large={current}>
-                {extraLine(card.zombie, shown, t)}
-              </Level>
-            ))}
+    <View style={props.style}>
+      {/* Keep the bevel and texture visible through the level tint. */}
+      <Image source={INVADER_PARTS.countTab} style={styles.invaderLayer} resizeMode="stretch" />
+      <Image source={INVADER_PARTS.countTab} style={[styles.invaderLayer, { tintColor: props.tint, opacity: INVADER_TAB_TINT_OPACITY }]} resizeMode="stretch" />
+      <View onLayout={props.wide ? fit.onLayout : undefined} style={props.wide ? styles.invaderActivationBox : undefined}>
+        <Text
+          style={[props.textStyle, fit.style]}
+          // Web has no shrink-to-fit: a line limit there would only cut "×10" down to "×…".
+          numberOfLines={Platform.OS === 'web' ? undefined : props.wide ? 2 : 1}
+          adjustsFontSizeToFit
+          minimumFontScale={INVADER_COUNT_MIN_SCALE}
+        >
+          {props.children}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function InvaderFace({ card, danger, text, footerOnFront }: { card: InvaderCard; danger: DangerLevel; text: CardText; footerOnFront: boolean }) {
+  const { t, language, cardDisplay } = useApp();
+  const { styles, scale } = useContext(CardStyle);
+  const announced = useContext(CardAnnounced);
+  const fonts = invaderFonts(language);
+  const current = cardDisplay === 'current';
+  const extra = card.kind === 'xenoExtra';
+  const hasLevels = card.kind === 'xeno' || extra;
+  const rule = !extra && (!hasLevels || footerOnFront) ? text.footer : undefined;
+  const number = card.id.slice(-3);
+  const cyrillic = language === 'ru' || language === 'uk';
+  const ruleSize = rule
+    ? Math.max(INVADER_RULE_SIZE.min, Math.min(INVADER_RULE_SIZE.max, Math.sqrt(INVADER_RULE_AREA / (rule.length * (cyrillic ? INVADER_RULE_CHAR_EM.cyrillic : INVADER_RULE_CHAR_EM.latin) * INVADER_RULE_LINE))))
+    : 0;
+  const titleScale = Math.max(INVADER_MIN_TITLE_SCALE, Math.min(1, (cyrillic ? INVADER_TITLE_CAPACITY.cyrillic : INVADER_TITLE_CAPACITY.latin) / text.title.length));
+
+  const tabPlace = (level: DangerLevel, wide: boolean) => ({
+    top: `${current ? INVADER_SINGLE_TAB_TOP : INVADER_TAB_TOPS[PRINTED_LEVELS.indexOf(level)]}%` as const,
+    left: `${current ? INVADER_SINGLE_TAB_LEFT : wide ? INVADER_WIDE_TAB_LEFT : INVADER_TAB_LEFT}%` as const,
+    width: `${current ? INVADER_SINGLE_TAB_WIDTH : wide ? INVADER_WIDE_TAB_WIDTH : INVADER_TAB_WIDTH}%` as const,
+  });
+
+  return (
+    <View style={[styles.face, styles.invaderFace]} {...readerProps(text, announced)}>
+      <Image source={INVADER_PARTS.background} style={styles.invaderLayer} resizeMode="stretch" />
+      <View style={styles.invaderBackdrop} />
+      <View style={styles.invaderArt}>
+        <ZombieFigure subject={card.zombie} anchor="fill" />
+        <View style={styles.invaderArtTint} />
+      </View>
+      <Image source={INVADER_PARTS.frame} style={styles.invaderLayer} resizeMode="stretch" />
+      <Image source={INVADER_PARTS.hazardBand} style={styles.invaderHazard} resizeMode="stretch" />
+      <View style={styles.invaderTitlePlate}>
+        <Image source={INVADER_PARTS.titlePlate} style={styles.invaderLayer} resizeMode="stretch" />
+        <View style={styles.invaderTitleArea}>
+          <NameLabel text={text.title} style={[styles.invaderTitle, { fontFamily: fonts.title, fontSize: styles.invaderTitle.fontSize * titleScale, lineHeight: styles.invaderTitle.lineHeight * titleScale, transform: [{ translateY: -styles.invaderTitle.fontSize * titleScale * INVADER_TITLE_LIFT }] }]} minimumFontScale={INVADER_TITLE_MIN_SCALE} charEm={cyrillic ? INVADER_CYRILLIC_CHAR_EM : undefined} />
         </View>
       </View>
-    </Frame>
+      <View style={styles.invaderNumberBadge}>
+        <Image source={INVADER_PARTS.numberBadge} style={styles.invaderLayer} resizeMode="stretch" />
+        <Text style={[styles.invaderNumber, { fontFamily: fonts.count }]}>{number}</Text>
+      </View>
+      {hasLevels &&
+        (current ? [danger] : PRINTED_LEVELS).map((level) => {
+          const active = level === danger;
+          const count = card.kind === 'xeno' ? card.counts[DANGER_LEVELS.indexOf(level)] : 0;
+          return (
+            <InvaderTab
+              key={level}
+              style={[styles.invaderTab, tabPlace(level, extra), active && styles.invaderTabActive, ]}
+              tint={DANGER_COLORS[level].background}
+              textStyle={[styles.invaderCount, current && styles.invaderCountSingle, count >= 10 && (current ? styles.invaderCountSingleWide : styles.invaderCountWide), extra && styles.invaderActivation, { fontFamily: fonts.count }]}
+              wide={extra}
+            >
+              {extra ? extraLine(card.zombie, level, t) : `\u00d7${count}`}
+            </InvaderTab>
+          );
+        })}
+      {rule && (
+        <View style={styles.invaderRule}>
+          <Image source={INVADER_PARTS.textBox} style={styles.invaderLayer} resizeMode="stretch" />
+          {/* The padding is on this inner box, not on the one holding the image, so the panel always fills its frame. */}
+          <View style={styles.invaderRuleInner}>
+            <Text
+              style={[styles.invaderRuleText, { fontFamily: fonts.text, fontSize: ruleSize * scale, lineHeight: ruleSize * INVADER_RULE_LINE * scale }]}
+              // Web has no shrink-to-fit: a line limit there would only cut the rule short.
+              numberOfLines={Platform.OS === 'web' ? undefined : INVADER_RULE_LINES}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+            >
+              {rule}
+            </Text>
+          </View>
+        </View>
+      )}
+      {text.footer && !footerOnFront && (
+        <View style={styles.invaderInfo}>
+          <View style={styles.infoBadge}><Text style={styles.infoBadgeText}>i</Text></View>
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -1647,7 +1775,39 @@ function makeStyles(s: number) {
     // Type of the zombie above its large count, on a parchment strip so it reads on the red frame.
     fantasyBigLabelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 * s, minWidth: 0 },
     // The count of a Mold / Pit Spawn card, which has no Danger Levels: alone in the dark panel.
-    zoneCount: { color: INVADER_COLORS.header.text, fontSize: 56 * s, fontWeight: '900', textAlign: 'center' },
+    invaderFace: { backgroundColor: INVADER_COLORS.backdrop },
+    invaderLayer: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
+    // The navy grid darkened and reddened: the printed picture sits on a dark red backdrop.
+    invaderBackdrop: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: INVADER_COLORS.backdrop, opacity: INVADER_BACKDROP_OPACITY },
+    // The picture fills the whole card under the title, inside the frame; tabs and rule box lie over it.
+    invaderArt: { position: 'absolute', top: '15%', bottom: '2%', left: '3%', right: '3%', overflow: 'hidden' },
+    // The official renders sit on a navy backdrop; a red veil makes them read like the printed card's red picture.
+    invaderArtTint: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: INVADER_COLORS.backdrop, opacity: INVADER_ART_VEIL_OPACITY },
+    invaderHazard: { position: 'absolute', bottom: '1%', left: '5%', width: '90%', height: '8%' },
+    invaderTitlePlate: { position: 'absolute', top: '1%', left: '3%', width: '94%', height: '16.5%' },
+    // The red inside the plate's metal rim, measured on title-plate.png (760x190): x 53-700 (the notch for the badge
+    // cuts the right side), y 24-171 (the hazard strip is under it), so its middle sits at 51 %.
+    invaderTitleArea: { position: 'absolute', left: '7%', right: '8%', top: '15%', bottom: '11.5%', justifyContent: 'center' },
+    invaderTitle: { color: INVADER_COLORS.plateInk, fontSize: 21 * s, lineHeight: 21 * s, textAlign: 'center', textTransform: 'uppercase', includeFontPadding: false },
+    invaderNumberBadge: { position: 'absolute', left: '72%', top: '18%', width: '13%', aspectRatio: INVADER_BADGE_RATIO, justifyContent: 'center' },
+    invaderNumber: { color: INVADER_COLORS.badgeInk, fontSize: 12 * s, textAlign: 'center' },
+    invaderTab: { position: 'absolute', aspectRatio: INVADER_TAB_RATIO, justifyContent: 'center', opacity: INVADER_TAB_DIM_OPACITY },
+    invaderTabActive: { opacity: 1 },
+    invaderCount: { width: COUNT_TAB_HEXAGON, color: INVADER_COLORS.tabInk, fontSize: 25 * s, textAlign: 'center', textShadowColor: INVADER_COLORS.tabShadow, textShadowRadius: INVADER_COUNT_SHADOW_RADIUS },
+    invaderCountSingle: { fontSize: 30 * s },
+    // Two digits (x10) in the hexagon: smaller, or Play (Cyrillic) cuts it short.
+    invaderCountWide: { fontSize: 19 * s },
+    invaderCountSingleWide: { fontSize: 23 * s },
+    // The sentence of an Extra Activation tab sits in the part of the bar that stays inside the card.
+    invaderActivation: { width: '100%', fontSize: 12 * s, lineHeight: 12 * s },
+    // Starts after the hexagon (COUNT_TAB_HEXAGON of the tab) and stays inside the card.
+    invaderActivationBox: { marginLeft: COUNT_TAB_HEXAGON, width: INVADER_ACTIVATION_WIDTH },
+    // Dark red rule box over the bottom of the picture, nearly the full width of the card.
+    invaderRule: { position: 'absolute', top: '60%', bottom: '9%', left: '3%', right: '3%' },
+    invaderRuleInner: { position: 'absolute', top: INVADER_RULE_INSET, bottom: INVADER_RULE_INSET, left: INVADER_RULE_INSET, right: INVADER_RULE_INSET, justifyContent: 'center' },
+    // Sized by `InvaderFace` from the length of the rule; this scale only applies the card width to it.
+    invaderRuleText: { color: INVADER_COLORS.ruleInk, fontStyle: 'italic', textAlign: 'left' },
+    invaderInfo: { position: 'absolute', left: '6%', top: '18.5%' },
     fantasyBigLabel: {
       flexShrink: 1,
       color: CARD_COLORS.parchmentInk,
@@ -1660,7 +1820,7 @@ function makeStyles(s: number) {
       fontStyle: 'italic',
       textAlign: 'center',
     },
-    fantasyNote: { alignSelf: 'center', color: CARD_COLORS.parchmentInk, fontSize: 11 * s, fontWeight: '700', fontStyle: 'italic', textAlign: 'center' },
+    fantasyNote: { alignSelf: 'center', color: CARD_COLORS.parchmentInk, fontSize: 11 * s, fontWeight: '700', fontStyle: 'italic', textAlign: 'left' },
     fantasyNoteLarge: { fontSize: 18 * s },
     hordeBadge: {
       marginLeft: 4 * s,
@@ -1799,7 +1959,7 @@ function makeStyles(s: number) {
     sideBox: { flex: 1, borderRadius: 4 * s },
     sideContent: { gap: 8 * s, padding: 10 * s },
     sideName: { fontSize: 17 * s, lineHeight: 21 * s, fontWeight: '900', textAlign: 'center' },
-    sideRevealed: { fontSize: 13 * s, lineHeight: 17 * s, fontWeight: '800', fontStyle: 'italic', textAlign: 'center' },
+    sideRevealed: { fontSize: 13 * s, lineHeight: 17 * s, fontWeight: '800', fontStyle: 'italic', textAlign: 'left' },
     sideText: { fontSize: 14 * s, lineHeight: 19 * s, fontWeight: '600' },
   });
 }

@@ -218,7 +218,75 @@ const FANTASY_ART: Record<FantasyZombie | FantasyNecromancer, ImageSourcePropTyp
   orcNecromancer: require('../../assets/fantasy/necromancers/orc-necromancer-cartoon.jpg'),
 };
 
+// Official Eddie silhouettes extracted from the larger card illustrations in the CMON pack previews.
+const INVADER_EDDIE_ART = {
+  cyborgEddieAbomination: require('../../assets/invader/abominations/cyborg-eddie-abomination-official.png'),
+  samuraiEddieAbomination: require('../../assets/invader/abominations/samurai-eddie-abomination-official.png'),
+  bassistEddieAbomination: require('../../assets/invader/abominations/bassist-eddie-abomination-official.png'),
+  bountyHunterEddieAbomination: require('../../assets/invader/abominations/bounty-hunter-eddie-abomination-official.png'),
+} satisfies Partial<Record<InvaderAbomination, ImageSourcePropType>>;
+
+/*
+ * The pictures of the Invader cards: the official Zombicide Xeno renders (zombicide.com, cut inside their frame, the
+ * logo rubbed out) or, for the Xenos the site has no render of, the art of the printed card cut to the picture. They are
+ * padded to the shape of the picture window of a card (a Xeno one is portrait, an Abomination one landscape). A subject
+ * with no entry here (Biters) keeps its drawn illustration.
+ */
+const INVADER_XENO_ART = {
+  worker: require('../../assets/invader/zombies/xeno-worker-official.jpg'),
+  tank: require('../../assets/invader/zombies/xeno-tank-official.jpg'),
+  hunter: require('../../assets/invader/zombies/xeno-hunter-official.jpg'),
+  drillerWorker: require('../../assets/invader/zombies/driller-worker-official.jpg'),
+  drillerTank: require('../../assets/invader/zombies/driller-tank-official.jpg'),
+  drillerHunter: require('../../assets/invader/zombies/driller-hunter-official.jpg'),
+  drillerBlitzer: require('../../assets/invader/zombies/driller-blitzer-official.jpg'),
+  flinger: require('../../assets/invader/zombies/flinger-official.jpg'),
+  seekerWorker: require('../../assets/invader/zombies/seeker-worker-official.jpg'), // cut from the printed card
+  xenomoth: require('../../assets/invader/zombies/xenomoth-official.jpg'), // cut from the printed card
+} satisfies Partial<Record<InvaderXeno, ImageSourcePropType>>;
+
+const STEPMOTHER_ART = require('../../assets/invader/abominations/stepmother-abomination-official.png');
+
+const INVADER_ABOMINATION_ART = {
+  ...INVADER_EDDIE_ART,
+  spoilerAbomination: require('../../assets/invader/abominations/spoiler-abomination-official.jpg'),
+  drillerAbomination: require('../../assets/invader/abominations/driller-abomination-official.jpg'),
+  juggernaut: require('../../assets/invader/abominations/juggernaut-abomination-official.jpg'),
+  babyface: require('../../assets/invader/abominations/babyface-abomination-official.jpg'),
+  buddyBot: require('../../assets/invader/abominations/buddybot-abomination-official.jpg'),
+  irisSentryGun: require('../../assets/invader/abominations/iris-sentry-gun-abomination-official.jpg'),
+  motherInLaw: require('../../assets/invader/abominations/mother-in-law-abomination-official.jpg'),
+  shadow: require('../../assets/invader/abominations/shadow-abomination-official.jpg'),
+  stomper: require('../../assets/invader/abominations/stomper-abomination-official.jpg'),
+  widowmaker: require('../../assets/invader/abominations/widowmaker-abomination-official.jpg'),
+  broodMother: require('../../assets/invader/abominations/brood-mother-abomination-official.jpg'),
+  xeniumHorror: require('../../assets/invader/abominations/xenium-horror-abomination-official.jpg'),
+  thraex: require('../../assets/invader/abominations/thraex-abomination-official.jpg'), // cut from the printed card
+  gutslug: require('../../assets/invader/abominations/gutslug-abomination-official.jpg'), // cut from the printed card
+  stepmother: STEPMOTHER_ART,
+  shaila: require('../../assets/invader/abominations/shaila-abomination-official.jpg'), // cut from the printed card
+  synkrasis: require('../../assets/invader/abominations/synkrasis-official.jpg'), // cut from the printed card
+  dimbutcher: require('../../assets/invader/abominations/dimbutcher-abomination-official.jpg'), // cut from the printed card
+} satisfies Partial<Record<InvaderAbomination, ImageSourcePropType>>;
+
+const INVADER_OFFICIAL: Partial<Record<ArtSubject, ImageSourcePropType>> = { ...INVADER_XENO_ART, ...INVADER_ABOMINATION_ART };
+
+// The Abomination windows and the transparent Eddie canvases are approximately 6:5.
+const INVADER_ABOMINATION_RATIO = 6 / 5;
+
+/**
+ * The Abomination pictures cut from a printed card (840 x 700) are sharp in their top 63 % and filled with a blurred
+ * dark red below, meant to sit behind the rule box. In the window the sharp part would end above the box, so they are
+ * enlarged (`scale`, centred) and moved down (`down`, share of the window height) until the edge falls behind the box;
+ * the head stays under the title plate.
+ */
+const INVADER_BLURRED_FILL: Partial<Record<ArtSubject, { scale: number; down: `${number}%` }>> = {
+  shaila: { scale: 1.15, down: '5%' },
+  dimbutcher: { scale: 1.15, down: '5%' },
+};
+
 const INVADER_ART: Record<InvaderXeno | InvaderAbomination, ImageSourcePropType> = {
+  ...INVADER_EDDIE_ART,
   worker: require('../../assets/invader/zombies/xeno-worker-cartoon.jpg'),
   tank: require('../../assets/invader/zombies/xeno-tank-cartoon.jpg'),
   hunter: require('../../assets/invader/zombies/xeno-hunter-cartoon.jpg'),
@@ -244,53 +312,11 @@ const INVADER_ART: Record<InvaderXeno | InvaderAbomination, ImageSourcePropType>
   xeniumHorror: require('../../assets/invader/abominations/xenium-horror-abomination-cartoon.jpg'),
   thraex: require('../../assets/invader/abominations/thraex-abomination-cartoon.jpg'),
   gutslug: require('../../assets/invader/abominations/gutslug-abomination-cartoon.jpg'),
-  stepmother: require('../../assets/invader/abominations/stepmother-abomination-cartoon.jpg'),
+  stepmother: STEPMOTHER_ART,
   shaila: require('../../assets/invader/abominations/shaila-abomination-cartoon.jpg'),
   dimbutcher: require('../../assets/invader/abominations/dimbutcher-abomination-cartoon.jpg'),
   synkrasis: require('../../assets/invader/abominations/synkrasis-cartoon.jpg'),
-  cyborgEddieAbomination: require('../../assets/invader/abominations/cyborg-eddie-abomination-cartoon.jpg'),
-  samuraiEddieAbomination: require('../../assets/invader/abominations/samurai-eddie-abomination-cartoon.jpg'),
-  bassistEddieAbomination: require('../../assets/invader/abominations/bassist-eddie-abomination-cartoon.jpg'),
-  bountyHunterEddieAbomination: require('../../assets/invader/abominations/bounty-hunter-eddie-abomination-cartoon.jpg'),
 };
-
-/*
- * The pictures of the Invader cards: the official Zombicide Xeno renders (zombicide.com, cut inside their frame, the
- * logo rubbed out) or, for the Xenos the site has no render of, the art of the printed card cut to the picture. They are
- * padded to the shape of the picture window of a card (a Xeno one is portrait, an Abomination one landscape). A subject
- * with no entry here (Biters, Dim Butcher, the four Eddies: no official picture to cut) keeps its drawn illustration.
- */
-const INVADER_OFFICIAL: Partial<Record<InvaderXeno | InvaderAbomination, ImageSourcePropType>> = {
-  worker: require('../../assets/invader/zombies/xeno-worker-official.jpg'),
-  tank: require('../../assets/invader/zombies/xeno-tank-official.jpg'),
-  hunter: require('../../assets/invader/zombies/xeno-hunter-official.jpg'),
-  drillerWorker: require('../../assets/invader/zombies/driller-worker-official.jpg'),
-  drillerTank: require('../../assets/invader/zombies/driller-tank-official.jpg'),
-  drillerHunter: require('../../assets/invader/zombies/driller-hunter-official.jpg'),
-  drillerBlitzer: require('../../assets/invader/zombies/driller-blitzer-official.jpg'),
-  flinger: require('../../assets/invader/zombies/flinger-official.jpg'),
-  seekerWorker: require('../../assets/invader/zombies/seeker-worker-official.jpg'), // cut from the printed card
-  xenomoth: require('../../assets/invader/zombies/xenomoth-official.jpg'), // cut from the printed card
-  spoilerAbomination: require('../../assets/invader/abominations/spoiler-abomination-official.jpg'),
-  drillerAbomination: require('../../assets/invader/abominations/driller-abomination-official.jpg'),
-  juggernaut: require('../../assets/invader/abominations/juggernaut-abomination-official.jpg'),
-  babyface: require('../../assets/invader/abominations/babyface-abomination-official.jpg'),
-  buddyBot: require('../../assets/invader/abominations/buddybot-abomination-official.jpg'),
-  irisSentryGun: require('../../assets/invader/abominations/iris-sentry-gun-abomination-official.jpg'),
-  motherInLaw: require('../../assets/invader/abominations/mother-in-law-abomination-official.jpg'),
-  shadow: require('../../assets/invader/abominations/shadow-abomination-official.jpg'),
-  stomper: require('../../assets/invader/abominations/stomper-abomination-official.jpg'),
-  widowmaker: require('../../assets/invader/abominations/widowmaker-abomination-official.jpg'),
-  broodMother: require('../../assets/invader/abominations/brood-mother-abomination-official.jpg'),
-  xeniumHorror: require('../../assets/invader/abominations/xenium-horror-abomination-official.jpg'),
-  thraex: require('../../assets/invader/abominations/thraex-abomination-official.jpg'), // cut from the printed card
-  gutslug: require('../../assets/invader/abominations/gutslug-abomination-official.jpg'), // cut from the printed card
-  stepmother: require('../../assets/invader/abominations/stepmother-abomination-official.jpg'), // cut from the printed card
-  shaila: require('../../assets/invader/abominations/shaila-abomination-official.jpg'), // cut from the printed card
-  synkrasis: require('../../assets/invader/abominations/synkrasis-official.jpg'), // cut from the printed card
-};
-/** The official picture of an Invader Xeno or Abomination for its card, if it has one. */
-export const invaderOfficialArt = (subject: InvaderXeno | InvaderAbomination) => INVADER_OFFICIAL[subject];
 
 const WESTERN_HEROES: Record<Exclude<WesternSubject, WesternAbomination>, ImageSourcePropType> = {
   westernWalker: require('../../assets/western/zombies/walker-hero.jpg'),
@@ -387,6 +413,8 @@ export const artSubject = (card: ModernCard): ArtSubject =>
 const ART_RATIO = 2.25;
 /** Height over width of the fantasy illustrations (640 × 1280). */
 const FIGURE_RATIO = 2;
+/** Share of the window width a drawn illustration overflows on each side in an Invader card, to hide its torn border. */
+const FILL_BLEED = 0.06;
 /** Share of the illustration above the head (border and halo) left out when showing its upper part. */
 const UPPER_OFFSET = 0.1;
 /** Illustrations drawn with the head close to the top edge: cut 10 % away and most of them lose their head. */
@@ -399,7 +427,6 @@ const HIGH_HEADS: readonly ArtSubject[] = [
   'kaguya', 'tengu', 'yukiOnna', 'fantasyBerserkerWalker', 'deadboltWalker', 'terrorcottaWalker', 'climber',
   'divineBeast', 'reaper', 'baalberith', 'horseman', 'queenCaenedra', 'hugBear', 'banshee', 'cerberus', 'lordJanas', 'marike',
   'erinn', 'grandVizier', 'theSparrow', 'dongZhuo', 'zhangJiao', 'fumaKotaro',
-  'cyborgEddieAbomination', 'samuraiEddieAbomination', 'bassistEddieAbomination', 'bountyHunterEddieAbomination',
   'pharaohEddie', 'samuraiEddie', 'mummyEddie', 'wickerManEddie', 'fearEddie', 'reaperEddie', 'shamanEddie',
   'bebop', 'rocksteady', 'mummRa', 'footNinja',
 ];
@@ -422,12 +449,43 @@ export function ZombieFigure({
   anchor = 'center',
 }: {
   subject: ArtSubject;
-  anchor?: 'center' | 'top' | 'upper' | 'full';
+  anchor?: 'center' | 'top' | 'upper' | 'full' | 'fill';
 }) {
   const [width, setWidth] = useState(0);
   const source = isWesternBoss(subject) ? WESTERN_WINDOWS[subject].source : ART[subject];
   // The Western heroes are cut for their panel: cover, whatever its shape.
   if ((isWesternBoss(subject) || subject in WESTERN_HEROES) && anchor !== 'full') return <Image source={source} style={styles.fullFigure} resizeMode="cover" />;
+  if (anchor === 'fill') {
+    // The face of an Invader card: its official picture covers the window, which spans the whole card under the title.
+    const official = INVADER_OFFICIAL[subject];
+    if (official) {
+      // A landscape picture (an Abomination) hangs from the top at the full width of the card, the rest of the window
+      // being the red backdrop behind the rule box; a portrait one (a Xeno) covers the window.
+      if (subject in INVADER_ABOMINATION_ART) {
+        const fit = INVADER_BLURRED_FILL[subject];
+        const wide = fit?.scale ?? 1;
+        return (
+          <Image
+            source={official}
+            style={[styles.topFigure, { aspectRatio: INVADER_ABOMINATION_RATIO, width: `${wide * 100}%`, left: `${((1 - wide) / 2) * 100}%`, top: fit?.down ?? 0 }]}
+            resizeMode="cover"
+          />
+        );
+      }
+      return <Image source={official} style={styles.fullFigure} resizeMode="cover" />;
+    }
+    // No official picture: the drawn illustration, wider than the window so its cream torn border is cut off.
+    return (
+      <View style={StyleSheet.absoluteFill} onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
+        {width > 0 && (
+          <Image
+            source={source}
+            style={{ position: 'absolute', top: -width * FIGURE_RATIO * (UPPER_OFFSETS[subject] ?? UPPER_OFFSET), left: -width * FILL_BLEED, width: width * (1 + 2 * FILL_BLEED), height: width * (1 + 2 * FILL_BLEED) * FIGURE_RATIO }}
+          />
+        )}
+      </View>
+    );
+  }
   if (anchor === 'full') return <Image source={source} style={styles.fullFigure} resizeMode="contain" />;
   if (anchor === 'center') return <Image source={source} style={styles.figure} resizeMode="cover" />;
   if (anchor === 'upper') {
@@ -461,5 +519,6 @@ export function ZombieFigure({
 // Slightly larger than its panel so the overflow trims the printed cream border.
 const styles = StyleSheet.create({
   fullFigure: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
+  topFigure: { position: 'absolute', top: 0, left: 0, width: '100%', height: 'auto' },
   figure: { position: 'absolute', top: '-2%', left: '-4%', width: '108%', height: '104%' },
 });
