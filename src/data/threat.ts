@@ -357,6 +357,9 @@ export const isBossName = (boss: string): boss is BossName =>
 export const isModernAbomination = (boss: string): boss is NamedModernAbomination | WesternAbomination =>
   MODERN_BOSS_IDS.has(boss) || WESTERN_BOSS_IDS.has(boss);
 
+/** A named Western Abomination, the ones with their own card. */
+export const isWesternAbomination = (boss: string): boss is WesternAbomination => WESTERN_BOSS_IDS.has(boss);
+
 const isBossRule = (value: unknown): value is BossRule => BOSS_RULES.includes(value as BossRule);
 
 /** Stored choices, checked: anything unreadable falls back to the defaults (every boss in, one at a time). */

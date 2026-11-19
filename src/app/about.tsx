@@ -30,6 +30,7 @@ export default function AboutScreen() {
           </Text>
           {version && <Text style={styles.muted}>{t('about.version', { v: version })}</Text>}
           <Text style={styles.text}>{t('about.disclaimer')}</Text>
+          <Text style={styles.text}>{t('about.artwork')}</Text>
         </ScrollView>
         <ScrollView style={styles.column} contentContainerStyle={styles.content}>
           <Button label={t('about.privacy')} detail={t('about.privacyDetail')} onPress={() => open(LINKS.privacy)} />

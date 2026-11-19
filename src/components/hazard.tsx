@@ -29,7 +29,7 @@ const BORDERS: Record<UniverseId, (stripes: number) => ReactElement> = {
   western: (stripes) => (
     <View style={styles.western} pointerEvents="none" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       {Array.from({ length: stripes }, (_, index) => (
-        <View key={index} style={[styles.stripe, { backgroundColor: WESTERN_COLORS.hazardStripe }]} />
+        <View key={index} style={[styles.stripe, { backgroundColor: index % ALERT_EVERY === ALERT_EVERY - 1 ? WESTERN_COLORS.hazardAlert : WESTERN_COLORS.hazardStripe }]} />
       ))}
     </View>
   ),

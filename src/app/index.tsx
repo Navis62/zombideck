@@ -63,8 +63,7 @@ const PLAYABLE: Record<UniverseId, Omit<Extract<Slide, { kind: 'playable' }>, 'k
   western: {
     name: 'universe.western',
     detail: 'universe.westernGame',
-    // TEMPORARY until the Western background is drawn (docs/art/western-prompts.md).
-    art: require('../../assets/modern/backgrounds/ruined-city.jpg'),
+    art: require('../../assets/western/backgrounds/dusty-town.jpg'),
   },
 };
 
@@ -115,9 +114,12 @@ export default function UniverseScreen() {
       <Hazard universe={scenery} stripes={48} />
       <SafeAreaView style={styles.content} edges={['left', 'right']}>
         <View style={styles.header}>
-          <Text style={styles.title}>
-            ZOMBIE <Text style={styles.titleAccent}>DECK</Text>
-          </Text>
+          {/* Two Texts side by side, not a nested one: some Android phones (system font or bold text settings)
+              measure a nested span too narrow and cut "DECK" off. */}
+          <View style={styles.titleRow} accessible accessibilityLabel="Zombie Deck">
+            <Text style={styles.title}>ZOMBIE </Text>
+            <Text style={[styles.title, styles.titleAccent]}>DECK</Text>
+          </View>
           <Text style={styles.subtitle} accessibilityRole="header">
             {t('universe.title')}
           </Text>
@@ -208,6 +210,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { flex: 1, paddingVertical: 8, gap: 8 },
   header: { alignItems: 'center' },
+  titleRow: { flexDirection: 'row' },
   title: { color: '#fff0ce', fontSize: 28, lineHeight: 32, fontWeight: '900', textShadowColor: '#171b19', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 },
   titleAccent: { color: '#ffbf69' },
   subtitle: { color: '#fff0ce', fontSize: 14, fontWeight: '700', textTransform: 'uppercase' },

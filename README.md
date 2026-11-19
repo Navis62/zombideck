@@ -9,6 +9,7 @@ Unofficial companion app for Zombicide 2nd Edition: it replaces the physical zom
 - Invader (sci-fi): the Invader and Dark Side boxes, alone or together, with Xeno Workers, Tanks and Hunters (Drillers in Dark Side), Spoiler and Driller Abominations, Mold and Pit Spawn cards (a Mold Spawn reminds you to draw another card when no Mold Zone is active) and Extra Activations; the easier or the harder half of the deck can be switched off in the options.
 - Invader expansions: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Comic Book Extras Vol. 1, Vol. 2 and Vol. 2 (Android, with Synkrasis) and Iron Maiden Packs 1 and 2, with named Abominations (Juggernaut, Stomper, Brood Mother, Stepmother, the Eddies and more) and new Xenos (Driller Blitzers, Flingers, Seeker Workers with their rule printed on the card, Xenomoths, Biters).
 - Western (Zombicide: Undead or Alive): the core box's Walkers, Runners, Brutes, Abomination and Extra Activation cards, the Long-Dead Walkers, and an Abomination deck dealt one at a time: Bowler Hat, Steam Monster (Gears & Guns), Nightmare Horse (Running Wild), Abominape vs Crocosaur, the Deadstock and Dead West Abominations and the Wendigo promo.
+- Western cards are the printed ones, scanned, with the title, number and counts rewritten in the player's language over them (Rye, Zilla Slab and PT Serif typefaces, loaded at runtime): the counts sit on cream torn-paper labels with the colour of their Danger Level (only the current one is filled in when a single level is shown), Abomination cards show their picture in a landscape window above a wooden panel, and the card back is the sepia back of the box. A revealed Abomination shows its name, "Abomination" under it.
 - Fantasy expansions: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, the Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, the Kickstarter packs and Special Guest boxes, and the boss cards of Frozen Fortress and the Warlords boxes, with named Abominations and Necromancers.
 - Fantasy bosses are picked one by one and dealt the White Death and Dead Men Tales way: the deck keeps its core Abominations and Necromancers, and each one drawn reveals a boss from an Abomination or Necromancer deck, one at a time or as an Abomination Fest; a revealed boss shows the rule of its boss card.
 - Modern Abominations come from a deck of named Abominations: the core box, the upgrade kit, The Boys, Supernatural, Ghostbusters, Monty Python, Iron Maiden, Urban Legends, Dark Nights: Metal and the Kickstarter exclusives. SPAM cards are set aside and play their cantrip (draw the next card), Gozer draws three candidates and the players choose which two it keeps, Batman Who Laughs arrives with The Robins, and a "Draw an Abomination" button deals one by hand beside the cards (Fantasy has the same button once a named boss is picked).
@@ -44,7 +45,7 @@ npm run lint
 - `src/data/universes.ts`: the universes offered in the opening carousel and the sets of each
 - `src/game/`: game engine, types and saved state
 - `src/i18n/`: one file per language; `fr.ts` defines the keys every language must provide
-- `assets/<universe>/`: the artwork of each universe (`modern/`, `fantasy/`, `invader/`), so a new universe gets its own folder
+- `assets/<universe>/`: the artwork of each universe (`modern/`, `fantasy/`, `invader/`, `western/`), so a new universe gets its own folder
   - `zombies/`, `abominations/` and (Fantasy only) `necromancers/`: one illustration per zombie type, 1280 px tall JPEGs; named bosses go in `abominations/` or `necromancers/`, everything else in `zombies/`
   - `icons/`: expansion symbols printed above the Danger Levels
   - `backgrounds/` and `cards/`: its carousel and menu background, its card back (the modern one stays in `assets/cards/`, see below)
@@ -61,6 +62,8 @@ npm run lint
 ## Disclaimer
 
 Fan-made and unofficial. Zombicide is a trademark of CMON Global Limited; this app is not affiliated with or endorsed by CMON. Card counts and terms are transcribed from the published games for players who own them.
+
+The Western artwork (`assets/western/`: zombies, Abominations, card back) is cropped from the official Zombicide: Undead or Alive and promo artwork and from scans of the printed cards (Tabletop Simulator mod), © CMON Global Limited, used in this non-commercial fan app; the About screen credits it. The Modern, Fantasy and Invader artwork is original.
 
 ## License
 

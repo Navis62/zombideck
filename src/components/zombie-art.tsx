@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
-import type { FantasyNecromancer, FantasyZombie, InvaderAbomination, InvaderXeno, ModernCard, NamedModernAbomination, WesternAbomination, WesternZombie, ZombieType } from '@/game/types';
+import type { FantasyNecromancer, FantasyZombie, InvaderAbomination, InvaderXeno, ModernCard, NamedModernAbomination, WesternAbomination, WesternCard, WesternZombie, ZombieType } from '@/game/types';
 
-/** The Western text card shows the generic Western Abomination. */
-export type WesternSubject = WesternZombie | WesternAbomination | 'westernAbomination';
+/**
+ * The Western zombies that stand alone (menu and carousel; on the cards they come with the whole printed card, see
+ * `westernCardArt`) and the named Abominations (their picture is the window of their card, see `westernWindow`).
+ */
+export type WesternSubject = Exclude<WesternZombie, 'longDeadWalker'> | WesternAbomination;
 export type ArtSubject = ZombieType | InvaderXeno | InvaderAbomination | FantasyZombie | FantasyNecromancer | NamedModernAbomination | WesternSubject | 'trejo' | 'spam';
 
 // One illustration per subject, upscaled to 1280 px tall and compressed to JPEG.
@@ -251,43 +254,131 @@ const INVADER_ART: Record<InvaderXeno | InvaderAbomination, ImageSourcePropType>
   bountyHunterEddieAbomination: require('../../assets/invader/abominations/bounty-hunter-eddie-abomination-cartoon.jpg'),
 };
 
-// TEMPORARY until the Western art is drawn (docs/art/western-prompts.md): the Western zombies borrow the Modern
-// pictures and every Western Abomination the generic Modern Abomination, so no file is missing.
-const TEMP_WALKER = require('../../assets/modern/zombies/walker-cartoon.jpg');
-const TEMP_RUNNER = require('../../assets/modern/zombies/runner-cartoon.jpg');
-const TEMP_BRUTE = require('../../assets/modern/zombies/fatty-cartoon.jpg');
-const TEMP_ABOMINATION = require('../../assets/modern/abominations/abomination-cartoon.jpg');
-const WESTERN_ART: Record<WesternSubject, ImageSourcePropType> = {
-  westernWalker: TEMP_WALKER,
-  westernRunner: TEMP_RUNNER,
-  westernBrute: TEMP_BRUTE,
-  longDeadWalker: TEMP_WALKER,
-  westernAbomination: TEMP_ABOMINATION,
-  bowlerHat: TEMP_ABOMINATION,
-  nightmareHorse: TEMP_ABOMINATION,
-  abominape: TEMP_ABOMINATION,
-  crocosaur: TEMP_ABOMINATION,
-  abominabear: TEMP_ABOMINATION,
-  texasDeadhorn: TEMP_ABOMINATION,
-  bizon: TEMP_ABOMINATION,
-  bloodBull: TEMP_ABOMINATION,
-  littleTrickster: TEMP_ABOMINATION,
-  goreGeyser: TEMP_ABOMINATION,
-  meltingPot: TEMP_ABOMINATION,
-  plymouthHound: TEMP_ABOMINATION,
-  pusbag: TEMP_ABOMINATION,
-  greatTrickster: TEMP_ABOMINATION,
-  cactusQueen: TEMP_ABOMINATION,
-  alphaBane: TEMP_ABOMINATION,
-  deathgrasp: TEMP_ABOMINATION,
-  fatMace: TEMP_ABOMINATION,
-  swampTongue: TEMP_ABOMINATION,
-  rottenClaw: TEMP_ABOMINATION,
-  westernWendigo: TEMP_ABOMINATION,
-  steamMonster: TEMP_ABOMINATION,
+/*
+ * The pictures of the Invader cards: the official Zombicide Xeno renders (zombicide.com, cut inside their frame, the
+ * logo rubbed out) or, for the Xenos the site has no render of, the art of the printed card cut to the picture. They are
+ * padded to the shape of the picture window of a card (a Xeno one is portrait, an Abomination one landscape). A subject
+ * with no entry here (Biters, Dim Butcher, the four Eddies: no official picture to cut) keeps its drawn illustration.
+ */
+const INVADER_OFFICIAL: Partial<Record<InvaderXeno | InvaderAbomination, ImageSourcePropType>> = {
+  worker: require('../../assets/invader/zombies/xeno-worker-official.jpg'),
+  tank: require('../../assets/invader/zombies/xeno-tank-official.jpg'),
+  hunter: require('../../assets/invader/zombies/xeno-hunter-official.jpg'),
+  drillerWorker: require('../../assets/invader/zombies/driller-worker-official.jpg'),
+  drillerTank: require('../../assets/invader/zombies/driller-tank-official.jpg'),
+  drillerHunter: require('../../assets/invader/zombies/driller-hunter-official.jpg'),
+  drillerBlitzer: require('../../assets/invader/zombies/driller-blitzer-official.jpg'),
+  flinger: require('../../assets/invader/zombies/flinger-official.jpg'),
+  seekerWorker: require('../../assets/invader/zombies/seeker-worker-official.jpg'), // cut from the printed card
+  xenomoth: require('../../assets/invader/zombies/xenomoth-official.jpg'), // cut from the printed card
+  spoilerAbomination: require('../../assets/invader/abominations/spoiler-abomination-official.jpg'),
+  drillerAbomination: require('../../assets/invader/abominations/driller-abomination-official.jpg'),
+  juggernaut: require('../../assets/invader/abominations/juggernaut-abomination-official.jpg'),
+  babyface: require('../../assets/invader/abominations/babyface-abomination-official.jpg'),
+  buddyBot: require('../../assets/invader/abominations/buddybot-abomination-official.jpg'),
+  irisSentryGun: require('../../assets/invader/abominations/iris-sentry-gun-abomination-official.jpg'),
+  motherInLaw: require('../../assets/invader/abominations/mother-in-law-abomination-official.jpg'),
+  shadow: require('../../assets/invader/abominations/shadow-abomination-official.jpg'),
+  stomper: require('../../assets/invader/abominations/stomper-abomination-official.jpg'),
+  widowmaker: require('../../assets/invader/abominations/widowmaker-abomination-official.jpg'),
+  broodMother: require('../../assets/invader/abominations/brood-mother-abomination-official.jpg'),
+  xeniumHorror: require('../../assets/invader/abominations/xenium-horror-abomination-official.jpg'),
+  thraex: require('../../assets/invader/abominations/thraex-abomination-official.jpg'), // cut from the printed card
+  gutslug: require('../../assets/invader/abominations/gutslug-abomination-official.jpg'), // cut from the printed card
+  stepmother: require('../../assets/invader/abominations/stepmother-abomination-official.jpg'), // cut from the printed card
+  shaila: require('../../assets/invader/abominations/shaila-abomination-official.jpg'), // cut from the printed card
+  synkrasis: require('../../assets/invader/abominations/synkrasis-official.jpg'), // cut from the printed card
+};
+/** The official picture of an Invader Xeno or Abomination for its card, if it has one. */
+export const invaderOfficialArt = (subject: InvaderXeno | InvaderAbomination) => INVADER_OFFICIAL[subject];
+
+const WESTERN_HEROES: Record<Exclude<WesternSubject, WesternAbomination>, ImageSourcePropType> = {
+  westernWalker: require('../../assets/western/zombies/walker-hero.jpg'),
+  westernRunner: require('../../assets/western/zombies/runner-hero.jpg'),
+  westernBrute: require('../../assets/western/zombies/brute-hero.jpg'),
 };
 
-const ART: Record<ArtSubject, ImageSourcePropType> = { ...MODERN_ART, ...FANTASY_ART, ...INVADER_ART, ...WESTERN_ART };
+const ART: Record<Exclude<ArtSubject, WesternAbomination>, ImageSourcePropType> = { ...MODERN_ART, ...FANTASY_ART, ...INVADER_ART, ...WESTERN_HEROES };
+
+/*
+ * The Western cards are the printed cards themselves, scanned from the owner's Tabletop Simulator mod and cut to the
+ * 63:88 card ratio, with the printed title, number, footer and rule text rubbed out (the app writes its own, in the
+ * player's language, at the same place) and the count labels left under the app's own. Cards with the same art share
+ * a file, so ten files serve the 45 cards.
+ */
+const WESTERN_CARD_ART = {
+  walkerMan: require('../../assets/western/zombies/walker-man-card.jpg'),
+  walkerWoman: require('../../assets/western/zombies/walker-woman-card.jpg'),
+  bruteRed: require('../../assets/western/zombies/brute-red-card.jpg'),
+  bruteWhite: require('../../assets/western/zombies/brute-white-card.jpg'),
+  runner: require('../../assets/western/zombies/runner-card.jpg'),
+  longDead: require('../../assets/western/zombies/long-dead-card.jpg'),
+  extraWalker: require('../../assets/western/zombies/extra-walker-card.jpg'),
+  extraBrute: require('../../assets/western/zombies/extra-brute-card.jpg'),
+  extraRunner: require('../../assets/western/zombies/extra-runner-card.jpg'),
+  abomination: require('../../assets/western/zombies/abomination-text-card.jpg'),
+} satisfies Record<string, ImageSourcePropType>;
+
+/**
+ * The printed card of a Western card. The deck alternates two pictures in pairs of cards: the old man then the woman
+ * for the Walkers (#001-#002 man, #003-#004 woman, #017-#018 man...), the red then the bandaged Brute (#005-#006 red,
+ * #007-#008 white, #021-#022 red...); every 16th card starts the cycle again.
+ */
+export const westernCardArt = (card: WesternCard): ImageSourcePropType => {
+  const first = Math.floor((Number(card.id.slice(-3)) - 1) / 2) % 2 === 0;
+  switch (card.kind) {
+    case 'westernAbomination':
+      return WESTERN_CARD_ART.abomination;
+    case 'westernExtra':
+      return { westernWalker: WESTERN_CARD_ART.extraWalker, westernBrute: WESTERN_CARD_ART.extraBrute, westernRunner: WESTERN_CARD_ART.extraRunner }[card.zombie];
+    case 'westernSpawn':
+      switch (card.zombie) {
+        case 'westernWalker':
+          return first ? WESTERN_CARD_ART.walkerMan : WESTERN_CARD_ART.walkerWoman;
+        case 'westernBrute':
+          return first ? WESTERN_CARD_ART.bruteRed : WESTERN_CARD_ART.bruteWhite;
+        case 'westernRunner':
+          return WESTERN_CARD_ART.runner;
+        case 'longDeadWalker':
+          return WESTERN_CARD_ART.longDead;
+      }
+  }
+};
+
+/**
+ * The picture window of each named Western Abomination, cut from its printed card (the rest of the card is the app's
+ * plank and rule panel). `ratio` is the window's own width over height, kept between 1.25 and 1.75 (the printed
+ * window grows or shrinks with the length of the rule).
+ */
+const WESTERN_WINDOWS: Record<WesternAbomination, { source: ImageSourcePropType; ratio: number }> = {
+  bowlerHat: { source: require('../../assets/western/abominations/bowler-hat-window.jpg'), ratio: 1.25 },
+  nightmareHorse: { source: require('../../assets/western/abominations/nightmare-horse-window.jpg'), ratio: 1.25 },
+  abominape: { source: require('../../assets/western/abominations/abominape-window.jpg'), ratio: 1.463 },
+  crocosaur: { source: require('../../assets/western/abominations/crocosaur-window.jpg'), ratio: 1.456 },
+  abominabear: { source: require('../../assets/western/abominations/abominabear-window.jpg'), ratio: 1.25 },
+  texasDeadhorn: { source: require('../../assets/western/abominations/texas-deadhorn-window.jpg'), ratio: 1.25 },
+  bizon: { source: require('../../assets/western/abominations/bizon-window.jpg'), ratio: 1.25 },
+  bloodBull: { source: require('../../assets/western/abominations/blood-bull-window.jpg'), ratio: 1.25 },
+  littleTrickster: { source: require('../../assets/western/abominations/little-trickster-window.jpg'), ratio: 1.565 },
+  goreGeyser: { source: require('../../assets/western/abominations/gore-geyser-window.jpg'), ratio: 1.75 },
+  meltingPot: { source: require('../../assets/western/abominations/melting-pot-window.jpg'), ratio: 1.548 },
+  plymouthHound: { source: require('../../assets/western/abominations/plymouth-hound-window.jpg'), ratio: 1.628 },
+  pusbag: { source: require('../../assets/western/abominations/pusbag-window.jpg'), ratio: 1.524 },
+  greatTrickster: { source: require('../../assets/western/abominations/great-trickster-window.jpg'), ratio: 1.75 },
+  cactusQueen: { source: require('../../assets/western/abominations/cactus-queen-window.jpg'), ratio: 1.438 },
+  alphaBane: { source: require('../../assets/western/abominations/alpha-bane-window.jpg'), ratio: 1.25 },
+  deathgrasp: { source: require('../../assets/western/abominations/deathgrasp-window.jpg'), ratio: 1.524 },
+  fatMace: { source: require('../../assets/western/abominations/fat-mace-window.jpg'), ratio: 1.25 },
+  swampTongue: { source: require('../../assets/western/abominations/swamp-tongue-window.jpg'), ratio: 1.524 },
+  rottenClaw: { source: require('../../assets/western/abominations/rotten-claw-window.jpg'), ratio: 1.602 },
+  westernWendigo: { source: require('../../assets/western/abominations/wendigo-window.jpg'), ratio: 1.317 },
+  // No scan of this card: the official art, cut to its window.
+  steamMonster: { source: require('../../assets/western/abominations/steam-monster-window.jpg'), ratio: 1.448 },
+};
+/** The card the text-only Abomination draws on (also the face of an Abomination drawn by hand with no name). */
+export const westernTextCardArt = WESTERN_CARD_ART.abomination;
+export const westernWindow = (boss: WesternAbomination) => WESTERN_WINDOWS[boss];
+const isWesternBoss = (subject: ArtSubject): subject is WesternAbomination => subject in WESTERN_WINDOWS;
 
 export const artSubject = (card: ModernCard): ArtSubject =>
   card.kind === 'trejo' || card.kind === 'trejoRush' ? 'trejo' : card.kind === 'spam' ? 'spam' : card.zombie;
@@ -334,7 +425,9 @@ export function ZombieFigure({
   anchor?: 'center' | 'top' | 'upper' | 'full';
 }) {
   const [width, setWidth] = useState(0);
-  const source = ART[subject];
+  const source = isWesternBoss(subject) ? WESTERN_WINDOWS[subject].source : ART[subject];
+  // The Western heroes are cut for their panel: cover, whatever its shape.
+  if ((isWesternBoss(subject) || subject in WESTERN_HEROES) && anchor !== 'full') return <Image source={source} style={styles.fullFigure} resizeMode="cover" />;
   if (anchor === 'full') return <Image source={source} style={styles.fullFigure} resizeMode="contain" />;
   if (anchor === 'center') return <Image source={source} style={styles.figure} resizeMode="cover" />;
   if (anchor === 'upper') {

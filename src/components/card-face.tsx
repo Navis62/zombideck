@@ -1,11 +1,12 @@
 import { createContext, useContext, useMemo, useState } from 'react';
-import { Image, type ImageSourcePropType, type ImageStyle, type LayoutChangeEvent, Platform, Pressable, ScrollView, type StyleProp, StyleSheet, Text, type TextStyle, View } from 'react-native';
+import { Image, type ImageSourcePropType, type ImageStyle, type LayoutChangeEvent, Platform, Pressable, ScrollView, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle } from 'react-native';
 import Svg, { Path, Polygon } from 'react-native-svg';
 
 import { SCROLL_TRACKING } from '@/components/scroll-guard';
-import { type ArtSubject, artSubject, ZombieFigure } from '@/components/zombie-art';
+import { COUNT_LABEL_STRIP, WESTERN_PARTS } from '@/components/western-parts';
+import { type ArtSubject, artSubject, westernCardArt, westernTextCardArt, westernWindow, ZombieFigure } from '@/components/zombie-art';
 import { ABOMINATIONS, BOSS_RULE_IDS, type BossRuleId, NAMED_NECROMANCERS, NAMED_ZOMBIES, PLAIN_RULE_NECROMANCERS } from '@/data/fantasy';
-import { type BossName, isBossName, isModernAbomination } from '@/data/threat';
+import { type BossName, isBossName, isModernAbomination, isWesternAbomination } from '@/data/threat';
 import { DANGER_LEVELS } from '@/game/engine';
 import { useApp } from '@/game/store';
 import {
@@ -35,10 +36,94 @@ import {
   type ZombieType,
 } from '@/game/types';
 import type { Translate, TranslationKey } from '@/i18n/translations';
-import { CARD_COLORS, DANGER_COLORS, INVADER_COLORS, PRESSED, WESTERN_COLORS } from '@/theme';
+import { CARD_COLORS, DANGER_COLORS, INVADER_COLORS, PRESSED, WESTERN_COLORS, westernFonts } from '@/theme';
 
 // Printed top-down on the cards, red first.
 const PRINTED_LEVELS = [...DANGER_LEVELS].reverse();
+
+/*
+ * The Western cards are the printed cards, scanned (see `westernCardArt`); the app writes over them, at the place and
+ * size of the printed text. Every position below was measured on the scans, as a share of the card's width (x) or
+ * height (y): the cards are all 311 x 478 px on the sheet, and the counts sit at the same place on every one.
+ */
+/** Count labels: top of the first (red) one, height, and distance from one label to the next (y). */
+const WESTERN_LABEL_TOP = 0.274;
+const WESTERN_LABEL_HEIGHT = 0.115;
+const WESTERN_LABEL_PITCH = 0.14;
+/** Left edge of the labels (x): the counts of a spawn card, then the longer "All Walkers" of an Extra Activation card. */
+const WESTERN_LABEL_LEFT = { spawn: 0.666, extra: 0.447 } as const;
+/** How far the hand-drawn count label (`WESTERN_PARTS.countLabel`) overlaps the printed one, left of it and above and below (shares of the card). */
+const WESTERN_LABEL_BLEED = { x: 0.008, y: 0.006 };
+/** The only label of the current Danger Level, as many times the printed one's height. */
+const WESTERN_CURRENT_LABEL = 1.25;
+/** Where the cream paper of a label ends and its coloured strip starts (x); the strip runs off the card's edge. */
+const WESTERN_PAPER_END = 0.875;
+/**
+ * What is written on the plank (or panel) of each kind of card: the title box (y of its top and height, x of its left
+ * edge and width) with its underlines (y of their top and height), the number, and the rule text under the card.
+ */
+type WesternLayout = {
+  /** The plank behind the title, measured on the scans (y of its bottom edge, as a share of the card's height). */
+  plank: { part: 'header' | 'footer'; top: number; bottom: number };
+  title: { top: number; height: number; left: number; width: number };
+  /** The title is centred (the heading of the text card) rather than flush left. */
+  centered?: boolean;
+  /** A two-line title in the red ink of the Extra Activation cards. */
+  extra?: boolean;
+};
+/**
+ * The header plank of the spawn cards ends at 17.5 % of the card (its wavy lower edge), the Extra Activation one, which
+ * holds two lines, at 20.5 %; the title sits between the plank's red stroke (14 % of its height) and the double rule
+ * it carries (75 %). On the text card the panel of wood starts at 50 % and runs to the bottom.
+ */
+const WESTERN_LAYOUTS: Record<'spawn' | 'extra' | 'text', WesternLayout> = {
+  spawn: { plank: { part: 'header', top: 0, bottom: 0.175 }, title: { top: 0.03, height: 0.095, left: 0.05, width: 0.6 } },
+  extra: { plank: { part: 'header', top: 0, bottom: 0.205 }, title: { top: 0.03, height: 0.115, left: 0.05, width: 0.72 }, extra: true },
+  text: { plank: { part: 'footer', top: 0.5, bottom: 1 }, title: { top: 0.545, height: 0.07, left: 0.07, width: 0.86 }, centered: true },
+};
+/** Width of a capital letter in each Western face, in em (the word fit shrinks a title until its longest word fits). */
+const WESTERN_CAPS_EM: Record<string, number> = { Rye: 0.95, 'ZillaSlab-Bold': 0.78, 'PTSerif-Bold': 0.82 };
+/** Number printed at the top right of every card (x of its left edge and width, y of its top and height). */
+const WESTERN_NUMBER = { left: 0.66, width: 0.28, top: 0.06, height: 0.05 };
+/** The "i" that says there is a rule on the back: just under the number. */
+const WESTERN_BADGE = { right: 0.035, top: 0.12 };
+/** Rule text of the text card, and the "One Extra Activation" line of an Extra Activation card (y of top and height). */
+const WESTERN_RULE_TEXT = { top: 0.665, height: 0.32, left: 0.07, width: 0.86 };
+const WESTERN_EXTRA_FOOTER = { top: 0.89, height: 0.075 };
+/** The wooden footer of an Extra Activation card, under the labels (y of its top and height). */
+const WESTERN_EXTRA_PLANK = { top: 0.865, height: 0.135 };
+/** A sentence longer than this goes on two lines, in a smaller size ("Tous les Rôdeurs"). */
+const WESTERN_LABEL_ONE_LINE_CHARS = 10;
+/*
+ * Whether a rule fits on the wooden panel of a Western card is decided outside the layout (`cardHasBack` tells the table
+ * whether the card has a back), so it is estimated: the lines that fit in the panel at the smallest readable size
+ * (`westernPanelText`: 10 design px on a 12.5 px line) times the characters of a line, with a margin for long words.
+ */
+const WESTERN_PANEL_LINE = 12.5;
+const WESTERN_PANEL_CHARS_PER_LINE = 34;
+/** Vertical padding of the panel text, and the height of a header holding a two-line name and "Abomination". */
+const WESTERN_PANEL_PADDING = 12;
+const WESTERN_HEADER_TALLEST = 84;
+const panelChars = (height: number) => Math.max(0, Math.floor((height - WESTERN_PANEL_PADDING) / WESTERN_PANEL_LINE)) * WESTERN_PANEL_CHARS_PER_LINE;
+/** Characters a rule may have to stay on the front: under the window of a named Abomination, or on the text card. */
+const westernPanelChars = (boss?: WesternAbomination) => {
+  const cardHeight = (DESIGN_WIDTH * 88) / 63;
+  return panelChars(boss ? cardHeight - WESTERN_HEADER_TALLEST - DESIGN_WIDTH / westernWindow(boss).ratio : cardHeight * WESTERN_RULE_TEXT.height);
+};
+/**
+ * Whether the rule of a Western card stays on its front. A named Abomination's panel shows its printed rule alone (its
+ * name is the title); the text card's panel shows its whole text.
+ */
+const westernFits = (footer: string, t: Translate, boss?: WesternAbomination) =>
+  (boss ? t(`card.${boss}Rule`) : footer).length <= westernPanelChars(boss);
+/** The named Western Abomination a card or a hand-drawn reveal shows, if any. */
+const westernBossOf = (card: ZombieCard, reveal?: Reveal): WesternAbomination | undefined => {
+  const named = revealedAbomination(card, reveal);
+  return named && isWesternAbomination(named) ? named : undefined;
+};
+
+/** An image filling its parent: `absoluteFill` alone would leave it at its own pixel size on the web. */
+const FILL = { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' } as const;
 
 /** Card width the sizes below were drawn for (a phone in landscape); the card scales from it. */
 const DESIGN_WIDTH = 230;
@@ -101,11 +186,11 @@ const MIN_WORD_FIT = 0.4;
  * `onLayout` to a box whose width does not depend on the text (a stretched box, never one that shrinks to its
  * content), and spread `style` last on the Text. `text` undefined turns the cap off.
  */
-function useWordFit(text: string | undefined, textStyle: StyleProp<TextStyle>, inset: number) {
+function useWordFit(text: string | undefined, textStyle: StyleProp<TextStyle>, inset: number, charEm: number = CHAR_WIDTH_EM) {
   const [width, setWidth] = useState(0);
   const longest = text ? Math.max(...text.split(/\s+/).map((word) => word.length)) : 0;
   const base = StyleSheet.flatten(textStyle) as { fontSize: number; lineHeight?: number };
-  const fit = width > 0 && longest > 0 ? Math.max(MIN_WORD_FIT, Math.min(1, (width - inset) / (longest * CHAR_WIDTH_EM * base.fontSize))) : 1;
+  const fit = width > 0 && longest > 0 ? Math.max(MIN_WORD_FIT, Math.min(1, (width - inset) / (longest * charEm * base.fontSize))) : 1;
   return {
     onLayout: (event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width),
     style: fit < 1 ? { fontSize: base.fontSize * fit, lineHeight: base.lineHeight ? base.lineHeight * fit : undefined } : undefined,
@@ -123,9 +208,9 @@ const BIG_LABEL_PADDING = 6;
  * it is cut. Without `row` it is stretched across its parent (and measures itself); with `row` it is a pill centred
  * in a row that also holds `badge`, and the row is measured.
  */
-function NameLabel(props: { style: StyleProp<TextStyle>; minimumFontScale: number; padding?: number; row?: boolean; badge?: React.ReactNode; text: string }) {
+function NameLabel(props: { style: StyleProp<TextStyle>; minimumFontScale: number; padding?: number; row?: boolean; badge?: React.ReactNode; text: string; charEm?: number }) {
   const { styles, scale } = useContext(CardStyle);
-  const fit = useWordFit(props.text, props.style, ((props.padding ?? 0) * 2 + (props.badge ? HORDE_BADGE_RESERVE : 0)) * scale);
+  const fit = useWordFit(props.text, props.style, ((props.padding ?? 0) * 2 + (props.badge ? HORDE_BADGE_RESERVE : 0)) * scale, props.charEm);
   const label = (
     <Text
       style={[props.style, fit.style]}
@@ -280,6 +365,16 @@ function bossFaceText(reveal: Reveal, t: Translate): CardText {
   };
 }
 
+/** The face of a Western Abomination drawn by hand: its own card when it is named, the plain text card when not. */
+function WesternBoss({ reveal, text, footerOnFront }: { reveal: Reveal; text: CardText; footerOnFront: boolean }) {
+  const { t } = useApp();
+  const named = revealedName(reveal);
+  if (named && isWesternAbomination(named)) {
+    return <WesternWindowCard text={text} rule={t(`card.${named}Rule`)} title={text.title} subtitle={t('card.westernAbomination')} boss={named} footerOnFront={footerOnFront} />;
+  }
+  return <WesternPrinted art={westernTextCardArt} layout="text" text={{ ...text, title: t('card.westernAbomination') }} footerOnFront={footerOnFront} />;
+}
+
 /** An Abomination drawn by hand, as a screen reader says it. */
 export function bossLabel(reveal: Reveal, t: Translate): string {
   const { title, footer } = bossFaceText(reveal, t);
@@ -296,6 +391,8 @@ export function BossFace({ reveal, width, universe, side = 'front', onFlip }: { 
     <CardStyle.Provider value={style}>
       {side === 'back' ? (
         <RuleSide text={bossFaceText(reveal, t)} header={BOSS_LOOK[universe].header} universe={universe} onFlip={onFlip} />
+      ) : universe === 'western' ? (
+        <WesternBoss reveal={reveal} text={bossFaceText(reveal, t)} footerOnFront={!bossHasBack(reveal, t)} />
       ) : (
         <Frame text={bossFaceText(reveal, t)} headerColor={BOSS_LOOK[universe].header} faceColor={BOSS_LOOK[universe].face} footerOnFront={!bossHasBack(reveal, t)}>
           <View style={styles.artShort}>
@@ -307,21 +404,20 @@ export function BossFace({ reveal, width, universe, side = 'front', onFlip }: { 
   );
 }
 
-/**
- * Whether the card has a long text for its back: a rule, the boss it revealed, what its powers added. A short one
- * stays on the front (see `SHORT_TEXT_MAX_CHARS`), and so does the card. A revealed boss's own printed rule, which the
- * front no longer has room for, always goes to the back.
- */
 export function cardHasBack(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: Reveal): boolean {
   const shown = asRevealed(card, reveal);
   const { footer } = cardText(shown, danger, t, reveal);
   const printed = isFantasyCard(shown) && revealedName(reveal) && (shown.kind === 'bossCall' || shown.kind === 'necromancer');
+  // A Western rule stays on the front as long as it fits its panel; an Extra Activation line is short anyway.
+  if (isWesternCard(shown) && shown.kind !== 'westernExtra') return !!footer && !westernFits(footer, t, westernBossOf(shown, reveal));
   return !!footer && (!isShort(footer) || !!printed);
 }
 
 /** An Abomination drawn by hand has its rule (or what is missing from its deck) on the back, unless that is short. */
 export const bossHasBack = (reveal: Reveal, t: Translate): boolean => {
   const { footer } = bossFaceText(reveal, t);
+  const named = revealedName(reveal);
+  if (named && isWesternAbomination(named)) return !!footer && !westernFits(footer, t, named);
   return !!footer && !isShort(footer);
 };
 
@@ -537,50 +633,265 @@ function InvaderFace({ card, danger, text, footerOnFront }: { card: InvaderCard;
   );
 }
 
-/** Wild West card: the Modern layout (picture, Danger Levels) in leather and ochre; a plain first look. */
+/**
+ * Wild West card: the art of the card behind everything (the official picture in the printed card's frame, with no
+ * printed text), then what the app draws in the player's language where the printed card had it: the wooden title
+ * plank and title, the number, the counts on cream torn-paper labels with the colour of their Danger Level at the
+ * end (the four of them, or only the current one, larger), a short rule. An Abomination revealed by the deck has its
+ * own card, see `WesternWindowCard`.
+ */
 function WesternFace({ card, danger, text, reveal, footerOnFront }: { card: WesternCard; danger: DangerLevel; text: CardText; reveal?: Reveal; footerOnFront: boolean }) {
   const { t, cardDisplay } = useApp();
-  const { styles } = useContext(CardStyle);
   const current = cardDisplay === 'current';
-  const header = headerFor(card);
-  const frame = (children: React.ReactNode) => (
-    <Frame card={card} text={text} headerColor={header} faceColor={WESTERN_COLORS.face} footerOnFront={footerOnFront}>
-      {children}
-    </Frame>
-  );
-  if (card.kind === 'westernAbomination') {
-    return frame(
-      <View style={styles.artShort}>
-        <ZombieFigure subject={revealedAbomination(card, reveal) ?? 'westernAbomination'} anchor="upper" />
-      </View>,
-    );
+  const revealed = revealedAbomination(card, reveal);
+  const boss = revealed && isWesternAbomination(revealed) ? revealed : undefined;
+  if (boss) {
+    return <WesternWindowCard text={text} rule={t(`card.${boss}Rule`)} title={t(`zombie.${boss}.one`)} subtitle={text.title} boss={boss} footerOnFront={footerOnFront} />;
   }
-  return frame(
-    <View style={styles.spawnBody}>
-      <View style={styles.art}>
-        <ZombieFigure subject={card.zombie} anchor="center" />
+  const layout = card.kind === 'westernSpawn' ? 'spawn' : card.kind === 'westernExtra' ? 'extra' : 'text';
+  const left = layout === 'extra' ? WESTERN_LABEL_LEFT.extra : WESTERN_LABEL_LEFT.spawn;
+  const levels = current ? [danger] : PRINTED_LEVELS;
+  return (
+    <WesternPrinted card={card} art={westernCardArt(card)} layout={layout} text={text} footerOnFront={footerOnFront}>
+      {layout !== 'text' &&
+        levels.map((shown, index) => (
+          <WesternLabel
+            key={shown}
+            // Only the current Danger Level: one larger label in the middle of where the four were.
+            row={current ? 1.5 : index}
+            left={left}
+            level={shown}
+            big={current}
+            count={card.kind === 'westernSpawn' ? card.counts[DANGER_LEVELS.indexOf(shown)] : undefined}
+            sentence={card.kind === 'westernExtra' ? extraLine(card.zombie, shown, t) : undefined}
+          />
+        ))}
+    </WesternPrinted>
+  );
+}
+
+/**
+ * A Western card with the app's own text over its art. `text.title` is the title (the heading of the text card),
+ * `text.footer` the rule, written under the picture when it fits and on the back when it does not.
+ */
+function WesternPrinted(props: {
+  /** Absent on the face of an Abomination drawn by hand, which has no card number. */
+  card?: WesternCard;
+  art: ImageSourcePropType;
+  layout: keyof typeof WESTERN_LAYOUTS;
+  text: CardText;
+  footerOnFront: boolean;
+  children?: React.ReactNode;
+}) {
+  const { styles } = useContext(CardStyle);
+  const announced = useContext(CardAnnounced);
+  const fonts = westernFonts(useApp().language);
+  const { footer, title } = props.text;
+  const layout = WESTERN_LAYOUTS[props.layout];
+  const at = (box: { top: number; height: number; left?: number; width?: number }): ViewStyle => ({
+    position: 'absolute',
+    top: `${box.top * 100}%`,
+    height: `${box.height * 100}%`,
+    left: `${(box.left ?? 0) * 100}%`,
+    width: `${(box.width ?? 1) * 100}%`,
+  });
+  const number = props.card && /\d{3}$/.test(props.card.id) ? `#${props.card.id.slice(-3)}` : '';
+  // Dark brown ink on every plank, as printed: red is only for the brush stroke of the plank picture.
+  const ink = WESTERN_COLORS.header.text;
+  return (
+    <View style={[styles.face, { backgroundColor: WESTERN_COLORS.face }]} {...readerProps(props.text, announced)}>
+      <Image source={props.art} style={FILL} resizeMode="cover" />
+      <Plank part={layout.plank.part} style={at({ top: layout.plank.top, height: layout.plank.bottom - layout.plank.top })} />
+      {props.layout === 'extra' && <Plank part="footer" style={at(WESTERN_EXTRA_PLANK)} />}
+      <View style={[at(layout.title), styles.westernTitleSlot, layout.centered && styles.westernCenteredBox]}>
+        <NameLabel
+          style={[
+            layout.extra ? styles.westernExtraTitle : styles.westernPrintedTitle,
+            // A title of several words ("Long-Dead Walkers") goes on two lines in the room of the printed one.
+            props.layout === 'spawn' && /\s/.test(title) && styles.westernPrintedTitleTwoLines,
+            { color: ink, fontFamily: fonts.title },
+            layout.centered && styles.westernCenteredText,
+          ]}
+          minimumFontScale={0.4}
+          charEm={WESTERN_CAPS_EM[fonts.title]}
+          text={title}
+        />
       </View>
-      <View style={[styles.levels, { backgroundColor: WESTERN_COLORS.panel }]}>
-        {card.kind === 'westernSpawn' &&
-          (current ? (
-            <Level level={danger} active large>
-              ×{card.counts[DANGER_LEVELS.indexOf(danger)]}
-            </Level>
-          ) : (
-            PRINTED_LEVELS.map((shown) => (
-              <Level key={shown} level={shown} active={shown === danger}>
-                ×{card.counts[DANGER_LEVELS.indexOf(shown)]}
-              </Level>
-            ))
-          ))}
-        {card.kind === 'westernExtra' &&
-          (current ? [danger] : PRINTED_LEVELS).map((shown) => (
-            <Level key={shown} level={shown} active={shown === danger} wide large={current}>
-              {extraLine(card.zombie, shown, t)}
-            </Level>
-          ))}
+      {number !== '' && <Text style={[at(WESTERN_NUMBER), styles.westernNumber, { fontFamily: fonts.count }]}>{number}</Text>}
+      {!!footer && !props.footerOnFront && (
+        <View style={[styles.infoBadge, { position: 'absolute', right: `${WESTERN_BADGE.right * 100}%`, top: `${WESTERN_BADGE.top * 100}%` }]}>
+          <Text style={styles.infoBadgeText}>i</Text>
+        </View>
+      )}
+      {props.children}
+      {!!footer && props.footerOnFront && (
+        <View style={[at(props.layout === 'extra' ? WESTERN_EXTRA_FOOTER : WESTERN_RULE_TEXT), props.layout === 'extra' && { left: 0, width: '100%' }, styles.westernFooterBox]}>
+          <Text style={[props.layout === 'extra' ? styles.westernExtraFooterText : styles.westernPanelText, { fontFamily: fonts.text }]}>{footer}</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+/**
+ * A count label of the printed cards, redrawn over the art: cream torn paper with a slab "x10" (the "x" smaller) and the
+ * colour of its Danger Level on a torn strip at the end. `row` is its place in the stack of four (1.5: the middle).
+ * Everything is laid out in absolute boxes of fixed size: no flex, no font shrinking, so the count cannot collapse on
+ * any platform.
+ */
+function WesternLabel(props: {
+  row: number;
+  left: number;
+  level: DangerLevel;
+  /** The only label of the card (the current Danger Level alone): set larger. */
+  big?: boolean;
+  /** A count ("x10") or, on an Extra Activation card, a sentence ("All Walkers"). */
+  count?: number;
+  sentence?: string;
+}) {
+  const { styles, scale } = useContext(CardStyle);
+  const fonts = westernFonts(useApp().language);
+  const picture = WESTERN_PARTS.countLabel;
+  // The hand-drawn label has transparent torn edges: it is a little larger than the printed one so none of it peeks out.
+  const bleed = picture !== undefined ? WESTERN_LABEL_BLEED : { x: 0, y: 0 };
+  const left = props.left - bleed.x;
+  const strip = (1 - WESTERN_PAPER_END) / (1 - left);
+  const paper = (WESTERN_PAPER_END - left) / (1 - left);
+  const enlarge = props.big ? WESTERN_CURRENT_LABEL : 1;
+  const height = (WESTERN_LABEL_HEIGHT + 2 * bleed.y) * enlarge;
+  const top = WESTERN_LABEL_TOP + props.row * WESTERN_LABEL_PITCH - bleed.y - (height - WESTERN_LABEL_HEIGHT) / 2;
+  const colour = DANGER_COLORS[props.level].background;
+  const twoLinesStyle = (props.sentence?.length ?? 0) > WESTERN_LABEL_ONE_LINE_CHARS;
+  const textStyle = [props.sentence ? styles.westernLabelSentence : styles.westernLabelCount, props.big && (props.sentence ? styles.westernLabelSentenceBig : styles.westernLabelCountBig), twoLinesStyle && styles.westernLabelTwoLines, { fontFamily: fonts.count }];
+  const twoLines = (props.sentence?.length ?? 0) > WESTERN_LABEL_ONE_LINE_CHARS;
+  const fit = useWordFit(props.sentence, textStyle, 8 * scale, WESTERN_CAPS_EM[fonts.count] * 0.7);
+  return (
+    <View
+      pointerEvents="none"
+      style={[styles.westernLabel, { top: `${top * 100}%`, height: `${height * 100}%`, left: `${left * 100}%` }]}
+    >
+      {picture !== undefined ? (
+        // The hand-drawn label: its cream part is as wide as the printed paper, its white strip is tinted with the Danger
+        // Level colour (white times a colour is the colour) and a plain block of that colour runs on to the card's edge.
+        <>
+          <View style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: `${(1 - paper / (1 - COUNT_LABEL_STRIP)) * 100}%`, backgroundColor: colour }} />
+          <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: `${(paper / (1 - COUNT_LABEL_STRIP)) * 100}%` }}>
+            <Image source={picture} style={FILL} resizeMode="stretch" />
+            <View style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: `${COUNT_LABEL_STRIP * 100}%`, backgroundColor: colour, mixBlendMode: 'multiply' }} />
+          </View>
+        </>
+      ) : (
+        <>
+          <View style={[styles.westernLabelPaperFill, { width: `${(paper + strip) * 100}%` }]} />
+          {/* Torn colour strip: its ragged left edge lets the paper show through. */}
+          <Svg style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: `${strip * 100}%`, height: '100%' }} viewBox="0 0 20 34" preserveAspectRatio="none">
+            <Polygon points="7,0 20,0 20,34 4,34 8,27 3,20 9,13 4,6" fill={colour} />
+          </Svg>
+        </>
+      )}
+      <View style={[styles.westernLabelText, { width: `${paper * 100}%` }]} onLayout={fit.onLayout}>
+        <Text style={[...textStyle, fit.style]} numberOfLines={twoLines ? 2 : 1}>
+          {props.sentence ?? (
+            <>
+              <Text style={[styles.westernLabelX, { fontFamily: fonts.count }]}>x</Text>
+              {props.count}
+            </>
+          )}
+        </Text>
       </View>
-    </View>,
+    </View>
+  );
+}
+
+/** Plank of light wood: a few grain lines (fixed, so a card never changes between two renders) over the plank colour. */
+const GRAIN: readonly (readonly [top: number, left: number, width: number])[] = [
+  [0.16, 0.02, 0.62],
+  [0.34, 0.3, 0.68],
+  [0.52, 0, 0.45],
+  [0.7, 0.4, 0.58],
+  [0.86, 0.1, 0.7],
+];
+
+/**
+ * A hand-drawn plank of any size without distorting its grain or its nails: the picture is scaled to the width of the
+ * box, its top and bottom rims (`cap` rows of the source) keep their proportions and only the wood between them is
+ * stretched to the height left.
+ */
+function SlicedPlank({ source, size, cap }: { source: ImageSourcePropType; size: { width: number; height: number }; cap: number }) {
+  const [box, setBox] = useState({ width: 0, height: 0 });
+  const k = box.width / size.width;
+  const rim = Math.min(cap * k, box.height / 2);
+  const middle = Math.max(0, box.height - 2 * rim);
+  const stretch = middle / Math.max(1, (size.height - 2 * cap) * k);
+  const image = (top: number, height: number) => ({ position: 'absolute', left: 0, width: box.width, top, height } as const);
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill} onLayout={(event) => setBox(event.nativeEvent.layout)}>
+      {box.width > 0 && (
+        <>
+          <View style={{ position: 'absolute', left: 0, right: 0, top: 0, height: rim, overflow: 'hidden' }}>
+            <Image source={source} style={image(0, size.height * k)} resizeMode="stretch" />
+          </View>
+          <View style={{ position: 'absolute', left: 0, right: 0, top: rim, height: middle, overflow: 'hidden' }}>
+            <Image source={source} style={image(-cap * k * stretch, size.height * k * stretch)} resizeMode="stretch" />
+          </View>
+          <View style={{ position: 'absolute', left: 0, right: 0, top: rim + middle, height: rim, overflow: 'hidden' }}>
+            <Image source={source} style={image(-(size.height * k - rim), size.height * k)} resizeMode="stretch" />
+          </View>
+        </>
+      )}
+    </View>
+  );
+}
+
+/** Size of the hand-drawn planks and how much of their rim stays unstretched (rows of the source). */
+const PLANK_PICTURES = { header: { width: 1200, height: 260, cap: 70 }, footer: { width: 1200, height: 420, cap: 110 } } as const;
+
+/** `part` names the hand-drawn picture that replaces the drawn wood when it exists (see `WESTERN_PARTS`). */
+function Plank({ style, part, children }: { style?: StyleProp<ViewStyle>; part?: 'header' | 'footer'; children?: React.ReactNode }) {
+  const { styles } = useContext(CardStyle);
+  const picture = part === 'header' ? WESTERN_PARTS.headerPlank : part === 'footer' ? WESTERN_PARTS.footerPlank : undefined;
+  return (
+    <View style={[styles.plank, picture !== undefined && styles.plankPicture, style]}>
+      {picture !== undefined && part !== undefined ? (
+        <SlicedPlank source={picture} size={PLANK_PICTURES[part]} cap={PLANK_PICTURES[part].cap} />
+      ) : (
+        GRAIN.map(([top, left, width]) => (
+          <View key={top} pointerEvents="none" style={[styles.grain, { top: `${top * 100}%`, left: `${left * 100}%`, width: `${width * 100}%` }]} />
+        ))
+      )}
+      {children}
+    </View>
+  );
+}
+
+/**
+ * A named Western Abomination, as printed: the title plank, the picture window cut from its card (its own ratio) and
+ * the wooden panel with the rule. `title` is the name, `subtitle` "Abomination".
+ */
+function WesternWindowCard(props: {
+  text: CardText;
+  /** The printed rule of the Abomination, written on the panel when it fits. */
+  rule: string;
+  title: string;
+  subtitle: string;
+  boss: WesternAbomination;
+  footerOnFront: boolean;
+}) {
+  const { styles } = useContext(CardStyle);
+  const announced = useContext(CardAnnounced);
+  const fonts = westernFonts(useApp().language);
+  const { footer } = props.text;
+  const { source, ratio } = westernWindow(props.boss);
+  return (
+    <View style={[styles.face, { backgroundColor: WESTERN_COLORS.face }]} {...readerProps(props.text, announced)}>
+      <CardHeader title={props.title} subtitle={props.subtitle} color={WESTERN_COLORS.header} badge={!!footer && !props.footerOnFront} western />
+      <View style={[styles.westernWindow, { aspectRatio: ratio }]}>
+        <Image source={source} style={FILL} resizeMode="cover" />
+      </View>
+      <Plank style={styles.westernPanel} part="footer">
+        {props.footerOnFront && <Text style={[styles.westernPanelText, { fontFamily: fonts.text }]}>{props.rule}</Text>}
+      </Plank>
+    </View>
   );
 }
 
@@ -691,6 +1002,11 @@ const sentences = (parts: (string | false | undefined)[]) =>
     .map((part) => (/[.!?:]$/.test(part) ? part : `${part}.`))
     .join(' ');
 
+/** What a card's face tells a screen reader: the whole card in one stop, or nothing when the card's own button reads it. */
+const readerProps = (text: CardText, announced: boolean) =>
+  // The rule on the back is read with the front: a screen reader never needs to turn the card.
+  announced ? HIDDEN_FROM_READER : { accessible: true, accessibilityLabel: sentences([text.title, text.spoken, text.footer]) };
+
 function Frame(props: {
   /** Absent on the face of an Abomination drawn by hand, which has no card number. */
   card?: ZombieCard;
@@ -703,14 +1019,10 @@ function Frame(props: {
   children: React.ReactNode;
 }) {
   const { styles } = useContext(CardStyle);
-  const { title, spoken, footer } = props.text;
+  const { title, footer } = props.text;
   const announced = useContext(CardAnnounced);
   return (
-    <View
-      style={[styles.face, props.faceColor !== undefined && { backgroundColor: props.faceColor }]}
-      // The rule on the back is read with the front: a screen reader never needs to turn the card.
-      {...(announced ? HIDDEN_FROM_READER : { accessible: true, accessibilityLabel: sentences([title, spoken, footer]) })}
-    >
+    <View style={[styles.face, props.faceColor !== undefined && { backgroundColor: props.faceColor }]} {...readerProps(props.text, announced)}>
       <CardHeader card={props.card} title={title} color={props.headerColor} badge={!!footer && !props.footerOnFront} />
       <View style={styles.body}>{props.children}</View>
       {footer && props.footerOnFront && (
@@ -725,14 +1037,34 @@ function Frame(props: {
 type Colors = { background: string; text: string };
 
 /** Title and number of a card; the "i" says there is a rule on the back, shown only on the front. */
-function CardHeader(props: { card?: ZombieCard; title: string; color: Colors; badge?: boolean }) {
+function CardHeader(props: { card?: ZombieCard; title: string; color: Colors; badge?: boolean; western?: boolean; subtitle?: string }) {
   const { styles } = useContext(CardStyle);
+  const fonts = westernFonts(useApp().language);
+  const number = props.card && /\d{3}$/.test(props.card.id) ? `#${props.card.id.slice(-3)}` : '';
+  if (props.western) {
+    return (
+      <Plank style={styles.westernHeader} part="header">
+        {!WESTERN_PARTS.headerPlank && <View style={styles.westernBrush} />}
+        <View style={styles.westernTitleBox}>
+          <NameLabel style={[styles.westernTitle, { fontFamily: fonts.title }]} minimumFontScale={0.4} charEm={WESTERN_CAPS_EM[fonts.title]} text={props.title} />
+          {!WESTERN_PARTS.headerPlank && <View style={styles.westernTitleRule} />}
+          {props.subtitle !== undefined && <Text style={[styles.westernSubtitle, { fontFamily: fonts.count }]}>{props.subtitle}</Text>}
+        </View>
+        <Text style={[styles.number, { color: props.color.text, fontFamily: fonts.count }]}>{number}</Text>
+        {props.badge && (
+          <View style={styles.infoBadge}>
+            <Text style={styles.infoBadgeText}>i</Text>
+          </View>
+        )}
+      </Plank>
+    );
+  }
   return (
     <View style={[styles.header, { backgroundColor: props.color.background }]}>
       <Text style={[styles.title, { color: props.color.text }]} numberOfLines={3}>
         {props.title}
       </Text>
-      <Text style={[styles.number, { color: props.color.text }]}>{props.card && /\d{3}$/.test(props.card.id) ? `#${props.card.id.slice(-3)}` : ''}</Text>
+      <Text style={[styles.number, { color: props.color.text }]}>{number}</Text>
       {props.badge && (
         <View style={styles.infoBadge}>
           <Text style={styles.infoBadgeText}>i</Text>
@@ -746,7 +1078,7 @@ function CardHeader(props: { card?: ZombieCard; title: string; color: Colors; ba
 function headerFor(card: ZombieCard): Colors {
   if (isFantasyCard(card)) return FANTASY_HEADER;
   if (isInvaderCard(card)) return card.kind === 'xenoExtra' ? CARD_COLORS.extra : INVADER_COLORS.header;
-  if (isWesternCard(card)) return card.kind === 'westernExtra' ? CARD_COLORS.extra : WESTERN_COLORS.header;
+  if (isWesternCard(card)) return WESTERN_COLORS.header;
   if (card.kind === 'extra') return CARD_COLORS.extra;
   return card.kind === 'rush' || card.kind === 'trejoRush' ? CARD_COLORS.rush : CARD_COLORS.spawn;
 }
@@ -813,7 +1145,7 @@ function RuleSide(props: {
   return (
     <View style={[styles.face, face !== undefined && { backgroundColor: face }]} {...(announced ? HIDDEN_FROM_READER : {})}>
       <Pressable style={({ pressed }) => pressed && PRESSED} onPress={props.onFlip} accessible={false}>
-        <CardHeader card={props.card} title={title} color={props.header} />
+        <CardHeader card={props.card} title={title} color={props.header} western={props.universe === 'western'} />
       </Pressable>
       <View style={[styles.sideFrame, { backgroundColor: panel.frame }]}>
         <ScrollView style={[styles.sideBox, { backgroundColor: panel.box }]} {...SCROLL_TRACKING}>
@@ -1298,6 +1630,44 @@ function makeStyles(s: number) {
       fontWeight: '800',
       textAlign: 'center',
     },
+    // Western planks: wood colour, grain lines, a darker edge.
+    plank: { backgroundColor: WESTERN_COLORS.header.background, overflow: 'hidden', borderBottomWidth: 2 * s, borderBottomColor: WESTERN_COLORS.plankDark },
+    grain: { position: 'absolute', height: 1 * s, backgroundColor: WESTERN_COLORS.grain, opacity: 0.55 },
+    westernHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 6 * s, paddingHorizontal: 10 * s, paddingTop: 9 * s, paddingBottom: 6 * s, minHeight: 62 * s },
+    // The red brush stroke along the top edge of a printed header.
+    westernBrush: { position: 'absolute', top: 0, left: 0, width: '58%', height: 5 * s, backgroundColor: WESTERN_COLORS.brush, borderBottomRightRadius: 8 * s },
+    westernTitleBox: { flex: 1, minWidth: 0 },
+    westernTitle: { color: WESTERN_COLORS.header.text, fontSize: 23 * s, lineHeight: 23 * s, fontWeight: 'normal', textTransform: 'uppercase' },
+    westernTitleRule: { height: 2 * s, marginTop: 2 * s, backgroundColor: WESTERN_COLORS.header.text, opacity: 0.8 },
+    westernSubtitle: { color: WESTERN_COLORS.header.text, fontSize: 10 * s, lineHeight: 12 * s, fontWeight: 'normal', textTransform: 'uppercase' },
+    westernBody: { flex: 1 },
+    // The picture of an Abomination card: the printed window is landscape (the official art is cut to this ratio).
+    westernWindow: { width: '100%', overflow: 'hidden', borderBottomWidth: 2 * s, borderBottomColor: WESTERN_COLORS.plankDark },
+    westernPanel: { flex: 1, justifyContent: 'center', paddingHorizontal: 10 * s, paddingVertical: 6 * s, borderBottomWidth: 0 },
+    // What the app writes over a printed card (see WESTERN_LAYOUTS): the title sits on the bottom edge of its box.
+    westernTitleSlot: { position: 'absolute', justifyContent: 'flex-end' },
+    westernCenteredBox: { alignItems: 'center' },
+    westernCenteredText: { textAlign: 'center' },
+    westernPrintedTitle: { fontSize: 19 * s, lineHeight: 21 * s, fontWeight: 'normal', textTransform: 'uppercase' },
+    westernPrintedTitleTwoLines: { fontSize: 11.5 * s, lineHeight: 12 * s },
+    westernExtraTitle: { fontSize: 18 * s, lineHeight: 17 * s, fontWeight: 'normal', textTransform: 'uppercase' },
+    westernNumber: { color: WESTERN_COLORS.paperInk, opacity: 0.55, fontSize: 12 * s, fontWeight: 'normal', textAlign: 'right' },
+    westernFooterBox: { alignItems: 'center', justifyContent: 'center' },
+    // Count label: cream paper, a dark edge on its left and underside as on the printed one, the strip at its end.
+    westernLabel: { position: 'absolute', right: 0, overflow: 'hidden' },
+    // With the hand-drawn label under it, the drawn edge and paper are not needed.
+    plankPicture: { backgroundColor: 'transparent', borderBottomWidth: 0 },
+    westernLabelPaperFill: { position: 'absolute', top: 0, bottom: 0, left: 0, backgroundColor: WESTERN_COLORS.paper, borderLeftWidth: 2 * s, borderBottomWidth: 3 * s, borderColor: WESTERN_COLORS.labelEdge },
+    westernLabelText: { position: 'absolute', top: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
+    westernLabelCount: { color: WESTERN_COLORS.paperInk, fontSize: 28 * s, lineHeight: 34 * s, includeFontPadding: false, fontWeight: 'normal' },
+    westernLabelCountBig: { fontSize: 33 * s, lineHeight: 40 * s },
+    westernLabelX: { fontSize: 20 * s, fontWeight: 'normal' },
+    westernLabelSentence: { color: WESTERN_COLORS.paperInk, fontSize: 17 * s, lineHeight: 22 * s, includeFontPadding: false, fontWeight: 'normal', textAlign: 'center' },
+    westernLabelTwoLines: { fontSize: 13 * s, lineHeight: 15 * s },
+    westernLabelSentenceBig: { fontSize: 19 * s, lineHeight: 24 * s },
+    westernFooterText: { color: WESTERN_COLORS.header.text, fontSize: 11 * s, fontWeight: 'normal', textAlign: 'center' },
+    westernExtraFooterText: { color: WESTERN_COLORS.header.text, fontSize: 12 * s, textAlign: 'center', fontWeight: 'normal' },
+    westernPanelText: { color: WESTERN_COLORS.header.text, fontSize: 10 * s, lineHeight: 12.5 * s, textAlign: 'center', fontWeight: 'normal' },
     face: { flex: 1, borderRadius: 12 * s, overflow: 'hidden', backgroundColor: CARD_COLORS.body },
     header: { flexDirection: 'row', gap: 6 * s, paddingHorizontal: 10 * s, paddingVertical: 6 * s, minHeight: 44 * s },
     title: { flex: 1, fontSize: 15 * s, lineHeight: 17 * s, fontWeight: '900', textTransform: 'uppercase' },

@@ -1,12 +1,17 @@
-import { type ErrorBoundaryProps, Stack } from 'expo-router';
+import { useFonts } from 'expo-font';
+import { type ErrorBoundaryProps, SplashScreen, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { AppProvider, useApp } from '@/game/store';
 import { deviceLanguage } from '@/i18n/device-language';
 import { translator } from '@/i18n/translations';
-import { COLORS } from '@/theme';
+import { COLORS, INVADER_FONT_FILES, WESTERN_FONT_FILES } from '@/theme';
+
+// The splash screen stays up until the Western and Invader fonts are in, so no card ever flashes in a fallback face.
+SplashScreen.preventAutoHideAsync();
 
 function Navigator() {
   const { t } = useApp();
@@ -31,6 +36,13 @@ function Navigator() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded, fontError] = useFonts({ ...WESTERN_FONT_FILES, ...INVADER_FONT_FILES });
+  // A font that fails to load is not worth a blank app: the cards fall back to the system serif.
+  const ready = fontsLoaded || fontError !== null;
+  useEffect(() => {
+    if (ready) SplashScreen.hideAsync();
+  }, [ready]);
+  if (!ready) return null;
   return (
     <AppProvider>
       <StatusBar hidden />
