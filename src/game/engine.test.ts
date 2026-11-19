@@ -4,8 +4,10 @@ import { test } from 'node:test';
 
 import { CARD_SETS, OPTIONAL_SETS } from '../data/decks.ts';
 import { BOSS_RULE_IDS, BOSSES_WITHOUT_RULE, FANTASY_SETS } from '../data/fantasy.ts';
-import { type Boss, DEFAULT_THREAT, FANTASY_BOSS_IDS, MODERN_ABOMINATIONS, parseThreat, presentSetIds, tailorFantasyDeck, tailorModernDeck, type Threat } from '../data/threat.ts';
-import { allExpansions, bossCopiesOf, bossIdsOf, bossTrigger as fantasyBossTrigger, CARDS_BY_ID, cardEffect, cardIdsOf, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
+import { WESTERN_SETS } from '../data/western.ts';
+import { en } from '../i18n/en.ts';
+import { type Boss, DEFAULT_THREAT, FANTASY_BOSS_IDS, MODERN_ABOMINATIONS, MODERN_BOSS_IDS, parseThreat, WESTERN_ABOMINATIONS, WESTERN_BOSS_IDS, presentSetIds, tailorFantasyDeck, tailorModernDeck, type Threat } from '../data/threat.ts';
+import { allExpansions, tailorDeck, bossCopiesOf, bossIdsOf, bossTrigger as fantasyBossTrigger, CARDS_BY_ID, cardEffect, cardIdsOf, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
 import {
   activeSetIds,
   ALL_PARTS,
@@ -40,7 +42,7 @@ import {
   powersOf,
 } from './engine.ts';
 import type { BossKind, BossPiles, CardSet, GameState, Piles, ZombieCard } from './types.ts';
-import { isInvaderCard, NO_BOSS, NO_DECK } from './types.ts';
+import { isInvaderCard, isWesternCard, NO_BOSS, NO_DECK } from './types.ts';
 
 const sets: CardSet[] = [
   {
@@ -1802,4 +1804,143 @@ test('a boss card present twice in a save is rejected', () => {
   assert.equal(validSave({ ...state, piles: { ...state.piles, bosses: twice } }), false, 'a group in the list twice');
   const copies = new Map(SAVE_COPIES).set('x', 2);
   assert.ok(isValidSave(JSON.parse(JSON.stringify({ ...state, piles: { ...state.piles, bosses: inDeck } })), () => SAVE_CARDS, () => SAVE_BOSSES, () => copies), 'a boss printed twice may appear twice');
+});
+
+// Western (Zombicide: Undead or Alive). Source: the owner's photos of the printed cards (2026-11-19), the core box
+// count from the rulebook p.4; counts are printed Red first and stored Blue, Yellow, Orange, Red.
+const western = UNIVERSES.western;
+const westernCard = (id: string) => CARDS_BY_ID.get(id);
+const westernCounts = (id: string) => {
+  const card = westernCard(id);
+  return card?.kind === 'westernSpawn' ? card.counts : undefined;
+};
+const WESTERN_BOSS_ID_LIST = WESTERN_ABOMINATIONS.map((boss) => boss.zombie);
+
+test('Western is a fourth universe with its own save key, deck parts off and one core box', () => {
+  assert.ok(UNIVERSE_IDS.includes('western'));
+  assert.equal(gameKey('western'), 'zombideck.game.western');
+  assert.equal(western.exclusiveCores, false);
+  assert.equal(western.deckParts, false);
+  assert.deepEqual(western.defaultExpansions, ['undeadOrAlive']);
+  assert.deepEqual(western.sets.filter((set) => set.core).map((set) => set.id), ['undeadOrAlive']);
+  assert.ok(western.sets.every((set) => set.optional));
+});
+
+test('the Western core box has the 37 printed cards and Long-Dead Walkers 8, numbered without gaps', () => {
+  const [core, longDead] = [WESTERN_SETS.find((set) => set.id === 'undeadOrAlive'), WESTERN_SETS.find((set) => set.id === 'longDeadWalkers')];
+  assert.deepEqual(core?.cards.map((card) => card.id), Array.from({ length: 37 }, (_, i) => `undeadOrAlive-${String(i + 1).padStart(3, '0')}`));
+  assert.deepEqual(longDead?.cards.map((card) => card.id), Array.from({ length: 8 }, (_, i) => `longDeadWalkers-${String(i + 38).padStart(3, '0')}`));
+  assert.equal(longDead?.optional, true);
+  assert.ok(WESTERN_SETS.flatMap((set) => set.cards).every(isWesternCard));
+});
+
+test('Western counts are listed Blue, Yellow, Orange, Red (the printed card lists Red first)', () => {
+  assert.deepEqual(westernCounts('undeadOrAlive-001'), [2, 4, 8, 10]);
+  assert.deepEqual(westernCounts('undeadOrAlive-017'), [4, 6, 10, 12]);
+  assert.deepEqual(westernCounts('undeadOrAlive-005'), [2, 4, 8, 10]);
+  assert.deepEqual(westernCounts('undeadOrAlive-021'), [4, 4, 8, 10]);
+  assert.deepEqual(westernCounts('undeadOrAlive-025'), [4, 4, 8, 10]);
+  assert.deepEqual(westernCounts('longDeadWalkers-038'), [2, 4, 8, 10]);
+  assert.deepEqual(westernCounts('longDeadWalkers-042'), [4, 6, 10, 12]);
+  assert.deepEqual(westernCounts('longDeadWalkers-044'), [4, 6, 10, 14]);
+  assert.deepEqual(westernCounts('longDeadWalkers-045'), westernCounts('longDeadWalkers-044'));
+});
+
+test('the Western core box holds the printed kinds of cards, #012 being a copy of #011', () => {
+  const zombie = (id: string) => {
+    const card = westernCard(id);
+    return card?.kind === 'westernSpawn' || card?.kind === 'westernExtra' ? card.zombie : card?.kind;
+  };
+  assert.equal(zombie('undeadOrAlive-004'), 'westernWalker');
+  assert.equal(zombie('undeadOrAlive-008'), 'westernBrute');
+  assert.equal(zombie('undeadOrAlive-009'), 'westernRunner');
+  assert.equal(zombie('longDeadWalkers-038'), 'longDeadWalker');
+  for (const number of ['013', '016', '029', '033']) assert.equal(zombie(`undeadOrAlive-${number}`), 'westernAbomination');
+  const extras = ['034', '035', '036', '037'];
+  assert.deepEqual(extras.map((n) => westernCard(`undeadOrAlive-${n}`)?.kind), Array(4).fill('westernExtra'));
+  assert.deepEqual(extras.map((n) => zombie(`undeadOrAlive-${n}`)), ['westernWalker', 'westernWalker', 'westernBrute', 'westernRunner']);
+  assert.deepEqual({ ...westernCard('undeadOrAlive-012'), id: '' }, { ...westernCard('undeadOrAlive-011'), id: '' });
+  const core = WESTERN_SETS[0].cards;
+  assert.equal(core.filter((card) => card.kind === 'westernAbomination').length, 9);
+  assert.equal(core.filter((card) => card.kind === 'westernExtra').length, 4);
+  assert.equal(cardPart(WESTERN_SETS[0], core[33]), 'extra');
+  assert.equal(cardPart(WESTERN_SETS[0], core[0]), 'easy');
+});
+
+test('every Western Abomination has a set that holds it, a name and its printed rule', () => {
+  assert.equal(WESTERN_ABOMINATIONS.length, 22);
+  assert.equal(new Set(WESTERN_BOSS_ID_LIST).size, 22);
+  const text = en as Record<string, string>;
+  for (const boss of WESTERN_ABOMINATIONS) {
+    assert.ok(WESTERN_SETS.some((set) => set.id === boss.setId), boss.zombie);
+    assert.ok(text[`zombie.${boss.zombie}.one`] && text[`zombie.${boss.zombie}.other`], boss.zombie);
+    assert.ok(text[`card.${boss.zombie}Rule`], boss.zombie);
+  }
+  const boxes = (setId: string) => WESTERN_ABOMINATIONS.filter((boss) => boss.setId === setId).length;
+  assert.deepEqual(
+    ['undeadOrAlive', 'runningWild', 'abominapeVsCrocosaur', 'deadstockAbominations', 'deadWestAbominations', 'gearsAndGuns', 'westernPromos'].map(boxes),
+    [1, 1, 2, 4, 12, 1, 1],
+  );
+  assert.equal(text['card.steamMonsterRule'], 'When the Steam Monster enters a Zone, any Steam Nozzles in it are Broken.');
+  assert.deepEqual(WESTERN_SETS.filter((set) => set.cards.length === 0).map((set) => set.id).sort(), [
+    'abominapeVsCrocosaur', 'deadWestAbominations', 'deadstockAbominations', 'gearsAndGuns', 'runningWild', 'westernPromos',
+  ]);
+});
+
+test('no zombie or boss id is shared between universes', () => {
+  const zombiesOf = (universe: 'modern' | 'fantasy' | 'invader' | 'western') =>
+    new Set(UNIVERSES[universe].sets.flatMap((set) => set.cards.flatMap((card): string[] => {
+      if ('zombie' in card) return [card.zombie];
+      if (card.kind === 'levels') return card.levels.flatMap((level) => (level ? [level.zombie] : []));
+      return [];
+    })));
+  const ids = {
+    modern: new Set([...zombiesOf('modern'), ...MODERN_BOSS_IDS]),
+    fantasy: new Set([...zombiesOf('fantasy'), ...FANTASY_BOSS_IDS]),
+    invader: zombiesOf('invader'),
+    western: new Set([...zombiesOf('western'), ...WESTERN_BOSS_IDS]),
+  };
+  assert.ok(ids.western.size > 25);
+  for (const other of ['modern', 'fantasy', 'invader'] as const) {
+    assert.deepEqual([...ids.western].filter((id) => ids[other].has(id)), [], other);
+  }
+});
+
+test('a Western game is saved and reloaded; a Western save holding a Modern card or boss is rejected', () => {
+  const setIds = ['undeadOrAlive', 'longDeadWalkers'];
+  const game = newGame(western.sets, setIds, ALL_PARTS, () => 0, 2, 'western', tailorDeck('western', DEFAULT_THREAT, setIds));
+  assert.equal(game.universe, 'western');
+  assert.equal(game.piles.draw.length, 45);
+  const saved = JSON.parse(JSON.stringify(drawCards(game, cardEffect, () => 0, fantasyBossTrigger)));
+  assert.ok(isValidSave(saved, cardIdsOf, bossIdsOf, bossCopiesOf));
+  const valid = (value: unknown) => isValidSave(value, cardIdsOf, bossIdsOf, bossCopiesOf);
+  assert.equal(valid({ ...saved, piles: { ...saved.piles, draw: ['core2e-001'] } }), false);
+  const bosses = saved.piles.bosses;
+  assert.ok(bosses, 'the core box brings the Bowler Hat, so the game has an Abomination deck');
+  const withBoss = (boss: string) => ({ ...saved, piles: { ...saved.piles, bosses: { ...bosses, abomination: { draw: [boss], discard: [] } } } });
+  assert.equal(valid(withBoss('hobomination')), false);
+  assert.equal(valid(withBoss('abominawild')), false);
+  assert.equal(valid(withBoss('bowlerHat')), true);
+  // And the other way round: a Modern save refuses a Western card.
+  const modern = newGame(CARD_SETS, ['core2e'], ALL_PARTS, () => 0, 1, 'modern');
+  assert.equal(valid({ ...modern, piles: { ...modern.piles, draw: ['undeadOrAlive-001'] } }), false);
+});
+
+test('Western Abominations: its text cards always call on the Abomination deck, one at a time, drawn by hand too', () => {
+  for (const danger of DANGER_LEVELS) {
+    assert.equal(fantasyBossTrigger('undeadOrAlive-013', danger), 'abomination');
+    assert.equal(fantasyBossTrigger('undeadOrAlive-001', danger), undefined);
+    assert.equal(fantasyBossTrigger('undeadOrAlive-034', danger), undefined);
+  }
+  assert.deepEqual(western.bosses?.rules, ['oneAtATime']);
+  assert.equal(western.bosses?.manualDraw, true);
+  assert.equal(western.bosses?.necromancers.length, 0);
+  const deck = (setIds: string[]) => western.bosses?.tailor(selectCards(western.sets, setIds), DEFAULT_THREAT, new Set(setIds));
+  // The text cards stay in the Zombie deck; each box switched on adds its Abominations to the Abomination deck.
+  assert.equal(deck(['undeadOrAlive'])?.cards.length, 37);
+  assert.deepEqual(deck(['undeadOrAlive'])?.bosses?.abomination, ['bowlerHat']);
+  assert.deepEqual(deck(['undeadOrAlive', 'abominapeVsCrocosaur'])?.bosses?.abomination.sort(), ['abominape', 'bowlerHat', 'crocosaur']);
+  const off = western.bosses?.tailor(selectCards(western.sets, ['undeadOrAlive']), { ...DEFAULT_THREAT, off: ['bowlerHat'] }, new Set(['undeadOrAlive']));
+  assert.equal(off?.bosses, undefined);
+  assert.equal(deck(western.sets.map((set) => set.id))?.bosses?.abomination.length, 22);
 });

@@ -38,6 +38,18 @@ export const INVADER_COLORS = {
   hazardAlert: '#e5261f',
 };
 
+/** Wild West era (Undead or Alive): saddle leather and dusty ochre; a plain first look, to be designed. */
+export const WESTERN_COLORS = {
+  header: { background: '#4a2c17', text: '#f6e8c8' },
+  /** Card stock. */
+  face: '#b9803f',
+  /** Panel beside the picture, under the counts. */
+  panel: '#4a2c17',
+  /** Border: leather with ochre stripes. */
+  hazardBase: '#4a2c17',
+  hazardStripe: '#d49a4a',
+};
+
 export const DANGER_COLORS: Record<DangerLevel, { background: string; text: string }> = {
   blue: { background: '#2f6fb5', text: '#ffffff' },
   yellow: { background: '#e8c53a', text: '#1b1a15' },

@@ -151,7 +151,7 @@ function ThreatOptions() {
       {/* Modern has no Necromancers: its own sentence says the Abomination deck is the only one. */}
       <Text style={styles.muted}>{t(necromancerListed ? 'threat.deadMenTalesDetail' : 'threat.abominationDeckDetail')}</Text>
       <Choices
-        options={BOSS_RULES}
+        options={decks?.rules ?? BOSS_RULES}
         selected={threat.bossRule}
         label={(rule) => t(RULE_LABELS[rule].label)}
         onSelect={(bossRule) => setThreat((current) => ({ ...current, bossRule }))}

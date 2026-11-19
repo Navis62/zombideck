@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
-import type { FantasyNecromancer, FantasyZombie, InvaderAbomination, InvaderXeno, ModernCard, NamedModernAbomination, ZombieType } from '@/game/types';
+import type { FantasyNecromancer, FantasyZombie, InvaderAbomination, InvaderXeno, ModernCard, NamedModernAbomination, WesternAbomination, WesternZombie, ZombieType } from '@/game/types';
 
-export type ArtSubject = ZombieType | InvaderXeno | InvaderAbomination | FantasyZombie | FantasyNecromancer | NamedModernAbomination | 'trejo' | 'spam';
+/** The Western text card shows the generic Western Abomination. */
+export type WesternSubject = WesternZombie | WesternAbomination | 'westernAbomination';
+export type ArtSubject = ZombieType | InvaderXeno | InvaderAbomination | FantasyZombie | FantasyNecromancer | NamedModernAbomination | WesternSubject | 'trejo' | 'spam';
 
 // One illustration per subject, upscaled to 1280 px tall and compressed to JPEG.
 // Tall portrait illustrations, shown in the panel beside the Danger Levels.
@@ -249,7 +251,43 @@ const INVADER_ART: Record<InvaderXeno | InvaderAbomination, ImageSourcePropType>
   bountyHunterEddieAbomination: require('../../assets/invader/abominations/bounty-hunter-eddie-abomination-cartoon.jpg'),
 };
 
-const ART: Record<ArtSubject, ImageSourcePropType> = { ...MODERN_ART, ...FANTASY_ART, ...INVADER_ART };
+// TEMPORARY until the Western art is drawn (docs/art/western-prompts.md): the Western zombies borrow the Modern
+// pictures and every Western Abomination the generic Modern Abomination, so no file is missing.
+const TEMP_WALKER = require('../../assets/modern/zombies/walker-cartoon.jpg');
+const TEMP_RUNNER = require('../../assets/modern/zombies/runner-cartoon.jpg');
+const TEMP_BRUTE = require('../../assets/modern/zombies/fatty-cartoon.jpg');
+const TEMP_ABOMINATION = require('../../assets/modern/abominations/abomination-cartoon.jpg');
+const WESTERN_ART: Record<WesternSubject, ImageSourcePropType> = {
+  westernWalker: TEMP_WALKER,
+  westernRunner: TEMP_RUNNER,
+  westernBrute: TEMP_BRUTE,
+  longDeadWalker: TEMP_WALKER,
+  westernAbomination: TEMP_ABOMINATION,
+  bowlerHat: TEMP_ABOMINATION,
+  nightmareHorse: TEMP_ABOMINATION,
+  abominape: TEMP_ABOMINATION,
+  crocosaur: TEMP_ABOMINATION,
+  abominabear: TEMP_ABOMINATION,
+  texasDeadhorn: TEMP_ABOMINATION,
+  bizon: TEMP_ABOMINATION,
+  bloodBull: TEMP_ABOMINATION,
+  littleTrickster: TEMP_ABOMINATION,
+  goreGeyser: TEMP_ABOMINATION,
+  meltingPot: TEMP_ABOMINATION,
+  plymouthHound: TEMP_ABOMINATION,
+  pusbag: TEMP_ABOMINATION,
+  greatTrickster: TEMP_ABOMINATION,
+  cactusQueen: TEMP_ABOMINATION,
+  alphaBane: TEMP_ABOMINATION,
+  deathgrasp: TEMP_ABOMINATION,
+  fatMace: TEMP_ABOMINATION,
+  swampTongue: TEMP_ABOMINATION,
+  rottenClaw: TEMP_ABOMINATION,
+  westernWendigo: TEMP_ABOMINATION,
+  steamMonster: TEMP_ABOMINATION,
+};
+
+const ART: Record<ArtSubject, ImageSourcePropType> = { ...MODERN_ART, ...FANTASY_ART, ...INVADER_ART, ...WESTERN_ART };
 
 export const artSubject = (card: ModernCard): ArtSubject =>
   card.kind === 'trejo' || card.kind === 'trejoRush' ? 'trejo' : card.kind === 'spam' ? 'spam' : card.zombie;

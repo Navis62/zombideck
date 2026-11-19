@@ -8,6 +8,7 @@ const CARD_BACKS: Record<UniverseId, number> = {
   modern: require('../../assets/cards/back.jpg'),
   fantasy: require('../../assets/fantasy/cards/back-fantasy.jpg'),
   invader: require('../../assets/invader/cards/back-invader.jpg'),
+  western: require('../../assets/western/cards/back-western.jpg'),
 };
 
 /** Card width the badge was drawn for; it grows with the card on tablets. */

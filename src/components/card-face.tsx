@@ -22,8 +22,12 @@ import {
   type NamedModernAbomination,
   type NamedNecromancer,
   type UniverseId,
+  type WesternAbomination,
+  type WesternActivated,
+  type WesternCard,
   isFantasyCard,
   isInvaderCard,
+  isWesternCard,
   NO_BOSS,
   NO_DECK,
   type ModernCard,
@@ -31,7 +35,7 @@ import {
   type ZombieType,
 } from '@/game/types';
 import type { Translate, TranslationKey } from '@/i18n/translations';
-import { CARD_COLORS, DANGER_COLORS, INVADER_COLORS, PRESSED } from '@/theme';
+import { CARD_COLORS, DANGER_COLORS, INVADER_COLORS, PRESSED, WESTERN_COLORS } from '@/theme';
 
 // Printed top-down on the cards, red first.
 const PRINTED_LEVELS = [...DANGER_LEVELS].reverse();
@@ -185,12 +189,12 @@ const asRevealed = (card: ZombieCard, reveal?: Reveal): ZombieCard =>
     ? { ...card, zombie: reveal.boss as FantasyNecromancer }
     : card;
 
-/** A modern card whose Abomination comes from the Abomination deck (see `bossTrigger`). */
-const callsAbominationDeck = (card: ZombieCard): card is Extract<ModernCard, { kind: 'spawn' }> =>
-  card.kind === 'spawn' && card.zombie === 'abomination';
+/** A Modern or Western card whose Abomination comes from the Abomination deck (see `bossTrigger`). */
+const callsAbominationDeck = (card: ZombieCard): card is Extract<ModernCard, { kind: 'spawn' }> | Extract<WesternCard, { kind: 'westernAbomination' }> =>
+  (card.kind === 'spawn' && card.zombie === 'abomination') || card.kind === 'westernAbomination';
 
-/** The Abomination a modern card revealed, to draw in place of the generic one. */
-const revealedAbomination = (card: ZombieCard, reveal?: Reveal): NamedModernAbomination | undefined =>
+/** The named Abomination a Modern or Western card revealed, to draw in place of the generic one. */
+const revealedAbomination = (card: ZombieCard, reveal?: Reveal): NamedModernAbomination | WesternAbomination | undefined =>
   callsAbominationDeck(card) && reveal?.kind === 'abomination' && isBoss(reveal) && isModernAbomination(reveal.boss) ? reveal.boss : undefined;
 
 /** The name of the boss a reveal holds, if it names one the decks know. */
@@ -230,6 +234,7 @@ function withPowers(text: CardText, reveal: Reveal | undefined, t: Translate): C
 function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: Reveal): CardText {
   if (isFantasyCard(card)) return withReveal(fantasyText(card, danger, t), reveal, t, card.kind !== 'necromancer');
   if (isInvaderCard(card)) return invaderText(card, danger, t);
+  if (isWesternCard(card)) return westernText(card, danger, t, reveal);
   const level = t(`danger.${danger}`);
   switch (card.kind) {
     case 'trejo':
@@ -368,7 +373,21 @@ function abominationRule(card: Extract<InvaderCard, { kind: 'xenoAbomination' }>
   return t(BARE_TITLES.includes(card.zombie) ? 'card.bareAbominationRule' : 'card.namedAbominationRule', { name });
 }
 
-const extraLine = (zombie: ExtraZombie | InvaderXeno, at: DangerLevel, t: Translate) =>
+/** Title, footer and spoken body of a Wild West card: counts, the Abomination text card, an Extra Activation. */
+function westernText(card: WesternCard, danger: DangerLevel, t: Translate, reveal?: Reveal): CardText {
+  const level = t(`danger.${danger}`);
+  switch (card.kind) {
+    case 'westernSpawn':
+      return { title: t(`zombie.${card.zombie}.other`), spoken: `${level}: ${card.counts[DANGER_LEVELS.indexOf(danger)]}` };
+    case 'westernAbomination':
+      // The printed text, or the Abomination the deck revealed with its own rule (an Abomination card has no levels).
+      return withReveal({ title: t('card.westernAbomination'), footer: t('card.westernAbominationRule'), spoken: '' }, reveal, t, true, isModernAbomination);
+    case 'westernExtra':
+      return { title: t('card.extra'), footer: t('card.extraRule'), spoken: `${level}: ${extraLine(card.zombie, danger, t)}` };
+  }
+}
+
+const extraLine = (zombie: ExtraZombie | InvaderXeno | WesternActivated, at: DangerLevel, t: Translate) =>
   at === 'blue' ? t('card.extraNobody') : t(`zombie.${zombie}.all`);
 
 function Card({ card: printed, danger, reveal, side, onFlip }: { card: ZombieCard; danger: DangerLevel; reveal?: Reveal; side: CardSide; onFlip?: () => void }) {
@@ -384,6 +403,7 @@ function Card({ card: printed, danger, reveal, side, onFlip }: { card: ZombieCar
 
   if (isFantasyCard(card)) return <FantasyFace card={card} danger={danger} text={text} reveal={reveal} footerOnFront={footerOnFront} />;
   if (isInvaderCard(card)) return <InvaderFace card={card} danger={danger} text={text} footerOnFront={footerOnFront} />;
+  if (isWesternCard(card)) return <WesternFace card={card} danger={danger} text={text} reveal={reveal} footerOnFront={footerOnFront} />;
 
   if (card.kind === 'trejo' || card.kind === 'trejoRush') {
     const isRush = card.kind === 'trejoRush';
@@ -514,6 +534,53 @@ function InvaderFace({ card, danger, text, footerOnFront }: { card: InvaderCard;
         </View>
       </View>
     </Frame>
+  );
+}
+
+/** Wild West card: the Modern layout (picture, Danger Levels) in leather and ochre; a plain first look. */
+function WesternFace({ card, danger, text, reveal, footerOnFront }: { card: WesternCard; danger: DangerLevel; text: CardText; reveal?: Reveal; footerOnFront: boolean }) {
+  const { t, cardDisplay } = useApp();
+  const { styles } = useContext(CardStyle);
+  const current = cardDisplay === 'current';
+  const header = headerFor(card);
+  const frame = (children: React.ReactNode) => (
+    <Frame card={card} text={text} headerColor={header} faceColor={WESTERN_COLORS.face} footerOnFront={footerOnFront}>
+      {children}
+    </Frame>
+  );
+  if (card.kind === 'westernAbomination') {
+    return frame(
+      <View style={styles.artShort}>
+        <ZombieFigure subject={revealedAbomination(card, reveal) ?? 'westernAbomination'} anchor="upper" />
+      </View>,
+    );
+  }
+  return frame(
+    <View style={styles.spawnBody}>
+      <View style={styles.art}>
+        <ZombieFigure subject={card.zombie} anchor="center" />
+      </View>
+      <View style={[styles.levels, { backgroundColor: WESTERN_COLORS.panel }]}>
+        {card.kind === 'westernSpawn' &&
+          (current ? (
+            <Level level={danger} active large>
+              ×{card.counts[DANGER_LEVELS.indexOf(danger)]}
+            </Level>
+          ) : (
+            PRINTED_LEVELS.map((shown) => (
+              <Level key={shown} level={shown} active={shown === danger}>
+                ×{card.counts[DANGER_LEVELS.indexOf(shown)]}
+              </Level>
+            ))
+          ))}
+        {card.kind === 'westernExtra' &&
+          (current ? [danger] : PRINTED_LEVELS).map((shown) => (
+            <Level key={shown} level={shown} active={shown === danger} wide large={current}>
+              {extraLine(card.zombie, shown, t)}
+            </Level>
+          ))}
+      </View>
+    </View>,
   );
 }
 
@@ -679,17 +746,19 @@ function CardHeader(props: { card?: ZombieCard; title: string; color: Colors; ba
 function headerFor(card: ZombieCard): Colors {
   if (isFantasyCard(card)) return FANTASY_HEADER;
   if (isInvaderCard(card)) return card.kind === 'xenoExtra' ? CARD_COLORS.extra : INVADER_COLORS.header;
+  if (isWesternCard(card)) return card.kind === 'westernExtra' ? CARD_COLORS.extra : WESTERN_COLORS.header;
   if (card.kind === 'extra') return CARD_COLORS.extra;
   return card.kind === 'rush' || card.kind === 'trejoRush' ? CARD_COLORS.rush : CARD_COLORS.spawn;
 }
 
-const universeOf = (card: ZombieCard): UniverseId => (isFantasyCard(card) ? 'fantasy' : isInvaderCard(card) ? 'invader' : 'modern');
+const universeOf = (card: ZombieCard): UniverseId => (isFantasyCard(card) ? 'fantasy' : isInvaderCard(card) ? 'invader' : isWesternCard(card) ? 'western' : 'modern');
 
 /** The panel the back's text sits on, per universe: its frame, the box under the text and the ink on it. */
 const SIDE_PANEL: Record<UniverseId, { frame: string; box: string; ink: string }> = {
   modern: { frame: CARD_COLORS.back, box: CARD_COLORS.spawn.background, ink: CARD_COLORS.spawn.text },
   fantasy: { frame: CARD_COLORS.fantasyFrame, box: CARD_COLORS.parchmentRow, ink: CARD_COLORS.parchmentInk },
   invader: { frame: INVADER_COLORS.panel, box: INVADER_COLORS.panel, ink: INVADER_COLORS.header.text },
+  western: { frame: WESTERN_COLORS.panel, box: WESTERN_COLORS.panel, ink: WESTERN_COLORS.header.text },
 };
 
 /**
@@ -812,6 +881,7 @@ const BOSS_LOOK: Record<UniverseId, { header: { background: string; text: string
   modern: { header: CARD_COLORS.spawn, face: undefined },
   fantasy: { header: FANTASY_HEADER, face: CARD_COLORS.parchment },
   invader: { header: INVADER_COLORS.header, face: INVADER_COLORS.face },
+  western: { header: WESTERN_COLORS.header, face: WESTERN_COLORS.face },
 };
 
 /** The Horde symbol applies to every zombie a level spawns, but not to an Abomination. */
@@ -944,7 +1014,7 @@ function fantasyText(card: FantasyCard, danger: DangerLevel, t: Translate): Card
 /** Bosses with a rule of their own, printed on their boss card (Frozen Fortress, White Death, Eternal Empire). */
 const BOSS_RULED: ReadonlySet<string> = new Set(BOSS_RULE_IDS);
 const hasRule = (boss: string): boss is BossRuleId => BOSS_RULED.has(boss);
-type RuledBoss = BossRuleId | NamedModernAbomination;
+type RuledBoss = BossRuleId | NamedModernAbomination | WesternAbomination;
 
 /** The boss revealed from its deck, named under the card with the way it arrives. */
 function withReveal(text: CardText, reveal: Reveal | undefined, t: Translate, withRule = true, ruled: (boss: BossName) => boss is RuledBoss = hasRule): CardText {

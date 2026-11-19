@@ -34,7 +34,7 @@ export type ExtraZombie = 'walker' | 'runner' | 'fatty' | 'skinnerWalker' | 'ski
 export type DangerLevel = 'blue' | 'yellow' | 'orange' | 'red';
 
 /** A Zombicide era with its own boxes, zombies and cards, chosen when the app opens. */
-export type UniverseId = 'modern' | 'fantasy' | 'invader';
+export type UniverseId = 'modern' | 'fantasy' | 'invader' | 'western';
 
 /** Named Abominations transcribed for the modern era (see `MODERN_ABOMINATIONS`). */
 export type NamedModernAbomination =
@@ -372,7 +372,49 @@ export type InvaderCard =
   /** All Xenos of this type on Red, Orange and Yellow get an Activation; no one on Blue. */
   | (InvaderBase & { kind: 'xenoExtra'; zombie: InvaderXeno });
 
-export type ZombieCard = ModernCard | FantasyCard | InvaderCard;
+/** Zombies of the Wild West era (Undead or Alive); the ids are prefixed so no other era shares one. */
+export type WesternZombie = 'westernWalker' | 'westernRunner' | 'westernBrute' | 'longDeadWalker';
+/** Zombies an Extra Activation card can name. */
+export type WesternActivated = 'westernWalker' | 'westernRunner' | 'westernBrute';
+/** Named Abominations of the Wild West era (see `WESTERN_ABOMINATIONS`); `westernWendigo` is not the Modern `wendigo`. */
+export type WesternAbomination =
+  | 'bowlerHat'
+  | 'nightmareHorse'
+  | 'abominape'
+  | 'crocosaur'
+  | 'abominabear'
+  | 'texasDeadhorn'
+  | 'bizon'
+  | 'bloodBull'
+  | 'littleTrickster'
+  | 'goreGeyser'
+  | 'meltingPot'
+  | 'plymouthHound'
+  | 'pusbag'
+  | 'greatTrickster'
+  | 'cactusQueen'
+  | 'alphaBane'
+  | 'deathgrasp'
+  | 'fatMace'
+  | 'swampTongue'
+  | 'rottenClaw'
+  | 'westernWendigo'
+  | 'steamMonster';
+
+type WesternBase = { id: string; setId: string };
+/**
+ * Cards of the Wild West era. Card ids are `<setId>-<printed number on 3 digits>`: `undeadOrAlive-001`..`-037`,
+ * `longDeadWalkers-038`..`-045`.
+ */
+export type WesternCard =
+  /** One zombie type, a count per Danger Level: the Modern spawn card. */
+  | (WesternBase & { kind: 'westernSpawn'; zombie: WesternZombie; counts: SpawnCounts })
+  /** The text card, no levels: it calls on the Abomination deck (the generic Abomination of the core box). */
+  | (WesternBase & { kind: 'westernAbomination' })
+  /** All zombies of this type on Red, Orange and Yellow get an Activation; no one on Blue. */
+  | (WesternBase & { kind: 'westernExtra'; zombie: WesternActivated });
+
+export type ZombieCard = ModernCard | FantasyCard | InvaderCard | WesternCard;
 
 const FANTASY_KINDS: ReadonlySet<ZombieCard['kind']> = new Set([
   'levels',
@@ -387,6 +429,9 @@ export const isFantasyCard = (card: ZombieCard): card is FantasyCard => FANTASY_
 
 const INVADER_KINDS: ReadonlySet<ZombieCard['kind']> = new Set(['xeno', 'xenoAbomination', 'zoneSpawn', 'xenoExtra']);
 export const isInvaderCard = (card: ZombieCard): card is InvaderCard => INVADER_KINDS.has(card.kind);
+
+const WESTERN_KINDS: ReadonlySet<ZombieCard['kind']> = new Set(['westernSpawn', 'westernAbomination', 'westernExtra']);
+export const isWesternCard = (card: ZombieCard): card is WesternCard => WESTERN_KINDS.has(card.kind);
 
 export type CardSet = {
   id: string;

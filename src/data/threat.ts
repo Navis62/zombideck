@@ -7,9 +7,11 @@ import type {
   NamedAbomination,
   NamedModernAbomination,
   NamedNecromancer,
+  WesternAbomination,
   ZombieCard,
 } from '../game/types';
 import { CARD_SETS } from './decks.ts';
+import { WESTERN_SETS } from './western.ts';
 
 // The fantasy deck and its bosses, as White Death prints it and Dead Men Tales (work-in-progress rulebook) extends it
 // to every fantasy box; Frozen Fortress gives each Black Plague and Green Horde boss a card of that kind.
@@ -21,6 +23,8 @@ import { CARD_SETS } from './decks.ts';
 // - "Playing with several Necromancers is done in the same way as playing with several Abominations."
 
 export const BOSS_RULES: readonly BossRule[] = ['oneAtATime', 'fest'];
+/** Western rulebooks have no Abomination Fest: its Abominations arrive one at a time. */
+export const WESTERN_BOSS_RULES: readonly BossRule[] = ['oneAtATime'];
 
 /** The players' choices for the fantasy deck: how Abominations arrive, and the bosses they leave out (none by default). */
 export type Threat = { bossRule: BossRule; off: string[] };
@@ -29,7 +33,7 @@ export const DEFAULT_THREAT: Threat = { bossRule: 'oneAtATime', off: [] };
 /** Bosses picked one by one, in the order of the expansions menu. */
 /** `copies`: how many identical cards of this boss the box holds in its boss deck (one by default). */
 /** The bosses the players switch on and off one by one. */
-export type ListedBoss = NamedAbomination | NamedNecromancer | NamedModernAbomination;
+export type ListedBoss = NamedAbomination | NamedNecromancer | NamedModernAbomination | WesternAbomination;
 export type Boss<Zombie extends string = ListedBoss> = {
   zombie: Zombie;
   setId: string;
@@ -282,34 +286,76 @@ export function presentSetIds(sets: readonly CardSet[], setIds: Iterable<string>
  * that call on the Abomination deck). With no named Abomination available and switched on, there is no boss deck and
  * the game plays as the printed deck does. The Necromancer deck stays empty: the era has no Necromancers.
  */
-export function tailorModernDeck(
-  cards: readonly ZombieCard[],
-  threat: Threat,
-  setIds: ReadonlySet<string>,
-  abominations: readonly Boss<string>[] = MODERN_ABOMINATIONS,
-): Deck {
-  const present = presentSetIds(CARD_SETS, setIds);
-  const chosen = abominations.filter((boss) => present.has(boss.setId) && !threat.off.includes(boss.zombie));
-  // Once the deck runs out, its discard is reshuffled as in Fantasy; the 2nd edition rulebook gives no rule for it.
-  if (chosen.length === 0) return { cards: [...cards] };
-  return {
-    cards: [...cards],
-    bosses: {
-      rule: threat.bossRule,
-      abomination: chosen.flatMap((boss) => Array<string>(boss.copies ?? 1).fill(boss.zombie)),
-      necromancer: [],
-    },
+function abominationTailor(sets: readonly CardSet[], listed: readonly Boss<string>[]) {
+  return (
+    cards: readonly ZombieCard[],
+    threat: Threat,
+    setIds: ReadonlySet<string>,
+    abominations: readonly Boss<string>[] = listed,
+  ): Deck => {
+    const present = presentSetIds(sets, setIds);
+    const chosen = abominations.filter((boss) => present.has(boss.setId) && !threat.off.includes(boss.zombie));
+    // Once the deck runs out, its discard is reshuffled as in Fantasy; the 2nd edition rulebook gives no rule for it.
+    if (chosen.length === 0) return { cards: [...cards] };
+    return {
+      cards: [...cards],
+      bosses: {
+        rule: threat.bossRule,
+        abomination: chosen.flatMap((boss) => Array<string>(boss.copies ?? 1).fill(boss.zombie)),
+        necromancer: [],
+      },
+    };
   };
 }
+
+export const tailorModernDeck = abominationTailor(CARD_SETS, MODERN_ABOMINATIONS);
+
+/**
+ * The named Abominations of the Wild West era (Undead or Alive and its boxes), each one in the box that holds it,
+ * as printed on its card (the rule is in the translations, `card.<id>Rule`). The core box's text cards (#013-#016,
+ * #029-#033) call on this deck, which starts with the Bowler Hat of the core box. The Wendigo is an event promo (`westernPromos`).
+ */
+export const WESTERN_ABOMINATIONS: readonly Boss<WesternAbomination>[] = [
+  { zombie: 'bowlerHat', setId: 'undeadOrAlive' },
+  { zombie: 'nightmareHorse', setId: 'runningWild' },
+  { zombie: 'abominape', setId: 'abominapeVsCrocosaur' },
+  { zombie: 'crocosaur', setId: 'abominapeVsCrocosaur' },
+  { zombie: 'abominabear', setId: 'deadstockAbominations' },
+  { zombie: 'texasDeadhorn', setId: 'deadstockAbominations' },
+  { zombie: 'bizon', setId: 'deadstockAbominations' },
+  { zombie: 'bloodBull', setId: 'deadstockAbominations' },
+  { zombie: 'littleTrickster', setId: 'deadWestAbominations' },
+  { zombie: 'goreGeyser', setId: 'deadWestAbominations' },
+  { zombie: 'meltingPot', setId: 'deadWestAbominations' },
+  { zombie: 'plymouthHound', setId: 'deadWestAbominations' },
+  { zombie: 'pusbag', setId: 'deadWestAbominations' },
+  { zombie: 'greatTrickster', setId: 'deadWestAbominations' },
+  { zombie: 'cactusQueen', setId: 'deadWestAbominations' },
+  { zombie: 'alphaBane', setId: 'deadWestAbominations' },
+  { zombie: 'deathgrasp', setId: 'deadWestAbominations' },
+  { zombie: 'fatMace', setId: 'deadWestAbominations' },
+  { zombie: 'swampTongue', setId: 'deadWestAbominations' },
+  { zombie: 'rottenClaw', setId: 'deadWestAbominations' },
+  { zombie: 'westernWendigo', setId: 'westernPromos' },
+  { zombie: 'steamMonster', setId: 'gearsAndGuns' },
+];
+
+export const tailorWesternDeck = abominationTailor(WESTERN_SETS, WESTERN_ABOMINATIONS);
 
 /** The bosses a saved modern boss deck may hold. */
 export const MODERN_BOSS_IDS: ReadonlySet<string> = new Set(MODERN_ABOMINATIONS.map((boss) => boss.zombie));
 export const MODERN_BOSS_COPIES: ReadonlyMap<string, number> = copiesOf(MODERN_ABOMINATIONS);
+/** The bosses a saved Western boss deck may hold. */
+export const WESTERN_BOSS_IDS: ReadonlySet<string> = new Set(WESTERN_ABOMINATIONS.map((boss) => boss.zombie));
+export const WESTERN_BOSS_COPIES: ReadonlyMap<string, number> = copiesOf(WESTERN_ABOMINATIONS);
 
 /** Every boss a boss deck can reveal: a card shows its name, picture and rule. */
-export type BossName = FantasyZombie | FantasyNecromancer | NamedModernAbomination;
-export const isBossName = (boss: string): boss is BossName => FANTASY_BOSS_IDS.has(boss) || MODERN_BOSS_IDS.has(boss);
-export const isModernAbomination = (boss: string): boss is NamedModernAbomination => MODERN_BOSS_IDS.has(boss);
+export type BossName = FantasyZombie | FantasyNecromancer | NamedModernAbomination | WesternAbomination;
+export const isBossName = (boss: string): boss is BossName =>
+  FANTASY_BOSS_IDS.has(boss) || MODERN_BOSS_IDS.has(boss) || WESTERN_BOSS_IDS.has(boss);
+/** A named Abomination that always prints a rule: the modern ones and the Western ones. */
+export const isModernAbomination = (boss: string): boss is NamedModernAbomination | WesternAbomination =>
+  MODERN_BOSS_IDS.has(boss) || WESTERN_BOSS_IDS.has(boss);
 
 const isBossRule = (value: unknown): value is BossRule => BOSS_RULES.includes(value as BossRule);
 

@@ -60,6 +60,12 @@ const PLAYABLE: Record<UniverseId, Omit<Extract<Slide, { kind: 'playable' }>, 'k
     detail: 'universe.invaderGame',
     art: require('../../assets/invader/backgrounds/mining-outpost.jpg'),
   },
+  western: {
+    name: 'universe.western',
+    detail: 'universe.westernGame',
+    // TEMPORARY until the Western background is drawn (docs/art/western-prompts.md).
+    art: require('../../assets/modern/backgrounds/ruined-city.jpg'),
+  },
 };
 
 const UPCOMING: Record<UpcomingUniverse, TranslationKey> = {};

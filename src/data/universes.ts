@@ -9,15 +9,17 @@ import {
   powersOf,
   type Tailor,
 } from '../game/engine.ts';
-import type { CardSet, UniverseId, ZombieCard } from '../game/types';
+import type { BossRule, CardSet, UniverseId, ZombieCard } from '../game/types';
 import type { TranslationKey } from '../i18n/fr.ts';
 import { CARD_SETS } from './decks.ts';
 import { ABOMINATIONS, FANTASY_SETS } from './fantasy.ts';
 import { INVADER_SETS } from './invader.ts';
+import { WESTERN_SETS } from './western.ts';
 import {
   ABOMINATION_BOSSES,
   BIG_BOSSES,
   type Boss,
+  BOSS_RULES,
   FANTASY_BOSS_COPIES,
   FANTASY_BOSS_IDS,
   MODERN_ABOMINATIONS,
@@ -26,7 +28,12 @@ import {
   NECROMANCER_BOSSES,
   tailorFantasyDeck,
   tailorModernDeck,
+  tailorWesternDeck,
   type Threat,
+  WESTERN_ABOMINATIONS,
+  WESTERN_BOSS_COPIES,
+  WESTERN_BOSS_IDS,
+  WESTERN_BOSS_RULES,
 } from './threat.ts';
 
 export type Universe = {
@@ -59,6 +66,8 @@ export type BossDecks = {
   ids: ReadonlySet<string>;
   /** How many cards of a boss a saved boss deck may hold at most, for the bosses whose count is known. */
   copies: ReadonlyMap<string, number>;
+  /** How the Abominations arrive in this era: one at a time, and where the rulebooks have it, the Abomination Fest. */
+  rules: readonly BossRule[];
   /** The deck of a new game, with its boss decks if the sets in play bring bosses. */
   tailor: (cards: readonly ZombieCard[], threat: Threat, setIds: ReadonlySet<string>) => Deck;
   /** The special powers of the bosses of the era, read when one is revealed. */
@@ -88,6 +97,7 @@ export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {
       necromancers: [],
       ids: MODERN_BOSS_IDS,
       copies: MODERN_BOSS_COPIES,
+      rules: BOSS_RULES,
       tailor: tailorModernDeck,
       bossPowers: powersOf(MODERN_ABOMINATIONS),
       manualDraw: true,
@@ -107,6 +117,7 @@ export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {
       necromancers: NECROMANCER_BOSSES,
       ids: FANTASY_BOSS_IDS,
       copies: FANTASY_BOSS_COPIES,
+      rules: BOSS_RULES,
       tailor: tailorFantasyDeck,
       bossPowers: noPowers,
       manualDraw: true,
@@ -122,6 +133,26 @@ export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {
     tagline: 'menu.taglineInvader',
     heroes: ['hunter', 'tank', 'worker'],
     bosses: null,
+  },
+  western: {
+    id: 'western',
+    sets: WESTERN_SETS,
+    optionalSets: WESTERN_SETS.filter((set) => set.optional),
+    exclusiveCores: false,
+    defaultExpansions: ['undeadOrAlive'],
+    deckParts: false,
+    tagline: 'menu.taglineWestern',
+    heroes: ['westernRunner', 'westernBrute', 'westernWalker'],
+    bosses: {
+      abominations: WESTERN_ABOMINATIONS,
+      necromancers: [],
+      ids: WESTERN_BOSS_IDS,
+      copies: WESTERN_BOSS_COPIES,
+      rules: WESTERN_BOSS_RULES,
+      tailor: tailorWesternDeck,
+      bossPowers: noPowers,
+      manualDraw: true,
+    },
   },
 };
 
@@ -139,6 +170,7 @@ const CARD_IDS: Readonly<Record<UniverseId, ReadonlySet<string>>> = {
   modern: new Set(UNIVERSES.modern.sets.flatMap((set) => set.cards.map((card) => card.id))),
   fantasy: new Set(UNIVERSES.fantasy.sets.flatMap((set) => set.cards.map((card) => card.id))),
   invader: new Set(UNIVERSES.invader.sets.flatMap((set) => set.cards.map((card) => card.id))),
+  western: new Set(UNIVERSES.western.sets.flatMap((set) => set.cards.map((card) => card.id))),
 };
 export const cardIdsOf = (universe: UniverseId): ReadonlySet<string> => CARD_IDS[universe];
 /** The bosses a saved boss deck of each universe may hold: a fantasy boss in a modern save rejects it. */
@@ -166,6 +198,8 @@ export const cardEffect: CardEffect = (cardId) => {
  */
 export const bossTrigger: BossTrigger = (cardId, danger) => {
   const card = CARDS_BY_ID.get(cardId);
+  // Western: the Abomination text card has no levels, so it always calls on the Abomination deck.
+  if (card?.kind === 'westernAbomination') return 'abomination';
   // Modern: a card spawning the generic Abomination calls on the Abomination deck (rulebook p.17).
   if (card?.kind === 'spawn') return card.zombie === 'abomination' && card.counts[DANGER_LEVELS.indexOf(danger)] > 0 ? 'abomination' : undefined;
   if (card?.kind === 'necromancer') return 'necromancer';

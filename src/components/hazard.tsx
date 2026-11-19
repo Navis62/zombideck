@@ -1,7 +1,7 @@
 import { memo, type ReactElement } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { CARD_COLORS, INVADER_COLORS } from '@/theme';
+import { CARD_COLORS, INVADER_COLORS, WESTERN_COLORS } from '@/theme';
 import type { UniverseId } from '@/game/types';
 
 /** Decorative border matching the selected era. */
@@ -26,6 +26,13 @@ const BORDERS: Record<UniverseId, (stripes: number) => ReactElement> = {
       ))}
     </View>
   ),
+  western: (stripes) => (
+    <View style={styles.western} pointerEvents="none" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      {Array.from({ length: stripes }, (_, index) => (
+        <View key={index} style={[styles.stripe, { backgroundColor: WESTERN_COLORS.hazardStripe }]} />
+      ))}
+    </View>
+  ),
   modern: (stripes) => (
     <View style={styles.hazard}>
       {Array.from({ length: stripes }, (_, index) => <View key={index} style={styles.stripe} />)}
@@ -37,6 +44,7 @@ const BORDERS: Record<UniverseId, (stripes: number) => ReactElement> = {
 const ALERT_EVERY = 4;
 
 const styles = StyleSheet.create({
+  western: { height: 18, flexDirection: 'row', overflow: 'hidden', backgroundColor: WESTERN_COLORS.hazardBase },
   scifi: { height: 18, flexDirection: 'row', overflow: 'hidden', backgroundColor: INVADER_COLORS.hazardBase },
   medieval: {
     height: 18,

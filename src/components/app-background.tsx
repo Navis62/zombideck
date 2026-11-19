@@ -5,9 +5,10 @@ import type { UniverseId } from '@/game/types';
 const RUINED_CITY = require('../../assets/modern/backgrounds/ruined-city.jpg');
 const RUINED_CASTLE = require('../../assets/fantasy/backgrounds/ruined-castle.jpg');
 const MINING_OUTPOST = require('../../assets/invader/backgrounds/mining-outpost.jpg');
+const DUSTY_TOWN = require('../../assets/western/backgrounds/dusty-town.jpg');
 
 /** One scenery per universe: a new UniverseId must pick its own. */
-const SCENERY: Record<UniverseId, number> = { modern: RUINED_CITY, fantasy: RUINED_CASTLE, invader: MINING_OUTPOST };
+const SCENERY: Record<UniverseId, number> = { modern: RUINED_CITY, fantasy: RUINED_CASTLE, invader: MINING_OUTPOST, western: DUSTY_TOWN };
 
 /** Gentle crossfade between two sceneries: long enough to read as a dissolve, short enough not to lag behind the swipe. */
 const FADE_MS = 500;
