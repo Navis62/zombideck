@@ -44,3 +44,6 @@ yarn-error.*
 .claude/settings.local.json
 .claude/agent-memory-local/
 CLAUDE.local.md
+
+# Full-size masters of the artwork (the app bundles the reduced copies in assets/)
+.art-sources/
