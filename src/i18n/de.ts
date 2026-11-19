@@ -249,6 +249,8 @@ export const de: Record<TranslationKey, string> = {
   'boss.necromancer': 'Nekromant: {name}. Ist er bereits auf dem Spielplan, erhält er eine Extra-Aktivierung.',
   'boss.abominationNone': 'Alle Monstren sind bereits auf dem Spielplan: Sie erhalten eine Extra-Aktivierung.',
   'boss.necromancerNone': 'Alle Nekromanten sind bereits auf dem Spielplan: Sie erhalten eine Extra-Aktivierung.',
+  'boss.abominationActivates': '{name} ist bereits auf dem Spielplan: Es erhält eine Extra-Aktivierung.',
+  'boss.necromancerActivates': '{name} ist bereits auf dem Spielplan: Er erhält eine Extra-Aktivierung.',
   'boss.abominationNoDeck': 'In diesem Spiel gibt es keine Monstren.',
   'boss.necromancerNoDeck': 'In diesem Spiel gibt es keine Nekromanten.',
   'options.deck': 'Zombiekarten',

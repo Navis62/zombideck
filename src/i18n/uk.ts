@@ -249,6 +249,8 @@ export const uk: Record<TranslationKey, string> = {
   'boss.necromancer': 'Некромант: {name}. Якщо він уже є на полі, він отримує додаткову активацію.',
   'boss.abominationNone': 'Усі потвори вже на полі: вони отримують додаткову активацію.',
   'boss.necromancerNone': 'Усі некроманти вже на полі: вони отримують додаткову активацію.',
+  'boss.abominationActivates': '{name} вже на полі: отримує додаткову активацію.',
+  'boss.necromancerActivates': '{name} вже на полі: отримує додаткову активацію.',
   'boss.abominationNoDeck': 'У цій грі немає потвор.',
   'boss.necromancerNoDeck': 'У цій грі немає некромантів.',
   'options.deck': 'Карти зомбі',

@@ -251,6 +251,8 @@ export const ru: Record<TranslationKey, string> = {
   'boss.necromancer': 'Некромант: {name}. Если он уже на поле, он получает дополнительный ход.',
   'boss.abominationNone': 'Все отродья уже на поле: они получают дополнительный ход.',
   'boss.necromancerNone': 'Все некроманты уже на поле: они получают дополнительный ход.',
+  'boss.abominationActivates': '{name} уже на поле: получает дополнительный ход.',
+  'boss.necromancerActivates': '{name} уже на поле: получает дополнительный ход.',
   'boss.abominationNoDeck': 'В этой партии нет отродий.',
   'boss.necromancerNoDeck': 'В этой партии нет некромантов.',
   'options.deck': 'Карты зомби',

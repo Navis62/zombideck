@@ -678,6 +678,7 @@ const groupReveal = (group: Revealed, rule: BossRule): Reveal => ({
   along: group.along,
   gained: group.gained,
   choosing: !!group.choice,
+  activates: group.activates,
 });
 
 /** Where the choice Gozer waits on lives: a card of the step, else the Abomination drawn by hand at that position. */

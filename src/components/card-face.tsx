@@ -177,6 +177,8 @@ export type Reveal = {
   along?: readonly string[];
   gained?: readonly string[];
   choosing?: boolean;
+  /** The boss already in play that a card calling the same deck activates again instead of drawing (`boss` is then empty). */
+  activates?: string;
 };
 
 /**
@@ -305,6 +307,14 @@ const revealedAbomination = (card: ZombieCard, reveal?: Reveal): NamedModernAbom
 /** The name of the boss a reveal holds, if it names one the decks know. */
 const revealedName = (reveal?: Reveal): BossName | undefined => (reveal && isBoss(reveal) && isBossName(reveal.boss) ? reveal.boss : undefined);
 
+/** What a reveal without a boss says: the deck is missing, a boss in play activates again, or every boss is already out. */
+function noBossText(reveal: Reveal, t: Translate): string {
+  const isNecromancer = reveal.kind === 'necromancer';
+  if (reveal.boss === NO_DECK) return t(isNecromancer ? 'boss.necromancerNoDeck' : 'boss.abominationNoDeck');
+  if (reveal.activates !== undefined) return t(isNecromancer ? 'boss.necromancerActivates' : 'boss.abominationActivates', { name: isBossName(reveal.activates) ? t(`zombie.${reveal.activates}.one`) : reveal.activates });
+  return t(isNecromancer ? 'boss.necromancerNone' : 'boss.abominationNone');
+}
+
 /** A modern Abomination with its rule, as written under a card: "Gozer: When Gozer spawns...". */
 const ruleLine = (id: string, t: Translate) => (isModernAbomination(id) ? `${t(`zombie.${id}.one`)}: ${t(`card.${id}Rule`)}` : undefined);
 
@@ -376,7 +386,7 @@ function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: 
 function bossFaceText(reveal: Reveal, t: Translate): CardText {
   const named = revealedName(reveal);
   const rule = named && (isModernAbomination(named) || hasRule(named)) ? t(`card.${named}Rule`) : '';
-  const none = t(reveal.boss === NO_DECK ? 'boss.abominationNoDeck' : 'boss.abominationNone');
+  const none = noBossText(reveal, t);
   const { before, after } = groupLines(reveal, t);
   return {
     title: named ? t(`zombie.${named}.one`) : t('game.manualBoss'),
@@ -1423,8 +1433,7 @@ function revealedText(
 ): CardText {
   if (!reveal) return text;
   const isNecromancer = reveal.kind === 'necromancer';
-  if (reveal.boss === NO_DECK) return { ...text, footer: t(isNecromancer ? 'boss.necromancerNoDeck' : 'boss.abominationNoDeck') };
-  if (reveal.boss === NO_BOSS) return { ...text, footer: t(isNecromancer ? 'boss.necromancerNone' : 'boss.abominationNone') };
+  if (reveal.boss === NO_DECK || reveal.boss === NO_BOSS) return { ...text, footer: noBossText(reveal, t) };
   const boss = revealedName(reveal);
   if (!boss) return text;
   const name = t(`zombie.${boss}.one`);

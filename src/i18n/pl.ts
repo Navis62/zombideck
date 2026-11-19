@@ -251,6 +251,8 @@ export const pl: Record<TranslationKey, string> = {
   'boss.necromancer': 'Nekromanta: {name}. Jeśli jest już na planszy, otrzymuje Dodatkową Aktywację.',
   'boss.abominationNone': 'Wszystkie Abominacje są już na planszy: otrzymują Dodatkową Aktywację.',
   'boss.necromancerNone': 'Wszyscy Nekromanci są już na planszy: otrzymują Dodatkową Aktywację.',
+  'boss.abominationActivates': '{name} jest już na planszy: otrzymuje Dodatkową Aktywację.',
+  'boss.necromancerActivates': '{name} jest już na planszy: otrzymuje Dodatkową Aktywację.',
   'boss.abominationNoDeck': 'W tej grze nie ma żadnej Abominacji.',
   'boss.necromancerNoDeck': 'W tej grze nie ma żadnego Nekromanty.',
   'options.deck': 'Karty Zombie',

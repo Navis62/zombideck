@@ -251,6 +251,8 @@ export const it: Record<TranslationKey, string> = {
   'boss.necromancer': 'Negromante: {name}. Se è già sul tabellone, ottiene un’Attivazione Extra.',
   'boss.abominationNone': 'Tutti gli Abomini sono già sul tabellone: ottengono un’Attivazione Extra.',
   'boss.necromancerNone': 'Tutti i Negromanti sono già sul tabellone: ottengono un’Attivazione Extra.',
+  'boss.abominationActivates': '{name} è già sul tabellone: ottiene un’Attivazione Extra.',
+  'boss.necromancerActivates': '{name} è già sul tabellone: ottiene un’Attivazione Extra.',
   'boss.abominationNoDeck': 'In questa partita non ci sono Abomini.',
   'boss.necromancerNoDeck': 'In questa partita non ci sono Negromanti.',
   'options.deck': 'Carte Zombie',

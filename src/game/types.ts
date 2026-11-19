@@ -469,6 +469,11 @@ export type BossDeck = { draw: string[]; discard: string[] };
 export type Revealed = {
   kind: BossKind;
   boss: string;
+  /**
+   * With `boss` empty in the one-at-a-time rule: the boss on display that gets the Extra Activation, named, since no
+   * card was drawn for this one (the Abomination or Necromancer of an earlier card of the step, or drawn by hand).
+   */
+  activates?: string;
   /** Cantrip cards (SPAM) drawn on the way to `boss`: they leave with it. Absent in Fantasy. */
   spam?: string[];
   /** Bosses the revealed one brings along (Batman Who Laughs and The Robins). */
@@ -502,7 +507,7 @@ export type Piles = {
 };
 
 export type GameState = {
-  version: 5;
+  version: 6;
   /** Boss decks in play and how their bosses arrive; `null`: the bosses are cards of the Zombie deck. */
   bossRule: BossRule | null;
   /** The game's era: its sets, its cards and the menu it is resumed from. */

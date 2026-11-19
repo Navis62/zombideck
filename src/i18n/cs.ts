@@ -252,6 +252,8 @@ export const cs: Record<TranslationKey, string> = {
   'boss.necromancer': 'Nekromant: {name}. Pokud už je ve hře, získá extra aktivaci.',
   'boss.abominationNone': 'Všechny zrůdy už jsou ve hře: získají extra aktivaci.',
   'boss.necromancerNone': 'Všichni nekromanti už jsou ve hře: získají extra aktivaci.',
+  'boss.abominationActivates': '{name} už je ve hře: získá extra aktivaci.',
+  'boss.necromancerActivates': '{name} už je ve hře: získá extra aktivaci.',
   'boss.abominationNoDeck': 'V této hře nejsou žádné zrůdy.',
   'boss.necromancerNoDeck': 'V této hře nejsou žádní nekromanti.',
   'options.deck': 'Karty zombií',
