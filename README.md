@@ -13,10 +13,11 @@ Unofficial companion app for Zombicide 2nd Edition: it replaces the physical zom
 - Modern Abominations come from a deck of named Abominations: the core box, the upgrade kit, The Boys, Supernatural, Ghostbusters, Monty Python, Iron Maiden, Urban Legends, Dark Nights: Metal and the Kickstarter exclusives. SPAM cards are set aside and play their cantrip (draw the next card), Gozer draws three candidates and the players choose which two it keeps, Batman Who Laughs arrives with The Robins, and a "Draw an Abomination" button deals one by hand beside the cards (Fantasy has the same button once a named boss is picked).
 - Draw, undo, shuffle the deck or reshuffle everything; the discard is reshuffled automatically when the deck runs out.
 - Danger Level chosen by the players; cards show only the current level, or all four. Showing only the current level, fantasy cards draw their zombie large beside its count, like modern cards.
-- Core box, Fort Hendrix (replaces the core deck) and expansions or promos switched on in their own menu, reached from the main menu; they apply to the next game.
+- Core box, Fort Hendrix (replaces the core deck) and expansions or promos switched on in their own menu, reached from the main menu; they apply to the next game. The core boxes of each universe sit in a gold-framed "Core boxes" section above the expansions.
 - English (default), French, German, Spanish, Italian, Polish, Brazilian Portuguese, Russian, Ukrainian and Czech; the cards follow the app language.
 - The game is saved on the device and can be resumed; each universe keeps its own game, so starting one never replaces another's.
-- The drawn card is read out by screen readers (TalkBack, VoiceOver).
+- A drawn card shows only its spawn: picture, name and count. Anything written (a boss rule, the boss a card revealed, Gozer's gains, Mold Spawn and Seeker rules...) longer than about two lines is on the back, shorter texts stay on the front: a small "i" in the header says so, and a tap turns the card over (and back), with "Tainted Abomination → Siege Breaker" when a named boss took the place of a printed one. Several cards on the table each turn over on their own; a small button in the corner of each enlarges it, and the enlarged card turns over too.
+- The drawn card is read out by screen readers (TalkBack, VoiceOver), rule included, without turning it over.
 - The discard pile can be browsed, most recent card first; reshuffling everything asks for a second tap.
 - Optional vibration on each draw; the app follows the device language until another one is chosen.
 - Corrections to cards and translations ship over the air with EAS Update (`npx eas-cli@latest update --channel production`).

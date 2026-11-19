@@ -5,7 +5,7 @@ import { AppBackground } from '@/components/app-background';
 import { type Boss, BOSS_RULES, presentSetIds } from '@/data/threat';
 import { allExpansions, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '@/data/universes';
 import { activeSetIds } from '@/game/engine';
-import type { BossRule } from '@/game/types';
+import type { BossRule, CardSet } from '@/game/types';
 import { useApp } from '@/game/store';
 import type { TranslationKey } from '@/i18n/translations';
 import { COLORS, PRESSED } from '@/theme';
@@ -16,6 +16,40 @@ export default function ExpansionsScreen() {
   const current = UNIVERSES[universe];
   const { optionalSets } = current;
   const allEnabled = switchableSets(current).every((set) => expansions.includes(set.id));
+  // The core boxes stand apart from the expansions: a section and a frame of their own, the same in every universe.
+  const coreSets = optionalSets.filter((set) => set.core);
+  const otherSets = optionalSets.filter((set) => !set.core);
+
+  const boxes = (sets: readonly CardSet[], core: boolean) =>
+    pairs(sets).map((pair) => (
+      <View key={pair[0].id} style={styles.line}>
+        {pair.map((set) => {
+          const label = t(`set.${set.id}` as TranslationKey);
+          return (
+            <View key={set.id} style={styles.cell}>
+              <View style={[styles.row, core && styles.coreRow]}>
+                <View style={styles.rowLabel}>
+                  <Text style={[styles.rowText, core && styles.coreText]}>{label}</Text>
+                  {set.replaces && <Text style={styles.rowDetail}>{t('expansions.replaces')}</Text>}
+                </View>
+                <Switch
+                  value={expansions.includes(set.id)}
+                  // From the current list: two switches flipped before a render both count.
+                  onValueChange={(on) =>
+                    setExpansions((list) =>
+                      withCoreBox(current, [...list.filter((id) => id !== set.id), ...(on ? [set.id] : [])], set.id),
+                    )
+                  }
+                  accessibilityLabel={label}
+                />
+              </View>
+            </View>
+          );
+        })}
+        {/* An odd last set keeps the width of a column instead of stretching across. */}
+        {pair.length === 1 && <View style={styles.cell} />}
+      </View>
+    ));
 
   return (
     <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
@@ -33,35 +67,10 @@ export default function ExpansionsScreen() {
             </Text>
           </Pressable>
         </View>
-        {pairs(optionalSets).map((pair) => (
-          <View key={pair[0].id} style={styles.line}>
-            {pair.map((set) => {
-              const label = t(`set.${set.id}` as TranslationKey);
-              return (
-                <View key={set.id} style={styles.cell}>
-                  <View style={styles.row}>
-                    <View style={styles.rowLabel}>
-                      <Text style={styles.rowText}>{label}</Text>
-                      {set.replaces && <Text style={styles.rowDetail}>{t('expansions.replaces')}</Text>}
-                    </View>
-                    <Switch
-                      value={expansions.includes(set.id)}
-                      // From the current list: two switches flipped before a render both count.
-                      onValueChange={(on) =>
-                        setExpansions((list) =>
-                              withCoreBox(current, [...list.filter((id) => id !== set.id), ...(on ? [set.id] : [])], set.id),
-                            )
-                      }
-                      accessibilityLabel={label}
-                    />
-                  </View>
-                </View>
-              );
-            })}
-            {/* An odd last set keeps the width of a column instead of stretching across. */}
-            {pair.length === 1 && <View style={styles.cell} />}
-          </View>
-        ))}
+        {coreSets.length > 0 && <Text style={[styles.heading, styles.coreHeading]}>{t('expansions.coreBoxes')}</Text>}
+        {boxes(coreSets, true)}
+        {coreSets.length > 0 && otherSets.length > 0 && <Text style={styles.heading}>{t('expansions.title')}</Text>}
+        {boxes(otherSets, false)}
         {!!current.bosses && current.bosses.abominations.length > 0 && <ThreatOptions />}
       </ScrollView>
     </SafeAreaView>
@@ -186,6 +195,10 @@ const styles = StyleSheet.create({
   },
   rowLabel: { flex: 1, paddingVertical: 8 },
   rowText: { color: COLORS.text, fontSize: 16 },
+  // A core box: gold frame and bolder name, the colour the app uses for what needs a look (`warning`).
+  coreRow: { borderWidth: 2, borderColor: COLORS.warning },
+  coreText: { fontWeight: '800' },
+  coreHeading: { color: COLORS.warning },
   rowDetail: { color: COLORS.muted, fontSize: 12 },
   heading: { color: COLORS.muted, fontSize: 14, fontWeight: '700', textTransform: 'uppercase', marginTop: 8 },
   choices: { flexDirection: 'row', gap: 8 },

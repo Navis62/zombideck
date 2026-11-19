@@ -13,14 +13,17 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppBackground } from '@/components/app-background';
 import { Button } from '@/components/button';
 import { CardBack } from '@/components/card-back';
-import { BossFace, bossLabel, CardFace, cardLabel, type Reveal } from '@/components/card-face';
+import { BossFace, bossHasBack, CardAnnounced, bossLabel, CardFace, cardHasBack, cardLabel, type Reveal } from '@/components/card-face';
 import { abominationName, ChoiceSheet } from '@/components/choice-sheet';
 import { DiscardSheet } from '@/components/discard-sheet';
+import { FlipCard } from '@/components/flip-card';
+import { scrolledRecently } from '@/components/scroll-guard';
+import { ZoomButton } from '@/components/zoom-button';
 import { bossTrigger, CARDS_BY_ID, cardEffect, UNIVERSES } from '@/data/universes';
 import {
   chooseGained,
@@ -43,7 +46,7 @@ import {
 import { drawFeedback } from '@/game/feedback';
 import { countDraw } from '@/game/review';
 import { useApp } from '@/game/store';
-import type { BossRule, DangerLevel, GameState, Revealed } from '@/game/types';
+import type { BossRule, DangerLevel, GameState, Revealed, ZombieCard } from '@/game/types';
 import type { Translate } from '@/i18n/translations';
 import { COLORS, DANGER_COLORS, PRESSED } from '@/theme';
 
@@ -59,6 +62,10 @@ const MIN_CARD_WIDTH = 150;
 const MIN_GRID_WIDTH = 95;
 /** Share of the screen height a card takes once tapped to be read up close. */
 const ZOOM_HEIGHT = 0.9;
+/** Distance of the close button of the enlarged card from the edges of the screen (plus the safe area). */
+const CLOSE_MARGIN = 12;
+/** Side of the close button of the enlarged card: a large target, the phone lies on a table. */
+const CLOSE_SIZE = 44;
 /** Time to tap "Reshuffle all" a second time before it goes back to normal. */
 const CONFIRM_MS = 3000;
 /** Wait before Gozer's choice opens: the card flips (260 ms) and is read out first, so the players see Gozer arrive. */
@@ -102,7 +109,10 @@ export default function GameScreen() {
   const [viewed, setViewed] = useState<{ step: string; index: number } | null>(null);
   // Several cards side by side are small: one tapped is shown full screen, until the next draw.
   const [zoomed, setZoomed] = useState<{ step: string; index: number } | null>(null);
+  // The cards turned over to their back (by position), until the next draw: each card has its own side.
+  const [flips, setFlips] = useState<{ step: string; open: readonly number[] }>({ step: '', open: [] });
   const window = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
   // Focus stays on the deck after a draw: without an announcement, a screen reader would not say the new cards. The
   // cards on display when the screen opens are not announced; an undo announces the cards it brings back.
@@ -207,6 +217,44 @@ export default function GameScreen() {
     announceGroup(groupsOf(next).find((group) => !before.includes(group)));
   };
   const reveal = revealOf(game.piles.bosses?.revealed, game.bossRule);
+  const isFlipped = (index: number) => flips.step === drawnKey && flips.open.includes(index);
+  const toggleFlip = (index: number) => {
+    // A tap that stopped a scrolling rule (or came right after) is not a request to turn the card.
+    if (scrolledRecently()) return;
+    setFlips((current) => {
+      const open = current.step === drawnKey ? current.open : [];
+      return { step: drawnKey, open: open.includes(index) ? open.filter((i) => i !== index) : [...open, index] };
+    });
+  };
+  // A card with words on its back turns over; one without stays a plain face.
+  // `onTap` is what a tap on the face does (turn it, or reopen Gozer's choice): the faces take it themselves.
+  const cardFace = (card: ZombieCard, index: number, faceWidth: number, onTap: () => void) => {
+    const shownReveal = reveal(card.id);
+    const front = <CardFace card={card} danger={danger} width={faceWidth} reveal={shownReveal} />;
+    if (!cardHasBack(card, danger, t, shownReveal)) return front;
+    return (
+      <FlipCard
+        flipped={isFlipped(index)}
+        onPress={onTap}
+        front={front}
+        back={<CardFace card={card} danger={danger} width={faceWidth} reveal={shownReveal} side="back" onFlip={onTap} />}
+      />
+    );
+  };
+  // An Abomination drawn by hand, at the same place in the flips as the cards of the step.
+  const bossFace = (faceReveal: Reveal, index: number, faceWidth: number, onTap: () => void) => {
+    const front = <BossFace reveal={faceReveal} width={faceWidth} universe={game.universe} />;
+    if (!bossHasBack(faceReveal, t)) return front;
+    return (
+      <FlipCard
+        flipped={isFlipped(index)}
+        onPress={onTap}
+        front={front}
+        back={<BossFace reveal={faceReveal} width={faceWidth} universe={game.universe} side="back" onFlip={onTap} />}
+      />
+    );
+  };
+  const flipHint = (flipped: boolean) => t(flipped ? 'card.flipBackHint' : 'card.flipHint');
   const draw = () => {
     // No card left to deal (the rest are on display for this step): no vibration, no draw counted.
     if (deal(game) === game) return;
@@ -239,12 +287,18 @@ export default function GameScreen() {
   const rowWidth = Math.max(0, Math.min(table.width - deckWidth - TABLE_GAP, columns * column + (columns - 1) * TABLE_GAP));
   const slot = { width, aspectRatio: CARD_RATIO };
   const zoomedCard = zoomed?.step === drawnKey ? CARDS_BY_ID.get(drawn[zoomed.index]) : undefined;
-  const zoomedGroup = zoomed?.step === drawnKey && zoomed.index >= drawn.length ? manualGroups[zoomed.index - drawn.length] : undefined;  const dealt = drawn.map((id, index) => {
+  const zoomedGroup = zoomed?.step === drawnKey && zoomed.index >= drawn.length ? manualGroups[zoomed.index - drawn.length] : undefined;
+  const zoomFlippable = zoomedGroup
+    ? bossHasBack(zoomedGroup.reveal, t)
+    : !!zoomedCard && cardHasBack(zoomedCard, danger, t, reveal(zoomedCard.id));
+  const dealt = drawn.map((id, index) => {
     const card = CARDS_BY_ID.get(id);
     const waiting = !!game.piles.bosses?.revealed[id]?.choice;
     const zoomable = shown > 1;
+    const flippable = !!card && cardHasBack(card, danger, t, reveal(id));
+    const flipped = flippable && isFlipped(index);
     // A button hides what it holds from TalkBack: it carries the whole card.
-    const asButton = zoomable || waiting;
+    const asButton = zoomable || waiting || flippable;
     return (
       <View key={`${id}-${index}`} style={{ width: column, alignItems: 'center' }}>
         {label > 0 && (
@@ -253,29 +307,36 @@ export default function GameScreen() {
             {t('game.zone', { n: cardZones[index] })}
           </Text>
         )}
-        <CardButton
-          style={slot}
-          disabled={!card || !asButton}
-          onPress={waiting ? reopenChoice : () => setZoomed({ step: drawnKey, index })}
-          button={asButton}
-          // One announcement per card: a button hides what it holds from TalkBack, so it carries the whole card.
-          label={
-            asButton && card
-              ? `${label > 0 ? `${t('game.zone', { n: cardZones[index] })}: ` : ''}${cardLabel(card, danger, t, reveal(id))}`
-              : undefined
-          }
-          hint={waiting ? t('boss.tapToChoose') : zoomable ? t('game.zoom') : undefined}
-        >
-          {card && (
-            <Animated.View
-              style={[styles.drawn, { transform: [{ perspective: 800 }, { rotateY }] }]}
-              accessibilityElementsHidden={asButton}
-              importantForAccessibility={asButton ? 'no-hide-descendants' : 'auto'}
-            >
-              <CardFace card={card} danger={danger} width={width} reveal={reveal(id)} />
-            </Animated.View>
-          )}
-        </CardButton>
+        <View style={slot}>
+          <CardButton
+            style={styles.drawn}
+            disabled={!card || !asButton}
+            // A card that turns over takes its taps in its faces: nothing touchable wraps the scrolling rule.
+            faces={flippable}
+            // Gozer's choice first; then the card turns over to its rule; a card with none enlarges, as it always did.
+            onPress={waiting ? reopenChoice : flippable ? () => toggleFlip(index) : () => setZoomed({ step: drawnKey, index })}
+            button={asButton}
+            // One announcement per card: a button hides what it holds from TalkBack, so it carries the whole card.
+            label={
+              asButton && card
+                ? `${label > 0 ? `${t('game.zone', { n: cardZones[index] })}: ` : ''}${cardLabel(card, danger, t, reveal(id))}`
+                : undefined
+            }
+            hint={waiting ? t('boss.tapToChoose') : flippable ? flipHint(flipped) : zoomable ? t('game.zoom') : undefined}
+            expanded={flippable && !waiting ? flipped : undefined}
+          >
+            {card && (
+              <Animated.View
+                style={[styles.drawn, { transform: [{ perspective: 800 }, { rotateY }] }]}
+                accessibilityElementsHidden={asButton}
+                importantForAccessibility={asButton ? 'no-hide-descendants' : 'auto'}
+              >
+                {cardFace(card, index, width, waiting ? reopenChoice : () => toggleFlip(index))}
+              </Animated.View>
+            )}
+          </CardButton>
+          {zoomable && card && <ZoomButton label={t('game.zoom')} onPress={() => setZoomed({ step: drawnKey, index })} />}
+        </View>
       </View>
     );
   });
@@ -284,22 +345,28 @@ export default function GameScreen() {
   const manualCards = manualGroups.map(({ group, reveal: groupFace }, i) => {
     const index = drawn.length + i;
     const waiting = !!group.choice;
+    const flipped = isFlipped(index);
     return (
       <View key={`manual-${i}`} style={{ width: column, alignItems: 'center' }}>
         <Text style={[styles.zone, styles.zoneLine]} numberOfLines={1} importantForAccessibility="no">
           {t('game.manualBoss')}
         </Text>
-        <CardButton
-          style={slot}
-          onPress={waiting ? reopenChoice : () => setZoomed({ step: drawnKey, index })}
-          button
-          label={`${t('game.manualBoss')}: ${bossLabel(groupFace, t)}`}
-          hint={waiting ? t('boss.tapToChoose') : t('game.zoom')}
-        >
-          <View style={styles.drawn} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-            <BossFace reveal={groupFace} width={width} universe={game.universe} />
-          </View>
-        </CardButton>
+        <View style={slot}>
+          <CardButton
+            style={styles.drawn}
+            faces={bossHasBack(groupFace, t)}
+            onPress={waiting ? reopenChoice : () => toggleFlip(index)}
+            button
+            label={`${t('game.manualBoss')}: ${bossLabel(groupFace, t)}`}
+            hint={waiting ? t('boss.tapToChoose') : flipHint(flipped)}
+            expanded={waiting ? undefined : flipped}
+          >
+            <View style={styles.drawn} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              {bossFace(groupFace, index, width, waiting ? reopenChoice : () => toggleFlip(index))}
+            </View>
+          </CardButton>
+          {shown > 1 && <ZoomButton label={t('game.zoom')} onPress={() => setZoomed({ step: drawnKey, index })} />}
+        </View>
       </View>
     );
   });
@@ -328,17 +395,23 @@ export default function GameScreen() {
               header={label}
               width={width}
               column={column}
-              renderCard={(id) => {
+              renderCard={(id, index) => {
                 const card = CARDS_BY_ID.get(id);
                 if (!card) return null;
-                const face = <CardFace card={card} danger={danger} width={width} reveal={reveal(id)} />;
-                return game.piles.bosses?.revealed[id]?.choice ? (
+                const flipTap = () => toggleFlip(index);
+                const face = cardFace(card, index, width, flipTap);
+                const waiting = !!game.piles.bosses?.revealed[id]?.choice;
+                const flippable = cardHasBack(card, danger, t, reveal(id));
+                const flipped = flippable && isFlipped(index);
+                return waiting || flippable ? (
                   <CardButton
                     style={styles.drawn}
-                    onPress={reopenChoice}
+                    faces={flippable}
+                    onPress={waiting ? reopenChoice : () => toggleFlip(index)}
                     button
                     label={cardLabel(card, danger, t, reveal(id))}
-                    hint={t('boss.tapToChoose')}
+                    hint={waiting ? t('boss.tapToChoose') : flipHint(flipped)}
+                    expanded={waiting ? undefined : flipped}
                   >
                     {face}
                   </CardButton>
@@ -348,13 +421,20 @@ export default function GameScreen() {
               }}
               renderExtra={(i) => {
                 const { group, reveal: groupFace } = manualGroups[i];
-                const face = <BossFace reveal={groupFace} width={width} universe={game.universe} />;
-                return group.choice ? (
-                  <CardButton style={styles.drawn} onPress={reopenChoice} button label={bossLabel(groupFace, t)} hint={t('boss.tapToChoose')}>
-                    {face}
+                const index = drawn.length + i;
+                const flipped = isFlipped(index);
+                return (
+                  <CardButton
+                    style={styles.drawn}
+                    faces={bossHasBack(groupFace, t)}
+                    onPress={group.choice ? reopenChoice : () => toggleFlip(index)}
+                    button
+                    label={bossLabel(groupFace, t)}
+                    hint={group.choice ? t('boss.tapToChoose') : flipHint(flipped)}
+                    expanded={group.choice ? undefined : flipped}
+                  >
+                    {bossFace(groupFace, index, width, group.choice ? reopenChoice : () => toggleFlip(index))}
                   </CardButton>
-                ) : (
-                  face
                 );
               }}
               chipLabel={t('game.manualChip')}
@@ -476,23 +556,43 @@ export default function GameScreen() {
           navigationBarTranslucent
         >
           <View style={styles.zoom}>
-            {label > 0 && (
-              <Text style={styles.zone}>{zoomedGroup ? t('game.manualBoss') : t('game.zone', { n: cardZones[zoomed.index] })}</Text>
-            )}
-            {/* Touches go through the card to the close button over the whole screen; the card stays readable. */}
-            <View style={{ width: zoomWidth(window), aspectRatio: CARD_RATIO }} pointerEvents="none">
-              {zoomedGroup ? (
-                <BossFace reveal={zoomedGroup.reveal} width={zoomWidth(window)} universe={game.universe} />
-              ) : (
-                zoomedCard && <CardFace card={zoomedCard} danger={danger} width={zoomWidth(window)} reveal={reveal(zoomedCard.id)} />
-              )}
-            </View>
+            {/* Behind the card: a tap beside it closes, a tap on it turns it over. */}
             <Pressable
               style={StyleSheet.absoluteFill}
               onPress={() => setZoomed(null)}
               accessibilityRole="button"
               accessibilityLabel={t('game.close')}
             />
+            {label > 0 && (
+              <Text style={styles.zone}>{zoomedGroup ? t('game.manualBoss') : t('game.zone', { n: cardZones[zoomed.index] })}</Text>
+            )}
+            <CardButton
+              // An explicit height, not aspectRatio: the card's back is a ScrollView, which only scrolls when its
+              // height is bounded; with a height derived from the ratio Android lets it grow and clip instead.
+              style={{ width: zoomWidth(window), height: zoomWidth(window) / CARD_RATIO }}
+              faces={zoomFlippable}
+              onPress={zoomFlippable ? () => toggleFlip(zoomed.index) : () => setZoomed(null)}
+              button
+              label={zoomedGroup ? bossLabel(zoomedGroup.reveal, t) : zoomedCard ? cardLabel(zoomedCard, danger, t, reveal(zoomedCard.id)) : undefined}
+              hint={zoomFlippable ? flipHint(isFlipped(zoomed.index)) : undefined}
+              expanded={zoomFlippable ? isFlipped(zoomed.index) : undefined}
+            >
+              {zoomedGroup
+                ? bossFace(zoomedGroup.reveal, zoomed.index, zoomWidth(window), () => toggleFlip(zoomed.index))
+                : zoomedCard && cardFace(zoomedCard, zoomed.index, zoomWidth(window), () => toggleFlip(zoomed.index))}
+            </CardButton>
+            <Pressable
+              style={({ pressed }) => [
+                styles.close,
+                { top: insets.top + CLOSE_MARGIN, right: insets.right + CLOSE_MARGIN },
+                pressed && PRESSED,
+              ]}
+              onPress={() => setZoomed(null)}
+              accessibilityRole="button"
+              accessibilityLabel={t('game.close')}
+            >
+              <Text style={styles.closeText}>×</Text>
+            </Pressable>
           </View>
         </Modal>
       )}
@@ -588,7 +688,7 @@ function pendingPlace(game: GameState): string {
 }
 
 /**
- * A card face that can be tapped (zoom, or Gozer's choice again). As a button it carries the whole card for the screen
+ * A card face that can be tapped (turn over, enlarge, or Gozer's choice again). As a button it carries the whole card for the screen
  * reader: a button hides what it holds from TalkBack.
  */
 function CardButton(props: {
@@ -598,8 +698,34 @@ function CardButton(props: {
   disabled?: boolean;
   label?: string;
   hint?: string;
+  /** For a card that turns over: whether it shows its back. */
+  expanded?: boolean;
+  /**
+   * The card turns over and its faces take the taps themselves (see FlipCard and RuleSide): the button is then a plain
+   * accessible View, since a touchable around the scrolling rule would hold the gesture and the text would not scroll.
+   */
+  faces?: boolean;
   children?: React.ReactNode;
 }) {
+  if (props.faces) {
+    return (
+      <View
+        style={props.style}
+        accessible
+        accessibilityRole={props.button ? 'button' : undefined}
+        accessibilityLabel={props.label}
+        accessibilityHint={props.hint}
+        accessibilityState={props.expanded === undefined ? undefined : { expanded: props.expanded }}
+        // A plain View has no onPress: TalkBack's double tap runs this action (iOS: VoiceOver's activate).
+        accessibilityActions={props.button ? [{ name: 'activate' }] : undefined}
+        onAccessibilityAction={(event) => {
+          if (event.nativeEvent.actionName === 'activate') props.onPress();
+        }}
+      >
+        <CardAnnounced.Provider value={!!props.button}>{props.children}</CardAnnounced.Provider>
+      </View>
+    );
+  }
   return (
     <Pressable
       style={({ pressed }) => [props.style, pressed && PRESSED]}
@@ -608,8 +734,9 @@ function CardButton(props: {
       accessibilityRole={props.button ? 'button' : undefined}
       accessibilityLabel={props.label}
       accessibilityHint={props.hint}
+      accessibilityState={props.expanded === undefined ? undefined : { expanded: props.expanded }}
     >
-      {props.children}
+      <CardAnnounced.Provider value={!!props.button}>{props.children}</CardAnnounced.Provider>
     </Pressable>
   );
 }
@@ -656,7 +783,7 @@ function OneAtATime(props: {
   width: number;
   /** Width of the column the card is centred in. */
   column: number;
-  renderCard: (id: string) => React.ReactNode;
+  renderCard: (id: string, index: number) => React.ReactNode;
   flip: Animated.AnimatedInterpolation<string>;
   emptyText: string;
   t: Translate;
@@ -732,7 +859,7 @@ function OneAtATime(props: {
       ) : viewedId ? (
         <View style={slot}>
           <Animated.View style={[styles.drawn, isLast && { transform: [{ perspective: 800 }, { rotateY: props.flip }] }]}>
-            {props.renderCard(viewedId)}
+            {props.renderCard(viewedId, viewedIndex)}
           </Animated.View>
         </View>
       ) : (
@@ -753,6 +880,18 @@ const styles = StyleSheet.create({
   zone: { height: ZONE_LABEL, color: COLORS.text, fontSize: 13, fontWeight: '800', textAlign: 'center', textTransform: 'uppercase' },
   zoneLine: { alignSelf: 'stretch' },
   drawn: { flex: 1 },
+  close: {
+    position: 'absolute',
+    width: CLOSE_SIZE,
+    height: CLOSE_SIZE,
+    borderRadius: CLOSE_SIZE / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  closeText: { color: COLORS.text, fontSize: 26, lineHeight: 30, fontWeight: '700' },
   zoom: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: 'rgba(9, 14, 12, 0.92)' },
   empty: {
     borderRadius: 12,
