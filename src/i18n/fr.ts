@@ -298,7 +298,7 @@ export const fr = {
   'about.title': 'À propos',
   'about.version': 'Version {v}',
   'about.disclaimer': 'Application de fan, non officielle. Zombicide est une marque de CMON Global Limited ; cette application n\'est ni affiliée à CMON ni approuvée par CMON. Il vous faut votre propre exemplaire du jeu : l\'application remplace seulement la pioche zombie.',
-  'about.artwork': 'Illustrations de l\'univers Western © CMON Global Limited, utilisées dans cette application de fan non commerciale. Toutes les autres illustrations sont originales.',
+  'about.artwork': 'Illustrations de l\'univers Western et illustrations officielles d\'Invader (Xenos, Abominations, dos des cartes) © CMON Global Limited, utilisées dans cette application de fan non commerciale. Les illustrations Modern et Fantasy, les cadres des cartes Invader et les Biters d\'Invader sont originaux.',
   'about.privacy': 'Politique de confidentialité',
   'about.privacyDetail': 'Aucune donnée personnelle collectée.',
   'about.report': 'Signaler une erreur',

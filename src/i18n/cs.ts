@@ -303,7 +303,7 @@ export const cs: Record<TranslationKey, string> = {
   'about.title': 'O aplikaci',
   'about.version': 'Verze {v}',
   'about.disclaimer': 'Fanouškovská, neoficiální aplikace. Zombicide je ochranná známka společnosti CMON Global Limited; tato aplikace není s CMON nijak spojena ani jím schválena. Potřebujete vlastní exemplář hry: aplikace nahrazuje pouze balíček zombií.',
-  'about.artwork': 'Ilustrace světa Western © CMON Global Limited, použité v této nekomerční fanouškovské aplikaci. Všechny ostatní ilustrace jsou původní.',
+  'about.artwork': 'Ilustrace světa Western a oficiální ilustrace světa Invader (Xenos, Abominations, rub karet) © CMON Global Limited, použité v této nekomerční fanouškovské aplikaci. Ilustrace Modern a Fantasy, rámečky karet Invader a Biters z Invaderu jsou původní.',
   'about.privacy': 'Zásady ochrany osobních údajů',
   'about.privacyDetail': 'Nesbíráme žádné osobní údaje.',
   'about.report': 'Nahlásit chybu',
