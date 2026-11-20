@@ -5,7 +5,7 @@ import Svg, { Path, Polygon } from 'react-native-svg';
 import { COUNT_TAB_HEXAGON, INVADER_PARTS } from '@/components/invader-parts';
 import { SCROLL_TRACKING } from '@/components/scroll-guard';
 import { COUNT_LABEL_STRIP, WESTERN_PARTS } from '@/components/western-parts';
-import { type ArtSubject, artSubject, westernCardArt, westernTextCardArt, westernWindow, ZombieFigure } from '@/components/zombie-art';
+import { type ArtSubject, artSubject, WESTERN_BACKDROP, westernCardArt, westernTextCardArt, westernWhiteBruteArt, westernWindow, ZombieFigure } from '@/components/zombie-art';
 import { ABOMINATIONS, BOSS_RULE_IDS, type BossRuleId, NAMED_NECROMANCERS, NAMED_ZOMBIES, PLAIN_RULE_NECROMANCERS } from '@/data/fantasy';
 import { type BossName, isBossName, isModernAbomination, isWesternAbomination } from '@/data/threat';
 import { DANGER_LEVELS } from '@/game/engine';
@@ -854,11 +854,12 @@ function WesternPrinted(props: {
     width: `${(box.width ?? 1) * 100}%`,
   });
   const number = props.card && /\d{3}$/.test(props.card.id) ? `#${props.card.id.slice(-3)}` : '';
+  const artOffset = props.art === westernWhiteBruteArt ? { top: '5%' } as const : undefined;
   // Dark brown ink on every plank, as printed: red is only for the brush stroke of the plank picture.
   const ink = WESTERN_COLORS.header.text;
   return (
     <View style={[styles.face, { backgroundColor: WESTERN_COLORS.face }]} {...readerProps(props.text, announced)}>
-      <Image source={props.art} style={FILL} resizeMode="cover" />
+      <Image source={props.art} style={[FILL, artOffset]} resizeMode="cover" />
       <Plank part={layout.plank.part} style={at({ top: layout.plank.top, height: layout.plank.bottom - layout.plank.top })} />
       {props.layout === 'extra' && <Plank part="footer" style={at(WESTERN_EXTRA_PLANK)} />}
       <View style={[at(layout.title), styles.westernTitleSlot, layout.centered && styles.westernCenteredBox]}>
@@ -1042,7 +1043,9 @@ const framing = (ratio: number, center: number): ImageStyle => {
  * The illustration of a named Abomination framed on `center` in its picture area: a window of `ratio`, or (no `ratio`)
  * whatever room the card leaves under its header, measured once laid out.
  */
-function FramedPicture({ source, ratio, center, style, cropped }: { source: ImageSourcePropType; ratio?: number; center: number; style: StyleProp<ViewStyle>; cropped?: true }) {
+const pictureFill = { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' } as const;
+
+function FramedPicture({ source, ratio, center, style, cutout, cutoutAspectRatio, cutoutZoom }: { source: ImageSourcePropType; ratio?: number; center: number; style: StyleProp<ViewStyle>; cutout?: true; cutoutAspectRatio?: number; cutoutZoom?: number }) {
   const [measured, setMeasured] = useState<number>();
   const shape = ratio ?? measured;
   const picture = useMemo(() => (shape === undefined ? undefined : framing(shape, center)), [shape, center]);
@@ -1051,9 +1054,21 @@ function FramedPicture({ source, ratio, center, style, cropped }: { source: Imag
     if (height > 0) setMeasured(width / height);
   };
   return (
-    <View style={[style, ratio !== undefined && { aspectRatio: ratio }]} onLayout={ratio === undefined && !cropped ? measure : undefined}>
-      {cropped
-        ? <Image source={source} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} resizeMode="contain" />
+    <View style={[style, ratio !== undefined && { aspectRatio: ratio }]} onLayout={ratio === undefined && !cutout ? measure : undefined}>
+      {cutout
+        ? (
+          <>
+            <Image source={WESTERN_BACKDROP} style={pictureFill} resizeMode="cover" />
+            <Image
+              source={source}
+              style={[
+                cutoutAspectRatio === undefined ? pictureFill : { position: 'absolute', top: 0, alignSelf: 'center', height: '100%', aspectRatio: cutoutAspectRatio },
+                cutoutZoom !== undefined && { transform: [{ scale: cutoutZoom }], transformOrigin: 'center 35%' },
+              ]}
+              resizeMode="contain"
+            />
+          </>
+        )
         : picture !== undefined && <Image source={source} style={picture} resizeMode="cover" />}
     </View>
   );
@@ -1076,20 +1091,20 @@ function WesternWindowCard(props: {
   const announced = useContext(CardAnnounced);
   const fonts = westernFonts(useApp().language);
   const { footer } = props.text;
-  const { source, ratio, center, cropped } = westernWindow(props.boss);
+  const { ratio, ...picture } = westernWindow(props.boss);
   return (
     <View style={[styles.face, { backgroundColor: WESTERN_COLORS.face }]} {...readerProps(props.text, announced)}>
       <CardHeader title={props.title} subtitle={props.subtitle} color={WESTERN_COLORS.header} badge={!!footer && !props.footerOnFront} western />
       {props.footerOnFront ? (
         <>
-          <FramedPicture source={source} ratio={ratio} center={center} cropped={cropped} style={styles.westernWindow} />
+          <FramedPicture {...picture} ratio={ratio} style={styles.westernWindow} />
           <Plank style={styles.westernPanel} part="footer">
             <Text style={[styles.westernPanelText, { fontFamily: fonts.text }]}>{props.rule}</Text>
           </Plank>
         </>
       ) : (
         // The rule is on the back (the "i" in the header says so): no empty panel, the picture runs to the bottom.
-        <FramedPicture source={source} center={center} cropped={cropped} style={styles.westernPictureOnly} />
+        <FramedPicture {...picture} style={styles.westernPictureOnly} />
       )}
     </View>
   );
