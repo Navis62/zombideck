@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
+import { FANTASY_COLORS } from '@/theme';
 import type { FantasyNecromancer, FantasyZombie, InvaderAbomination, InvaderXeno, ModernCard, NamedModernAbomination, WesternAbomination, WesternCard, WesternZombie, ZombieType } from '@/game/types';
 
 /**
@@ -8,7 +9,10 @@ import type { FantasyNecromancer, FantasyZombie, InvaderAbomination, InvaderXeno
  * `westernCardArt`) and the named Abominations (their picture is the window of their card, see `westernWindow`).
  */
 export type WesternSubject = Exclude<WesternZombie, 'longDeadWalker'> | WesternAbomination;
-export type ArtSubject = ZombieType | InvaderXeno | InvaderAbomination | FantasyZombie | FantasyNecromancer | NamedModernAbomination | WesternSubject | 'trejo' | 'spam';
+const NPC_WALKER_ART = ['npcWalker', 'npcWalkerBishop', 'npcWalkerHeadless'] as const;
+type NpcWalkerArt = typeof NPC_WALKER_ART[number];
+
+export type ArtSubject = NpcWalkerArt | ZombieType | InvaderXeno | InvaderAbomination | FantasyZombie | FantasyNecromancer | NamedModernAbomination | WesternSubject | 'trejo' | 'spam';
 
 // One illustration per subject, upscaled to 1280 px tall and compressed to JPEG.
 // Tall portrait illustrations, shown in the panel beside the Danger Levels.
@@ -100,57 +104,15 @@ const MODERN_ART: Record<ZombieType | 'trejo' | 'spam' | NamedModernAbomination,
   batmanEarth52: require('../../assets/modern/abominations/batman-earth-52-cartoon.jpg'),
 };
 
-const FANTASY_ART: Record<FantasyZombie | FantasyNecromancer, ImageSourcePropType> = {
-  wolfz: require('../../assets/fantasy/zombies/wolfz-cartoon.jpg'),
-  wolfbomination: require('../../assets/fantasy/abominations/wolfbomination-cartoon.jpg'),
-  npcWalker: require('../../assets/fantasy/zombies/npc-walker-cartoon.jpg'),
-  deadeyeWalker: require('../../assets/fantasy/zombies/deadeye-walker-cartoon.jpg'),
+const FANTASY_ART = {
   crowz: require('../../assets/fantasy/zombies/crowz-cartoon.jpg'),
-  taintedWalker: require('../../assets/fantasy/zombies/tainted-walker-cartoon.jpg'),
-  taintedAbomination: require('../../assets/fantasy/abominations/tainted-abomination-cartoon.jpg'),
-  ablobination: require('../../assets/fantasy/abominations/ablobination-cartoon.jpg'),
-  abominatroll: require('../../assets/fantasy/abominations/abominatroll-cartoon.jpg'),
-  abominotaur: require('../../assets/fantasy/abominations/abominotaur-cartoon.jpg'),
-  fattyBurster: require('../../assets/fantasy/zombies/fatty-burster-cartoon.jpg'),
-  zombieGiant: require('../../assets/fantasy/abominations/zombie-giant-cartoon.jpg'),
-  gorgomination: require('../../assets/fantasy/abominations/gorgomination-cartoon.jpg'),
-  hordeBrother: require('../../assets/fantasy/abominations/horde-brother-cartoon.jpg'),
-  siegeBreaker: require('../../assets/fantasy/abominations/siege-breaker-cartoon.jpg'),
-  swampLurker: require('../../assets/fantasy/abominations/swamp-lurker-cartoon.jpg'),
-  abominabunny: require('../../assets/fantasy/abominations/abominabunny-cartoon.jpg'),
-  magentaCovefe: require('../../assets/fantasy/abominations/magenta-covefe-cartoon.jpg'),
-  vaultWarden: require('../../assets/fantasy/abominations/vault-warden-cartoon.jpg'),
-  werezombie: require('../../assets/fantasy/abominations/werezombie-cartoon.jpg'),
-  chromatiz: require('../../assets/fantasy/abominations/chromatiz-cartoon.jpg'),
   feralDragon: require('../../assets/fantasy/abominations/feral-dragon-cartoon.jpg'),
-  countTemeraire: require('../../assets/fantasy/necromancers/count-temeraire-cartoon.jpg'),
-  queenSevera: require('../../assets/fantasy/necromancers/queen-severa-cartoon.jpg'),
-  abominalpha: require('../../assets/fantasy/abominations/abominalpha-cartoon.jpg'),
-  abominarat: require('../../assets/fantasy/abominations/abominarat-cartoon.jpg'),
-  toMeKuPa: require('../../assets/fantasy/necromancers/to-me-ku-pa-cartoon.jpg'),
   blackheart: require('../../assets/fantasy/necromancers/blackheart-cartoon.jpg'),
-  ostokar: require('../../assets/fantasy/necromancers/ostokar-cartoon.jpg'),
   evilTroy: require('../../assets/fantasy/necromancers/evil-troy-cartoon.jpg'),
-  queenMedea: require('../../assets/fantasy/necromancers/queen-medea-cartoon.jpg'),
-  grin: require('../../assets/fantasy/necromancers/grin-cartoon.jpg'),
-  erikSummoner: require('../../assets/fantasy/necromancers/erik-summoner-cartoon.jpg'),
-  innsmouth: require('../../assets/fantasy/necromancers/innsmouth-cartoon.jpg'),
-  faolan: require('../../assets/fantasy/necromancers/faolan-cartoon.jpg'),
-  lordOfSkulls: require('../../assets/fantasy/necromancers/lord-of-skulls-cartoon.jpg'),
-  spectralWalker: require('../../assets/fantasy/zombies/spectral-walker-cartoon.jpg'),
-  ratz: require('../../assets/fantasy/zombies/ratz-cartoon.jpg'),
-  ratKing: require('../../assets/fantasy/necromancers/rat-king-cartoon.jpg'),
-  swampTroll: require('../../assets/fantasy/abominations/swamp-troll-cartoon.jpg'),
   necromanticDragon: require('../../assets/fantasy/abominations/necromantic-dragon-cartoon.jpg'),
-  wdWalker: require('../../assets/fantasy/zombies/wd-walker-cartoon.jpg'),
-  wdRunner: require('../../assets/fantasy/zombies/wd-runner-cartoon.jpg'),
-  wdBrute: require('../../assets/fantasy/zombies/wd-brute-cartoon.jpg'),
-  khanAbomination: require('../../assets/fantasy/abominations/khan-abomination-cartoon.jpg'),
-  defilerNecromancer: require('../../assets/fantasy/necromancers/defiler-necromancer-cartoon.jpg'),
   eeWalker: require('../../assets/fantasy/zombies/ee-walker-cartoon.jpg'),
   eeRunner: require('../../assets/fantasy/zombies/ee-runner-cartoon.jpg'),
   eeBrute: require('../../assets/fantasy/zombies/ee-brute-cartoon.jpg'),
-  godEaterAbomination: require('../../assets/fantasy/abominations/god-eater-abomination-cartoon.jpg'),
   amaterasu: require('../../assets/fantasy/abominations/amaterasu-cartoon.jpg'),
   asura: require('../../assets/fantasy/abominations/asura-cartoon.jpg'),
   bishamon: require('../../assets/fantasy/abominations/bishamon-cartoon.jpg'),
@@ -174,8 +136,6 @@ const FANTASY_ART: Record<FantasyZombie | FantasyNecromancer, ImageSourcePropTyp
   tengu: require('../../assets/fantasy/necromancers/tengu-cartoon.jpg'),
   yukiOnna: require('../../assets/fantasy/necromancers/yuki-onna-cartoon.jpg'),
   fantasyBerserkerWalker: require('../../assets/fantasy/zombies/fantasy-berserker-walker-cartoon.jpg'),
-  deadboltWalker: require('../../assets/fantasy/zombies/deadbolt-walker-cartoon.jpg'),
-  terrorcottaWalker: require('../../assets/fantasy/zombies/terrorcotta-walker-cartoon.jpg'),
   climber: require('../../assets/fantasy/zombies/climber-cartoon.jpg'),
   divineBeast: require('../../assets/fantasy/zombies/divine-beast-cartoon.jpg'),
   reaper: require('../../assets/fantasy/abominations/reaper-cartoon.jpg'),
@@ -204,19 +164,92 @@ const FANTASY_ART: Record<FantasyZombie | FantasyNecromancer, ImageSourcePropTyp
   mummRa: require('../../assets/fantasy/necromancers/mumm-ra-cartoon.jpg'),
   reaperEddie: require('../../assets/fantasy/necromancers/reaper-eddie-cartoon.jpg'),
   shamanEddie: require('../../assets/fantasy/necromancers/shaman-eddie-cartoon.jpg'),
-  // Stand-in: only named in a card footer, never drawn.
-  wardenBrute: require('../../assets/fantasy/zombies/fantasy-fatty-cartoon.jpg'),
-  fantasyWalker: require('../../assets/fantasy/zombies/fantasy-walker-cartoon.jpg'),
-  fantasyRunner: require('../../assets/fantasy/zombies/fantasy-runner-cartoon.jpg'),
-  fantasyFatty: require('../../assets/fantasy/zombies/fantasy-fatty-cartoon.jpg'),
-  fantasyAbomination: require('../../assets/fantasy/abominations/fantasy-abomination-cartoon.jpg'),
-  orcWalker: require('../../assets/fantasy/zombies/orc-walker-cartoon.jpg'),
-  orcRunner: require('../../assets/fantasy/zombies/orc-runner-cartoon.jpg'),
-  orcFatty: require('../../assets/fantasy/zombies/orc-fatty-cartoon.jpg'),
-  orcAbomination: require('../../assets/fantasy/abominations/orc-abomination-cartoon.jpg'),
-  necromancer: require('../../assets/fantasy/necromancers/necromancer-cartoon.jpg'),
-  orcNecromancer: require('../../assets/fantasy/necromancers/orc-necromancer-cartoon.jpg'),
+} satisfies Record<Exclude<FantasyZombie | FantasyNecromancer, keyof typeof FANTASY_OFFICIAL>, ImageSourcePropType>;
+
+type OfficialArt = {
+  source: ImageSourcePropType;
+  /** Width over height of the file (a test checks it): the cut-out is framed by it. */
+  ratio: number;
+  /** A transparent PNG cut-out: it can be tinted into a faded silhouette and sits on any backdrop. */
+  cutout?: true;
 };
+
+/**
+ * Official art of the Fantasy zombies and bosses (assets/fantasy/<zombies|abominations|necromancers>/<base>-official.png
+ * or .jpg). Subjects without usable official art use FANTASY_ART. Add a line only once its
+ * file exists (a `require` of a missing file breaks the bundle); `ratio` is the file's width over height, `cutout: true`
+ * marks a transparent PNG.
+ */
+const FANTASY_OFFICIAL = {
+  npcWalker: { source: require('../../assets/fantasy/zombies/npc-walker-snow-white-official.png'), ratio: 0.735, cutout: true },
+  npcWalkerBishop: { source: require('../../assets/fantasy/zombies/npc-walker-bishop-official.png'), ratio: 0.628, cutout: true },
+  npcWalkerHeadless: { source: require('../../assets/fantasy/zombies/npc-walker-headless-official.png'), ratio: 0.831, cutout: true },
+  ablobination: { source: require('../../assets/fantasy/abominations/ablobination-official.png'), ratio: 0.935, cutout: true },
+  abominabunny: { source: require('../../assets/fantasy/abominations/abominabunny-official.png'), ratio: 1.154, cutout: true },
+  abominalpha: { source: require('../../assets/fantasy/abominations/abominalpha-official.png'), ratio: 0.807, cutout: true },
+  abominarat: { source: require('../../assets/fantasy/abominations/abominarat-official.png'), ratio: 0.94, cutout: true },
+  abominatroll: { source: require('../../assets/fantasy/abominations/abominatroll-official.png'), ratio: 0.763, cutout: true },
+  abominotaur: { source: require('../../assets/fantasy/abominations/abominotaur-official.png'), ratio: 0.571, cutout: true },
+  chromatiz: { source: require('../../assets/fantasy/abominations/chromatiz-official.png'), ratio: 0.686, cutout: true },
+  fantasyAbomination: { source: require('../../assets/fantasy/abominations/fantasy-abomination-official.png'), ratio: 0.613, cutout: true },
+  godEaterAbomination: { source: require('../../assets/fantasy/abominations/god-eater-abomination-official.png'), ratio: 0.939, cutout: true },
+  gorgomination: { source: require('../../assets/fantasy/abominations/gorgomination-official.png'), ratio: 1.042, cutout: true },
+  hordeBrother: { source: require('../../assets/fantasy/abominations/horde-brother-official.png'), ratio: 0.642, cutout: true },
+  khanAbomination: { source: require('../../assets/fantasy/abominations/khan-abomination-official.png'), ratio: 1.035, cutout: true },
+  magentaCovefe: { source: require('../../assets/fantasy/abominations/magenta-covefe-official.png'), ratio: 0.69, cutout: true },
+  orcAbomination: { source: require('../../assets/fantasy/abominations/orc-abomination-official.png'), ratio: 0.807, cutout: true },
+  siegeBreaker: { source: require('../../assets/fantasy/abominations/siege-breaker-official.png'), ratio: 1.14, cutout: true },
+  swampLurker: { source: require('../../assets/fantasy/abominations/swamp-lurker-official.png'), ratio: 0.914, cutout: true },
+  swampTroll: { source: require('../../assets/fantasy/abominations/swamp-troll-official.png'), ratio: 0.977, cutout: true },
+  taintedAbomination: { source: require('../../assets/fantasy/abominations/tainted-abomination-official.png'), ratio: 0.926, cutout: true },
+  vaultWarden: { source: require('../../assets/fantasy/abominations/vault-warden-official.png'), ratio: 0.637, cutout: true },
+  werezombie: { source: require('../../assets/fantasy/abominations/werezombie-official.png'), ratio: 1.114, cutout: true },
+  wolfbomination: { source: require('../../assets/fantasy/abominations/wolfbomination-official.png'), ratio: 1.058, cutout: true },
+  zombieGiant: { source: require('../../assets/fantasy/abominations/zombie-giant-official.png'), ratio: 1.103, cutout: true },
+  countTemeraire: { source: require('../../assets/fantasy/necromancers/count-temeraire-official.png'), ratio: 0.85, cutout: true },
+  defilerNecromancer: { source: require('../../assets/fantasy/necromancers/defiler-necromancer-official.png'), ratio: 0.871, cutout: true },
+  erikSummoner: { source: require('../../assets/fantasy/necromancers/erik-summoner-official.png'), ratio: 1.171, cutout: true },
+  faolan: { source: require('../../assets/fantasy/necromancers/faolan-official.png'), ratio: 0.736, cutout: true },
+  grin: { source: require('../../assets/fantasy/necromancers/grin-official.png'), ratio: 0.799, cutout: true },
+  innsmouth: { source: require('../../assets/fantasy/necromancers/innsmouth-official.png'), ratio: 0.757, cutout: true },
+  lordOfSkulls: { source: require('../../assets/fantasy/necromancers/lord-of-skulls-official.png'), ratio: 0.585, cutout: true },
+  necromancer: { source: require('../../assets/fantasy/necromancers/necromancer-official.png'), ratio: 0.731, cutout: true },
+  orcNecromancer: { source: require('../../assets/fantasy/necromancers/orc-necromancer-official.png'), ratio: 0.734, cutout: true },
+  ostokar: { source: require('../../assets/fantasy/necromancers/ostokar-official.png'), ratio: 0.775, cutout: true },
+  queenMedea: { source: require('../../assets/fantasy/necromancers/queen-medea-official.png'), ratio: 0.517, cutout: true },
+  queenSevera: { source: require('../../assets/fantasy/necromancers/queen-severa-official.png'), ratio: 0.957, cutout: true },
+  ratKing: { source: require('../../assets/fantasy/necromancers/rat-king-official.png'), ratio: 0.686, cutout: true },
+  toMeKuPa: { source: require('../../assets/fantasy/necromancers/to-me-ku-pa-official.png'), ratio: 0.883, cutout: true },
+  deadboltWalker: { source: require('../../assets/fantasy/zombies/deadbolt-walker-official.png'), ratio: 0.5, cutout: true },
+  deadeyeWalker: { source: require('../../assets/fantasy/zombies/deadeye-walker-official.png'), ratio: 0.888, cutout: true },
+  fantasyFatty: { source: require('../../assets/fantasy/zombies/fantasy-fatty-official.png'), ratio: 0.672, cutout: true },
+  fantasyRunner: { source: require('../../assets/fantasy/zombies/fantasy-runner-official.png'), ratio: 0.59, cutout: true },
+  fantasyWalker: { source: require('../../assets/fantasy/zombies/fantasy-walker-official.png'), ratio: 0.474, cutout: true },
+  fattyBurster: { source: require('../../assets/fantasy/zombies/fatty-burster-official.png'), ratio: 0.985, cutout: true },
+  orcFatty: { source: require('../../assets/fantasy/zombies/orc-fatty-official.png'), ratio: 0.947, cutout: true },
+  orcRunner: { source: require('../../assets/fantasy/zombies/orc-runner-official.png'), ratio: 0.725, cutout: true },
+  orcWalker: { source: require('../../assets/fantasy/zombies/orc-walker-official.png'), ratio: 0.639, cutout: true },
+  ratz: { source: require('../../assets/fantasy/zombies/ratz-official.png'), ratio: 0.972, cutout: true },
+  spectralWalker: { source: require('../../assets/fantasy/zombies/spectral-walker-official.png'), ratio: 0.689, cutout: true },
+  taintedWalker: { source: require('../../assets/fantasy/zombies/tainted-walker-official.png'), ratio: 0.805, cutout: true },
+  terrorcottaWalker: { source: require('../../assets/fantasy/zombies/terrorcotta-walker-official.png'), ratio: 0.475, cutout: true },
+  wdBrute: { source: require('../../assets/fantasy/zombies/wd-brute-official.png'), ratio: 0.686, cutout: true },
+  wdRunner: { source: require('../../assets/fantasy/zombies/wd-runner-official.png'), ratio: 0.724, cutout: true },
+  wdWalker: { source: require('../../assets/fantasy/zombies/wd-walker-official.png'), ratio: 0.521, cutout: true },
+  wolfz: { source: require('../../assets/fantasy/zombies/wolfz-official.png'), ratio: 1.335, cutout: true },
+  // Stand-in: only named in a card footer, never drawn.
+  wardenBrute: { source: require('../../assets/fantasy/zombies/fantasy-fatty-official.png'), ratio: 0.672, cutout: true },
+} satisfies Partial<Record<FantasyZombie | FantasyNecromancer | NpcWalkerArt, OfficialArt>>;
+
+export function npcWalkerArt(cardId: string): NpcWalkerArt {
+  const number = Number(cardId.match(/\d+$/)?.[0] ?? 0);
+  return NPC_WALKER_ART[number % NPC_WALKER_ART.length];
+}
+
+const officialOf = (subject: ArtSubject): OfficialArt | undefined => (FANTASY_OFFICIAL as Partial<Record<ArtSubject, OfficialArt>>)[subject];
+
+/** Share of its colour a cut-out silhouette keeps on a Danger Level row: a faded stamp, as printed. */
+const SILHOUETTE_OPACITY = 0.5;
 
 // Official Eddie silhouettes extracted from the larger card illustrations in the CMON pack previews.
 const INVADER_EDDIE_ART = {
@@ -297,7 +330,7 @@ const WESTERN_HEROES: Record<Exclude<WesternSubject, WesternAbomination>, ImageS
   westernBrute: require('../../assets/western/zombies/brute-hero.jpg'),
 };
 
-const ART: Record<Exclude<ArtSubject, WesternAbomination>, ImageSourcePropType> = { ...MODERN_ART, ...FANTASY_ART, ...INVADER_ART, ...WESTERN_HEROES };
+const ART: Partial<Record<Exclude<ArtSubject, WesternAbomination>, ImageSourcePropType>> = { ...MODERN_ART, ...FANTASY_ART, ...INVADER_ART, ...WESTERN_HEROES };
 
 /*
  * The Western cards are the printed cards themselves, scanned from the owner's Tabletop Simulator mod and cut to the
@@ -426,16 +459,48 @@ const UPPER_OFFSETS: Partial<Record<ArtSubject, number>> = {
   magentaCovefe: 0.18,
 };
 
+/**
+ * A transparent cut-out in its panel. A stamp on a Danger Level row (`full`) is shown whole. Otherwise the figure is
+ * framed from the top so that its head stays in view: in a tall panel (`center`: carousel, menu, the one big row) it
+ * covers the panel (`whole` fits the figure in it instead); in a wide or low one (`upper`, `top`: a boss picture, a window above the rows) it takes the full
+ * width, head and chest, and a figure too short for the panel is centred in it.
+ */
+function Cutout({ art, anchor, silhouette }: { art: OfficialArt; anchor: string; silhouette?: boolean }) {
+  const [box, setBox] = useState({ width: 0, height: 0 });
+  const tint = silhouette ? { tintColor: FANTASY_COLORS.silhouette, opacity: SILHOUETTE_OPACITY } : undefined;
+  if (anchor === 'full') return <Image source={art.source} style={[styles.fullFigure, tint]} resizeMode="contain" />;
+  let layout;
+  if (box.width > 0 && box.height > 0) {
+    const byWidth = box.width / art.ratio;
+    const height = anchor === 'center' ? Math.max(byWidth, box.height) : anchor === 'whole' ? Math.min(byWidth, box.height) : byWidth;
+    const width = height * art.ratio;
+    layout = { width, height, left: (box.width - width) / 2, top: anchor !== 'center' && height < box.height ? (box.height - height) / 2 : 0 };
+  }
+  return (
+    <View style={StyleSheet.absoluteFill} onLayout={(event) => setBox(event.nativeEvent.layout)}>
+      {layout && <Image source={art.source} style={[{ position: 'absolute' }, layout, tint]} resizeMode="stretch" />}
+    </View>
+  );
+}
+
 /** Fills its panel; `top` keeps the head in view when the panel is wider than the illustration. */
 export function ZombieFigure({
   subject,
   anchor = 'center',
+  silhouette,
 }: {
   subject: ArtSubject;
-  anchor?: 'center' | 'top' | 'upper' | 'full' | 'fill';
+  anchor?: 'center' | 'top' | 'upper' | 'full' | 'fill' | 'whole';
+  /** A faded stamp of the zombie (a Danger Level row): a cut-out is tinted, a drawing keeps its colours. */
+  silhouette?: boolean;
 }) {
   const [width, setWidth] = useState(0);
-  const source = isWesternBoss(subject) ? WESTERN_WINDOWS[subject].source : ART[subject];
+  const official = officialOf(subject);
+  // `whole`: a cut-out in full, head to feet, in its panel; a drawing has its border to crop and covers the panel as ever.
+  if (anchor === 'whole' && !official?.cutout) anchor = 'center';
+  const source = official?.source ?? (isWesternBoss(subject) ? WESTERN_WINDOWS[subject].source : ART[subject]);
+  // A cut-out has no border to crop and sits on whatever is behind it.
+  if (official?.cutout) return <Cutout art={official} anchor={anchor} silhouette={silhouette} />;
   // The Western heroes are cut for their panel: cover, whatever its shape.
   if ((isWesternBoss(subject) || subject in WESTERN_HEROES) && anchor !== 'full') return <Image source={source} style={styles.fullFigure} resizeMode="cover" />;
   // The official Invader pictures are framed renders, not cut-outs: they cover their panel too (carousel, menu).

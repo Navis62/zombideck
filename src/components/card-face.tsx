@@ -2,10 +2,12 @@ import { createContext, useContext, useMemo, useState } from 'react';
 import { Image, type ImageSourcePropType, type ImageStyle, type LayoutChangeEvent, Platform, Pressable, ScrollView, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle } from 'react-native';
 import Svg, { Path, Polygon } from 'react-native-svg';
 
+import { FANTASY_FLAMES, FANTASY_PARTS } from '@/components/fantasy-parts';
+
 import { COUNT_TAB_HEXAGON, INVADER_PARTS } from '@/components/invader-parts';
 import { SCROLL_TRACKING } from '@/components/scroll-guard';
 import { COUNT_LABEL_STRIP, WESTERN_PARTS } from '@/components/western-parts';
-import { type ArtSubject, artSubject, WESTERN_BACKDROP, westernCardArt, westernTextCardArt, westernWhiteBruteArt, westernWindow, ZombieFigure } from '@/components/zombie-art';
+import { type ArtSubject, artSubject, npcWalkerArt, WESTERN_BACKDROP, westernCardArt, westernTextCardArt, westernWhiteBruteArt, westernWindow, ZombieFigure } from '@/components/zombie-art';
 import { ABOMINATIONS, BOSS_RULE_IDS, type BossRuleId, NAMED_NECROMANCERS, NAMED_ZOMBIES, PLAIN_RULE_NECROMANCERS } from '@/data/fantasy';
 import { type BossName, isBossName, isModernAbomination, isWesternAbomination } from '@/data/threat';
 import { DANGER_LEVELS } from '@/game/engine';
@@ -37,7 +39,7 @@ import {
   type ZombieType,
 } from '@/game/types';
 import type { Translate, TranslationKey } from '@/i18n/translations';
-import { CARD_COLORS, DANGER_COLORS, INVADER_COLORS, PRESSED, WESTERN_COLORS, invaderFonts, westernFonts } from '@/theme';
+import { CARD_COLORS, DANGER_COLORS, FANTASY_COLORS, INVADER_COLORS, PRESSED, WESTERN_COLORS, fantasyFonts, invaderFonts, westernFonts } from '@/theme';
 
 // Printed top-down on the cards, red first.
 const PRINTED_LEVELS = [...DANGER_LEVELS].reverse();
@@ -148,11 +150,31 @@ const FILL = { position: 'absolute', top: 0, left: 0, width: '100%', height: '10
 
 /** Card width the sizes below were drawn for (a phone in landscape); the card scales from it. */
 const DESIGN_WIDTH = 230;
-/**
- * Smallest height of the picture on a rule card (boss calls, Necromancers, Double Spawn...), in design pixels. The rule
- * text below it scrolls instead of taking the whole card, so the head of the boss stays in view on a short phone.
+/*
+ * The printed Black Plague Zombie card, measured on the scan of "Standard Zombies Invasion #01" (590 x 897 px): the
+ * parchment runs edge to edge at the top, with the title plate and, on its lower edge, the iron number bar; under them
+ * four Danger Level strips touch one another on a red ground that shows only as a thin band down the sides and under
+ * the last strip. Positions are shares of the card (see the fantasy* styles in `makeStyles`); the parts of
+ * `fantasy-parts.ts` keep their own ratio, the drawn fallbacks fill the same boxes.
  */
-const RULE_ART_MIN_HEIGHT = 80;
+/** Width over height of a painted flame (260 x 200), the plate (820 x 200) and the bar (420 x 70). */
+const FANTASY_FLAME_RATIO = 260 / 200;
+const FANTASY_PLATE_RATIO = 820 / 200;
+const FANTASY_BAR_RATIO = 420 / 70;
+/** The scroll: its size and the width of each rolled end (in pixels of the file), which keep their proportions. */
+const FANTASY_SCROLL = { width: 820, height: 300, roll: 90 };
+/** Radius of the card corners, about 4 % of the card width as printed. */
+const FANTASY_RADIUS = 10;
+/** Width of a flame: about a third of the strip, as printed. */
+const FANTASY_FLAME_WIDTH = '33%';
+/** How far a strip slides under the one above it, in card design units, so that their torn edges meet with no red between. */
+const FANTASY_ROW_OVERLAP = 3;
+/** Average width of a character of the italic names, as a share of the font size: narrower than the default bold one. */
+const FANTASY_CHAR_EM = 0.5;
+/** The same for the title face. */
+const FANTASY_TITLE_CHAR_EM = 0.55;
+/** The same for a name in the narrow tag of the one big row, where a word must never break (Zilla Slab runs wider). */
+const FANTASY_TAG_CHAR_EM = 0.66;
 
 /**
  * True inside a card whose own button already reads it all out (see CardButton in game.tsx): the faces then hide their
@@ -488,6 +510,8 @@ export function BossFace({ reveal, width, universe, side = 'front', onFlip }: { 
         <RuleSide text={bossFaceText(reveal, t)} header={BOSS_LOOK[universe].header} universe={universe} onFlip={onFlip} />
       ) : universe === 'western' ? (
         <WesternBoss reveal={reveal} text={bossFaceText(reveal, t)} footerOnFront={!bossHasBack(reveal, t)} />
+      ) : universe === 'fantasy' ? (
+        <FantasyBossFace reveal={reveal} text={bossFaceText(reveal, t)} footerOnFront={!bossHasBack(reveal, t)} />
       ) : (
         <Frame text={bossFaceText(reveal, t)} headerColor={BOSS_LOOK[universe].header} faceColor={BOSS_LOOK[universe].face} footerOnFront={!bossHasBack(reveal, t)}>
           <View style={styles.artShort}>
@@ -1481,7 +1505,7 @@ function fantasyLine(card: FantasyCard, at: DangerLevel, t: Translate): { label?
   const horde = feedsHorde(card, level) ? `, ${t('card.hordeBonus')}` : '';
   return {
     label: t(`zombie.${level.zombie}.one`),
-    value: `×${level.count}`,
+    value: `x${level.count}`,
     spoken: `${level.count} ${t(`zombie.${level.zombie}.${level.count === 1 ? 'one' : 'other'}`)}${horde}`,
   };
 }
@@ -1597,10 +1621,12 @@ function revealedLevel(card: FantasyCard, at: DangerLevel, danger: DangerLevel, 
   const line = fantasyLine(card, at, t);
   const level = card.kind === 'levels' ? card.levels[DANGER_LEVELS.indexOf(at)] : null;
   const boss = at === danger && level && ABOMINATIONS.has(level.zombie) ? revealedName(reveal) : undefined;
+  const zombie = card.kind === 'activation' ? card.zombie : level?.zombie;
+  const subject = zombie === 'npcWalker' ? npcWalkerArt(card.id) : boss ?? zombie;
   return {
     line,
     level,
-    subject: card.kind === 'activation' ? (card.zombie as ArtSubject) : (boss ?? level?.zombie),
+    subject,
     label: boss ? t(`zombie.${boss}.one`) : line.label,
   };
 }
@@ -1617,9 +1643,170 @@ function bigLevel(card: FantasyCard, danger: DangerLevel, reveal: Reveal | undef
   return { subject, label, value: line.value, horde: feedsHorde(card, level) };
 }
 
-/** Fantasy era card: parchment stock, the printed title, then the Danger Levels red first, or the rule of the card. */
+/** The red smoke behind the picture of a special card: the part, or a flat dark red while it is absent. */
+function FantasySmoke() {
+  return FANTASY_PARTS.artBackground ? <Image source={FANTASY_PARTS.artBackground} style={FILL} resizeMode="cover" /> : <View style={[FILL, { backgroundColor: FANTASY_COLORS.smokeDark }]} />;
+}
+
+/** A boss picture on its smoke backdrop. */
+function FantasyPicture({ subject, style, lowered }: { subject: ArtSubject; style: StyleProp<ViewStyle>; lowered?: boolean }) {
+  const { styles } = useContext(CardStyle);
+  return (
+    <View style={style}>
+      <FantasySmoke />
+      {/* On a full-height picture the head starts under the number bar, not behind it. */}
+      <View style={lowered ? styles.fantasyFigureLowered : StyleSheet.absoluteFill}>
+        <ZombieFigure subject={subject} anchor="upper" />
+      </View>
+    </View>
+  );
+}
+
+/**
+ * The scroll of a special card at any height without squashing its rolled ends: the picture is scaled to the height of
+ * the box, its two rolls keep their proportions and only the paper between them is stretched to the width left.
+ */
+function FantasyScrollPaper({ source }: { source: ImageSourcePropType }) {
+  const [box, setBox] = useState({ width: 0, height: 0 });
+  const k = box.height / FANTASY_SCROLL.height;
+  const rim = Math.min(FANTASY_SCROLL.roll * k, box.width / 2);
+  const middle = Math.max(0, box.width - 2 * rim);
+  const stretch = middle / Math.max(1, (FANTASY_SCROLL.width - 2 * FANTASY_SCROLL.roll) * k);
+  const image = (left: number, width: number) => ({ position: 'absolute', top: 0, height: box.height, left, width }) as const;
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill} onLayout={(event) => setBox(event.nativeEvent.layout)}>
+      {box.width > 0 && (
+        <>
+          <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: rim, overflow: 'hidden' }}>
+            <Image source={source} style={image(0, FANTASY_SCROLL.width * k)} resizeMode="stretch" />
+          </View>
+          <View style={{ position: 'absolute', top: 0, bottom: 0, left: rim, width: middle, overflow: 'hidden' }}>
+            <Image source={source} style={image(-FANTASY_SCROLL.roll * k * stretch, FANTASY_SCROLL.width * k * stretch)} resizeMode="stretch" />
+          </View>
+          <View style={{ position: 'absolute', top: 0, bottom: 0, left: rim + middle, width: rim, overflow: 'hidden' }}>
+            <Image source={source} style={image(-(FANTASY_SCROLL.width * k - rim), FANTASY_SCROLL.width * k)} resizeMode="stretch" />
+          </View>
+        </>
+      )}
+    </View>
+  );
+}
+
+/** The painted flame of a Danger Level: its picture, or a drawn flame in the level colour with a dark ink stroke. */
+function FantasyFlame({ level, style }: { level: DangerLevel; style?: StyleProp<ViewStyle> }) {
+  const { styles } = useContext(CardStyle);
+  const part = FANTASY_FLAMES[level];
+  return (
+    <View style={[styles.fantasyFlame, style]}>
+      {part ? (
+        <Image source={part} style={FILL} resizeMode="stretch" />
+      ) : (
+        <Svg width="100%" height="100%" viewBox="0 0 52 40" preserveAspectRatio="none">
+          <Path
+            d="M0,40 L0,22 L4,27 L5,10 L10,23 L14,3 L19,21 L24,11 L27,25 L33,15 L35,29 L41,24 L45,32 L47,40 Z"
+            fill={DANGER_COLORS[level].background}
+            stroke={FANTASY_COLORS.flameInk}
+            strokeWidth={0.8}
+            strokeLinejoin="round"
+          />
+        </Svg>
+      )}
+    </View>
+  );
+}
+
+/** The iron bar under the title, its plate holding the card number: the part, or a drawn bar with a ring at each end. */
+function FantasyNumberBar({ number }: { number: string }) {
+  const { styles } = useContext(CardStyle);
+  const fonts = fantasyFonts(useApp().language);
+  return (
+    <View style={styles.fantasyBar}>
+      {FANTASY_PARTS.numberBar ? (
+        <Image source={FANTASY_PARTS.numberBar} style={FILL} resizeMode="stretch" />
+      ) : (
+        <>
+          <View style={styles.fantasyBarRod} />
+          <View style={[styles.fantasyBarRing, { left: 0 }]} />
+          <View style={[styles.fantasyBarRing, { right: 0 }]} />
+          <View style={styles.fantasyBarPlate} />
+        </>
+      )}
+      <Text style={[styles.fantasyNumber, { fontFamily: fonts.count }]}>{number}</Text>
+    </View>
+  );
+}
+
+/** The scroll of a special card with its rule, one paragraph per line, scrolling when it is long. */
+function FantasyScroll({ rules, horde }: { rules: string[]; horde?: string }) {
+  const { styles } = useContext(CardStyle);
+  const fonts = fantasyFonts(useApp().language);
+  return (
+    <View style={styles.fantasyScroll}>
+      {FANTASY_PARTS.textScroll ? <FantasyScrollPaper source={FANTASY_PARTS.textScroll} /> : <View style={[FILL, styles.fantasyScrollPaper]} />}
+      <ScrollView style={styles.fantasyScrollText} contentContainerStyle={styles.fantasyRuleCaption} {...SCROLL_TRACKING}>
+        {rules.map((rule) => (
+          <Text key={rule} style={[styles.fantasyRule, { fontFamily: fonts.name, fontStyle: fonts.italic }]}>
+            {rule}
+          </Text>
+        ))}
+        {horde && <Text style={styles.fantasyHordeRule}>{horde}</Text>}
+      </ScrollView>
+    </View>
+  );
+}
+
+/**
+ * What every Fantasy card shares: the parchment and the red ground, the body given as children, then over it the title
+ * plate and the number bar, and the thin light edge of the card; the "i" when the card has a rule on its back. Reads
+ * out the whole card as one stop.
+ */
+function FantasyShell({ text, number, footerOnFront, children }: { text: CardText; number: string; footerOnFront: boolean; children: React.ReactNode }) {
+  const { styles, scale } = useContext(CardStyle);
+  const announced = useContext(CardAnnounced);
+  const fonts = fantasyFonts(useApp().language);
+  return (
+    <View style={[styles.face, { backgroundColor: CARD_COLORS.parchment, borderRadius: FANTASY_RADIUS * scale }]} {...readerProps(text, announced)}>
+      {FANTASY_PARTS.parchment && <Image source={FANTASY_PARTS.parchment} style={styles.fantasyParchment} resizeMode="stretch" />}
+      <View style={styles.fantasyGround} />
+      {children}
+      <View style={[styles.fantasyPlate, !FANTASY_PARTS.titlePlate && styles.fantasyPlatePaper]}>
+        {FANTASY_PARTS.titlePlate && <Image source={FANTASY_PARTS.titlePlate} style={FILL} resizeMode="stretch" />}
+        <View style={styles.fantasyTitleArea}>
+          <NameLabel text={text.title} style={[styles.fantasyTitle, { fontFamily: fonts.title }]} minimumFontScale={0.5} charEm={FANTASY_TITLE_CHAR_EM} />
+        </View>
+      </View>
+      <FantasyNumberBar number={number} />
+      <View style={styles.fantasyBorder} pointerEvents="none" />
+      {text.footer && !footerOnFront && (
+        <View style={styles.fantasyInfo}>
+          <View style={styles.infoBadge}>
+            <Text style={styles.infoBadgeText}>i</Text>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+}
+
+/** An Abomination or Necromancer drawn by hand ("Draw an Abomination"): the picture on red smoke and its rule on a scroll. */
+function FantasyBossFace({ reveal, text, footerOnFront }: { reveal: Reveal; text: CardText; footerOnFront: boolean }) {
+  const { styles } = useContext(CardStyle);
+  const rule = text.footer && footerOnFront ? text.footer.split('\n') : [];
+  return (
+    <FantasyShell text={text} number="" footerOnFront={footerOnFront}>
+      <FantasyPicture lowered subject={revealedName(reveal) ?? 'abomination'} style={styles.fantasyArt} />
+      {rule.length > 0 && <FantasyScroll rules={rule} />}
+    </FantasyShell>
+  );
+}
+
+/**
+ * Fantasy era card, after the printed one: parchment, red border, the title plate and number bar, then the Danger Levels
+ * red first (a flame, the zombie's name and count, its faded silhouette), or a boss picture on red smoke over a scroll
+ * with the rule. With only the current level shown, that level is one big row with the zombie drawn large.
+ */
 function FantasyFace({ card, danger, text, reveal, footerOnFront }: { card: FantasyCard; danger: DangerLevel; text: CardText; reveal?: Reveal; footerOnFront: boolean }) {
-  const { t, cardDisplay } = useApp();
+  const { t, cardDisplay, language } = useApp();
   const { styles } = useContext(CardStyle);
   const current = cardDisplay === 'current';
   const shown = current ? [danger] : PRINTED_LEVELS;
@@ -1631,140 +1818,149 @@ function FantasyFace({ card, danger, text, reveal, footerOnFront }: { card: Fant
   const big = current && !named ? bigLevel(card, danger, reveal, t) : undefined;
   // A call card (Abomination!, Necromancer!) that revealed a boss reads like a spawn card: the boss, its name, one of it.
   const boss = card.kind === 'bossCall' || card.kind === 'necromancer' ? revealedName(reveal) : undefined;
+  const single = boss ? { subject: ruleArt(card, reveal), label: t(`zombie.${boss}.one`), value: 'x1', horde: false } : big;
+  const spawns = !!single || card.kind === 'levels' || card.kind === 'activation';
+  const number = /\d{3}$/.test(card.id) ? String(Number(card.id.slice(-3))).padStart(2, '0') : '';
   return (
-    <Frame card={card} text={text} headerColor={FANTASY_HEADER} faceColor={CARD_COLORS.parchment} footerOnFront={footerOnFront}>
-      {boss ? (
-        <View style={styles.spawnBody}>
-          <View style={styles.art}>
-            <ZombieFigure subject={ruleArt(card, reveal)} anchor="center" />
-          </View>
-          <View style={[styles.levels, { backgroundColor: CARD_COLORS.fantasyFrame }]}>
-            <NameLabel row style={styles.fantasyBigLabel} minimumFontScale={0.6} padding={BIG_LABEL_PADDING} text={t(`zombie.${boss}.one`)} />
-            <Level level={danger} active large>
-              ×1
-            </Level>
-          </View>
-        </View>
-      ) : big ? (
-        // Only the current level: the modern layout, the zombie large beside its count.
-        <View style={styles.spawnBody}>
-          <View style={styles.art}>
-            <ZombieFigure subject={big.subject} anchor="center" />
-          </View>
-          <View style={[styles.levels, { backgroundColor: CARD_COLORS.fantasyFrame }]}>
-            {big.label !== undefined && (
-              <NameLabel
-                row
-                style={styles.fantasyBigLabel}
-                minimumFontScale={0.6}
-                padding={BIG_LABEL_PADDING}
-                badge={
-                  big.horde && (
-                    <View style={styles.hordeBadge}>
-                      <Text style={styles.hordeText}>+1</Text>
-                    </View>
-                  )
-                }
-                text={big.label}
-              />
+    <FantasyShell text={text} number={number} footerOnFront={footerOnFront}>
+      {spawns ? (
+        <View style={styles.fantasyBody}>
+          {named && <FantasyPicture subject={named} style={styles.fantasyNamedArt} />}
+          <View style={styles.fantasyRows}>
+            {single ? (
+              <FantasyRow level={danger} active large subject={single.subject} label={single.label} value={single.value} horde={single.horde} />
+            ) : (
+              shown.map((at, index) => {
+                const { line, level, subject, label } = revealedLevel(card, at, danger, reveal, t);
+                return (
+                  <FantasyRow
+                    key={at}
+                    overlap={index > 0}
+                    level={at}
+                    active={at === danger}
+                    large={current}
+                    compact={!!named && !current}
+                    subject={named && card.kind !== 'activation' ? undefined : subject}
+                    label={label}
+                    value={line.value}
+                    horde={feedsHorde(card, level)}
+                  />
+                );
+              })
             )}
-            <Level level={danger} active wide={big.label === undefined} large>
-              {big.value}
-            </Level>
           </View>
-        </View>
-      ) : card.kind === 'levels' || card.kind === 'activation' ? (
-        <View style={styles.fantasyLevels}>
-          {named && (
-            <View style={styles.fantasyNamedArt}>
-              {/* Wider than tall: the head and chest of the creature, below the halo. */}
-              <ZombieFigure subject={named} anchor="upper" />
+          {text.footer && footerOnFront && (
+            <View style={styles.fantasyFooter}>
+              <Text style={[styles.fantasyFooterText, { fontFamily: fantasyFonts(language).name, fontStyle: fantasyFonts(language).italic }]}>{text.footer}</Text>
             </View>
           )}
-          {shown.map((at) => {
-            const { line, level, subject, label } = revealedLevel(card, at, danger, reveal, t);
-            return (
-              <FantasyRow
-                key={at}
-                level={at}
-                active={at === danger}
-                large={current}
-                subject={named && card.kind !== 'activation' ? undefined : subject}
-                label={label}
-                value={line.value}
-                horde={feedsHorde(card, level)}
-              />
-            );
-          })}
         </View>
       ) : (
-        <View style={styles.fantasyRuleBody}>
-          <View style={styles.fantasyRuleArt}>
-            <ZombieFigure
-              subject={ruleArt(card, reveal)}
-              anchor="upper"
-            />
-          </View>
-          <ScrollView style={styles.fantasyRuleScroll} contentContainerStyle={styles.fantasyRuleCaption} {...SCROLL_TRACKING}>
-            {fantasyRule(card, t).map((rule) => (
-              <Text key={rule} style={styles.fantasyRule}>
-                {rule}
-              </Text>
-            ))}
-            {hordeRule(card, t) && <Text style={styles.fantasyHordeRule}>{hordeRule(card, t)}</Text>}
-          </ScrollView>
-        </View>
+        <>
+          <FantasyPicture lowered subject={ruleArt(card, reveal)} style={styles.fantasyArt} />
+          <FantasyScroll rules={[...fantasyRule(card, t), ...(text.footer && footerOnFront ? text.footer.split('\n') : [])]} horde={hordeRule(card, t)} />
+        </>
       )}
-    </Frame>
+    </FantasyShell>
   );
 }
 
+/**
+ * One Danger Level strip: the flame of its colour low on the left, the zombie's name in italic above its count on the
+ * right-centre, its faded silhouette on the far right. Alone on the card (`large`, only the current level shown) the
+ * zombie is drawn large on the right, the name and count small on the left, so nothing covers the figure.
+ */
 function FantasyRow(props: {
   subject?: ArtSubject;
   level: DangerLevel;
   active: boolean;
   /** Alone on the card, when only the current Danger Level is shown. */
   large: boolean;
+  /** Short under a named boss picture. */
+  compact?: boolean;
+  /** Slides under the strip above it. */
+  overlap?: boolean;
   /** The zombie type, above its count; none for "Nothing in sight!" and the Extra Activations. */
   label?: string;
   value: string;
   horde: boolean;
 }) {
-  const { styles, scale } = useContext(CardStyle);
+  const { styles } = useContext(CardStyle);
+  const fonts = fantasyFonts(useApp().language);
   const counted = props.label !== undefined;
-  return (
-    <View style={[styles.fantasyRow, props.active && styles.fantasyRowActive, props.large && styles.fantasyRowLarge]}>
-      {/* Flames of the Danger Level, as the printed cards have on the left of each line. */}
-      <Svg width={(props.large ? 30 : 18) * scale} height="100%" viewBox="0 0 18 34" preserveAspectRatio="none">
-        <Polygon points="0,0 12,0 7,6 13,12 6,18 12,24 5,30 10,34 0,34" fill={DANGER_COLORS[props.level].background} />
-      </Svg>
-      {props.subject && (
-        <View style={{ width: (props.large ? 60 : 38) * scale, alignSelf: 'stretch', overflow: 'hidden' }}>
-          <ZombieFigure subject={props.subject} anchor="full" />
-        </View>
-      )}
+  const bigPicture = props.large && !!props.subject;
+  const nameFont = { fontFamily: fonts.name, fontStyle: fonts.italic } as const;
+  const rowPaper = FANTASY_PARTS.levelRow ? <Image source={FANTASY_PARTS.levelRow} style={styles.fantasyRowImage} resizeMode={props.large ? 'stretch' : 'cover'} /> : <View style={[FILL, styles.fantasyRowPaper]} />;
+  const count = (
+    <View style={styles.fantasyCountLine}>
+      <Text
+        style={[counted ? styles.fantasyCount : [styles.fantasyNote, styles.fantasyTagNote], { fontFamily: counted ? fonts.count : fonts.name }, !counted && { fontStyle: fonts.italic }]}
+        numberOfLines={Platform.OS === 'web' ? undefined : counted ? 1 : 4}
+        adjustsFontSizeToFit
+        minimumFontScale={0.4}
+      >
+        {props.value}
+      </Text>
       {props.horde && (
         <View style={styles.hordeBadge}>
           <Text style={styles.hordeText}>+1</Text>
         </View>
       )}
-      <View style={styles.fantasyCell}>
+    </View>
+  );
+  // One big row with a picture: the zombie on the left, whole, and a small parchment tag on the right edge with its name,
+  // its count (or the sentence of an Extra Activation) and its flame at the base, like the labels of the Western cards.
+  if (bigPicture && props.subject) {
+    return (
+      <View style={styles.fantasyRow}>
+        {rowPaper}
+        <View style={styles.fantasyLargeFigure}>
+          <ZombieFigure subject={props.subject} anchor="whole" />
+        </View>
+        <View style={styles.fantasyTag}>
+          <FantasyFlame level={props.level} style={styles.fantasyTagFlame} />
+          {props.label !== undefined && <NameLabel style={[styles.fantasyLabel, nameFont]} minimumFontScale={0.6} charEm={FANTASY_TAG_CHAR_EM} text={props.label} />}
+          {count}
+        </View>
+      </View>
+    );
+  }
+  return (
+    <View style={[styles.fantasyRow, props.overlap && styles.fantasyRowOver]}>
+      {rowPaper}
+      <FantasyFlame level={props.level} />
+      {props.subject && (
+        <View style={styles.fantasySilhouette}>
+          <ZombieFigure subject={props.subject} anchor="full" silhouette />
+        </View>
+      )}
+      {/* The Danger Levels the players are not at are veiled, so the current one stands out with no box round it. */}
+      {!props.active && !props.large && <View pointerEvents="none" style={[FILL, styles.fantasyDim]} />}
+      <View style={[styles.fantasyCell, !counted && styles.fantasyCellNote]}>
         {props.label !== undefined && (
-          <NameLabel style={[styles.fantasyLabel, props.large && styles.fantasyLabelLarge]} minimumFontScale={0.75} text={props.label} />
+          <NameLabel style={[styles.fantasyLabel, nameFont, props.large && styles.fantasyLabelLarge, props.compact && styles.fantasyCompactLabel]} minimumFontScale={0.6} charEm={FANTASY_CHAR_EM} text={props.label} />
         )}
-        <Text
-          style={[
-            counted ? styles.fantasyCount : styles.fantasyNote,
-            counted && props.active && styles.fantasyCountActive,
-            counted && props.large && styles.fantasyCountLarge,
-            !counted && props.large && styles.fantasyNoteLarge,
-          ]}
-          numberOfLines={Platform.OS === 'web' ? undefined : counted ? 1 : 3}
-          adjustsFontSizeToFit
-          minimumFontScale={0.4}
-        >
-          {props.value}
-        </Text>
+        <View style={styles.fantasyCountLine}>
+          <Text
+            style={[
+              counted ? styles.fantasyCount : styles.fantasyNote,
+              { fontFamily: counted ? fonts.count : fonts.name },
+              !counted && { fontStyle: fonts.italic },
+              props.large && (counted ? styles.fantasyCountLarge : styles.fantasyNoteLarge),
+              props.compact && (counted ? styles.fantasyCompactCount : styles.fantasyCompactNote),
+            ]}
+            numberOfLines={Platform.OS === 'web' ? undefined : counted ? 1 : 3}
+            adjustsFontSizeToFit
+            minimumFontScale={0.4}
+          >
+            {props.value}
+          </Text>
+          {props.horde && (
+            <View style={styles.hordeBadge}>
+              <Text style={styles.hordeText}>+1</Text>
+            </View>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -1773,23 +1969,78 @@ function FantasyRow(props: {
 // Sizes for a card DESIGN_WIDTH wide, multiplied by `s`.
 function makeStyles(s: number) {
   return StyleSheet.create({
-    fantasyLevels: { flex: 1, justifyContent: 'center', gap: 4 * s, padding: 6 * s, backgroundColor: CARD_COLORS.fantasyFrame },
-    fantasyRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      minHeight: 34 * s,
-      backgroundColor: CARD_COLORS.parchmentRow,
-      borderRadius: 3 * s,
-      overflow: 'hidden',
-    },
-    fantasyRowActive: { minHeight: 48 * s, borderWidth: 3 * s, borderColor: CARD_COLORS.parchmentInk },
-    fantasyRowLarge: { minHeight: 120 * s },
-    fantasyCell: { flex: 1, minWidth: 0, alignItems: 'flex-end', justifyContent: 'center', paddingHorizontal: 6 * s, paddingVertical: 2 * s },
-    fantasyLabel: { alignSelf: 'stretch', textAlign: 'right', color: CARD_COLORS.parchmentInk, fontSize: 9 * s, fontWeight: '700', fontStyle: 'italic' },
+    // The printed card, as shares of its width and height (measured as described above FANTASY_FLAME_RATIO).
+    // The red ground starts under the title plate and shows only at the sides and under the strips; the parchment part is
+    // drawn 10 % larger than the card so that the red border painted on it falls outside.
+    fantasyParchment: { position: 'absolute', top: '-5%', left: '-5%', width: '110%', height: '110%' },
+    fantasyGround: { position: 'absolute', top: '15%', bottom: 0, left: 0, right: 0, backgroundColor: CARD_COLORS.fantasyFrame },
+    // The thin light edge of the card, over everything.
+    fantasyBorder: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderWidth: 1.5 * s, borderColor: FANTASY_COLORS.edge, borderRadius: FANTASY_RADIUS * s },
+    // The plate is drawn 6 % wider than the card and a little above it, so that its outline falls outside: parchment
+    // edge to edge. Its lower edge is at 17 % of the card.
+    fantasyPlate: { position: 'absolute', top: '-1.3%', left: '-3%', width: '106%', aspectRatio: FANTASY_PLATE_RATIO },
+    fantasyPlatePaper: { backgroundColor: FANTASY_COLORS.plate, borderBottomLeftRadius: 4 * s, borderBottomRightRadius: 4 * s },
+    // Up to two lines of title fill the plate between 6 and 43 design units from the top of the card (the plate starts 4 above
+    // it, the number bar's metal at 44), with a margin at the top; the side margins keep it off the rat emblem (top right).
+    fantasyTitleArea: { position: 'absolute', top: 10 * s, height: 33 * s, left: '15%', right: '15%', justifyContent: 'center' },
+    fantasyTitle: { color: CARD_COLORS.parchmentInk, fontSize: 16 * s, lineHeight: 17 * s, textAlign: 'center' },
+    // The bar (56 % of the card wide, at its own ratio) straddles the lower edge of the plate; the top quarter of its file
+    // is empty, so its metal sits in the lower three quarters of the box.
+    fantasyBar: { position: 'absolute', left: '22%', width: '56%', top: '12.2%', aspectRatio: FANTASY_BAR_RATIO },
+    fantasyBarRod: { position: 'absolute', left: '4%', right: '4%', top: '45%', bottom: '10%', backgroundColor: FANTASY_COLORS.iron, borderWidth: 1 * s, borderColor: FANTASY_COLORS.ironLight },
+    fantasyBarRing: { position: 'absolute', bottom: '5%', height: '75%', aspectRatio: 1, borderRadius: 999, backgroundColor: FANTASY_COLORS.iron, borderWidth: 2.5 * s, borderColor: FANTASY_COLORS.ironLight },
+    fantasyBarPlate: { position: 'absolute', left: '20%', width: '62%', top: '38%', bottom: '8%', backgroundColor: FANTASY_COLORS.ironPlate, borderWidth: 1.5 * s, borderColor: FANTASY_COLORS.iron, borderRadius: 3 * s },
+    // The number sits on the metal plate in the middle of the bar (x 20-82 %, y 36-85 % of the file).
+    fantasyNumber: { position: 'absolute', left: '20%', width: '62%', top: '36%', bottom: '15%', color: CARD_COLORS.parchmentInk, fontSize: 9 * s, lineHeight: 11 * s, textAlign: 'center', textAlignVertical: 'center', includeFontPadding: false },
+    // Under the plate and bar, a thin red margin each side and under the last strip.
+    fantasyBody: { position: 'absolute', top: '20.5%', bottom: '3.2%', left: '3.4%', right: '3.4%' },
+    fantasyRows: { flex: 1.4 },
+    fantasyNamedArt: { flex: 1, overflow: 'hidden', marginBottom: 2 * s },
+    fantasyFooter: { marginTop: 2 * s, paddingHorizontal: 6 * s, paddingVertical: 3 * s, backgroundColor: FANTASY_COLORS.row },
+    fantasyFooterText: { color: CARD_COLORS.parchmentInk, fontSize: 11 * s, textAlign: 'center' },
+    fantasyRow: { flex: 1, minHeight: 0, overflow: 'hidden', justifyContent: 'center' },
+    fantasyRowOver: { marginTop: -FANTASY_ROW_OVERLAP * s },
+    // The strip picture is drawn a little wider than the row so that its outline falls outside.
+    fantasyRowImage: { position: 'absolute', top: 0, left: '-3%', width: '106%', height: '100%' },
+    fantasyRowPaper: { backgroundColor: FANTASY_COLORS.row, borderBottomWidth: 1 * s, borderColor: FANTASY_COLORS.rowEdge },
+    fantasyDim: { backgroundColor: FANTASY_COLORS.dim },
+    // The flame: a third of the strip, low on its left, under the text.
+    fantasyFlame: { position: 'absolute', left: 0, bottom: 0, width: FANTASY_FLAME_WIDTH, aspectRatio: FANTASY_FLAME_RATIO },
+    // The faded zombie stamp on the right of a strip, and the large picture of the one-row mode.
+    fantasySilhouette: { position: 'absolute', right: '1.5%', width: '22%', top: '6%', bottom: '6%' },
+    // The one big row: the zombie takes the left two thirds, whole; the tag on the right edge keeps clear of it.
+    fantasyLargeFigure: { position: 'absolute', left: 0, top: 0, bottom: 0, width: '64%', overflow: 'hidden' },
+    fantasyTag: { position: 'absolute', right: '2%', bottom: '12%', width: '35%', alignItems: 'center', paddingHorizontal: 3 * s, paddingTop: 5 * s, paddingBottom: 7 * s, backgroundColor: FANTASY_COLORS.row, borderWidth: 1 * s, borderColor: FANTASY_COLORS.rowEdge, overflow: 'hidden' },
+    fantasyTagNote: { fontSize: 11 * s },
+    fantasyTagFlame: { width: '55%' },
+    // The name above the count sit right of the flame, left of the silhouette; beside the large picture they take the left.
+    fantasyCell: { position: 'absolute', left: '38%', right: '21%', top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2 * s },
+    // A sentence (Extra Activation, Nothing in sight) has more room: no silhouette-sized column to keep clear.
+    fantasyCellNote: { left: '28%' },
+    fantasyCountLine: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 * s, maxWidth: '100%' },
+    fantasyLabel: { alignSelf: 'stretch', textAlign: 'center', color: CARD_COLORS.parchmentInk, fontSize: 12 * s },
     fantasyLabelLarge: { fontSize: 14 * s },
-    fantasyCount: { color: CARD_COLORS.parchmentInk, fontSize: 16 * s, fontWeight: '900' },
-    fantasyCountActive: { fontSize: 24 * s },
-    fantasyCountLarge: { fontSize: 52 * s },
+    fantasyCompactLabel: { fontSize: 9 * s },
+    // The count is about two and a half times the height of the name, as printed.
+    fantasyCount: { flexShrink: 1, color: CARD_COLORS.parchmentInk, fontSize: 27 * s },
+    fantasyCountLarge: { fontSize: 32 * s },
+    fantasyCompactCount: { fontSize: 17 * s },
+    fantasyNote: { flexShrink: 1, color: CARD_COLORS.parchmentInk, fontSize: 14 * s, textAlign: 'center' },
+    fantasyNoteLarge: { fontSize: 16 * s },
+    fantasyCompactNote: { fontSize: 10 * s },
+    // The "i" under the title, left of the bar.
+    fantasyInfo: { position: 'absolute', left: '4%', top: '12%' },
+    // The picture of a special card: edge to edge under the title, behind the text scroll.
+    fantasyArt: { position: 'absolute', top: '15%', bottom: 0, left: 0, right: 0, overflow: 'hidden' },
+    // On a full-height picture the head starts under the number bar.
+    fantasyFigureLowered: { position: 'absolute', top: '9%', left: 0, right: 0, bottom: 0 },
+    // The scroll with the rule: sized by its text, up to 40 % of the card, then the text scrolls.
+    fantasyScroll: { position: 'absolute', bottom: '4.5%', left: '6%', right: '6%', minHeight: 64 * s, maxHeight: '40%', justifyContent: 'center', paddingHorizontal: '12%', paddingVertical: 12 * s },
+    fantasyScrollPaper: { backgroundColor: FANTASY_COLORS.row, borderWidth: 1 * s, borderColor: FANTASY_COLORS.rowEdge, borderRadius: 3 * s },
+    fantasyScrollText: { flexGrow: 0 },
+    fantasyRuleCaption: { gap: 4 * s },
+    fantasyRule: { color: CARD_COLORS.parchmentInk, fontSize: 12 * s, lineHeight: 16 * s, textAlign: 'center' },
+    fantasyHordeRule: { color: '#ffffff', backgroundColor: CARD_COLORS.horde, borderRadius: 4 * s, padding: 5 * s, fontSize: 10 * s, fontWeight: '800', textAlign: 'center' },
     // Type of the zombie above its large count, on a parchment strip so it reads on the red frame.
     fantasyBigLabelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 * s, minWidth: 0 },
     // The count of a Mold / Pit Spawn card, which has no Danger Levels: alone in the dark panel.
@@ -1838,8 +2089,6 @@ function makeStyles(s: number) {
       fontStyle: 'italic',
       textAlign: 'center',
     },
-    fantasyNote: { alignSelf: 'center', color: CARD_COLORS.parchmentInk, fontSize: 11 * s, fontWeight: '700', fontStyle: 'italic', textAlign: 'left' },
-    fantasyNoteLarge: { fontSize: 18 * s },
     hordeBadge: {
       marginLeft: 4 * s,
       minWidth: 22 * s,
@@ -1852,31 +2101,6 @@ function makeStyles(s: number) {
       borderColor: '#ffffff',
     },
     hordeText: { color: '#ffffff', fontSize: 10 * s, fontWeight: '900' },
-    fantasyRuleBody: { flex: 1, padding: 6 * s, backgroundColor: CARD_COLORS.fantasyFrame, overflow: 'hidden' },
-    fantasyNamedArt: { flex: 1, minHeight: 0, overflow: 'hidden', backgroundColor: CARD_COLORS.parchment },
-    fantasyRuleArt: { flex: 1, minHeight: RULE_ART_MIN_HEIGHT * s, overflow: 'hidden', backgroundColor: CARD_COLORS.parchment },
-    // Takes the height it needs but gives way to the picture, and scrolls when it is longer than what is left.
-    fantasyRuleScroll: { flexGrow: 0, flexShrink: 1 },
-    fantasyRuleCaption: { gap: 4 * s, backgroundColor: CARD_COLORS.parchmentRow },
-    fantasyRule: {
-      color: CARD_COLORS.parchmentInk,
-      backgroundColor: CARD_COLORS.parchmentRow,
-      borderRadius: 4 * s,
-      padding: 8 * s,
-      fontSize: 12 * s,
-      lineHeight: 15 * s,
-      fontWeight: '700',
-      textAlign: 'center',
-    },
-    fantasyHordeRule: {
-      color: '#ffffff',
-      backgroundColor: CARD_COLORS.horde,
-      borderRadius: 4 * s,
-      padding: 6 * s,
-      fontSize: 11 * s,
-      fontWeight: '800',
-      textAlign: 'center',
-    },
     // Western planks: wood colour, grain lines, a darker edge.
     plank: { backgroundColor: WESTERN_COLORS.header.background, overflow: 'hidden', borderBottomWidth: 2 * s, borderBottomColor: WESTERN_COLORS.plankDark },
     grain: { position: 'absolute', height: 1 * s, backgroundColor: WESTERN_COLORS.grain, opacity: 0.55 },

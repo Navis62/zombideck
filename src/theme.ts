@@ -26,6 +26,56 @@ export const CARD_COLORS = {
   horde: '#2f7d3a',
 };
 
+/** The drawn stand-ins of the printed Fantasy card, used where a part picture (`fantasy-parts.ts`) is absent. */
+export const FANTASY_COLORS = {
+  /** Title plate: lighter parchment with its thin brown outline. */
+  plate: '#f3e9cf',
+  plateEdge: '#8a6f4a',
+  /** Strip behind a Danger Level row, and its outline. */
+  row: '#f1e6cb',
+  rowEdge: '#a38a63',
+  /** Iron number bar, its riveted rings and the plate holding the number. */
+  iron: '#4b4a50',
+  ironLight: '#a9a8ad',
+  ironPlate: '#e9e1cc',
+  /** The faded stamp of a zombie on its row. */
+  silhouette: '#6f604d',
+  /** Behind the picture of a special card while the red smoke part is absent. */
+  smokeDark: '#3a0c0a',
+  /** Worn edge of the card under the red border. */
+  frameEdge: '#5e1010',
+  /** Thin light edge of the card, like the cut edge of a printed one. */
+  edge: '#f1e8d2',
+  /** Veil over the Danger Levels the players are not at, so the current one stands out without any box. */
+  dim: 'rgba(59, 42, 26, 0.09)',
+  /** Painted flames: the dark ink stroke round the colour. */
+  flameInk: '#3b2a1a',
+};
+
+/**
+ * Typefaces of the Fantasy cards (`assets/fantasy/fonts/`, SIL Open Font License), loaded with the others by the root
+ * layout. Almendra is a rounded calligraphic face close to the printed titles; it covers the French, German, Spanish, Italian
+ * and Portuguese letters but no Polish or Czech ones and no Cyrillic: Polish and Czech use Zilla Slab, Russian and Ukrainian PT Serif.
+ */
+export const FANTASY_FONT_FILES = {
+  'Almendra-Bold': require('../assets/fantasy/fonts/Almendra-Bold.ttf'),
+  'Almendra-BoldItalic': require('../assets/fantasy/fonts/Almendra-BoldItalic.ttf'),
+} as const;
+
+/**
+ * The voices of a Fantasy card: title, zombie name and rule (`italic` is the style the names need), count and number. The
+ * count and the number use PT Serif whatever the language: Almendra's old-style figures read "x1" as "XI".
+ */
+export type FantasyFonts = { title: string; name: string; count: string; italic: 'normal' | 'italic' };
+
+/** The font of each part of a Fantasy card in the player's language. */
+export const fantasyFonts = (language: Language): FantasyFonts => {
+  if (CYRILLIC.includes(language)) return { title: 'PTSerif-Bold', name: 'PTSerif-Bold', count: 'PTSerif-Bold', italic: 'italic' };
+  // Almendra has no Polish or Czech letters (ą ę ś ż č ě š ž ...): those two use Zilla Slab, as the Western cards do.
+  if (NO_RYE.includes(language)) return { title: 'ZillaSlab-Bold', name: 'ZillaSlab-Bold', count: 'PTSerif-Bold', italic: 'italic' };
+  return { title: 'Almendra-Bold', name: 'Almendra-BoldItalic', count: 'PTSerif-Bold', italic: 'normal' };
+};
+
 /** Sci-fi era (Invader, Dark Side): cold steel blue and teal, with the red of the warning lights. */
 export const INVADER_COLORS = {
   header: { background: '#0d2230', text: '#e8f6fa' },

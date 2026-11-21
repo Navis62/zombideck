@@ -8,9 +8,9 @@ import { Button } from '@/components/button';
 import { AppProvider, useApp } from '@/game/store';
 import { deviceLanguage } from '@/i18n/device-language';
 import { translator } from '@/i18n/translations';
-import { COLORS, INVADER_FONT_FILES, WESTERN_FONT_FILES } from '@/theme';
+import { COLORS, FANTASY_FONT_FILES, INVADER_FONT_FILES, WESTERN_FONT_FILES } from '@/theme';
 
-// The splash screen stays up until the Western and Invader fonts are in, so no card ever flashes in a fallback face.
+// The splash screen stays up until the Western, Invader and Fantasy fonts are in, so no card ever flashes in a fallback face.
 SplashScreen.preventAutoHideAsync();
 
 function Navigator() {
@@ -36,7 +36,7 @@ function Navigator() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({ ...WESTERN_FONT_FILES, ...INVADER_FONT_FILES });
+  const [fontsLoaded, fontError] = useFonts({ ...WESTERN_FONT_FILES, ...INVADER_FONT_FILES, ...FANTASY_FONT_FILES });
   // A font that fails to load is not worth a blank app: the cards fall back to the system serif.
   const ready = fontsLoaded || fontError !== null;
   useEffect(() => {
