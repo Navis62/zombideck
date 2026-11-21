@@ -1,4 +1,5 @@
 import type {
+  BoardBoss,
   BossDeck,
   BossKind,
   BossPiles,
@@ -94,10 +95,10 @@ export function newGame(
   const ids = deck.cards.map((card) => card.id);
   const bossDeck = (bosses: readonly string[]): BossDeck => ({ draw: shuffle(bosses, rng), discard: [] });
   const bosses = deck.bosses
-    ? { abomination: bossDeck(deck.bosses.abomination), necromancer: bossDeck(deck.bosses.necromancer), revealed: {}, manual: [] }
+    ? { abomination: bossDeck(deck.bosses.abomination), necromancer: bossDeck(deck.bosses.necromancer), revealed: {}, manual: [], onBoard: [] }
     : null;
   return {
-    version: 6,
+    version: 7,
     bossRule: deck.bosses?.rule ?? null,
     universe,
     setIds,
@@ -127,12 +128,18 @@ const noBosses: BossTrigger = () => undefined;
  * What a boss does when it is revealed, besides being on display (modern Abominations):
  * - `cantrip` (SPAM): not a boss; it is set aside and the next card of the deck is drawn instead;
  * - `absorb` (Gozer): `draw` more cards are drawn, the players keep `keep` of them with the boss;
- * - `bringsAlong` (Batman Who Laughs): another boss comes with it, taken from the deck or the discard.
+ * - `bringsAlong` (Batman Who Laughs): another boss comes with it, taken from the deck or the discard; `unblocks`
+ *   as below;
+ * - `unblocks` (Zuul, Vinz Clortho): "spawn Abominations as if there were no Abominations on the board" while it is
+ *   there, so a new Abomination card draws a new one instead of activating the one on the board;
+ * - `drawOnDeath` (Alpha Vampire): when removed, the next Abomination of the deck spawns.
  */
 export type BossPower<Z extends string = string> =
   | { kind: 'cantrip' }
   | { kind: 'absorb'; draw: number; keep: number }
-  | { kind: 'bringsAlong'; boss: Z };
+  | { kind: 'bringsAlong'; boss: Z; unblocks?: true }
+  | { kind: 'unblocks' }
+  | { kind: 'drawOnDeath' };
 export type BossPowers = (boss: string) => BossPower | undefined;
 export const noPowers: BossPowers = () => undefined;
 
@@ -144,14 +151,48 @@ export function powersOf(bosses: readonly { zombie: string; power?: BossPower }[
 
 const isRealBoss = (boss: string) => boss !== NO_BOSS && boss !== NO_DECK;
 
-/** Every card of a revealed group: its boss, the SPAMs set aside, the bosses brought along, offered or gained. */
-export const groupCards = (group: Revealed): string[] => [
-  ...(isRealBoss(group.boss) ? [group.boss] : []),
-  ...(group.spam ?? []),
-  ...(group.along ?? []),
-  ...(group.choice?.offered ?? []),
-  ...(group.gained ?? []),
+const withoutGone = (list: readonly string[], gone: readonly string[] = []) => {
+  const rest = [...list];
+  for (const boss of gone) {
+    const at = rest.indexOf(boss);
+    if (at >= 0) rest.splice(at, 1);
+  }
+  return rest;
+};
+const bossList = (group: Revealed): string[] => [...(isRealBoss(group.boss) ? [group.boss] : []), ...(group.along ?? []), ...(group.gained ?? [])];
+
+/** The bosses of a revealed group still alive: its boss, the ones brought along or gained, less those removed. */
+export const liveBosses = (group: Revealed): string[] => withoutGone(bossList(group), group.gone);
+
+/** Cards of a group that are no boss in play: the SPAMs set aside and the candidates not chosen. */
+const idleCards = (group: Revealed): string[] => [...(group.spam ?? []), ...(group.choice?.offered ?? [])];
+
+/** Every card of a revealed group still out of the decks: its live bosses, the SPAMs set aside, the candidates offered. */
+export const groupCards = (group: Revealed): string[] => [...liveBosses(group), ...idleCards(group)];
+
+/** The board as groups, so that it counts with the ones on display. */
+const boardGroups = (onBoard: readonly BoardBoss[]): Revealed[] => onBoard.map(({ kind, boss }) => ({ kind, boss }));
+const shownGroups = (bosses: BossPiles, revealed = bosses.revealed, manual = bosses.manual): Revealed[] => [
+  ...boardGroups(bosses.onBoard),
+  ...Object.values(revealed),
+  ...manual,
 ];
+
+const unblocks = (power: BossPower | undefined) => power?.kind === 'unblocks' || (power?.kind === 'bringsAlong' && !!power.unblocks);
+
+/**
+ * How a card calling on a boss deck arrives, given every group on the board and on display: with the one at a time
+ * rule, a boss of its kind already there is named and gets the Extra Activation (nothing is drawn), unless one lets
+ * others spawn; in the Abomination Fest the bosses there all get it and a new one is revealed.
+ */
+function arrive(decks: Decks, shown: readonly Revealed[], kind: BossKind, rng: Rng, powers: BossPowers, rule: BossRule | null): Revealed {
+  const live = shown.filter((group) => group.kind === kind).flatMap(liveBosses);
+  const open = kind === 'abomination' && live.some((boss) => unblocks(powers(boss)));
+  if (rule === 'oneAtATime' && live.length > 0 && !open) return { kind, boss: NO_BOSS, activates: live[0] };
+  const group = revealOne(decks, shown, kind, rng, powers);
+  if (rule === 'fest' && live.length > 0) group.activated = live;
+  return group;
+}
 
 // An exhausted deck reshuffles its discard, in every era. The 2nd edition rulebook gives no rule for it: this extends
 // the Dead Men Tales one to the modern Abomination deck.
@@ -167,8 +208,9 @@ function drawBoss(deck: BossDeck, rng: Rng): { boss?: string; deck: BossDeck } {
 }
 
 /**
- * The boss decks once some cards leave the display (their bosses go to the discard of their deck) and others are
- * dealt (each one calling on a deck reveals its top card, the deck reshuffling its discard when empty).
+ * The boss decks once some cards leave the display and others are dealt (each one calling on a deck reveals its top
+ * card, the deck reshuffling its discard when empty). The bosses that leave go to the board (`to: 'board'`: a Spawn
+ * step went by) or back to the discard of their deck (`'deck'`: the card changed its mind or the game restarts).
  */
 function revealBosses(
   bosses: BossPiles | null,
@@ -181,19 +223,26 @@ function revealBosses(
   rule: BossRule | null,
   /** The groups drawn by hand leave too (a new Spawn step starts). */
   releaseManual = false,
+  to: 'board' | 'deck' = 'deck',
 ): BossPiles | null {
   if (!bosses) return null;
   const decks = { abomination: bosses.abomination, necromancer: bosses.necromancer };
   const revealed: Record<string, Revealed> = { ...bosses.revealed };
   let manual = bosses.manual;
+  let onBoard = bosses.onBoard;
+  const leave = (group: Revealed) => {
+    if (to === 'deck') return discardGroup(decks, group);
+    onBoard = [...onBoard, ...liveBosses(group).map((boss) => ({ kind: group.kind, boss }))];
+    discardCards(decks, group.kind, idleCards(group));
+  };
   for (const card of leaving) {
-    const gone = revealed[card];
-    if (!gone) continue;
-    discardGroup(decks, gone);
+    const group = revealed[card];
+    if (!group) continue;
+    leave(group);
     delete revealed[card];
   }
   if (releaseManual) {
-    for (const gone of manual) discardGroup(decks, gone);
+    manual.forEach(leave);
     manual = [];
   }
   for (const card of dealt) {
@@ -201,16 +250,15 @@ function revealBosses(
     if (!kind) continue;
     // Dead Men Tales, rulebook p.17 and White Death cards #457-462: "If there is no Abomination on the board: draw an
     // Abomination card, then spawn it. If there is already an Abomination: it gets an extra Activation." The step is
-    // resolved zone after zone, so a card whose boss of this kind is already on display (revealed earlier in the step, or
-    // drawn by hand) draws nothing: the boss on display gets the Activation. The Abomination Fest draws for every card.
-    const inPlay = rule === 'oneAtATime' ? firstBoss([...Object.values(revealed), ...manual], kind) : undefined;
-    revealed[card] = inPlay ? { kind, boss: NO_BOSS, activates: inPlay } : revealOne(decks, [...Object.values(revealed), ...manual], kind, rng, powers);
+    // resolved zone after zone, so a boss of this kind already on the board (an earlier step), revealed earlier in the
+    // step or drawn by hand is named and activated: nothing is drawn. The Abomination Fest draws for every card.
+    revealed[card] = arrive(decks, shownGroups({ ...bosses, onBoard }, revealed, manual), kind, rng, powers, rule);
   }
-  return { ...decks, revealed, manual };
+  return { ...decks, revealed, manual, onBoard };
 }
 
-/** The first real boss of a kind among the groups on display. */
-const firstBoss = (groups: readonly Revealed[], kind: BossKind) => groups.find((group) => group.kind === kind && isRealBoss(group.boss))?.boss;
+/** The first live boss of a kind among the groups on display. */
+const firstBoss = (groups: readonly Revealed[], kind: BossKind) => groups.filter((group) => group.kind === kind).flatMap(liveBosses)[0];
 
 /**
  * Once the cards of a step are in their zone order, the first card calling on a boss deck is the one that reveals the
@@ -221,17 +269,18 @@ function orderActivations(bosses: BossPiles, drawn: readonly string[]): BossPile
   const revealed: Record<string, Revealed> = { ...bosses.revealed };
   for (const kind of BOSS_KINDS) {
     const cards = drawn.filter((card) => revealed[card]?.kind === kind);
-    const owner = cards.find((card) => isRealBoss(revealed[card].boss));
+    const owner = cards.find((card) => liveBosses(revealed[card]).length > 0);
     if (owner !== undefined && owner !== cards[0] && !isRealBoss(revealed[cards[0]].boss)) {
       revealed[cards[0]] = revealed[owner];
       revealed[owner] = { kind, boss: NO_BOSS };
     }
-    const named = firstBoss([...cards.map((card) => revealed[card]), ...bosses.manual], kind);
+    const named = bosses.onBoard.find((boss) => boss.kind === kind)?.boss ?? firstBoss([...cards.map((card) => revealed[card]), ...bosses.manual], kind);
     for (const card of cards) {
       const group = revealed[card];
       if (group.boss !== NO_BOSS) continue;
-      const { activates: _old, ...bare } = group;
-      revealed[card] = named ? { ...bare, activates: named } : bare;
+      const { activates: _old, none: _none, ...bare } = group;
+      // With no boss of this kind left anywhere, `none` tells the screen (not the deck being out of bosses).
+      revealed[card] = named ? { ...bare, activates: named } : { ...bare, none: true };
     }
   }
   return { ...bosses, revealed };
@@ -241,8 +290,11 @@ type Decks = { abomination: BossDeck; necromancer: BossDeck };
 
 /** A group that leaves the display puts all its cards in the discard of its boss deck. */
 function discardGroup(decks: Decks, group: Revealed) {
-  const cards = groupCards(group);
-  if (cards.length > 0) decks[group.kind] = { ...decks[group.kind], discard: [...decks[group.kind].discard, ...cards] };
+  discardCards(decks, group.kind, groupCards(group));
+}
+
+function discardCards(decks: Decks, kind: BossKind, cards: readonly string[]) {
+  if (cards.length > 0) decks[kind] = { ...decks[kind], discard: [...decks[kind].discard, ...cards] };
 }
 
 /**
@@ -267,7 +319,7 @@ function revealOne(decks: Decks, shown: readonly Revealed[], kind: BossKind, rng
   if (boss === undefined) {
     // Every boss of the deck is on display already: the card still calls on it, they get an Extra Activation.
     // With none on display either, the game never had a boss of this kind (SPAMs set aside do not count as bosses).
-    const onDisplay = shown.some((other) => other.kind === kind && isRealBoss(other.boss));
+    const onDisplay = shown.some((other) => other.kind === kind && liveBosses(other).length > 0);
     group.boss = onDisplay ? NO_BOSS : NO_DECK;
   } else {
     group.boss = boss;
@@ -365,7 +417,7 @@ export function drawCards(
     plan = nextPlan(plan, effect(card), state.zones);
   }
   if (drawn.length === 0) return state;
-  const bosses = revealBosses(state.piles.bosses, state.piles.drawn, drawn, trigger, state.danger, rng, powers, state.bossRule, true);
+  const bosses = revealBosses(state.piles.bosses, state.piles.drawn, drawn, trigger, state.danger, rng, powers, state.bossRule, true, 'board');
   return { ...state, history: remember(state), piles: { draw, discard, drawn, reshuffled, bosses } };
 }
 
@@ -412,7 +464,7 @@ export function drawNextCard(
   }
   const [card, ...rest] = draw;
   const drawn = newStep ? [card] : [...piles.drawn, card];
-  const bosses = revealBosses(piles.bosses, newStep ? piles.drawn : [], [card], trigger, state.danger, rng, powers, state.bossRule, newStep);
+  const bosses = revealBosses(piles.bosses, newStep ? piles.drawn : [], [card], trigger, state.danger, rng, powers, state.bossRule, newStep, 'board');
   return { ...state, history: remember(state), piles: { draw: rest, discard, drawn, reshuffled, bosses } };
 }
 
@@ -436,12 +488,17 @@ export function setZones(state: GameState, zones: number): GameState {
   return { ...state, zones: clampZones(zones) };
 }
 
-/** Puts every card, including the ones on display, back in the deck; the bosses go back in their decks too. */
+/** Puts every card, including the ones on display, back in the deck; the bosses, the ones on the board too, go back in their decks. */
 export function reshuffleAll(state: GameState, rng: Rng = Math.random): GameState {
   const { draw, discard, drawn } = state.piles;
   const gathered = revealBosses(state.piles.bosses, drawn, [], noBosses, state.danger, rng, noPowers, null, true);
-  const regather = (deck: BossDeck): BossDeck => ({ draw: shuffle([...deck.draw, ...deck.discard], rng), discard: [] });
-  const bosses = gathered && { abomination: regather(gathered.abomination), necromancer: regather(gathered.necromancer), revealed: {}, manual: [] };
+  // The board empties too: its bosses go back in their decks with the rest.
+  const regather = (kind: BossKind): BossDeck => {
+    const deck = gathered![kind];
+    const board = gathered!.onBoard.filter((boss) => boss.kind === kind).map((boss) => boss.boss);
+    return { draw: shuffle([...deck.draw, ...deck.discard, ...board], rng), discard: [] };
+  };
+  const bosses = gathered && { abomination: regather('abomination'), necromancer: regather('necromancer'), revealed: {}, manual: [], onBoard: [] };
   return {
     ...state,
     history: remember(state),
@@ -488,14 +545,89 @@ export function setDanger(
 
 /**
  * Draws an Abomination by hand, for the players who deal the Abomination deck themselves: it shows beside the cards
- * and leaves with the next Spawn step. Unchanged without an Abomination deck or with nothing left in it.
+ * and leaves with the next Spawn step (for the board). With the one at a time rule and an Abomination already on the
+ * board or on display, it gets an Extra Activation instead (named by a group without boss). Unchanged without an
+ * Abomination deck or with nothing left in it.
  */
 export function drawAbomination(state: GameState, rng: Rng = Math.random, powers: BossPowers = noPowers): GameState {
   const { bosses } = state.piles;
-  if (!bosses || bosses.abomination.draw.length + bosses.abomination.discard.length === 0) return state;
+  if (!bosses) return state;
   const decks = { abomination: bosses.abomination, necromancer: bosses.necromancer };
-  const group = revealOne(decks, [...Object.values(bosses.revealed), ...bosses.manual], 'abomination', rng, powers);
-  const next: BossPiles = { ...decks, revealed: bosses.revealed, manual: [...bosses.manual, group] };
+  const group = arrive(decks, shownGroups(bosses), 'abomination', rng, powers, state.bossRule);
+  // Nothing left to draw still gives the Extra Activation to the Abominations on the board.
+  if (group.activates === undefined && group.activated === undefined && bosses.abomination.draw.length + bosses.abomination.discard.length === 0) return state;
+  const next: BossPiles = { ...bosses, ...decks, manual: [...bosses.manual, group] };
+  // A boss now on display is the one the cards without boss name (and no longer "none").
+  const named = state.bossRule === 'oneAtATime' ? orderActivations(next, state.piles.drawn) : next;
+  return { ...state, history: remember(state), piles: { ...state.piles, bosses: named } };
+}
+
+/** Where a boss to remove is: on the board, in a card of the last Spawn step, or among the ones drawn by hand. */
+export type BossTarget =
+  | { from: 'board'; boss: string }
+  | { from: 'step'; card: string; boss: string }
+  | { from: 'manual'; index: number; boss: string };
+
+const isLive = (bosses: BossPiles, kind: BossKind, boss: string) => shownGroups(bosses).some((group) => group.kind === kind && liveBosses(group).includes(boss));
+
+/**
+ * The players removed a boss (killed, fled): its card goes to the discard of its deck, where it can come back after a
+ * reshuffle. A boss removed from a card of the current Spawn step does not go on the board at the next draw. A boss
+ * that draws another when it dies (`drawOnDeath`) reveals the next one, drawn by hand. Unchanged if the boss is not there.
+ */
+export function removeFromBoard(state: GameState, target: BossTarget, rng: Rng = Math.random, powers: BossPowers = noPowers): GameState {
+  const bosses = state.piles.bosses;
+  if (!bosses) return state;
+  const decks = { abomination: bosses.abomination, necromancer: bosses.necromancer };
+  let { revealed, manual, onBoard } = bosses;
+  let kind: BossKind;
+  if (target.from === 'board') {
+    const at = onBoard.findIndex((boss) => boss.boss === target.boss);
+    if (at < 0) return state;
+    kind = onBoard[at].kind;
+    onBoard = onBoard.filter((_, i) => i !== at);
+  } else {
+    const group = target.from === 'step' ? revealed[target.card] : manual[target.index];
+    if (!group || !liveBosses(group).includes(target.boss)) return state;
+    kind = group.kind;
+    const { choice, ...rest } = group;
+    // A boss that waits for its choice leaves without it: the candidates go back to the discard.
+    const pending = choice && group.boss === target.boss;
+    if (pending) discardCards(decks, kind, choice.offered);
+    const next: Revealed = { ...(pending ? rest : group), gone: [...(group.gone ?? []), target.boss] };
+    if (target.from === 'step') revealed = { ...revealed, [target.card]: next };
+    else manual = manual.map((other, i) => (i === target.index ? next : other));
+  }
+  if (powers(target.boss)?.kind === 'drawOnDeath' && decks[kind].draw.length + decks[kind].discard.length > 0) {
+    const arrival = revealOne(decks, shownGroups({ ...bosses, onBoard }, revealed, manual), kind, rng, powers);
+    // A SPAM drawn on the way is a card too: the group keeps it even with no boss behind it.
+    if (isRealBoss(arrival.boss) || arrival.spam) manual = [...manual, arrival];
+  }
+  discardCards(decks, kind, [target.boss]);
+  // Fest: the removed boss no longer gets the Extra Activation shown on the cards.
+  const withoutBoss = (group: Revealed): Revealed => {
+    if (!group.activated?.includes(target.boss) || group.kind !== kind) return group;
+    const { activated, ...rest } = group;
+    const left = withoutGone(activated, [target.boss]);
+    const next: Revealed = left.length > 0 ? { ...rest, activated: left } : rest;
+    return left.length === 0 && group.boss === NO_BOSS ? { ...next, none: true } : next;
+  };
+  revealed = Object.fromEntries(Object.entries(revealed).map(([card, group]) => [card, withoutBoss(group)]));
+  manual = manual.map(withoutBoss).filter((group) => !group.none);
+  let next: BossPiles = { ...decks, revealed, manual, onBoard };
+  if (state.bossRule === 'oneAtATime') {
+    // An Extra Activation that named the removed boss names another one, or goes if none is left.
+    next = orderActivations(next, state.piles.drawn);
+    const named = (group: Revealed) => next.onBoard.find((boss) => boss.kind === group.kind)?.boss ?? firstBoss(shownGroups(next), group.kind);
+    next = {
+      ...next,
+      manual: next.manual.flatMap((group) => {
+        if (group.activates === undefined || isLive(next, group.kind, group.activates)) return [group];
+        const boss = named(group);
+        return boss === undefined ? [] : [{ ...group, activates: boss }];
+      }),
+    };
+  }
   return { ...state, history: remember(state), piles: { ...state.piles, bosses: next } };
 }
 
@@ -588,7 +720,7 @@ export function isValidSave(
 ): value is GameState {
   const state = value as GameState | null;
   // Closed beta: no migration, a game saved by an older version is rejected.
-  if (state?.version !== 6 || !DANGER_LEVELS.includes(state.danger) || !UNIVERSE_IDS.includes(state.universe)) return false;
+  if (state?.version !== 7 || !DANGER_LEVELS.includes(state.danger) || !UNIVERSE_IDS.includes(state.universe)) return false;
   if (state.bossRule !== null && state.bossRule !== 'oneAtATime' && state.bossRule !== 'fest') return false;
   if (!Number.isInteger(state.zones) || state.zones !== clampZones(state.zones)) return false;
   if (!Array.isArray(state.setIds) || !state.setIds.every((id) => typeof id === 'string')) return false;
@@ -616,12 +748,14 @@ function isValidBosses(bosses: BossPiles | null | undefined, bossIds?: ReadonlyS
   if (!bosses.revealed || typeof bosses.revealed !== 'object') return false;
   const known = (boss: string) => !bossIds || bossIds.has(boss);
   const decks = [bosses.abomination, bosses.necromancer].flatMap((deck) => [...deck.draw, ...deck.discard]);
-  if (!Array.isArray(bosses.manual)) return false;
+  if (!Array.isArray(bosses.manual) || !Array.isArray(bosses.onBoard)) return false;
+  if (!bosses.onBoard.every((boss) => !!boss && BOSS_KINDS.includes(boss.kind) && typeof boss.boss === 'string' && isRealBoss(boss.boss) && known(boss.boss))) return false;
   const groups = [...Object.values(bosses.revealed), ...bosses.manual];
   if (!decks.every(known) || !groups.every((shown) => isValidRevealed(shown, known))) return false;
-  // An Extra Activation names a boss of its kind that is on display.
-  if (!groups.every((shown) => shown.activates === undefined || groups.some((other) => other.kind === shown.kind && other.boss === shown.activates))) return false;
-  return withinCopies([...decks, ...groups.flatMap(groupCards)], bossCopies);
+  // An Extra Activation names a boss of its kind that is on the board or on display.
+  const alive = shownGroups(bosses);
+  if (!groups.every((shown) => shown.activates === undefined || alive.some((other) => other.kind === shown.kind && liveBosses(other).includes(shown.activates!)))) return false;
+  return withinCopies([...decks, ...groups.flatMap(groupCards), ...bosses.onBoard.map((boss) => boss.boss)], bossCopies);
 }
 
 /** A card cannot be in two places: no boss lies more often, across decks and display, than the boxes print it. */
@@ -637,7 +771,11 @@ function isValidRevealed(shown: Revealed | undefined, known: (boss: string) => b
   if (isRealBoss(shown.boss) && !known(shown.boss)) return false;
   if (shown.activates !== undefined && (shown.boss !== NO_BOSS || typeof shown.activates !== 'string' || !isRealBoss(shown.activates))) return false;
   const knownList = (list: unknown) => list === undefined || (isStrings(list) && list.every(known));
-  if (!knownList(shown.spam) || !knownList(shown.along) || !knownList(shown.gained)) return false;
+  if (!knownList(shown.spam) || !knownList(shown.along) || !knownList(shown.gained) || !knownList(shown.activated) || !knownList(shown.gone)) return false;
+  // `none` marks an Extra Activation with no boss left to name.
+  if (shown.none !== undefined && (shown.none !== true || shown.boss !== NO_BOSS || shown.activates !== undefined)) return false;
+  // What was removed from a group was in it.
+  if (shown.gone !== undefined && withoutGone(bossList(shown), shown.gone).length !== bossList(shown).length - shown.gone.length) return false;
   const { choice } = shown;
   if (choice === undefined) return true;
   // A choice is pending until the players keep some cards, which then become `gained`: never both.

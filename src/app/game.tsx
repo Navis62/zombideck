@@ -18,7 +18,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AppBackground } from '@/components/app-background';
 import { Button } from '@/components/button';
 import { CardBack } from '@/components/card-back';
-import { BossFace, bossHasBack, CardAnnounced, bossLabel, CardFace, cardHasBack, cardLabel, type Reveal } from '@/components/card-face';
+import { BossFace, bossHasBack, CardAnnounced, bossLabel, CardFace, cardHasBack, cardLabel, isGone, type Reveal } from '@/components/card-face';
 import { abominationName, ChoiceSheet } from '@/components/choice-sheet';
 import { DiscardSheet } from '@/components/discard-sheet';
 import { FlipCard } from '@/components/flip-card';
@@ -31,10 +31,12 @@ import {
   drawAbomination,
   drawCards,
   drawNextCard,
+  liveBosses,
   MAX_ZONES,
   noPowers,
   pendingChoice,
   pendingZones,
+  removeFromBoard,
   reshuffleAll,
   setDanger,
   setZones,
@@ -43,10 +45,11 @@ import {
   undo,
   zonesOf,
 } from '@/game/engine';
+import type { BossTarget } from '@/game/engine';
 import { drawFeedback } from '@/game/feedback';
 import { countDraw } from '@/game/review';
 import { useApp } from '@/game/store';
-import type { BossRule, DangerLevel, GameState, Revealed, ZombieCard } from '@/game/types';
+import type { BossKind, BossRule, DangerLevel, GameState, Revealed, ZombieCard } from '@/game/types';
 import type { Translate } from '@/i18n/translations';
 import { COLORS, DANGER_COLORS, PRESSED } from '@/theme';
 
@@ -70,6 +73,12 @@ const CLOSE_SIZE = 44;
 const CONFIRM_MS = 3000;
 /** Wait before Gozer's choice opens: the card flips (260 ms) and is read out first, so the players see Gozer arrive. */
 const CHOICE_DELAY_MS = 700;
+/** Share of its colours a card keeps once the players removed its boss from the board. */
+const GONE_OPACITY = 0.4;
+/** Smallest a board button gets: room for the name on two lines and the action line, a large target for a phone on a table. */
+const BOARD_BUTTON_MIN_HEIGHT = 48;
+/** Width of the coloured bar that tells a Necromancer from an Abomination on a board button. */
+const KIND_BAR_WIDTH = 6;
 
 export default function GameScreen() {
   const { game, setGame, haptics, zoneDisplay, t } = useApp();
@@ -103,6 +112,14 @@ export default function GameScreen() {
     const timer = setTimeout(() => setConfirmingShuffle(false), CONFIRM_MS);
     return () => clearTimeout(timer);
   }, [confirmingShuffle]);
+
+  // A boss leaves the board on a second tap, like "Reshuffle all": the key of the button waiting for it.
+  const [confirmingRemove, setConfirmingRemove] = useState('');
+  useEffect(() => {
+    if (!confirmingRemove) return;
+    const timer = setTimeout(() => setConfirmingRemove(''), CONFIRM_MS);
+    return () => clearTimeout(timer);
+  }, [confirmingRemove]);
 
   const [showDiscard, setShowDiscard] = useState(false);
   // One zone at a time: the card looked at, the last one dealt unless a zone above it was tapped since.
@@ -192,6 +209,19 @@ export default function GameScreen() {
       : drawCards(state, cardEffect, Math.random, bossTrigger, bossPowers);
   const reopenChoice = () => setDismissed('');
   const abominationDeck = game.piles.bosses?.abomination;
+  const board = bossesInPlay(game);
+  const removeBoss = (entry: BoardEntry) => {
+    if (confirmingRemove !== entry.key) {
+      setConfirmingRemove(entry.key);
+      return;
+    }
+    setConfirmingRemove('');
+    const next = removeFromBoard(game, entry.target, Math.random, bossPowers);
+    if (next === game) return;
+    if (haptics) drawFeedback();
+    update(() => next);
+    if (Platform.OS !== 'web') AccessibilityInfo.announceForAccessibility(t('boss.removed', { name: abominationName(entry.boss, t) }));
+  };
   // Focus stays on the button after these two, and neither changes `drawn`: each says what it just did.
   const announceGroup = (group: Revealed | undefined) => {
     if (group && manualRule && Platform.OS !== 'web') {
@@ -226,32 +256,36 @@ export default function GameScreen() {
       return { step: drawnKey, open: open.includes(index) ? open.filter((i) => i !== index) : [...open, index] };
     });
   };
+  // A card whose boss the players removed stays on the table, greyed out.
+  const fade = (face: React.ReactNode, faceReveal?: Reveal) => (isGone(faceReveal) ? <View style={styles.gone}>{face}</View> : face);
   // A card with words on its back turns over; one without stays a plain face.
   // `onTap` is what a tap on the face does (turn it, or reopen Gozer's choice): the faces take it themselves.
   const cardFace = (card: ZombieCard, index: number, faceWidth: number, onTap: () => void) => {
     const shownReveal = reveal(card.id);
     const front = <CardFace card={card} danger={danger} width={faceWidth} reveal={shownReveal} />;
-    if (!cardHasBack(card, danger, t, shownReveal)) return front;
-    return (
+    if (!cardHasBack(card, danger, t, shownReveal)) return fade(front, shownReveal);
+    return fade(
       <FlipCard
         flipped={isFlipped(index)}
         onPress={onTap}
         front={front}
         back={<CardFace card={card} danger={danger} width={faceWidth} reveal={shownReveal} side="back" onFlip={onTap} />}
-      />
+      />,
+      shownReveal,
     );
   };
   // An Abomination drawn by hand, at the same place in the flips as the cards of the step.
   const bossFace = (faceReveal: Reveal, index: number, faceWidth: number, onTap: () => void) => {
     const front = <BossFace reveal={faceReveal} width={faceWidth} universe={game.universe} />;
-    if (!bossHasBack(faceReveal, t)) return front;
-    return (
+    if (!bossHasBack(faceReveal, t)) return fade(front, faceReveal);
+    return fade(
       <FlipCard
         flipped={isFlipped(index)}
         onPress={onTap}
         front={front}
         back={<BossFace reveal={faceReveal} width={faceWidth} universe={game.universe} side="back" onFlip={onTap} />}
-      />
+      />,
+      faceReveal,
     );
   };
   const flipHint = (flipped: boolean) => t(flipped ? 'card.flipBackHint' : 'card.flipHint');
@@ -534,11 +568,41 @@ export default function GameScreen() {
             label={t('game.discard', { n: game.piles.discard.length })}
             onPress={() => setShowDiscard(true)}
           />
+          {board.length > 0 && (
+            <View style={styles.board} accessibilityRole="summary">
+              <Text style={styles.heading}>{t('boss.onBoard')}</Text>
+              {board.map((entry) => {
+                const confirming = confirmingRemove === entry.key;
+                const name = abominationName(entry.boss, t);
+                return (
+                  <Pressable
+                    key={entry.key}
+                    style={({ pressed }) => [styles.boardButton, confirming && styles.boardConfirm, pressed && PRESSED]}
+                    onPress={() => removeBoss(entry)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t(entry.kind === 'necromancer' ? 'boss.removeNecromancerLabel' : 'boss.removeAbominationLabel', { name })}
+                    accessibilityHint={confirming ? t('boss.removeConfirm') : undefined}
+                  >
+                    <View style={[styles.kindBar, { backgroundColor: entry.kind === 'necromancer' ? COLORS.accent : COLORS.warning }]} />
+                    <View style={styles.boardText}>
+                      <Text style={styles.boardName} numberOfLines={2}>
+                        {name}
+                      </Text>
+                      <Text style={[styles.boardAction, confirming && styles.boardActionConfirm]} numberOfLines={2}>
+                        {t(confirming ? 'boss.removeConfirm' : 'boss.remove')}
+                      </Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
           {bossDecks?.manualDraw && abominationDeck && (
             <Button
               compact
               label={t('game.drawAbomination')}
-              disabled={abominationDeck.draw.length + abominationDeck.discard.length === 0}
+              // With an Abomination in play the button still gives it an Extra Activation, even with the deck empty.
+              disabled={abominationDeck.draw.length + abominationDeck.discard.length === 0 && !board.some((entry) => entry.kind === 'abomination')}
               onPress={drawByHand}
             />
           )}
@@ -669,6 +733,26 @@ const revealOf =
     return shown && rule ? groupReveal(shown, rule) : undefined;
   };
 
+type BoardEntry = { key: string; kind: BossKind; boss: string; target: BossTarget };
+
+/**
+ * Every boss the players can remove: the ones left on the board by earlier Spawn steps, then those of the current step
+ * (on its cards and drawn by hand), which are on the board too from where they sit.
+ */
+function bossesInPlay(game: GameState): BoardEntry[] {
+  const bosses = game.piles.bosses;
+  if (!bosses) return [];
+  const board = bosses.onBoard.map(({ kind, boss }, at): BoardEntry => ({ key: `board:${at}:${boss}`, kind, boss, target: { from: 'board', boss } }));
+  const step = game.piles.drawn.flatMap((card) => {
+    const group = bosses.revealed[card];
+    return group ? liveBosses(group).map((boss): BoardEntry => ({ key: `step:${card}:${boss}`, kind: group.kind, boss, target: { from: 'step', card, boss } })) : [];
+  });
+  const manual = bosses.manual.flatMap((group, index) =>
+    liveBosses(group).map((boss): BoardEntry => ({ key: `manual:${index}:${boss}`, kind: group.kind, boss, target: { from: 'manual', index, boss } })),
+  );
+  return [...board, ...step, ...manual];
+}
+
 /** A revealed group with its powers: the SPAMs, the bosses brought along or gained, a choice still to make. */
 const groupReveal = (group: Revealed, rule: BossRule): Reveal => ({
   kind: group.kind,
@@ -679,6 +763,9 @@ const groupReveal = (group: Revealed, rule: BossRule): Reveal => ({
   gained: group.gained,
   choosing: !!group.choice,
   activates: group.activates,
+  none: group.none,
+  activated: group.activated,
+  gone: group.gone,
 });
 
 /** Where the choice Gozer waits on lives: a card of the step, else the Abomination drawn by hand at that position. */
@@ -881,6 +968,7 @@ const styles = StyleSheet.create({
   zone: { height: ZONE_LABEL, color: COLORS.text, fontSize: 13, fontWeight: '800', textAlign: 'center', textTransform: 'uppercase' },
   zoneLine: { alignSelf: 'stretch' },
   drawn: { flex: 1 },
+  gone: { flex: 1, opacity: GONE_OPACITY },
   close: {
     position: 'absolute',
     width: CLOSE_SIZE,
@@ -933,6 +1021,23 @@ const styles = StyleSheet.create({
   chipPending: { opacity: 0.4, borderStyle: 'dashed' },
   chipText: { color: COLORS.text, fontSize: 12, fontWeight: '800' },
   chipTextViewed: { color: COLORS.background },
+  board: { gap: 4 },
+  boardButton: {
+    minHeight: BOARD_BUTTON_MIN_HEIGHT,
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    overflow: 'hidden',
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: 8,
+  },
+  boardConfirm: { borderColor: COLORS.warning, borderWidth: 2 },
+  kindBar: { width: KIND_BAR_WIDTH },
+  boardText: { flex: 1, paddingHorizontal: 8, paddingVertical: 4, justifyContent: 'center' },
+  boardName: { color: COLORS.text, fontSize: 14, fontWeight: '800' },
+  boardAction: { color: COLORS.muted, fontSize: 12 },
+  boardActionConfirm: { color: COLORS.warning, fontWeight: '800' },
   spacer: { flexGrow: 1, minHeight: 12, justifyContent: 'center', gap: 4 },
   notice: { color: COLORS.warning, fontSize: 13, textAlign: 'center' },
 });

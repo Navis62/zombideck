@@ -40,6 +40,7 @@ import {
   groupCards,
   pendingChoice,
   powersOf,
+  removeFromBoard,
 } from './engine.ts';
 import type { BossKind, BossPiles, BossRule, CardSet, GameState, Piles, ZombieCard } from './types.ts';
 import { isInvaderCard, isWesternCard, NO_BOSS, NO_DECK } from './types.ts';
@@ -992,7 +993,7 @@ const bossTrigger = (cardId: string): BossKind | undefined =>
   cardId === 'a1' ? 'abomination' : cardId === 'a2' ? 'necromancer' : undefined;
 const dealAll = (state: GameState) => drawCards(state, undefined, () => 0, bossTrigger);
 
-test('a card that calls on a boss deck reveals its top boss, and its boss goes to that deck\'s discard after the step', () => {
+test('a card that calls on a boss deck reveals its top boss, and its boss goes on the board after the step', () => {
   let state = bossGame();
   assert.equal(state.bossRule, 'oneAtATime');
   const firstAbomination = state.piles.bosses?.abomination.draw[0];
@@ -1001,7 +1002,8 @@ test('a card that calls on a boss deck reveals its top boss, and its boss goes t
   assert.equal(state.piles.bosses?.abomination.draw.length, 1);
   const next = dealAll(state);
   assert.equal(next.piles.bosses?.revealed.a1, undefined);
-  assert.deepEqual(next.piles.bosses?.abomination.discard, [firstAbomination]);
+  assert.deepEqual(next.piles.bosses?.onBoard.filter((boss) => boss.kind === 'abomination'), [{ kind: 'abomination', boss: firstAbomination }]);
+  assert.deepEqual(next.piles.bosses?.abomination.discard, []);
 });
 
 test('a boss deck reshuffles its discard when empty, and undo brings the revealed bosses back', () => {
@@ -1011,6 +1013,8 @@ test('a boss deck reshuffles its discard when empty, and undo brings the reveale
     state = dealAll(state);
     const shown = state.piles.bosses?.revealed.a1;
     if (shown) seen.push(shown.boss);
+    // The players remove what is on the board, so the discard comes back when the deck is empty.
+    for (const { boss } of state.piles.bosses?.onBoard ?? []) state = removeFromBoard(state, { from: 'board', boss });
   }
   assert.ok(seen.length >= 3, 'the abomination deck ran out and came back');
   assert.ok(seen.every((boss) => boss === 'x' || boss === 'y'));
@@ -1290,7 +1294,7 @@ test('saves keep their boss decks to the bosses of their own universe', () => {
   const old = newGame(CARD_SETS, ['core2e'], ALL_PARTS, () => 0, 1, 'modern');
   assert.ok(isValidSave(JSON.parse(JSON.stringify(old)), cardIdsOf, bossIdsOf));
   const deck = (boss: string) => ({ draw: [boss], discard: [] });
-  const withBoss = (boss: string) => modernSave({ abomination: deck(boss), necromancer: { draw: [], discard: [] }, revealed: {}, manual: [] }, 'oneAtATime');
+  const withBoss = (boss: string) => modernSave({ abomination: deck(boss), necromancer: { draw: [], discard: [] }, revealed: {}, manual: [], onBoard: [] }, 'oneAtATime');
   assert.equal(isValidSave(withBoss('abominalpha'), cardIdsOf, bossIdsOf), false, 'a Fantasy boss in a modern save');
   assert.equal(isValidSave(withBoss('abominalpha'), cardIdsOf), true, 'any boss when no list is given');
   // The same boss deck is valid in a Fantasy save.
@@ -1430,6 +1434,8 @@ const POWERS: Record<string, BossPower> = {
   bwl: { kind: 'bringsAlong', boss: 'robins' },
   gozer: { kind: 'absorb', draw: 3, keep: 2 },
   gozer2: { kind: 'absorb', draw: 2, keep: 1 },
+  zuul: { kind: 'unblocks' },
+  vamp: { kind: 'drawOnDeath' },
 };
 const powers: BossPowers = (boss) => POWERS[boss];
 const bossesOf = (state: GameState): BossPiles => {
@@ -1456,16 +1462,18 @@ const shownGroups = (state: GameState) => {
 /** Every boss card of the game, wherever it lies. */
 const bossCardsOf = (state: GameState) => {
   const { abomination, necromancer } = bossesOf(state);
-  return [...abomination.draw, ...abomination.discard, ...necromancer.draw, ...necromancer.discard, ...shownGroups(state).flatMap(groupCards)].sort();
+  return [...abomination.draw, ...abomination.discard, ...necromancer.draw, ...necromancer.discard, ...shownGroups(state).flatMap(groupCards), ...boardOf(state)].sort();
 };
 const discardOf = (state: GameState) => [...bossesOf(state).abomination.discard].sort();
+const boardOf = (state: GameState) => bossesOf(state).onBoard.map((boss) => boss.boss);
 
 test('a SPAM drawn for an Abomination is set aside and the next card is the boss', () => {
   const state = step(powerGame(['spam', 'x', 'y']));
   assert.deepEqual(bossesOf(state).revealed.a1, { kind: 'abomination', boss: 'x', spam: ['spam'] });
   assert.deepEqual(bossesOf(state).abomination.draw, ['y']);
-  // The SPAM goes to the discard with its boss.
-  assert.deepEqual(discardOf(step(state)), ['spam', 'x']);
+  // The SPAM goes to the discard, the boss on the board.
+  assert.deepEqual(discardOf(step(state)), ['spam']);
+  assert.deepEqual(boardOf(step(state)), ['x']);
 });
 
 test('two SPAMs in a row are both set aside', () => {
@@ -1482,8 +1490,9 @@ test('a SPAM that empties the Abomination deck with none on display says the dec
 test('a SPAM that empties the Abomination deck while another is on display gives an Extra Activation and still goes to the discard', () => {
   const state = step(powerGame(['x', 'spam'], [], 2, 'fest'), firstTwo);
   assert.deepEqual(bossesOf(state).revealed.a1, { kind: 'abomination', boss: 'x' });
-  assert.deepEqual(bossesOf(state).revealed.a2, { kind: 'abomination', boss: NO_BOSS, spam: ['spam'] });
-  assert.deepEqual(discardOf(step(state)), ['spam', 'x']);
+  assert.deepEqual(bossesOf(state).revealed.a2, { kind: 'abomination', boss: NO_BOSS, spam: ['spam'], activated: ['x'] });
+  assert.deepEqual(discardOf(step(state)), ['spam']);
+  assert.deepEqual(boardOf(step(state)), ['x']);
 });
 
 test('a SPAM and a boss are not reshuffled back in while they are on display', () => {
@@ -1511,24 +1520,25 @@ test('a boss that brings another along takes it from the deck, then from the dis
 test('a boss that brings another along does nothing when it is on display or missing', () => {
   // On another card of the same step.
   const sameStep = step(powerGame(['robins', 'bwl', 'x', 'robins'], [], 2, 'fest'), firstTwo);
-  assert.deepEqual(bossesOf(sameStep).revealed.a2, { kind: 'abomination', boss: 'bwl' });
+  assert.deepEqual(bossesOf(sameStep).revealed.a2, { kind: 'abomination', boss: 'bwl', activated: ['robins'] });
   assert.deepEqual(bossesOf(sameStep).abomination.draw, ['x', 'robins']);
   // In a group drawn by hand.
   const byHand = manualDraw(manualDraw(powerGame(['robins', 'bwl', 'robins'])));
-  assert.deepEqual(byHand.piles.bosses?.manual[1], { kind: 'abomination', boss: 'bwl' });
+  assert.deepEqual(byHand.piles.bosses?.manual[1], { kind: 'abomination', boss: NO_BOSS, activates: 'robins' });
   // Among the candidates of a boss that absorbs.
-  const offered = manualDraw(step(powerGame(['gozer', 'robins', 'p', 'q', 'bwl', 'robins'])));
-  assert.deepEqual(offered.piles.bosses?.manual[0], { kind: 'abomination', boss: 'bwl' });
+  const offered = manualDraw(step(powerGame(['gozer', 'robins', 'p', 'q', 'bwl', 'robins'], [], 1, 'fest')));
+  assert.deepEqual(offered.piles.bosses?.manual[0], { kind: 'abomination', boss: 'bwl', activated: ['gozer'] });
   // Among what a boss absorbed.
-  const gained = manualDraw(chooseGained(step(powerGame(['gozer', 'robins', 'p', 'q', 'bwl', 'robins'])), ['robins', 'p']));
-  assert.deepEqual(gained.piles.bosses?.manual[0], { kind: 'abomination', boss: 'bwl' });
+  const gained = manualDraw(chooseGained(step(powerGame(['gozer', 'robins', 'p', 'q', 'bwl', 'robins'], [], 1, 'fest')), ['robins', 'p']));
+  assert.deepEqual(gained.piles.bosses?.manual[0], { kind: 'abomination', boss: 'bwl', activated: ['gozer', 'robins', 'p'] });
   // Nowhere in the game.
   assert.deepEqual(step(powerGame(['bwl', 'x'])).piles.bosses?.revealed.a1, { kind: 'abomination', boss: 'bwl' });
 });
 
 test('the boss brought along leaves with the one that brought it', () => {
   const state = step(powerGame(['bwl', 'x', 'robins']));
-  assert.deepEqual(discardOf(step(state)), ['bwl', 'robins']);
+  assert.deepEqual(boardOf(step(state)), ['bwl', 'robins']);
+  assert.deepEqual(discardOf(step(state)), []);
 });
 
 test('a boss that absorbs offers its candidates and waits for the players to choose', () => {
@@ -1554,8 +1564,9 @@ test('choosing keeps the picked candidates with the boss and discards the others
   assert.deepEqual(bossesOf(chosen).revealed.a1, { kind: 'abomination', boss: 'gozer', gained: ['p', 'r'] });
   assert.deepEqual(bossesOf(chosen).abomination.discard, ['q']);
   assert.equal(pendingChoice(chosen), undefined);
-  // The boss and its gains leave together.
-  assert.deepEqual(discardOf(step(chosen)), ['gozer', 'p', 'q', 'r']);
+  // The boss and its gains go on the board together, each on its own.
+  assert.deepEqual(boardOf(step(chosen)), ['gozer', 'p', 'r']);
+  assert.deepEqual(discardOf(step(chosen)), ['q']);
 });
 
 test('a boss that absorbs keeps what there is when too few candidates remain', () => {
@@ -1586,7 +1597,7 @@ test('a choice of the wrong size or with cards that were not offered changes not
 });
 
 test('a pending choice comes back with undo, and the first group waiting is the one that is chosen', () => {
-  const pending = step(powerGame(['gozer', 'p', 'q', 'r', 'gozer2', 's', 't']));
+  const pending = step(powerGame(['gozer', 'p', 'q', 'r', 'gozer2', 's', 't'], [], 1, 'fest'));
   const chosen = chooseGained(pending, ['p', 'q']);
   assert.deepEqual(undo(chosen).piles, pending.piles);
   assert.deepEqual(pendingChoice(undo(chosen)), { boss: 'gozer', offered: ['p', 'q', 'r'], keep: 2 });
@@ -1597,7 +1608,7 @@ test('a pending choice comes back with undo, and the first group waiting is the 
   assert.deepEqual(pendingChoice(next), { boss: 'gozer2', offered: ['s', 't'], keep: 1 });
   const last = chooseGained(next, ['t']);
   assert.equal(pendingChoice(last), undefined);
-  assert.deepEqual(bossesOf(last).manual[0], { kind: 'abomination', boss: 'gozer2', gained: ['t'] });
+  assert.deepEqual(bossesOf(last).manual[0], { kind: 'abomination', boss: 'gozer2', gained: ['t'], activated: ['gozer'] });
   assert.deepEqual(bossesOf(last).abomination.discard, ['r', 's']);
 });
 
@@ -1605,7 +1616,8 @@ test('drawing while a choice is pending discards the boss with all its candidate
   const pending = step(powerGame(['gozer', 'p', 'q', 'r', 's']));
   const next = step(pending);
   assert.equal(pendingChoice(next), undefined);
-  assert.deepEqual(discardOf(next), ['gozer', 'p', 'q', 'r']);
+  assert.deepEqual(discardOf(next), ['p', 'q', 'r']);
+  assert.deepEqual(boardOf(next), ['gozer']);
   assert.deepEqual(undo(next).piles, pending.piles);
 });
 
@@ -1617,7 +1629,8 @@ test('an Abomination drawn by hand shows beside the cards, undoes at once and le
   assert.deepEqual(undo(drawn).piles, start.piles);
   const next = step(drawn, () => undefined);
   assert.deepEqual(bossesOf(next).manual, []);
-  assert.deepEqual(discardOf(next), ['spam', 'x']);
+  assert.deepEqual(discardOf(next), ['spam']);
+  assert.deepEqual(boardOf(next), ['x']);
   // Two by hand pile up.
   assert.equal(bossesOf(manualDraw(drawn)).manual.length, 2);
 });
@@ -1631,7 +1644,7 @@ test('an Abomination drawn by hand stays through the zones of a Spawn step taken
   assert.equal(bossesOf(second).manual.length, 1, 'same step');
   const third = next(second);
   assert.deepEqual(bossesOf(third).manual, [], 'a new step');
-  assert.deepEqual(discardOf(third), ['x']);
+  assert.deepEqual(boardOf(third), ['x']);
 });
 
 test('drawing an Abomination by hand does nothing without a boss deck or with nothing left to draw', () => {
@@ -1676,7 +1689,7 @@ test('no boss or card is ever lost or duplicated, whatever the players do', () =
   };
   const trigger: BossTrigger = (id, danger) =>
     id === 'a1' || (id === 'b1' && danger !== 'red') || (id === 'a2' && danger === 'orange') ? 'abomination' : undefined;
-  const bosses = ['spam', 'spam2', 'bwl', 'robins', 'gozer', 'gozer2', 'm', 'n', 'o', 'p', 'q', 'r'];
+  const bosses = ['spam', 'spam2', 'bwl', 'robins', 'gozer', 'gozer2', 'vamp', 'm', 'n', 'o', 'p', 'q', 'r'];
   const base = powerGame(bosses, [], 2);
   let state: GameState = { ...base, piles: { ...base.piles, draw: ['a1', 'a2', 'a3', 'b1'] } };
   const zombies = allIds(state);
@@ -1685,7 +1698,7 @@ test('no boss or card is ever lost or duplicated, whatever the players do', () =
   const effect = () => 'spawn' as const;
   let choices = 0;
   for (let i = 0; i < 400; i++) {
-    switch (pick(9)) {
+    switch (pick(10)) {
       case 0:
       case 1:
         state = drawCards(state, effect, rng, trigger, powers);
@@ -1711,6 +1724,11 @@ test('no boss or card is ever lost or duplicated, whatever the players do', () =
       case 7:
         state = pick(2) ? undo(state) : shuffleDeck(state, rng);
         break;
+      case 8: {
+        const first = state.piles.bosses?.onBoard[0];
+        if (first) state = removeFromBoard(state, { from: 'board', boss: first.boss }, rng, powers);
+        break;
+      }
       default:
         if (pick(4) === 0) state = reshuffleAll(state, rng);
     }
@@ -1720,16 +1738,16 @@ test('no boss or card is ever lost or duplicated, whatever the players do', () =
   assert.ok(choices > 0, 'the run chose among candidates');
 });
 
-test('a save is version 6: version 5 is rejected, groups drawn by hand and pending choices are kept', () => {
-  const state = manualDraw(step(powerGame(['gozer', 'p', 'q', 'r', 'x'])));
+test('a save is version 7: version 6 is rejected, groups drawn by hand and pending choices are kept', () => {
+  const state = manualDraw(step(powerGame(['gozer', 'p', 'q', 'r', 'x'], [], 1, 'fest')));
   const known = () => new Set(['a1', 'a2', 'a3']);
   const bossIds = () => new Set(['gozer', 'p', 'q', 'r', 'x']);
   const copy = () => JSON.parse(JSON.stringify(state));
-  assert.equal(state.version, 6);
-  assert.equal(newGame(sets, ['a']).version, 6);
+  assert.equal(state.version, 7);
+  assert.equal(newGame(sets, ['a']).version, 7);
   assert.deepEqual(newGame(sets, ['a'], ALL_PARTS, () => 0, 1, 'modern', (cards) => ({ cards, bosses: { rule: 'fest', abomination: ['x'], necromancer: [] } })).piles.bosses?.manual, []);
   assert.ok(isValidSave(copy(), known, bossIds));
-  assert.equal(isValidSave({ ...copy(), version: 5 }, known, bossIds), false, 'the old game is rejected');
+  assert.equal(isValidSave({ ...copy(), version: 6 }, known, bossIds), false, 'the old game is rejected');
   const broken = (change: (bosses: any) => void) => {
     const save = copy();
     change(save.piles.bosses);
@@ -1766,7 +1784,7 @@ test('powers come from the boss lists, and only Modern draws its Abominations by
 test('a Fantasy game has no group fields and nothing drawn by hand', () => {
   const setIds = ['blackPlague', 'greenHorde'];
   let state = newGame(FANTASY_SETS, setIds, ALL_PARTS, () => 0.3, 2, 'fantasy', (cards) => tailorFantasyDeck(cards, DEFAULT_THREAT, new Set(setIds)));
-  assert.equal(state.version, 6);
+  assert.equal(state.version, 7);
   for (let i = 0; i < 60; i++) {
     state = drawCards(state, cardEffect, () => 0.3, fantasyBossTrigger);
     assert.deepEqual(bossesOf(state).manual, []);
@@ -1782,7 +1800,7 @@ const SAVE_COPIES = new Map([...SAVE_BOSSES].map((boss) => [boss, 1]));
 const validSave = (save: unknown) => isValidSave(JSON.parse(JSON.stringify(save)), () => SAVE_CARDS, () => SAVE_BOSSES, () => SAVE_COPIES);
 /** A game in the middle of the Abomination deck: a SPAM and a bringing-along boss, a manual card, a gained pair and a pending choice. */
 const midGame = () => {
-  let state = step(powerGame(['spam', 'bwl', 'x', 'robins', 'gozer', 'p', 'q', 'r', 'y', 'gozer2', 's', 't']));
+  let state = step(powerGame(['spam', 'bwl', 'x', 'robins', 'gozer', 'p', 'q', 'r', 'y', 'gozer2', 's', 't'], [], 1, 'fest'));
   state = manualDraw(manualDraw(state));
   state = chooseGained(state, ['p', 'q']);
   return manualDraw(manualDraw(state));
@@ -1970,7 +1988,8 @@ test('one at a time: a second card calling on the Abomination deck names the bos
   assert.deepEqual(bossesOf(state).revealed.a2, activation('x'));
   assert.deepEqual(bossesOf(state).abomination.draw, ['y']);
   assert.deepEqual(bossCardsOf(state), ['x', 'y']);
-  assert.deepEqual(discardOf(step(state, () => undefined)), ['x']);
+  assert.deepEqual(boardOf(step(state, () => undefined)), ['x']);
+  assert.deepEqual(discardOf(step(state, () => undefined)), []);
   assert.ok(validSave(state));
   assert.deepEqual(undo(state).piles, start.piles);
 });
@@ -1978,7 +1997,7 @@ test('one at a time: a second card calling on the Abomination deck names the bos
 test('the Abomination Fest still draws a boss for every card', () => {
   const state = step(powerGame(['x', 'y'], [], 5, 'fest'), firstTwo);
   assert.deepEqual(bossesOf(state).revealed.a1, { kind: 'abomination', boss: 'x' });
-  assert.deepEqual(bossesOf(state).revealed.a2, { kind: 'abomination', boss: 'y' });
+  assert.deepEqual(bossesOf(state).revealed.a2, { kind: 'abomination', boss: 'y', activated: ['x'] });
 });
 
 test('one at a time, a step dealt one zone at a time names the boss on display too', () => {
@@ -1986,15 +2005,15 @@ test('one at a time, a step dealt one zone at a time names the boss on display t
   const state = next(next(powerGame(['x', 'y'], [], 2)));
   assert.deepEqual(bossesOf(state).revealed.a2, activation('x'));
   assert.deepEqual(bossesOf(state).abomination.draw, ['y']);
-  // A new step starts: x leaves with the old cards.
-  assert.deepEqual(discardOf(next(state)), ['x']);
+  // A new step starts: x goes on the board with the old cards.
+  assert.deepEqual(boardOf(next(state)), ['x']);
 });
 
 test('an Abomination drawn by hand during the step counts as on the board', () => {
   const next = (state: GameState) => drawNextCard(state, undefined, () => 0, firstTwo, powers);
   const during = manualDraw(next(powerGame(['x', 'y', 'z'], [], 2)));
-  assert.deepEqual(bossesOf(during).manual[0], { kind: 'abomination', boss: 'y' });
-  // a1 drew x; the hand draw added y; a2 names the first one on display in zone order.
+  // a1 drew x: the hand draw gives it an Extra Activation instead of drawing; a2 names it too.
+  assert.deepEqual(bossesOf(during).manual[0], activation('x'));
   assert.deepEqual(bossesOf(next(during)).revealed.a2, activation('x'));
   // No boss from the cards yet: the card names the one drawn by hand and draws nothing.
   const base = powerGame(['x', 'y'], [], 2);
@@ -2099,4 +2118,193 @@ test('the ratio of every Fantasy official cut-out is that of its PNG', () => {
     const header = readFileSync(new URL(path, file));
     assert.ok(Math.abs(header.readUInt32BE(16) / header.readUInt32BE(20) - Number(ratio)) < 0.002, `${path}: ratio ${ratio}`);
   }
+});
+
+// Bosses stay on the board across Spawn steps until the players remove them.
+const everyCard: BossTrigger = () => 'abomination';
+const onBoardOf = (state: GameState) => bossesOf(state).onBoard;
+const OUT = (boss: string) => ({ from: 'board', boss }) as const;
+const gone = (state: GameState, card: string, boss: string) => removeFromBoard(state, { from: 'step', card, boss }, () => 0, powers);
+const dropped = (state: GameState, boss: string) => removeFromBoard(state, OUT(boss), () => 0, powers);
+
+test('a boss still alive at the next Spawn step gets the Extra Activation and nothing is drawn', () => {
+  const next = step(step(powerGame(['x', 'y']), firstTwo), firstTwo);
+  assert.deepEqual(onBoardOf(next), [{ kind: 'abomination', boss: 'x' }]);
+  assert.deepEqual(bossesOf(next).revealed.a2, activation('x'));
+  assert.deepEqual(bossesOf(next).abomination.draw, ['y']);
+  assert.deepEqual(discardOf(next), []);
+});
+
+test('a boss removed from the board can be drawn again after a reshuffle', () => {
+  const board = step(step(powerGame(['x']), firstTwo), firstTwo);
+  const removed = dropped(board, 'x');
+  assert.deepEqual(onBoardOf(removed), []);
+  assert.deepEqual(bossesOf(removed).abomination.discard, ['x']);
+  const again = step(removed, everyCard);
+  assert.equal(bossesOf(again).revealed.a3?.boss, 'x');
+  assert.deepEqual(onBoardOf(again), []);
+});
+
+test('a boss removed during its own phase does not go on the board at the next draw', () => {
+  const shown = step(powerGame(['x', 'y']), firstTwo);
+  const removed = gone(shown, 'a1', 'x');
+  assert.deepEqual(bossesOf(removed).abomination.discard, ['x']);
+  assert.deepEqual(bossCardsOf(removed), ['x', 'y']);
+  const next = step(removed, firstTwo);
+  assert.deepEqual(onBoardOf(next), []);
+  assert.deepEqual(bossesOf(next).revealed.a2, { kind: 'abomination', boss: 'y' }, 'nothing alive: the next call draws');
+  assert.deepEqual(bossCardsOf(next), ['x', 'y']);
+});
+
+test('in the Abomination Fest the bosses on the board are never drawn again and all get the Extra Activation', () => {
+  let state: GameState = powerGame(['x', 'y', 'z'], [], 1, 'fest');
+  state = step(step(step(state, everyCard), everyCard), everyCard);
+  assert.deepEqual(onBoardOf(state), [{ kind: 'abomination', boss: 'x' }, { kind: 'abomination', boss: 'y' }]);
+  assert.deepEqual(bossesOf(state).revealed.a3, { kind: 'abomination', boss: 'z', activated: ['x', 'y'] });
+  // The deck is empty: the next card only activates the three that are out.
+  const empty = step(state, everyCard);
+  assert.deepEqual(Object.values(bossesOf(empty).revealed), [{ kind: 'abomination', boss: NO_BOSS, activated: ['x', 'y', 'z'] }]);
+});
+
+test('undo brings a removed boss back', () => {
+  const board = step(step(powerGame(['x', 'y']), firstTwo), firstTwo);
+  const removed = dropped(board, 'x');
+  assert.deepEqual(undo(removed).piles, board.piles);
+  const phase = step(powerGame(['x', 'y']), firstTwo);
+  assert.deepEqual(undo(gone(phase, 'a1', 'x')).piles, phase.piles);
+});
+
+test('reshuffling everything empties the board and the bosses go back in their decks', () => {
+  const board = step(step(powerGame(['x', 'y']), firstTwo), firstTwo);
+  const fresh = reshuffleAll(board, () => 0);
+  assert.deepEqual(onBoardOf(fresh), []);
+  assert.deepEqual([...bossesOf(fresh).abomination.draw].sort(), ['x', 'y']);
+  assert.deepEqual(undo(fresh).piles, board.piles);
+});
+
+test('the Draw an Abomination button gives the Extra Activation to the one on the board, and reveals in the Fest', () => {
+  const board = step(step(powerGame(['x', 'y']), firstTwo), firstTwo);
+  const byHand = manualDraw(board);
+  assert.deepEqual(bossesOf(byHand).manual, [{ kind: 'abomination', boss: NO_BOSS, activates: 'x' }]);
+  assert.deepEqual(bossesOf(byHand).abomination.draw, ['y']);
+  const fest = step(step(powerGame(['x', 'y', 'z'], [], 1, 'fest'), everyCard), everyCard);
+  assert.deepEqual(bossesOf(manualDraw(fest)).manual, [{ kind: 'abomination', boss: 'z', activated: ['x', 'y'] }]);
+  // A boss drawn by hand blocks the next one too, and is named.
+  const first = manualDraw(powerGame(['x', 'y']));
+  assert.deepEqual(bossesOf(manualDraw(first)).manual[1], { kind: 'abomination', boss: NO_BOSS, activates: 'x' });
+});
+
+test('a boss brought along is listed on its own and removed on its own', () => {
+  const board = step(step(powerGame(['bwl', 'x', 'robins']), firstTwo), firstTwo);
+  assert.deepEqual(onBoardOf(board), [{ kind: 'abomination', boss: 'bwl' }, { kind: 'abomination', boss: 'robins' }]);
+  assert.deepEqual(bossesOf(board).revealed.a2, activation('bwl'));
+  const noRobins = dropped(board, 'robins');
+  assert.deepEqual(onBoardOf(noRobins), [{ kind: 'abomination', boss: 'bwl' }]);
+  assert.deepEqual(bossesOf(noRobins).abomination.discard, ['robins']);
+  // During the phase: the Robins removed, Batman stays and arrives on the board alone.
+  const phase = gone(step(powerGame(['bwl', 'x', 'robins']), firstTwo), 'a1', 'robins');
+  assert.deepEqual(bossCardsOf(phase), ['bwl', 'robins', 'x']);
+  assert.deepEqual(onBoardOf(step(phase, firstTwo)), [{ kind: 'abomination', boss: 'bwl' }]);
+});
+
+test('a boss that lets others spawn does not block the next Abomination or give it an Extra Activation', () => {
+  const next = step(step(powerGame(['zuul', 'x', 'y']), firstTwo), firstTwo);
+  assert.deepEqual(onBoardOf(next), [{ kind: 'abomination', boss: 'zuul' }]);
+  assert.deepEqual(bossesOf(next).revealed.a2, { kind: 'abomination', boss: 'x' });
+  assert.equal(manualDraw(next).piles.bosses?.manual.length, 1);
+});
+
+test('a boss that draws another when it dies reveals the next Abomination from its deck', () => {
+  const board = step(step(powerGame(['vamp', 'x']), firstTwo), firstTwo);
+  const dead = dropped(board, 'vamp');
+  assert.deepEqual(bossesOf(dead).manual, [{ kind: 'abomination', boss: 'x' }]);
+  assert.deepEqual(bossesOf(dead).abomination.discard, ['vamp']);
+  assert.deepEqual(onBoardOf(dead), []);
+  assert.deepEqual(onBoardOf(step(dead, firstTwo)), [{ kind: 'abomination', boss: 'x' }]);
+});
+
+test('removing a boss that is nowhere changes nothing', () => {
+  const state = step(powerGame(['x']), firstTwo);
+  assert.equal(dropped(state, 'x'), state);
+  assert.equal(gone(state, 'a2', 'x'), state);
+});
+
+test('a card naming a boss that is removed meanwhile points to another one, or to none', () => {
+  const board = step(step(powerGame(['x', 'y']), firstTwo), firstTwo);
+  const none = dropped(board, 'x');
+  assert.deepEqual(bossesOf(none).revealed.a2, { kind: 'abomination', boss: NO_BOSS, none: true }, 'told apart from every boss being out');
+  const byHand = dropped(manualDraw(board), 'x');
+  assert.deepEqual(bossesOf(byHand).manual, []);
+  assert.ok(validSave(none) && validSave(byHand));
+});
+
+test('a Danger Level change with a boss on the board names it, and giving the call back leaves the board alone', () => {
+  const trigger = callsAt({ a1: ['blue', 'red'], a2: ['red'] });
+  const board = step(step(powerGame(['x', 'y']), trigger), trigger);
+  assert.deepEqual(onBoardOf(board), [{ kind: 'abomination', boss: 'x' }]);
+  const red = setDanger(board, 'red', trigger, () => 0, powers);
+  assert.deepEqual(bossesOf(red).revealed.a2, activation('x'));
+  const blue = setDanger(red, 'blue', trigger, () => 0, powers);
+  assert.equal(bossesOf(blue).revealed.a2, undefined);
+  assert.deepEqual(onBoardOf(blue), [{ kind: 'abomination', boss: 'x' }]);
+  assert.deepEqual(bossCardsOf(blue), ['x', 'y']);
+});
+
+test('the board is saved: a version 6 game is rejected, a boss on the board counts against its copies', () => {
+  const board = step(step(powerGame(['x', 'y']), firstTwo), firstTwo);
+  assert.equal(board.version, 7);
+  assert.ok(validSave(board));
+  assert.equal(validSave({ ...board, version: 6 }), false);
+  const bosses = bossesOf(board);
+  const withBoard = (onBoard: unknown) => validSave({ ...board, piles: { ...board.piles, bosses: { ...bosses, onBoard } } });
+  assert.equal(withBoard([{ kind: 'abomination', boss: 'x' }, { kind: 'abomination', boss: 'x' }]), false, 'x printed once');
+  assert.equal(withBoard([{ kind: 'abomination', boss: 'ghost' }]), false);
+  assert.equal(withBoard([{ kind: 'dragon', boss: 'x' }]), false);
+  assert.equal(withBoard(undefined), false);
+  assert.equal(validSave({ ...board, piles: { ...board.piles, bosses: { ...bosses, abomination: { ...bosses.abomination, draw: ['x'] } } } }), false, 'on the board and in the deck');
+  assert.equal(validSave({ ...board, history: [{ ...board.piles, bosses: { ...bosses, onBoard: undefined } }] }), false, 'history is checked too');
+});
+
+test('a boss that draws another when it dies keeps a SPAM that is all the deck holds', () => {
+  const board = step(step(powerGame(['vamp', 'spam']), firstTwo), firstTwo);
+  const dead = dropped(board, 'vamp');
+  assert.deepEqual(bossCardsOf(dead), ['spam', 'vamp']);
+  assert.deepEqual(bossesOf(dead).manual, [{ kind: 'abomination', boss: NO_DECK, spam: ['spam'] }]);
+  assert.deepEqual([...bossesOf(reshuffleAll(dead, () => 0)).abomination.draw].sort(), ['spam', 'vamp']);
+});
+
+test('a group without boss left to name says so, in both rules', () => {
+  const board = step(step(powerGame(['x']), firstTwo), firstTwo);
+  assert.deepEqual(bossesOf(dropped(board, 'x')).revealed.a2, { kind: 'abomination', boss: NO_BOSS, none: true });
+  // A boss drawn by hand afterwards is named again, and the mark goes.
+  const again = manualDraw(dropped({ ...board, piles: { ...board.piles, bosses: { ...bossesOf(board), abomination: { draw: ['y'], discard: [] } } } }, 'x'));
+  assert.deepEqual(bossesOf(again).revealed.a2, activation('y'));
+  const fest = step(step(powerGame(['x'], [], 1, 'fest'), everyCard), everyCard);
+  assert.deepEqual(bossesOf(fest).revealed.a2, { kind: 'abomination', boss: NO_BOSS, activated: ['x'] });
+  assert.deepEqual(bossesOf(dropped(fest, 'x')).revealed.a2, { kind: 'abomination', boss: NO_BOSS, none: true });
+  assert.ok(validSave(dropped(fest, 'x')));
+  assert.equal(validSave({ ...board, piles: { ...board.piles, bosses: { ...bossesOf(board), revealed: { a2: { kind: 'abomination', boss: 'x', none: true } } } } }), false);
+});
+
+test('in the Fest a boss removed during the step leaves the Extra Activations shown', () => {
+  const state = step(step(powerGame(['x', 'y', 'z'], [], 1, 'fest'), everyCard), everyCard);
+  const removed = dropped(state, 'x');
+  assert.deepEqual(bossesOf(removed).revealed.a2, { kind: 'abomination', boss: 'y' });
+});
+
+test('the Draw an Abomination button still gives the Extra Activation when the deck is empty', () => {
+  const board = step(step(powerGame(['x']), firstTwo), firstTwo);
+  assert.deepEqual(bossesOf(board).abomination, { draw: [], discard: [] });
+  assert.deepEqual(bossesOf(manualDraw(board)).manual, [activation('x')]);
+  const fest = step(step(powerGame(['x'], [], 1, 'fest'), everyCard), everyCard);
+  assert.deepEqual(bossesOf(manualDraw(fest)).manual, [{ kind: 'abomination', boss: NO_BOSS, activated: ['x'] }]);
+  assert.equal(manualDraw(powerGame([])).piles.bosses?.manual.length, 0, 'nothing on the board, nothing to draw');
+});
+
+test('removing a boss present twice on the board removes one copy', () => {
+  const board = step(step(powerGame(['x', 'y']), firstTwo), firstTwo);
+  const twice: GameState = { ...board, piles: { ...board.piles, bosses: { ...bossesOf(board), onBoard: [{ kind: 'abomination', boss: 'x' }, { kind: 'abomination', boss: 'x' }] } } };
+  const once = dropped(twice, 'x');
+  assert.deepEqual(boardOf(once), ['x']);
+  assert.deepEqual(bossesOf(once).abomination.discard, ['x']);
 });

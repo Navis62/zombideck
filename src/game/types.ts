@@ -489,7 +489,21 @@ export type Revealed = {
   choice?: { offered: string[]; keep: number };
   /** Bosses a boss absorbed (Gozer); they leave with it. */
   gained?: string[];
+  /**
+   * Abomination Fest: the bosses of this kind already on the board (and on display) that get an Extra Activation
+   * before this card draws its own. Empty or absent when there were none.
+   */
+  activated?: string[];
+  /**
+   * The group names no boss because none of its kind is left on the board or on display any more (the one it named
+   * was removed): `boss` is empty and `activates`, `activated` are absent. Not the same as every boss being out.
+   */
+  none?: true;
+  /** Bosses of this group (`boss`, `along`, `gained`) the players removed during the Spawn step: they are already in the discard. */
+  gone?: string[];
 };
+/** A boss that stays on the board across Spawn steps until the players remove it. */
+export type BoardBoss = { kind: BossKind; boss: string };
 export const NO_BOSS = '';
 /** `boss` when the game never had a boss of that kind (an empty deck from the start, not an exhausted one). */
 export const NO_DECK = '-';
@@ -499,6 +513,11 @@ export type BossPiles = {
   revealed: Record<string, Revealed>;
   /** Abominations drawn by hand, not by a card: they leave with the next Spawn step. Empty in Fantasy. */
   manual: Revealed[];
+  /**
+   * The bosses of the earlier Spawn steps still alive, oldest first, each on its own (a boss brought along or
+   * absorbed is listed apart from its leader). They are in no deck: removing one sends it to the discard of its deck.
+   */
+  onBoard: BoardBoss[];
 };
 /** Dead Men Tales: one Abomination at a time (the one on the board gets an Extra Activation), or the Abomination Fest. */
 export type BossRule = 'oneAtATime' | 'fest';
@@ -514,7 +533,7 @@ export type Piles = {
 };
 
 export type GameState = {
-  version: 6;
+  version: 7;
   /** Boss decks in play and how their bosses arrive; `null`: the bosses are cards of the Zombie deck. */
   bossRule: BossRule | null;
   /** The game's era: its sets, its cards and the menu it is resumed from. */

@@ -266,7 +266,16 @@ export type Reveal = {
   choosing?: boolean;
   /** The boss already in play that a card calling the same deck activates again instead of drawing (`boss` is then empty). */
   activates?: string;
+  /** The boss an Extra Activation named was removed and none of its kind is left (`boss` is then empty). */
+  none?: true;
+  /** Abomination Fest: the bosses already in play that get an Extra Activation before this one arrives. */
+  activated?: readonly string[];
+  /** Bosses of this group the players have removed from the board (the card is greyed out when its own boss is one). */
+  gone?: readonly string[];
 };
+
+/** The boss a group shows has been removed by the players. */
+export const isGone = (reveal?: Reveal): boolean => !!reveal && isBoss(reveal) && !!reveal.gone?.includes(reveal.boss);
 
 /**
  * Longest text, in characters of the translated string, a card keeps under its picture. Longer, it goes to the back.
@@ -398,9 +407,13 @@ const revealedName = (reveal?: Reveal): BossName | undefined => (reveal && isBos
 function noBossText(reveal: Reveal, t: Translate): string {
   const isNecromancer = reveal.kind === 'necromancer';
   if (reveal.boss === NO_DECK) return t(isNecromancer ? 'boss.necromancerNoDeck' : 'boss.abominationNoDeck');
+  if (reveal.none) return t(isNecromancer ? 'boss.necromancerNoneLeft' : 'boss.abominationNoneLeft');
   if (reveal.activates !== undefined) return t(isNecromancer ? 'boss.necromancerActivates' : 'boss.abominationActivates', { name: isBossName(reveal.activates) ? t(`zombie.${reveal.activates}.one`) : reveal.activates });
   return t(isNecromancer ? 'boss.necromancerNone' : 'boss.abominationNone');
 }
+
+/** The name of a boss as written in a sentence (an id the decks do not know is written as it is). */
+const bossTitle = (id: string, t: Translate) => (isBossName(id) ? t(`zombie.${id}.one`) : id);
 
 /** A modern Abomination with its rule, as written under a card: "Gozer: When Gozer spawns...". */
 const ruleLine = (id: string, t: Translate) => (isModernAbomination(id) ? `${t(`zombie.${id}.one`)}: ${t(`card.${id}Rule`)}` : undefined);
@@ -414,9 +427,15 @@ function groupLines(reveal: Reveal, t: Translate): { before: string[]; after: st
   const bossName = isModernAbomination(reveal.boss) ? t(`zombie.${reveal.boss}.one`) : '';
   const along = named(reveal.along);
   const gained = named(reveal.gained);
+  // Without a new boss to arrive the card already says that every boss in play gets its Extra Activation.
+  const activated = (isBoss(reveal) ? reveal.activated ?? [] : []).map((id) => bossTitle(id, t));
   return {
-    before: named(reveal.spam),
+    before: [
+      ...named(reveal.spam),
+      ...(activated.length > 0 ? [t('boss.activatedThen', { names: activated.join(', ') })] : []),
+    ],
     after: [
+      ...(reveal.gone ?? []).map((id) => `${bossTitle(id, t)}: ${t('boss.gone')}`),
       ...(along.length > 0 ? [t('boss.along'), ...along] : []),
       ...(gained.length > 0 ? [t('boss.gained', { name: bossName }), ...gained] : []),
       ...(reveal.choosing ? [t('boss.tapToChoose')] : []),
@@ -1610,7 +1629,9 @@ function revealedText(
   const rule = isNecromancer ? 'boss.necromancer' : reveal.rule === 'fest' ? 'boss.abominationFest' : 'boss.abomination';
   // A Necromancer card already reads as the Necromancer it revealed, its rule included.
   const own = withRule && ruled(boss) ? ` ${t(`card.${boss}Rule`)}` : '';
-  return { ...text, footer: `${t(rule, { name })}${own}` };
+  // With the bosses in play named ("Extra Activation for X, then:" comes from groupLines), only the new one is left to say.
+  const intro = reveal.rule === 'fest' && reveal.activated?.length ? name : t(rule, { name });
+  return { ...text, footer: `${intro}${own}` };
 }
 
 /**
