@@ -180,7 +180,7 @@ const FANTASY_OFFICIAL = {
   bishamon: { source: require('../../assets/fantasy/abominations/bishamon-official.png'), ratio: 0.694, cutout: true },
   deathNotes: { source: require('../../assets/fantasy/necromancers/death-notes-official.png'), ratio: 0.864, cutout: true },
   fantasyBerserkerWalker: { source: require('../../assets/fantasy/zombies/fantasy-berserker-walker-official.png'), ratio: 0.539, cutout: true },
-  grandVizier: { source: require('../../assets/fantasy/necromancers/grand-vizier-official.png'), ratio: 0.854, cutout: true },
+  grandVizier: { source: require('../../assets/fantasy/necromancers/grand-vizier-official.png'), ratio: 0.855, cutout: true },
   theSparrow: { source: require('../../assets/fantasy/necromancers/the-sparrow-official.png'), ratio: 0.51, cutout: true },
   npcWalker: { source: require('../../assets/fantasy/zombies/npc-walker-snow-white-official.png'), ratio: 0.735, cutout: true },
   npcWalkerBishop: { source: require('../../assets/fantasy/zombies/npc-walker-bishop-official.png'), ratio: 0.628, cutout: true },
