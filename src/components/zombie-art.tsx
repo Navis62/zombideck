@@ -106,9 +106,6 @@ const MODERN_ART: Record<ZombieType | 'trejo' | 'spam' | NamedModernAbomination,
 };
 
 const FANTASY_ART = {
-  crowz: require('../../assets/fantasy/zombies/crowz-cartoon.jpg'),
-  feralDragon: require('../../assets/fantasy/abominations/feral-dragon-cartoon.jpg'),
-  necromanticDragon: require('../../assets/fantasy/abominations/necromantic-dragon-cartoon.jpg'),
   eeWalker: require('../../assets/fantasy/zombies/ee-walker-cartoon.jpg'),
   eeRunner: require('../../assets/fantasy/zombies/ee-runner-cartoon.jpg'),
   eeBrute: require('../../assets/fantasy/zombies/ee-brute-cartoon.jpg'),
@@ -143,6 +140,9 @@ type OfficialArt = {
  * marks a transparent PNG.
  */
 const FANTASY_OFFICIAL = {
+  necromanticDragon: { source: require('../../assets/fantasy/abominations/necromantic-dragon-official.png'), ratio: 0.702, cutout: true },
+  feralDragon: { source: require('../../assets/fantasy/abominations/feral-dragon-official.png'), ratio: 0.807, cutout: true },
+  crowz: { source: require('../../assets/fantasy/zombies/crowz-official.png'), ratio: 1.486, cutout: true },
   pharaohEddie: { source: require('../../assets/fantasy/abominations/pharaoh-eddie-official.png'), ratio: 1.603, cutout: true },
   fearEddie: { source: require('../../assets/fantasy/abominations/fear-eddie-official.png'), ratio: 1.249, cutout: true },
   reaperEddie: { source: require('../../assets/fantasy/necromancers/reaper-eddie-official.png'), ratio: 0.743, cutout: true },

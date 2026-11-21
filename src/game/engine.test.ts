@@ -2081,15 +2081,12 @@ test('a save with an Extra Activation naming a boss that is not on display is re
   assert.equal(validSave({ ...state, version: 5 }), false, 'a version 5 game is rejected');
 });
 
-test('every artwork zombie-art.tsx requires exists, and the cropped dragons stay unwired', () => {
+test('every artwork zombie-art.tsx requires exists', () => {
   const file = new URL('../components/zombie-art.tsx', import.meta.url);
   const source = readFileSync(file, 'utf8');
   const paths = [...source.matchAll(/require\('(\.\.\/\.\.\/assets\/[^']+)'\)/g)].map((match) => match[1]);
   assert.ok(paths.length > 100, 'the art tables were not found');
   for (const path of paths) assert.ok(existsSync(new URL(path, file)), `missing file ${path}`);
-  // Cropped by the edge of their source page: kept out until redone.
-  assert.ok(!source.includes('feral-dragon-official'));
-  assert.ok(!source.includes('necromantic-dragon-official'));
 });
 
 test('the ratio of every Fantasy official cut-out is that of its PNG', () => {

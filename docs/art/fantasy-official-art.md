@@ -18,7 +18,7 @@ Replaces the original cartoon illustrations of the Fantasy universe (`FANTASY_AR
 | wolfbomination | done | rulebook "Wulfsburg" p.23, embedded image xref 1592 (RGBA) | assets/fantasy/abominations/wolfbomination-official.png | native alpha, native resolution |
 | npcWalker | done | [Promo NPC](https://www.zombicide.com/pg/promo-npc/) | assets/fantasy/zombies/npc-walker-*-official.png | Snow White, Bishop and Headless cutouts selected by card number. |
 | deadeyeWalker | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2016/04/fDeadeye-B.webp (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/deadeye-walkers-2/) | assets/fantasy/zombies/deadeye-walker-official.png | red background residue removed with local masks. |
-| crowz | to do | Rules - Murder of Crowz.pdf (header illustration on a flattened scan) |  |  |
+| crowz | done | Zombicide wiki (fandom), MurderOfCrowz_MC.png (official render, transparent) | zombies/crowz-official.png | 1902x1280, native alpha |
 | taintedWalker | done | rulebook "Friends and Foes" p.5, embedded image xref 541 (RGBA) | assets/fantasy/zombies/tainted-walker-official.png | native alpha, native resolution |
 | taintedAbomination | done | rulebook "Friends and Foes" p.7, embedded image xref 895 (RGBA) | assets/fantasy/abominations/tainted-abomination-official.png | native alpha, native resolution |
 | ablobination | done | rulebook "Zombie Bosses" p.4, embedded image xref 102 (RGBA) | assets/fantasy/abominations/ablobination-official.png | native alpha, native resolution |
@@ -35,7 +35,7 @@ Replaces the original cartoon illustrations of the Fantasy universe (`FANTASY_AR
 | vaultWarden | done | rulebook "Horde Box" p.9, embedded image xref 734 (RGBA) | assets/fantasy/abominations/vault-warden-official.png | native alpha, native resolution |
 | werezombie | done | rulebook "Horde Box" p.11, embedded image xref 898 (RGBA) | assets/fantasy/abominations/werezombie-official.png | native alpha, native resolution |
 | chromatiz | done | rulebook "Horde Box" p.8, embedded image xref 612 (RGBA) | assets/fantasy/abominations/chromatiz-official.png | native alpha, native resolution |
-| feralDragon | done | rulebook "Horde Box" p.3, embedded image xref 147 (RGBA) | assets/fantasy/abominations/feral-dragon-official.png | CROPPED at the page edge (wing runs off): do not use, needs another source |
+| feralDragon | done | Zombicide wiki (fandom), FeralDragon.png (official render, transparent) | abominations/feral-dragon-official.png | 1033x1280, native alpha |
 | countTemeraire | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2019/05/fCountTemeraire.webp (gallery https://www.zombicide.com/zombicide-fantasy-promo-zombies/, page /pg/count-temeraire/) | assets/fantasy/necromancers/count-temeraire-official.png | red background residue cleaned up with local masks. |
 | queenSevera | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2019/05/fSevera.webp (gallery https://www.zombicide.com/zombicide-fantasy-promo-zombies/, page /pg/queen-severa/) | assets/fantasy/necromancers/queen-severa-official.png | red background residue cleaned up with local masks. |
 | abominalpha | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2016/04/fAbominalpha.webp (gallery https://www.zombicide.com/zombicide-fantasy-promo-zombies/, page /pg/abominalpha/) | assets/fantasy/abominations/abominalpha-official.png | red background residue removed with local masks. |
@@ -54,7 +54,7 @@ Replaces the original cartoon illustrations of the Fantasy universe (`FANTASY_AR
 | ratz | done | rulebook "Rat King & Swamp Troll" p.2, embedded image xref 31 (RGBA) | assets/fantasy/zombies/ratz-official.png | native alpha, native resolution |
 | ratKing | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2019/04/fRat-King.webp (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/rat-king/) | assets/fantasy/necromancers/rat-king-official.png | red background residue cleaned up with local masks. |
 | swampTroll | done | rulebook "Rat King & Swamp Troll" p.3, embedded image xref 64 (RGBA) | assets/fantasy/abominations/swamp-troll-official.png | native alpha, native resolution |
-| necromanticDragon | done | rulebook "No Rest for the Wicked" p.3, embedded image xref 189 (RGBA) | assets/fantasy/abominations/necromantic-dragon-official.png | CROPPED at the page edge (wing runs off): do not use, needs another source |
+| necromanticDragon | done | Zombicide wiki (fandom), NecromanticDragon.png (official render, transparent) | abominations/necromantic-dragon-official.png | 899x1280, native alpha |
 | wdWalker | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2026/07/fWalkers-WD-1.webp (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/walker-white-death/) | assets/fantasy/zombies/wd-walker-official.png | red background residue removed with local masks. left figure of 2 |
 | wdRunner | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2026/07/fRunners-WD.webp (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/runner-white-death/) | assets/fantasy/zombies/wd-runner-official.png | red background residue removed with local masks. left figure of 2 |
 | wdBrute | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2026/07/fBrute-WD-1-1.webp (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/brute-white-death/) | assets/fantasy/zombies/wd-brute-official.png | red background residue removed with local masks. |
@@ -136,7 +136,7 @@ Replaces the original cartoon illustrations of the Fantasy universe (`FANTASY_AR
 
 ## Known issues
 
-- `feral-dragon` and `necromantic-dragon`: both renders are cropped by the page edge (a wing runs off); the web banners are cropped the same way. Another source or a photo of the printed card is needed.
+- `feral-dragon` and `necromantic-dragon`: the rulebook and web renders were cropped by the page edge; both now come from the complete transparent renders of the Zombicide wiki (FeralDragon.png, NecromanticDragon.png).
 - Web cut-outs keep a few red floor splashes at the feet and tiny chain tips at the very bottom; Faolan (translucent) and Khan (legs) are incomplete; Terrorcotta has a blood patch. Candidates for a hand touch-up.
 - Abominatroll (Zombie Bosses p.3) is as printed (contorted pose).
 
