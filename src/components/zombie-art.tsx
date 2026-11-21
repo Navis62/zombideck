@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 
+import { FANTASY_PARTS } from '@/components/fantasy-parts';
 import { FANTASY_COLORS } from '@/theme';
 import type { FantasyNecromancer, FantasyZombie, InvaderAbomination, InvaderXeno, ModernCard, NamedModernAbomination, WesternAbomination, WesternCard, WesternZombie, ZombieType } from '@/game/types';
 
@@ -488,11 +489,14 @@ export function ZombieFigure({
   subject,
   anchor = 'center',
   silhouette,
+  backdrop,
 }: {
   subject: ArtSubject;
   anchor?: 'center' | 'top' | 'upper' | 'full' | 'fill' | 'whole';
   /** A faded stamp of the zombie (a Danger Level row): a cut-out is tinted, a drawing keeps its colours. */
   silhouette?: boolean;
+  /** Lay a Fantasy cut-out on the backdrop of the Fantasy cards (carousel, menu), where nothing else is behind it. */
+  backdrop?: boolean;
 }) {
   const [width, setWidth] = useState(0);
   const official = officialOf(subject);
@@ -500,7 +504,16 @@ export function ZombieFigure({
   if (anchor === 'whole' && !official?.cutout) anchor = 'center';
   const source = official?.source ?? (isWesternBoss(subject) ? WESTERN_WINDOWS[subject].source : ART[subject]);
   // A cut-out has no border to crop and sits on whatever is behind it.
-  if (official?.cutout) return <Cutout art={official} anchor={anchor} silhouette={silhouette} />;
+  if (official?.cutout) {
+    const cutout = <Cutout art={official} anchor={anchor} silhouette={silhouette} />;
+    if (!backdrop || !FANTASY_PARTS.artBackground) return cutout;
+    return (
+      <>
+        <Image source={FANTASY_PARTS.artBackground} style={styles.fullFigure} resizeMode="cover" />
+        {cutout}
+      </>
+    );
+  }
   // The Western heroes are cut for their panel: cover, whatever its shape.
   if ((isWesternBoss(subject) || subject in WESTERN_HEROES) && anchor !== 'full') return <Image source={source} style={styles.fullFigure} resizeMode="cover" />;
   // The official Invader pictures are framed renders, not cut-outs: they cover their panel too (carousel, menu).
