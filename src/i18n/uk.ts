@@ -300,7 +300,7 @@ export const uk: Record<TranslationKey, string> = {
   'about.title': 'Про застосунок',
   'about.version': 'Версія {v}',
   'about.disclaimer': 'Фанатський неофіційний проєкт. Zombicide — торговельна марка CMON Global Limited; застосунок не пов’язаний із CMON і не схвалений нею. Вам потрібен власний примірник гри: застосунок замінює лише колоду появи зомбі.',
-  'about.artwork': 'Ілюстрації всесвіту Western і офіційні ілюстрації Invader (Xenos, Abominations, сорочка карт) © CMON Global Limited, використані в цьому некомерційному фанатському застосунку. Ілюстрації Modern і Fantasy та рамки карт Invader оригінальні.',
+  'about.artwork': 'Ілюстрації всесвіту Western, офіційні ілюстрації Invader (Xenos, Abominations, сорочка карт) та офіційні ілюстрації Fantasy (зомбі, Потвори, Некроманти) © CMON Global Limited, використані в цьому некомерційному фанатському застосунку. Ілюстрації Modern, рамки карт Invader і Fantasy та зображення Fantasy без офіційного рендера оригінальні.',
   'about.privacy': 'Політика конфіденційності',
   'about.privacyDetail': 'Особисті дані не збираються.',
   'about.report': 'Повідомити про помилку',

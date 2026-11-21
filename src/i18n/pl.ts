@@ -302,7 +302,7 @@ export const pl: Record<TranslationKey, string> = {
   'about.title': 'O aplikacji',
   'about.version': 'Wersja {v}',
   'about.disclaimer': 'Nieoficjalna aplikacja fanowska. Zombicide jest znakiem towarowym CMON Global Limited; ta aplikacja nie jest powiązana z CMON ani przez nią zatwierdzona. Potrzebujesz własnego egzemplarza gry: aplikacja zastępuje tylko talię zombie.',
-  'about.artwork': 'Ilustracje uniwersum Western oraz oficjalne ilustracje Invader (Xenos, Abominations, rewers kart) © CMON Global Limited, użyte w tej niekomercyjnej aplikacji fanowskiej. Ilustracje Modern i Fantasy oraz ramki kart Invader są oryginalne.',
+  'about.artwork': 'Ilustracje uniwersum Western, oficjalne ilustracje Invader (Xenos, Abominations, rewers kart) i oficjalne ilustracje Fantasy (zombie, Abominacje, Nekromanci) © CMON Global Limited, użyte w tej niekomercyjnej aplikacji fanowskiej. Ilustracje Modern, ramki kart Invader i Fantasy oraz obrazy Fantasy bez oficjalnego renderu są oryginalne.',
   'about.privacy': 'Polityka prywatności',
   'about.privacyDetail': 'Nie zbieramy żadnych danych osobowych.',
   'about.report': 'Zgłoś błąd',

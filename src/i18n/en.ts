@@ -300,7 +300,7 @@ export const en: Record<TranslationKey, string> = {
   'about.title': 'About',
   'about.version': 'Version {v}',
   'about.disclaimer': 'Fan-made and unofficial. Zombicide is a trademark of CMON Global Limited; this app is not affiliated with or endorsed by CMON. You need your own copy of the game: the app only replaces the zombie spawn deck.',
-  'about.artwork': 'Artwork of the Western universe and official Invader artwork (Xenos, Abominations, card back) © CMON Global Limited, used in this non-commercial fan app. The Modern and Fantasy artwork and the Invader card frames are original.',
+  'about.artwork': 'Artwork of the Western universe, official Invader artwork (Xenos, Abominations, card back) and official Fantasy artwork (zombies, Abominations, Necromancers) © CMON Global Limited, used in this non-commercial fan app. The Modern artwork, the Invader and Fantasy card frames and the Fantasy pictures without an official render are original.',
   'about.privacy': 'Privacy policy',
   'about.privacyDetail': 'No personal data collected.',
   'about.report': 'Report a mistake',

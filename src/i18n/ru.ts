@@ -302,7 +302,7 @@ export const ru: Record<TranslationKey, string> = {
   'about.title': 'О приложении',
   'about.version': 'Версия {v}',
   'about.disclaimer': 'Неофициальное фанатское приложение. Zombicide — товарный знак CMON Global Limited; приложение не связано с CMON и не одобрено ею. Нужна своя копия игры: приложение заменяет только колоду зомби.',
-  'about.artwork': 'Иллюстрации вселенной Western и официальные иллюстрации Invader (Xenos, Abominations, рубашка карт) © CMON Global Limited, использованы в этом некоммерческом фанатском приложении. Иллюстрации Modern и Fantasy и рамки карт Invader оригинальные.',
+  'about.artwork': 'Иллюстрации вселенной Western, официальные иллюстрации Invader (Xenos, Abominations, рубашка карт) и официальные иллюстрации Fantasy (зомби, Отродья, Некроманты) © CMON Global Limited, использованы в этом некоммерческом фанатском приложении. Иллюстрации Modern, рамки карт Invader и Fantasy и изображения Fantasy без официального рендера оригинальные.',
   'about.privacy': 'Политика конфиденциальности',
   'about.privacyDetail': 'Персональные данные не собираются.',
   'about.report': 'Сообщить об ошибке',

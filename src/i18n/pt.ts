@@ -300,7 +300,7 @@ export const pt: Record<TranslationKey, string> = {
   'about.title': 'Sobre',
   'about.version': 'Versão {v}',
   'about.disclaimer': 'Aplicativo de fã, não oficial. Zombicide é uma marca da CMON Global Limited; este aplicativo não é afiliado nem endossado pela CMON. Você precisa ter o jogo: o aplicativo só substitui o baralho de zumbis.',
-  'about.artwork': 'Ilustrações do universo Western e ilustrações oficiais de Invader (Xenos, Abominações, verso das cartas) © CMON Global Limited, usadas neste aplicativo de fã sem fins lucrativos. As ilustrações de Modern e Fantasy e as molduras das cartas de Invader são originais.',
+  'about.artwork': 'Ilustrações do universo Western, ilustrações oficiais de Invader (Xenos, Abominações, verso das cartas) e ilustrações oficiais de Fantasy (zumbis, Abominações, Necromantes) © CMON Global Limited, usadas neste aplicativo de fã sem fins lucrativos. As ilustrações de Modern, as molduras das cartas de Invader e Fantasy e as imagens de Fantasy sem render oficial são originais.',
   'about.privacy': 'Política de privacidade',
   'about.privacyDetail': 'Nenhum dado pessoal é coletado.',
   'about.report': 'Informar um erro',
