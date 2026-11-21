@@ -1643,8 +1643,8 @@ function bigLevel(card: FantasyCard, danger: DangerLevel, reveal: Reveal | undef
   return { subject, label, value: line.value, horde: feedsHorde(card, level) };
 }
 
-/** The red smoke behind the picture of a special card: the part, or a flat dark red while it is absent. */
-function FantasySmoke() {
+/** Shared backdrop for Fantasy figures. */
+function FantasyBackdrop() {
   return FANTASY_PARTS.artBackground ? <Image source={FANTASY_PARTS.artBackground} style={FILL} resizeMode="cover" /> : <View style={[FILL, { backgroundColor: FANTASY_COLORS.smokeDark }]} />;
 }
 
@@ -1653,7 +1653,7 @@ function FantasyPicture({ subject, style, lowered }: { subject: ArtSubject; styl
   const { styles } = useContext(CardStyle);
   return (
     <View style={style}>
-      <FantasySmoke />
+      <FantasyBackdrop />
       {/* On a full-height picture the head starts under the number bar, not behind it. */}
       <View style={lowered ? styles.fantasyFigureLowered : StyleSheet.absoluteFill}>
         <ZombieFigure subject={subject} anchor="upper" />
@@ -1915,6 +1915,7 @@ function FantasyRow(props: {
       <View style={styles.fantasyRow}>
         {rowPaper}
         <View style={styles.fantasyLargeFigure}>
+          <FantasyBackdrop />
           <ZombieFigure subject={props.subject} anchor="whole" />
         </View>
         <View style={styles.fantasyTag}>
@@ -1931,6 +1932,7 @@ function FantasyRow(props: {
       <FantasyFlame level={props.level} />
       {props.subject && (
         <View style={styles.fantasySilhouette}>
+          <FantasyBackdrop />
           <ZombieFigure subject={props.subject} anchor="full" silhouette />
         </View>
       )}
@@ -2007,7 +2009,7 @@ function makeStyles(s: number) {
     // The flame: a third of the strip, low on its left, under the text.
     fantasyFlame: { position: 'absolute', left: 0, bottom: 0, width: FANTASY_FLAME_WIDTH, aspectRatio: FANTASY_FLAME_RATIO },
     // The faded zombie stamp on the right of a strip, and the large picture of the one-row mode.
-    fantasySilhouette: { position: 'absolute', right: '1.5%', width: '22%', top: '6%', bottom: '6%' },
+    fantasySilhouette: { position: 'absolute', right: '1.5%', width: '22%', top: '6%', bottom: '6%', overflow: 'hidden' },
     // The one big row: the zombie takes the left two thirds, whole; the tag on the right edge keeps clear of it.
     fantasyLargeFigure: { position: 'absolute', left: 0, top: 0, bottom: 0, width: '64%', overflow: 'hidden' },
     fantasyTag: { position: 'absolute', right: '2%', bottom: '12%', width: '35%', alignItems: 'center', paddingHorizontal: 3 * s, paddingTop: 5 * s, paddingBottom: 7 * s, backgroundColor: FANTASY_COLORS.row, borderWidth: 1 * s, borderColor: FANTASY_COLORS.rowEdge, overflow: 'hidden' },
