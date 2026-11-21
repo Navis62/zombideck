@@ -817,7 +817,7 @@ test('the fantasy deck keeps the core Abominations and Necromancers, the named b
   assert.deepEqual(deck.bosses?.abomination, [
     'fantasyAbomination', 'orcAbomination', 'taintedAbomination', 'wolfbomination',
     'ablobination', 'abominatroll', 'abominotaur', 'gorgomination', 'hordeBrother', 'siegeBreaker', 'swampLurker',
-    'magentaCovefe', 'vaultWarden', 'werezombie', 'chromatiz', 'feralDragon', 'zombieGiant',
+    'magentaCovfefe', 'vaultWarden', 'werezombie', 'chromatiz', 'feralDragon', 'zombieGiant',
   ]);
   // Every other card stays: only the named bosses leave the Zombie deck, Fatty Bursters stay.
   assert.equal(deck.cards.length, all.length - 2 - 12 - 54 + 6 - 12);

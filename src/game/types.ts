@@ -176,7 +176,7 @@ export type NamedAbomination =
   | 'siegeBreaker'
   | 'swampLurker'
   | 'abominabunny'
-  | 'magentaCovefe'
+  | 'magentaCovfefe'
   | 'vaultWarden'
   | 'werezombie'
   | 'chromatiz'

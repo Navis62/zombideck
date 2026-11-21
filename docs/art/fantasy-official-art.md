@@ -31,7 +31,7 @@ Replaces the original cartoon illustrations of the Fantasy universe (`FANTASY_AR
 | siegeBreaker | done | rulebook "Horde Box" p.10, embedded image xref 810 (RGBA) | assets/fantasy/abominations/siege-breaker-official.png | native alpha, native resolution |
 | swampLurker | done | rulebook "Horde Box" p.10, embedded image xref 814 (RGBA) | assets/fantasy/abominations/swamp-lurker-official.png | native alpha, native resolution |
 | abominabunny | done | rulebook "Horde Box" p.7, embedded image xref 536 (RGBA) | assets/fantasy/abominations/abominabunny-official.png | small (255x221) |
-| magentaCovefe | done | rulebook "Horde Box" p.11, embedded image xref 894 (RGBA) | assets/fantasy/abominations/magenta-covefe-official.png | native alpha, native resolution |
+| magentaCovfefe | done | rulebook "Horde Box" p.11, embedded image xref 894 (RGBA) | assets/fantasy/abominations/magenta-covfefe-official.png | native alpha, native resolution |
 | vaultWarden | done | rulebook "Horde Box" p.9, embedded image xref 734 (RGBA) | assets/fantasy/abominations/vault-warden-official.png | native alpha, native resolution |
 | werezombie | done | rulebook "Horde Box" p.11, embedded image xref 898 (RGBA) | assets/fantasy/abominations/werezombie-official.png | native alpha, native resolution |
 | chromatiz | done | rulebook "Horde Box" p.8, embedded image xref 612 (RGBA) | assets/fantasy/abominations/chromatiz-official.png | native alpha, native resolution |

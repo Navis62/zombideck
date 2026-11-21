@@ -52,7 +52,7 @@ export const ABOMINATION_BOSSES: readonly Boss[] = [
   { zombie: 'siegeBreaker', setId: 'hordeBox' },
   { zombie: 'swampLurker', setId: 'hordeBox' },
   { zombie: 'abominabunny', setId: 'hordeBox' },
-  { zombie: 'magentaCovefe', setId: 'hordeBox' },
+  { zombie: 'magentaCovfefe', setId: 'hordeBox' },
   { zombie: 'vaultWarden', setId: 'hordeBox' },
   { zombie: 'werezombie', setId: 'hordeBox' },
   { zombie: 'chromatiz', setId: 'hordeBox' },

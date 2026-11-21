@@ -197,7 +197,7 @@ const FANTASY_OFFICIAL = {
   gorgomination: { source: require('../../assets/fantasy/abominations/gorgomination-official.png'), ratio: 1.042, cutout: true },
   hordeBrother: { source: require('../../assets/fantasy/abominations/horde-brother-official.png'), ratio: 0.642, cutout: true },
   khanAbomination: { source: require('../../assets/fantasy/abominations/khan-abomination-official.png'), ratio: 1.035, cutout: true },
-  magentaCovefe: { source: require('../../assets/fantasy/abominations/magenta-covefe-official.png'), ratio: 0.69, cutout: true },
+  magentaCovfefe: { source: require('../../assets/fantasy/abominations/magenta-covfefe-official.png'), ratio: 0.69, cutout: true },
   orcAbomination: { source: require('../../assets/fantasy/abominations/orc-abomination-official.png'), ratio: 0.807, cutout: true },
   siegeBreaker: { source: require('../../assets/fantasy/abominations/siege-breaker-official.png'), ratio: 1.14, cutout: true },
   swampLurker: { source: require('../../assets/fantasy/abominations/swamp-lurker-official.png'), ratio: 0.914, cutout: true },
@@ -457,7 +457,7 @@ const UPPER_OFFSETS: Partial<Record<ArtSubject, number>> = {
   chromatiz: 0.04,
   ablobination: 0.15,
   swampLurker: 0.18,
-  magentaCovefe: 0.18,
+  magentaCovfefe: 0.18,
 };
 
 /**
