@@ -41,9 +41,9 @@ Replaces the original cartoon illustrations of the Fantasy universe (`FANTASY_AR
 | abominalpha | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2016/04/fAbominalpha.webp (gallery https://www.zombicide.com/zombicide-fantasy-promo-zombies/, page /pg/abominalpha/) | assets/fantasy/abominations/abominalpha-official.png | red background residue removed with local masks. |
 | abominarat | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2016/04/fAbominarat.webp (gallery https://www.zombicide.com/zombicide-fantasy-promo-zombies/, page /pg/abominarat/) | assets/fantasy/abominations/abominarat-official.png | red background residue removed with local masks. |
 | toMeKuPa | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2016/04/fToMeKuPa.webp (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/to-me-ku-pa/) | assets/fantasy/necromancers/to-me-ku-pa-official.png | red background residue cleaned up with local masks. |
-| blackheart | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| blackheart | done | Zombicide wiki (fandom), TheBlackheart.png (official render, transparent) | necromancers/blackheart-official.png | 895x1280, native alpha |
 | ostokar | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2016/04/fOstokar.webp (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/ostokar-the-pale/) | assets/fantasy/necromancers/ostokar-official.png | red background residue cleaned up with local masks. |
-| evilTroy | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| evilTroy | done | Zombicide wiki (fandom), EvilTroy.png (official render, transparent) | necromancers/evil-troy-official.png | 718x840, native alpha |
 | queenMedea | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2016/04/fMedea.webp (gallery https://www.zombicide.com/zombicide-fantasy-promo-zombies/, page /pg/queen-medea/) | assets/fantasy/necromancers/queen-medea-official.png | red background residue cleaned up with local masks. |
 | grin | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2016/04/fGrin-Necromancer.webp (gallery https://www.zombicide.com/zombicide-fantasy-promo-zombies/, page /pg/grin/) | assets/fantasy/necromancers/grin-official.png | red background residue cleaned up with local masks. |
 | erikSummoner | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2019/05/fErik.webp (gallery https://www.zombicide.com/zombicide-fantasy-promo-zombies/, page /pg/erik-the-summoner/) | assets/fantasy/necromancers/erik-summoner-official.png | red background residue cleaned up with local masks. |
@@ -66,57 +66,57 @@ Replaces the original cartoon illustrations of the Fantasy universe (`FANTASY_AR
 | godEaterAbomination | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2026/07/fGodEaterAbomination.webp (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/god-eater-abomination/) | assets/fantasy/abominations/god-eater-abomination-official.png | red background residue removed with local masks. the banner top cuts the figure |
 | amaterasu | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
 | asura | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| bishamon | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| bishamon | done | Zombicide wiki (fandom), Bishamon_FR.png (official render, transparent) | abominations/bishamon-official.png | 732x1055, native alpha |
 | chimimoryo | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| hachiman | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| kijin | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| kumiho | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| nian | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| hachiman | done | Zombicide wiki (fandom), Hachiman_FR.png (official render, transparent) | abominations/hachiman-official.png | 459x658, native alpha |
+| kijin | done | Zombicide wiki (fandom), Kijin_FR.png (official render, transparent) | abominations/kijin-official.png | 1120x925, native alpha |
+| kumiho | done | Zombicide wiki (fandom), Kumiho_FR.png (official render, transparent) | abominations/kumiho-official.png | 967x814, native alpha |
+| nian | done | Zombicide wiki (fandom), Nian_FR.png (official render, transparent) | abominations/nian-official.png | 783x633, native alpha |
 | qilin | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
 | redHare | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
 | shakokiDogu | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
 | sojobo | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| susanoWo | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| susanoWo | done | Zombicide wiki (fandom), SusanoWo_FR.png (official render, transparent) | abominations/susano-wo-official.png | 701x1037, native alpha |
 | takemikazuchi | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| toyol | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| yeti | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| bomoh | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| deathNotes | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| hannya | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| kaguya | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| tengu | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| yukiOnna | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| fantasyBerserkerWalker | to do | Rules - Berserker Walkers.pdf p.1 (inset on a flattened scan, about 300 px) |  |  |
+| toyol | done | Zombicide wiki (fandom), Toyol_FR.png (official render, transparent) | abominations/toyol-official.png | 339x416, native alpha |
+| yeti | done | Zombicide wiki (fandom), Yeti_FR.png (official render, transparent) | abominations/yeti-official.png | 519x856, native alpha |
+| bomoh | done | Zombicide wiki (fandom), Bomoh_FR.png (official render, transparent) | necromancers/bomoh-official.png | 444x426, native alpha |
+| deathNotes | done | Zombicide wiki (fandom), DeathNotes_FR.png (official render, transparent) | necromancers/death-notes-official.png | 570x660, native alpha |
+| hannya | done | Zombicide wiki (fandom), Hannya_FR.png (official render, transparent) | necromancers/hannya-official.png | 485x632, native alpha |
+| kaguya | done | Zombicide wiki (fandom), Kaguya_FR.png (official render, transparent) | necromancers/kaguya-official.png | 506x667, native alpha |
+| tengu | done | Zombicide wiki (fandom), Tengu_FR.png (official render, transparent) | necromancers/tengu-official.png | 610x662, native alpha |
+| yukiOnna | done | Zombicide wiki (fandom), Yuki-onna_FR.png (official render, transparent) | necromancers/yuki-onna-official.png | 399x638, native alpha |
+| fantasyBerserkerWalker | done | Zombicide wiki (fandom), BerserkerWalkerFantasy.png (official render, transparent) | zombies/fantasy-berserker-walker-official.png | 624x1157, native alpha |
 | deadboltWalker | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2026/08/fArchers.webp (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/deadbolt-walkers/) | assets/fantasy/zombies/deadbolt-walker-official.png | red background residue removed with local masks. left figure of 3 (guess: confirm it matches the Deadbolt card) |
 | terrorcottaWalker | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/2026/07/fWalkers.gif (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/terrorcotta-walkers/) | assets/fantasy/zombies/terrorcotta-walker-official.png | red background residue removed with local masks. middle figure of 3, red patch on the left cleaned up |
-| climber | to do | web: 2026/07/fClimbers.gif (3 overlapping figures, 950x800); Rules - Climbers and Terrorcotta Walkers.pdf p.1 has a small inset |  |  |
+| climber | done | Zombicide wiki (fandom), Climber.png (official render, transparent) | zombies/climber-official.png | 849x1273, native alpha |
 | divineBeast | to do | web: image-converter/2026/08/fDragon.webp (Azure Dragon), fTortoise.webp, fTiger.webp, fPhoenix.webp (Vermillion Bird); the app has one divineBeast subject: choose one or add four |  |  |
-| reaper | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| baalberith | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| horseman | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| queenCaenedra | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| hugBear | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| banshee | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| cerberus | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| lordJanas | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| marike | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| erinn | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| grandVizier | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| theSparrow | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| reaper | done | Zombicide wiki (fandom), TheReaper.png (official render, transparent) | abominations/reaper-official.png | 1113x1280, native alpha |
+| baalberith | done | Zombicide wiki (fandom), Baalberith.png (official render, transparent) | abominations/baalberith-official.png | 1137x1280, native alpha |
+| horseman | done | Zombicide wiki (fandom), Horseman.png (official render, transparent) | abominations/horseman-official.png | 842x1280, native alpha |
+| queenCaenedra | done | Zombicide wiki (fandom), QueenCaenedra.png (official render, transparent) | abominations/queen-caenedra-official.png | 894x1175, native alpha |
+| hugBear | done | Zombicide wiki (fandom), Hugbear.png (official render, transparent) | abominations/hug-bear-official.png | 845x716, native alpha |
+| banshee | done | Zombicide wiki (fandom), Banshee.png (official render, transparent) | abominations/banshee-official.png | 605x1023, native alpha |
+| cerberus | done | Zombicide wiki (fandom), Cerberus.png (official render, transparent) | abominations/cerberus-official.png | 670x613, native alpha |
+| lordJanas | done | Zombicide wiki (fandom), LordJanas.png (official render, transparent) | abominations/lord-janas-official.png | 576x1000, native alpha |
+| marike | done | Zombicide wiki (fandom), MarikeAbomination.png (official render, transparent) | abominations/marike-official.png | 503x1000, native alpha |
+| erinn | done | Zombicide wiki (fandom), Erinn.png (official render, transparent) | necromancers/erinn-official.png | 710x1000, native alpha |
+| grandVizier | done | Zombicide wiki (fandom), GrandVizier.png (official render, transparent) | necromancers/grand-vizier-official.png | 1191x1394, native alpha |
+| theSparrow | done | Zombicide wiki (fandom), TheSparrow.png (official render, transparent) | necromancers/the-sparrow-official.png | 935x1834, native alpha |
 | dongZhuo | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
 | zhangJiao | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
 | fumaKotaro | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| footNinja | to do | nothing found (crossover, not on the two gallery pages) |  |  |
-| bebop | to do | nothing found |  |  |
-| rocksteady | to do | nothing found |  |  |
-| pharaohEddie | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| footNinja | done | Zombicide wiki (fandom), FootNinja.png (official render, transparent) | zombies/foot-ninja-official.png | 824x1280, native alpha |
+| bebop | done | Zombicide wiki (fandom), BebopFantasy.png (official render, transparent) | abominations/bebop-official.png | 848x1045, native alpha |
+| rocksteady | done | Zombicide wiki (fandom), RocksteadyFantasy.png (official render, transparent) | abominations/rocksteady-official.png | 625x898, native alpha |
+| pharaohEddie | done | Zombicide wiki (fandom), PharaohEddie_IM.png (the Powerslave sphinx) (official render, transparent) | abominations/pharaoh-eddie-official.png | 744x464, native alpha |
 | samuraiEddie | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
 | mummyEddie | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| wickerManEddie | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| fearEddie | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| mummRa | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| reaperEddie | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| shamanEddie | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| wickerManEddie | done | Zombicide wiki (fandom), WickerEddie_IM.png (official render, transparent) | abominations/wicker-man-eddie-official.png | 495x804, native alpha |
+| fearEddie | done | Zombicide wiki (fandom), FearEddie_IM.png album art; cut-out shared with the Western Fear Eddie (official render, transparent) | abominations/fear-eddie-official.png | 839x672, native alpha |
+| mummRa | done | Zombicide wiki (fandom), MummRaNecromancer.png (official render, transparent) | necromancers/mumm-ra-official.png | 867x942, native alpha |
+| reaperEddie | done | Zombicide wiki (fandom), ReaperEddie_IM.png (official render, transparent) | necromancers/reaper-eddie-official.png | 713x959, native alpha |
+| shamanEddie | done | Zombicide wiki (fandom), ShamanEddie_IM.png (official render, transparent) | necromancers/shaman-eddie-official.png | 571x410, native alpha |
 | wardenBrute | done | rulebook "Black Plague" p.6, embedded image xref 1339 (RGBA) | assets/fantasy/zombies/fantasy-fatty-official.png | native alpha, native resolution |
 | fantasyWalker | done | rulebook "Black Plague" p.8, embedded image xref 1508 (RGBA) | assets/fantasy/zombies/fantasy-walker-official.png | native alpha, native resolution |
 | fantasyRunner | done | rulebook "Black Plague" p.25, embedded image xref 3308 (RGBA) | assets/fantasy/zombies/fantasy-runner-official.png | native alpha, native resolution |
