@@ -22,7 +22,7 @@ export const mergeWesternIronMaidenPacks = (expansions: readonly string[]): stri
  * Transcribed on 2026-11-19 from the owner's photos of the printed cards (the Undead or Alive core box, #001-#037,
  * and the Long-Dead Walkers of the Kickstarter, #038-#045); the core box has 37 cards (rulebook p.4).
  * The cards print their counts Red first; `counts` is Blue, Yellow, Orange, Red, so each row below is reversed.
- * #012 was not photographed (the photo showed #011 twice): the owner decided it is identical to #011.
+ * #012 was not photographed (the photo showed #011 twice); the owner has since checked it online (2026-11-22): identical to #011.
  * #045 is identical to #044 (checked online by the owner).
  * No rulebook sorts these cards into easier and harder halves: every card is easy (`deckParts` is off).
  */
