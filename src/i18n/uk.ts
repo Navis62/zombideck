@@ -641,7 +641,7 @@ export const uk: Record<TranslationKey, string> = {
   'zombie.khanAbomination.one': 'Потвора-хан',
   'zombie.khanAbomination.other': 'Потвора-хан',
   'zombie.defilerNecromancer.one': 'Некромант-осквернитель',
-  'zombie.defilerNecromancer.other': 'Некромант-осквернитель',
+  'zombie.defilerNecromancer.other': 'Некроманти-осквернителі',
   'zombie.spectralWalker.one': 'Примарний блукач',
   'zombie.spectralWalker.other': 'Примарні блукачі',
   'zombie.ratz.one': 'Зграя Ratz',
