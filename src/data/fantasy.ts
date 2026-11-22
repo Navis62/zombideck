@@ -284,7 +284,6 @@ const NAMED_ABOMINATIONS: readonly (readonly [NamedAbomination, string, number, 
   ['marike', COMIC_BOOK_EXTRAS_2, 413, 4],
   ['bebop', BEBOP_ROCKSTEADY, 583, 3, 3],
   ['rocksteady', BEBOP_ROCKSTEADY, 586, 3, 3],
-  ['divineBeast', DIVINE_BEASTS, 589, 4],
 ];
 const namedCards = (setId: string) =>
   NAMED_ABOMINATIONS.filter(([, set]) => set === setId).flatMap(([zombie, , first, count, atBlue = 0]) =>
@@ -305,6 +304,8 @@ export const NAMED_ZOMBIES: ReadonlySet<FantasyZombie> = new Set([
   'wolfbomination',
   ...NAMED_ABOMINATIONS.map(([zombie]) => zombie),
   ...IRON_MAIDEN_ABOMINATIONS,
+  // The Divine Beasts card (`divineBeasts-card`, unnumbered) prints a picture too; it is no entry of the table above.
+  'divineBeast',
 ]);
 /**
  * Abominations, named or not: the Horde symbol never adds one to the Horde. The Horde Box makes Fatty Bursters
@@ -315,7 +316,8 @@ const NOT_ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
   'feralDragon',
   'zombieGiant',
   'necromanticDragon',
-  // Printed "Divine Beasts", not as an Abomination: an ordinary spawn card with a picture.
+  // The Zombie card of the pack prints "Divine Beasts" with a picture, not an Abomination card; the Abomination card
+  // (rule "Spawn Vermillion Bird") is in the boss deck, where the beasts spawn in turn (`DIVINE_BEASTS`, threat.ts).
   'divineBeast',
 ]);
 export const ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
@@ -409,6 +411,8 @@ export const BOSSES_WITHOUT_RULE = [
   'reaper', 'baalberith', 'horseman', 'queenCaenedra', 'hugBear', 'banshee', 'cerberus',
   'lordJanas', 'marike', 'bebop', 'rocksteady',
   'pharaohEddie', 'samuraiEddie', 'mummyEddie', 'wickerManEddie', 'fearEddie',
+  // The Divine Beasts pack prints names only: the rules are in its rulebook, not on a reference card.
+  'divineBeast', 'vermillionBird', 'whiteTiger', 'blackTortoise', 'azureDragon',
 ] as const;
 export type BossRuleId = (typeof BOSS_RULE_IDS)[number];
 /** Necromancers with a name: the normal Necromancer rules, plus one of their own. */

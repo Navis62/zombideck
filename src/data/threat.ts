@@ -90,6 +90,19 @@ export const ABOMINATION_BOSSES: readonly Boss[] = [
   { zombie: 'bebop', setId: 'bebopRocksteady' },
   { zombie: 'dongZhuo', setId: 'warlordsMiddleKingdom' },
   { zombie: 'rocksteady', setId: 'bebopRocksteady' },
+  // "Upon drawing their Abomination card, remove it from the game and spawn the Vermillion Bird first."
+  { zombie: 'divineBeast', setId: 'divineBeasts', power: { kind: 'chain', first: 'vermillionBird' } },
+];
+/**
+ * The four Divine Beasts (Divine Beasts rulebook): each spawns once per game, in this order, when the previous one is
+ * eliminated; "When the Azure Dragon is eliminated, they are gone for good." They are in no menu and no deck: the
+ * Divine Beasts card spawns the first, and each one calls the next.
+ */
+export const DIVINE_BEASTS: readonly Boss[] = [
+  { zombie: 'vermillionBird', setId: 'divineBeasts', power: { kind: 'chained', card: 'divineBeast', next: 'whiteTiger' } },
+  { zombie: 'whiteTiger', setId: 'divineBeasts', power: { kind: 'chained', card: 'divineBeast', next: 'blackTortoise' } },
+  { zombie: 'blackTortoise', setId: 'divineBeasts', power: { kind: 'chained', card: 'divineBeast', next: 'azureDragon' } },
+  { zombie: 'azureDragon', setId: 'divineBeasts', power: { kind: 'chained', card: 'divineBeast' } },
 ];
 /** Not Abominations by the rules, but they join the Abomination deck all the same. */
 export const BIG_BOSSES: readonly Boss[] = [
@@ -126,7 +139,7 @@ export const NECROMANCER_BOSSES: readonly Boss[] = [
   { zombie: 'erinn', setId: 'comicBookExtras2' },
   { zombie: 'zhangJiao', setId: 'warlordsMiddleKingdom' },
   // Three identical cards, all in the Necromancer deck.
-  { zombie: 'fumaKotaro', setId: 'warlordsRisingSun', copies: 3 },
+  { zombie: 'fumaKotaro', setId: 'warlordsRisingSun', copies: 3, power: { kind: 'single' } },
 ];
 
 const CORE_NECROMANCERS: readonly { zombie: FantasyNecromancer; setId: string }[] = [
@@ -149,7 +162,7 @@ const DECK_BOSSES = new Set<string>(
   [...SET_ABOMINATIONS, ...ABOMINATION_BOSSES, ...BIG_BOSSES, ...CORE_NECROMANCERS, ...NECROMANCER_BOSSES].map((boss) => boss.zombie),
 );
 /** The bosses a saved fantasy boss deck may hold. */
-export const FANTASY_BOSS_IDS: ReadonlySet<string> = DECK_BOSSES;
+export const FANTASY_BOSS_IDS: ReadonlySet<string> = new Set([...DECK_BOSSES, ...DIVINE_BEASTS.map((boss) => boss.zombie)]);
 
 /** How many cards of each boss the boxes can hold at most; a boss absent from the map has no known bound. */
 function copiesOf(bosses: readonly Boss[]): ReadonlyMap<string, number> {
@@ -160,11 +173,14 @@ function copiesOf(bosses: readonly Boss[]): ReadonlyMap<string, number> {
 // The generic Abominations and Necromancers of the core boxes are not bounded here: their cards are those of the deck.
 const GENERIC_BOSSES = new Set<string>([...SET_ABOMINATIONS, ...CORE_NECROMANCERS].map((boss) => boss.zombie));
 export const FANTASY_BOSS_COPIES: ReadonlyMap<string, number> = new Map(
-  [...copiesOf([...ABOMINATION_BOSSES, ...BIG_BOSSES, ...NECROMANCER_BOSSES])].filter(([boss]) => !GENERIC_BOSSES.has(boss)),
+  [...copiesOf([...ABOMINATION_BOSSES, ...DIVINE_BEASTS, ...BIG_BOSSES, ...NECROMANCER_BOSSES])].filter(([boss]) => !GENERIC_BOSSES.has(boss)),
 );
 
+// A named card, or a card of the pack printed "Divine Beasts" (title 'zombies', plural): both name their boss in a level.
 const namedZombie = (card: ZombieCard) =>
-  card.kind === 'levels' && card.title === 'named' ? (card.boss ?? card.levels.find((level) => level)?.zombie) : undefined;
+  card.kind === 'levels' && (card.title === 'named' || card.plural)
+    ? (card.boss ?? card.levels.find((level) => level)?.zombie)
+    : undefined;
 
 /**
  * Builds the fantasy deck from the cards of the sets switched on: it keeps the cards of its core boxes, Necromancers

@@ -38,6 +38,7 @@ import {
   chooseGained,
   drawAbomination,
   groupCards,
+  liveBosses,
   pendingChoice,
   powersOf,
   removeFromBoard,
@@ -1182,20 +1183,28 @@ test('the Necromancers of the packs sit where their sheets print them', () => {
   assert.equal(setCards('ironMaiden').filter((card) => card.kind === 'necromancer').length, 12);
 });
 
-test('the bosses of the packs join their decks, the Divine Beasts and the spawned zombies stay in the Zombie deck', () => {
+const BEASTS_IN_ORDER = ['vermillionBird', 'whiteTiger', 'blackTortoise', 'azureDragon'];
+
+test('the bosses of the packs join their decks, the spawned zombies stay in the Zombie deck and the Divine Beasts card goes to the Abomination deck', () => {
   const setIds = ['blackPlague', ...NEW_SETS.map(([id]) => id)];
   const deck = fantasyDeck(setIds);
   const bosses = [...(deck.bosses?.abomination ?? []), ...(deck.bosses?.necromancer ?? [])];
-  for (const boss of BOSSES_WITHOUT_RULE) assert.ok(bosses.includes(boss), boss);
+  // The four Divine Beasts are revealed by their card, they are in no deck.
+  for (const boss of BOSSES_WITHOUT_RULE.filter((boss) => !BEASTS_IN_ORDER.includes(boss) && boss !== 'divineBeast')) assert.ok(bosses.includes(boss), boss);
   for (const boss of ['mummRa', 'grandVizier', 'theSparrow', 'erinn', 'reaperEddie', 'shamanEddie']) {
     assert.ok(deck.bosses?.necromancer.includes(boss), boss);
   }
-  assert.equal(deck.bosses?.abomination.length, 1 + BOSSES_WITHOUT_RULE.length);
+  assert.equal(deck.bosses?.abomination.length, 1 + BOSSES_WITHOUT_RULE.length - BEASTS_IN_ORDER.length);
   assert.equal(deck.bosses?.necromancer.length, 1 + 6);
-  // Only Black Plague's 54 cards, the spawn cards (12 Berserker + 18 Climbers and Terrorcotta + 6 Crossfire + 6 Foot Ninjas) and the Divine Beasts card stay.
-  assert.equal(deck.cards.length, 54 + 12 + 18 + 6 + 6 + 1);
-  assert.ok(deck.cards.some((card) => card.id === 'divineBeasts-card'));
-  assert.equal(fantasyBossTrigger('divineBeasts-card', 'red'), undefined);
+  // Only Black Plague's 54 cards and the spawn cards (12 Berserker + 18 Climbers and Terrorcotta + 6 Crossfire + 6 Foot Ninjas) stay.
+  assert.equal(deck.cards.length, 54 + 12 + 18 + 6 + 6);
+  // The Divine Beasts card is the pack's White Death Abomination card: it is dealt from the Abomination deck, once.
+  assert.ok(!deck.cards.some((card) => card.id === 'divineBeasts-card'));
+  assert.equal(deck.bosses?.abomination.filter((boss) => boss === 'divineBeast').length, 1);
+  for (const beast of ['vermillionBird', 'whiteTiger', 'blackTortoise', 'azureDragon']) {
+    assert.ok(!deck.bosses?.abomination.includes(beast), beast);
+    assert.ok(!deck.bosses?.necromancer.includes(beast), beast);
+  }
   // The Iron Maiden Eddies are Abominations like the other named bosses.
   assert.equal(fantasyBossTrigger('ironMaiden-377', 'yellow'), 'abomination');
   assert.equal(fantasyBossTrigger('ironMaiden-377', 'blue'), undefined);
@@ -2307,4 +2316,150 @@ test('removing a boss present twice on the board removes one copy', () => {
   const once = dropped(twice, 'x');
   assert.deepEqual(boardOf(once), ['x']);
   assert.deepEqual(bossesOf(once).abomination.discard, ['x']);
+});
+
+// A chain of bosses (Divine Beasts): one card of the boss deck reveals the first beast, each beast removed brings the
+// next, and the card itself is in no pile while the chain lasts. Made-up bosses: card -> b1 -> b2 -> b3.
+const CHAIN_POWERS: Record<string, BossPower> = {
+  card: { kind: 'chain', first: 'b1' },
+  b1: { kind: 'chained', card: 'card', next: 'b2' },
+  b2: { kind: 'chained', card: 'card', next: 'b3' },
+  b3: { kind: 'chained', card: 'card' },
+  sg: { kind: 'single' },
+};
+const chainPowers: BossPowers = (boss) => CHAIN_POWERS[boss];
+const chainStep = (state: GameState, trigger: BossTrigger = firstOnly) => drawCards(state, undefined, () => 0, trigger, chainPowers);
+const chainRemove = (state: GameState, target: Parameters<typeof removeFromBoard>[1]) => removeFromBoard(state, target, () => 0, chainPowers);
+const inManual = (index: number, boss: string) => ({ from: 'manual', index, boss }) as const;
+
+test('a chain card reveals its first beast and is in no pile', () => {
+  const state = chainStep(powerGame(['card', 'x']));
+  assert.deepEqual(bossesOf(state).revealed.a1, { kind: 'abomination', boss: 'b1' });
+  assert.deepEqual(bossesOf(state).abomination, { draw: ['x'], discard: [] });
+  assert.deepEqual(bossCardsOf(state), ['b1', 'x']);
+});
+
+test('removing a chained beast brings the next one without discarding, and the last one closes the chain', () => {
+  const start = chainStep(powerGame(['card', 'x']));
+  const one = chainRemove(start, { from: 'step', card: 'a1', boss: 'b1' });
+  assert.deepEqual(bossesOf(one).manual, [{ kind: 'abomination', boss: 'b2' }]);
+  assert.deepEqual(discardOf(one), []);
+  assert.deepEqual(bossCardsOf(one), ['b2', 'x']);
+  const two = chainRemove(one, inManual(0, 'b2'));
+  assert.deepEqual(bossesOf(two).manual.at(-1), { kind: 'abomination', boss: 'b3' });
+  assert.deepEqual(bossCardsOf(two), ['b3', 'x']);
+  const three = chainRemove(two, inManual(1, 'b3'));
+  assert.deepEqual(bossCardsOf(three), ['x'], 'the card exists nowhere any more');
+  assert.deepEqual(discardOf(three), []);
+  assert.deepEqual(undo(three).piles, two.piles);
+  assert.deepEqual(undo(two).piles, one.piles);
+  assert.deepEqual(undo(one).piles, start.piles);
+});
+
+test('removing a chained beast from the board brings the next one, named by the Extra Activation in one at a time', () => {
+  const board = chainStep(chainStep(powerGame(['card', 'x']), firstTwo), firstTwo);
+  assert.deepEqual(boardOf(board), ['b1']);
+  assert.deepEqual(bossesOf(board).revealed.a2, activation('b1'));
+  assert.deepEqual(bossesOf(board).abomination.draw, ['x'], 'nothing was drawn for the Extra Activation');
+  const next = chainRemove(board, OUT('b1'));
+  assert.deepEqual(bossesOf(next).manual, [{ kind: 'abomination', boss: 'b2' }]);
+  assert.deepEqual(bossesOf(next).revealed.a2, activation('b2'));
+  assert.deepEqual(discardOf(next), []);
+  assert.deepEqual(undo(next).piles, board.piles);
+});
+
+test('a chained beast sent back to the deck sends its card, not itself', () => {
+  const trigger = callsAt({ a1: ['blue'] });
+  const blue = chainStep(powerGame(['card', 'x']), trigger);
+  const red = setDanger(blue, 'red', trigger, () => 0, chainPowers);
+  assert.deepEqual(bossesOf(red).abomination, { draw: ['x'], discard: ['card'] });
+  assert.deepEqual(bossCardsOf(red), ['card', 'x']);
+});
+
+test('reshuffling everything mid-chain gives the card back and restarts the chain, not after the chain ended', () => {
+  const start = chainStep(powerGame(['card', 'x']));
+  const mid = chainRemove(start, { from: 'step', card: 'a1', boss: 'b1' });
+  const fresh = reshuffleAll(mid, () => 0, chainPowers);
+  assert.deepEqual([...bossesOf(fresh).abomination.draw].sort(), ['card', 'x']);
+  assert.deepEqual(boardOf(fresh), []);
+  // A beast on the board goes back as its card too, once.
+  const onBoard = chainStep(chainStep(powerGame(['card', 'x']), firstTwo), firstTwo);
+  assert.deepEqual([...bossesOf(reshuffleAll(onBoard, () => 0, chainPowers)).abomination.draw].sort(), ['card', 'x']);
+  // The chain is over: nothing to give back.
+  const last = chainRemove(chainRemove(chainRemove(start, { from: 'step', card: 'a1', boss: 'b1' }), inManual(0, 'b2')), inManual(1, 'b3'));
+  assert.deepEqual([...bossesOf(reshuffleAll(last, () => 0, chainPowers)).abomination.draw], ['x']);
+  assert.deepEqual(undo(fresh).piles, mid.piles);
+});
+
+test('in the Fest a single boss replaces its copy on the board, which is discarded', () => {
+  const start = powerGame(['sg', 'sg', 'y'], [], 1, 'fest');
+  const board = chainStep(chainStep(start, everyCard), everyCard);
+  assert.deepEqual(boardOf(board), []);
+  assert.deepEqual(bossesOf(board).revealed.a2, { kind: 'abomination', boss: 'sg' });
+  assert.deepEqual(discardOf(board), ['sg']);
+  assert.deepEqual(bossCardsOf(board), ['sg', 'sg', 'y']);
+  assert.deepEqual(undo(board).piles, chainStep(start, everyCard).piles);
+});
+
+test('in the Fest a single boss replaces its copy revealed earlier in the same step', () => {
+  const start = powerGame(['sg', 'sg', 'y'], [], 2, 'fest');
+  const state = chainStep(start, everyCard);
+  const live = shownGroups(state).flatMap((group) => liveBosses(group));
+  assert.deepEqual(live, ['sg'], 'one copy only');
+  assert.deepEqual(bossesOf(state).revealed.a1, { kind: 'abomination', boss: 'sg', gone: ['sg'] });
+  assert.deepEqual(bossesOf(state).revealed.a2, { kind: 'abomination', boss: 'sg' });
+  assert.deepEqual(discardOf(state), ['sg']);
+  assert.deepEqual(undo(state).piles, start.piles);
+});
+
+// Divine Beasts (real Fantasy data): the card calls the four beasts one after the other.
+const fantasyPowers: BossPowers = (boss) => UNIVERSES.fantasy.bosses?.bossPowers(boss);
+
+test('the Fantasy boss powers chain the Divine Beasts in the rulebook order and Fuma stands alone', () => {
+  assert.deepEqual(fantasyPowers('divineBeast'), { kind: 'chain', first: 'vermillionBird' });
+  assert.deepEqual(
+    BEASTS_IN_ORDER.map((beast) => fantasyPowers(beast)),
+    [
+      { kind: 'chained', card: 'divineBeast', next: 'whiteTiger' },
+      { kind: 'chained', card: 'divineBeast', next: 'blackTortoise' },
+      { kind: 'chained', card: 'divineBeast', next: 'azureDragon' },
+      { kind: 'chained', card: 'divineBeast' },
+    ],
+  );
+  assert.deepEqual(fantasyPowers('fumaKotaro'), { kind: 'single' });
+});
+
+/** A Fantasy game whose next card calls on an Abomination deck holding only the Divine Beasts card. */
+const beastsGame = () => {
+  const setIds = ['blackPlague', 'divineBeasts'];
+  const start = newGame(FANTASY_SETS, setIds, ALL_PARTS, () => 0, 1, 'fantasy', (cards) => tailorFantasyDeck(cards, DEFAULT_THREAT, new Set(setIds)));
+  const bosses = bossesOf(start);
+  return { ...start, piles: { ...start.piles, bosses: { ...bosses, rule: 'oneAtATime' as const, abomination: { draw: ['divineBeast'], discard: [] } } } };
+};
+
+test('a Fantasy save with a Divine Beast on the board is valid', () => {
+  const start = beastsGame();
+  const played = drawCards(start, cardEffect, () => 0, () => 'abomination', fantasyPowers);
+  assert.deepEqual(bossesOf(played).revealed[played.piles.drawn[0]], { kind: 'abomination', boss: 'vermillionBird' });
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(played)), cardIdsOf, bossIdsOf, bossCopiesOf));
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(start)), cardIdsOf, bossIdsOf, bossCopiesOf));
+});
+
+test('Divine Beasts: the card reveals the Vermillion Bird, each removal brings the next beast and the card is in no pile after the Azure Dragon', () => {
+  const first = drawCards(beastsGame(), cardEffect, () => 0, () => 'abomination', fantasyPowers);
+  const cardId = first.piles.drawn[0];
+  assert.deepEqual(bossesOf(first).revealed[cardId], { kind: 'abomination', boss: 'vermillionBird' });
+  assert.deepEqual(bossesOf(first).abomination, { draw: [], discard: [] });
+  const remove = (state: GameState, target: Parameters<typeof removeFromBoard>[1]) => removeFromBoard(state, target, () => 0, fantasyPowers);
+  const one = remove(first, { from: 'step', card: cardId, boss: 'vermillionBird' });
+  assert.deepEqual(bossesOf(one).manual, [{ kind: 'abomination', boss: 'whiteTiger' }]);
+  const two = remove(one, inManual(0, 'whiteTiger'));
+  assert.deepEqual(bossesOf(two).manual.at(-1), { kind: 'abomination', boss: 'blackTortoise' });
+  const three = remove(two, inManual(1, 'blackTortoise'));
+  assert.deepEqual(bossesOf(three).manual.at(-1), { kind: 'abomination', boss: 'azureDragon' });
+  const end = remove(three, inManual(2, 'azureDragon'));
+  assert.deepEqual(boardOf(end), []);
+  assert.deepEqual(bossesOf(end).abomination, { draw: [], discard: [] }, 'divineBeast is in no pile');
+  assert.ok(!bossCardsOf(end).includes('divineBeast'));
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(end)), cardIdsOf, bossIdsOf, bossCopiesOf));
 });

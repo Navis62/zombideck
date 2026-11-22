@@ -76,7 +76,15 @@ const CHOICE_DELAY_MS = 700;
 /** Share of its colours a card keeps once the players removed its boss from the board. */
 const GONE_OPACITY = 0.4;
 /** Smallest a board button gets: room for the name on two lines and the action line, a large target for a phone on a table. */
-const BOARD_BUTTON_MIN_HEIGHT = 48;
+const BOARD_BUTTON_MIN_HEIGHT = 56;
+/** Border of the framed "On the board" panel: thick enough to catch the eye from across a table. */
+const BOARD_FRAME_WIDTH = 2;
+/** Size of the "On the board" heading: larger than the other headings so the panel reads from across the table. */
+const BOARD_HEADING_SIZE = 15;
+/** Letter spacing of that heading, which is in capitals. */
+const BOARD_HEADING_SPACING = 1;
+/** Size of a boss name on the board: big enough to read at table distance. */
+const BOARD_NAME_SIZE = 17;
 /** Width of the coloured bar that tells a Necromancer from an Abomination on a board button. */
 const KIND_BAR_WIDTH = 6;
 
@@ -221,6 +229,10 @@ export default function GameScreen() {
     if (haptics) drawFeedback();
     update(() => next);
     if (Platform.OS !== 'web') AccessibilityInfo.announceForAccessibility(t('boss.removed', { name: abominationName(entry.boss, t) }));
+    // A removed beast of a chain brings the next one by hand: say so (the removal itself was announced just before).
+    // (Compared by length: removing a boss rebuilds the groups already there, so identity says nothing.)
+    const after = next.piles.bosses?.manual ?? [];
+    if (after.length > (game.piles.bosses?.manual.length ?? 0)) announceGroup(after.at(-1));
   };
   // Focus stays on the button after these two, and neither changes `drawn`: each says what it just did.
   const announceGroup = (group: Revealed | undefined) => {
@@ -303,7 +315,7 @@ export default function GameScreen() {
       return;
     }
     setConfirmingShuffle(false);
-    shuffleWith((state) => reshuffleAll(state));
+    shuffleWith((state) => reshuffleAll(state, Math.random, bossPowers));
   };
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/menu'));
 
@@ -550,27 +562,9 @@ export default function GameScreen() {
             {game.piles.reshuffled && <Text style={styles.notice}>{t('game.reshuffled')}</Text>}
           </View>
 
-          <Button compact label={t('game.undo')} disabled={game.history.length === 0} onPress={() => update(undo)} />
-          <Button
-            compact
-            label={t('game.shuffleDeck')}
-            disabled={game.piles.draw.length < 2}
-            onPress={() => shuffleWith((state) => shuffleDeck(state))}
-          />
-          <Button
-            compact
-            label={t(confirmingShuffle ? 'game.confirmShuffle' : 'game.shuffle')}
-            warning={confirmingShuffle}
-            onPress={reshuffle}
-          />
-          <Button
-            compact
-            label={t('game.discard', { n: game.piles.discard.length })}
-            onPress={() => setShowDiscard(true)}
-          />
           {board.length > 0 && (
             <View style={styles.board} accessibilityRole="summary">
-              <Text style={styles.heading}>{t('boss.onBoard')}</Text>
+              <Text style={styles.boardHeading}>{t('boss.onBoard')}</Text>
               {board.map((entry) => {
                 const confirming = confirmingRemove === entry.key;
                 const name = abominationName(entry.boss, t);
@@ -597,6 +591,24 @@ export default function GameScreen() {
               })}
             </View>
           )}
+          <Button compact label={t('game.undo')} disabled={game.history.length === 0} onPress={() => update(undo)} />
+          <Button
+            compact
+            label={t('game.shuffleDeck')}
+            disabled={game.piles.draw.length < 2}
+            onPress={() => shuffleWith((state) => shuffleDeck(state))}
+          />
+          <Button
+            compact
+            label={t(confirmingShuffle ? 'game.confirmShuffle' : 'game.shuffle')}
+            warning={confirmingShuffle}
+            onPress={reshuffle}
+          />
+          <Button
+            compact
+            label={t('game.discard', { n: game.piles.discard.length })}
+            onPress={() => setShowDiscard(true)}
+          />
           {bossDecks?.manualDraw && abominationDeck && (
             <Button
               compact
@@ -1021,7 +1033,15 @@ const styles = StyleSheet.create({
   chipPending: { opacity: 0.4, borderStyle: 'dashed' },
   chipText: { color: COLORS.text, fontSize: 12, fontWeight: '800' },
   chipTextViewed: { color: COLORS.background },
-  board: { gap: 4 },
+  board: {
+    gap: 6,
+    padding: 8,
+    borderRadius: 10,
+    borderWidth: BOARD_FRAME_WIDTH,
+    borderColor: COLORS.warning,
+    backgroundColor: COLORS.background,
+  },
+  boardHeading: { color: COLORS.warning, fontSize: BOARD_HEADING_SIZE, fontWeight: '900', textTransform: 'uppercase', letterSpacing: BOARD_HEADING_SPACING },
   boardButton: {
     minHeight: BOARD_BUTTON_MIN_HEIGHT,
     flexDirection: 'row',
@@ -1035,7 +1055,7 @@ const styles = StyleSheet.create({
   boardConfirm: { borderColor: COLORS.warning, borderWidth: 2 },
   kindBar: { width: KIND_BAR_WIDTH },
   boardText: { flex: 1, paddingHorizontal: 8, paddingVertical: 4, justifyContent: 'center' },
-  boardName: { color: COLORS.text, fontSize: 14, fontWeight: '800' },
+  boardName: { color: COLORS.text, fontSize: BOARD_NAME_SIZE, fontWeight: '800' },
   boardAction: { color: COLORS.muted, fontSize: 12 },
   boardActionConfirm: { color: COLORS.warning, fontWeight: '800' },
   spacer: { flexGrow: 1, minHeight: 12, justifyContent: 'center', gap: 4 },
