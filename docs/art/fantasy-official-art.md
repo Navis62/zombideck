@@ -8,9 +8,9 @@ Replaces the original cartoon illustrations of the Fantasy universe (`FANTASY_AR
 - **zombicide.com galleries** https://www.zombicide.com/zombicide-fantasy-zombies/ and https://www.zombicide.com/zombicide-fantasy-promo-zombies/ (each tile links to `/pg/<slug>/`). The site refuses scripted requests (403), so the page HTML came from the Wayback Machine and the dates of the image folders from the `/pg/` pages; the files themselves come from the open CDN `cdn.svc.asmodee.net`. The full-size file is the thumbnail URL without the `-705x594` / `-260x185` suffix, always 950x800 RGB: a banner with a red floor, a grey wall on top, the game logo bottom right and a chain border at the bottom. No alpha: the figure is cut by comparing each pixel with the row median colour, the logo box and the chain are masked, small bits are dropped.
 - Where both exist, the rulebook render wins (real alpha, no cutting artefacts) at about the same resolution. The web pages have no taller version.
 - The White Death, Frozen Fortress, Timecrash, Warlords, Celestial Knights, Crossfire, Deadeye, Crowz, NPC and Berserker PDFs are flattened page scans (no extractable renders).
-- Masters (full-size RGBA PNG): `.art-sources/fantasy/<kind>/<name>-official-master.png` (gitignored). Shipped: 256-colour PNG with alpha, `<name>-official.png` in the subject directory, none above 220 KB, source size (no upscaling).
+- Masters (full-size RGBA PNG): `.art-sources/fantasy/<kind>/<name>-official-master.png` (gitignored). Shipped: 256-colour PNG with alpha, `<name>-official.png` in the subject directory, none above 700 KB, 1280 px tall at most (no upscaling). Palette: median cut and k-means on the figure with dithering, a few entries for its soft edges (2026-11-22; the octree palette used before left visible flat areas).
 
-## Subjects (56 done of 114)
+## Subjects (121 done of 121)
 
 | FANTASY_ART key | Status | Source | File | Notes |
 |---|---|---|---|---|
@@ -60,24 +60,24 @@ Replaces the original cartoon illustrations of the Fantasy universe (`FANTASY_AR
 | wdBrute | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2026/07/fBrute-WD-1-1.webp (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/brute-white-death/) | assets/fantasy/zombies/wd-brute-official.png | red background residue removed with local masks. Transparent margins cropped to the figure (504x765, 256 colours; original in .art-sources/fantasy/wd-brute-before-crop.png). |
 | khanAbomination | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2026/07/fKhan-Abomination.webp (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/kahn-abomination/) | assets/fantasy/abominations/khan-abomination-official.png | auto-cut off the red background: review. legs partly lost |
 | defilerNecromancer | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2026/07/fDefiler-Necromancer.webp (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/defiler-necromancer/) | assets/fantasy/necromancers/defiler-necromancer-official.png | red background residue cleaned up with local masks; empty left margin cropped (474x768). |
-| eeWalker | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| eeRunner | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| eeBrute | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| eeWalker | done | owner-supplied official art (see notes) | assets/fantasy/zombies/ee-walker-official.png | 654x1280, 256 colours, 296 KB. official art, missing parts completed with OpenAI (per the owner) |
+| eeRunner | done | owner-supplied official art (see notes) | assets/fantasy/zombies/ee-runner-official.png | 867x1280, 256 colours, 317 KB. official art, missing parts completed with OpenAI (per the owner) |
+| eeBrute | done | owner-supplied official art (see notes) | assets/fantasy/zombies/ee-brute-official.png | 960x1280, 256 colours, 483 KB. official art, missing parts completed with OpenAI (per the owner) |
 | godEaterAbomination | done | web banner https://cdn.svc.asmodee.net/production-zombicide/uploads/image-converter/2026/07/fGodEaterAbomination.webp (gallery https://www.zombicide.com/zombicide-fantasy-zombies/, page /pg/god-eater-abomination/) | assets/fantasy/abominations/god-eater-abomination-official.png | red background residue removed with local masks. the banner top cuts the figure Transparent margins cropped to the figure (638x768, 256 colours; original in .art-sources/fantasy/god-eater-abomination-before-crop.png). |
-| amaterasu | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| asura | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| amaterasu | done | owner-supplied official art (see notes) | assets/fantasy/abominations/amaterasu-wings.png | 1446x1087, 256 colours, 434 KB. official art, missing parts completed with OpenAI (per the owner); the file is named amaterasu-wings.png |
+| asura | done | owner-supplied official art (see notes) | assets/fantasy/abominations/asura-official.png | 840x1280, 256 colours, 428 KB. supplied by the owner |
 | bishamon | done | Zombicide wiki (fandom), Bishamon_FR.png (official render, transparent) | abominations/bishamon-official.png | 732x1055, native alpha |
-| chimimoryo | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| chimimoryo | done | owner-supplied official art (see notes) | assets/fantasy/abominations/chimimoryo-official.png | 1313x1198, 256 colours, 657 KB. official art, missing parts completed with OpenAI (per the owner) |
 | hachiman | done | Zombicide wiki (fandom), Hachiman_FR.png (official render, transparent) | abominations/hachiman-official.png | 459x658, native alpha |
 | kijin | done | Zombicide wiki (fandom), Kijin_FR.png (official render, transparent) | abominations/kijin-official.png | 1120x925, native alpha |
 | kumiho | done | Zombicide wiki (fandom), Kumiho_FR.png (official render, transparent) | abominations/kumiho-official.png | 967x814, native alpha |
 | nian | done | Zombicide wiki (fandom), Nian_FR.png (official render, transparent) | abominations/nian-official.png | 783x633, native alpha |
-| qilin | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| redHare | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| shakokiDogu | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| sojobo | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| qilin | done | owner-supplied official art (see notes) | assets/fantasy/abominations/qilin-official.png | 1047x1280, 256 colours, 429 KB. official art, missing parts completed with OpenAI (per the owner) |
+| redHare | done | owner-supplied official art (see notes) | assets/fantasy/abominations/red-hare-official.png | 1335x1178, 256 colours, 516 KB. official art, missing parts completed with OpenAI (per the owner) |
+| shakokiDogu | done | owner-supplied official art (see notes) | assets/fantasy/abominations/shakoki-dogu-official.png | 1003x1280, 256 colours, 560 KB. official art, missing parts completed with OpenAI (per the owner) |
+| sojobo | done | owner-supplied official art (see notes) | assets/fantasy/abominations/sojobo-official.png | 1536x1024, 256 colours, 425 KB. official art, missing parts completed with OpenAI (per the owner) |
 | susanoWo | done | Zombicide wiki (fandom), SusanoWo_FR.png (official render, transparent) | abominations/susano-wo-official.png | 701x1037, native alpha |
-| takemikazuchi | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| takemikazuchi | done | owner-supplied official art (see notes) | assets/fantasy/abominations/takemikazuchi-official.png | 1296x1213, 256 colours, 569 KB. official art, missing parts completed with OpenAI (per the owner) |
 | toyol | done | Zombicide wiki (fandom), Toyol_FR.png (official render, transparent) | abominations/toyol-official.png | 339x416, native alpha |
 | yeti | done | Zombicide wiki (fandom), Yeti_FR.png (official render, transparent) | abominations/yeti-official.png | 519x856, native alpha |
 | bomoh | done | Zombicide wiki (fandom), Bomoh_FR.png (official render, transparent) | necromancers/bomoh-official.png | 444x426, native alpha |
@@ -107,15 +107,15 @@ Replaces the original cartoon illustrations of the Fantasy universe (`FANTASY_AR
 | erinn | done | Zombicide wiki (fandom), Erinn.png (official render, transparent) | necromancers/erinn-official.png | 710x1000, native alpha Transparent margins cropped to the figure (673x1000, 256 colours; original in .art-sources/fantasy/erinn-before-crop.png). |
 | grandVizier | done | Zombicide wiki (fandom), GrandVizier.png (official render, transparent) | necromancers/grand-vizier-official.png | 1191x1394, native alpha |
 | theSparrow | done | Zombicide wiki (fandom), TheSparrow.png (official render, transparent) | necromancers/the-sparrow-official.png | 935x1834, native alpha |
-| dongZhuo | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| zhangJiao | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| fumaKotaro | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| dongZhuo | done | owner-supplied official art (see notes) | assets/fantasy/abominations/dong-zhuo-official.png | 1067x1280, 256 colours, 673 KB. official art, missing parts completed with OpenAI (per the owner) |
+| zhangJiao | done | owner-supplied official art (see notes) | assets/fantasy/necromancers/zhang-jiao-official.png | 853x1280, 256 colours, 472 KB. supplied by the owner |
+| fumaKotaro | done | owner-supplied official art (see notes) | assets/fantasy/necromancers/fuma-kotaro-official.png | 1470x1070, 256 colours, 429 KB. official art, missing parts completed with OpenAI (per the owner) |
 | footNinja | done | Zombicide wiki (fandom), FootNinja.png (official render, transparent) | zombies/foot-ninja-official.png | 824x1280, native alpha |
 | bebop | done | Zombicide wiki (fandom), BebopFantasy.png (official render, transparent) | abominations/bebop-official.png | 848x1045, native alpha |
 | rocksteady | done | Zombicide wiki (fandom), RocksteadyFantasy.png (official render, transparent) | abominations/rocksteady-official.png | 625x898, native alpha |
 | pharaohEddie | done | Zombicide wiki (fandom), PharaohEddie_IM.png (the Powerslave sphinx) (official render, transparent) | abominations/pharaoh-eddie-official.png | 744x464, native alpha |
-| samuraiEddie | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
-| mummyEddie | to do | nothing found (not in the rulebooks nor the two gallery pages) |  |  |
+| samuraiEddie | done | owner-supplied official art (see notes) | assets/invader/abominations/samurai-eddie-abomination-official.png | 1076x897, 256 colours, 200 KB. shared with assets/invader (the Invader Samurai Eddie, used by FANTASY_OFFICIAL through `SAMURAI_EDDIE_ART`) |
+| mummyEddie | done | owner-supplied official art (see notes) | assets/fantasy/abominations/mummy-eddie-official.png | 1026x1275, 256 colours, 529 KB. official art, missing parts completed with OpenAI (per the owner) |
 | wickerManEddie | done | Zombicide wiki (fandom), WickerEddie_IM.png (official render, transparent) | abominations/wicker-man-eddie-official.png | 495x804, native alpha |
 | fearEddie | done | Zombicide wiki (fandom), FearEddie_IM.png album art; cut-out shared with the Western Fear Eddie (official render, transparent) | abominations/fear-eddie-official.png | 839x672, native alpha |
 | mummRa | done | Zombicide wiki (fandom), MummRaNecromancer.png (official render, transparent) | necromancers/mumm-ra-official.png | 867x942, native alpha |
@@ -132,6 +132,9 @@ Replaces the original cartoon illustrations of the Fantasy universe (`FANTASY_AR
 | orcAbomination | done | rulebook "Green Horde" p.52, embedded image xref 6153 (RGBA) | assets/fantasy/abominations/orc-abomination-official.png | native alpha, native resolution |
 | necromancer | done | rulebook "Black Plague" p.31, embedded image xref 4127 (RGBA) | assets/fantasy/necromancers/necromancer-official.png | native alpha, native resolution |
 | orcNecromancer | done | rulebook "Green Horde" p.48, embedded image xref 5972 (RGBA) | assets/fantasy/necromancers/orc-necromancer-official.png | native alpha, native resolution |
+| gloom | done | official transparent cut-out supplied by the owner (placed by the main session) | assets/fantasy/abominations/gloom-official.png | 1000x1074, 256 colours, native alpha. Doom and Gloom are the Lord of Skulls' escort, with no card of their own. |
+| doom | done | official transparent cut-out supplied by the owner (placed by the owner) | assets/fantasy/abominations/doom-official.png | 1000x1092, 256 colours, native alpha, stray specks removed. |
+| shredder | done | official transparent cut-out supplied by the owner | assets/fantasy/necromancers/shredder-official.png | 817x1016, 256 colours, native alpha. |
 
 ## Other official images found, no subject in the app
 
@@ -146,4 +149,4 @@ Replaces the original cartoon illustrations of the Fantasy universe (`FANTASY_AR
 
 ## To do
 
-Every `to do` row above: mostly the Kickstarter, Special Guest, Warlords, Celestial, Crossfire, Berserker and Crowz boxes and the named Abominations of the packs. Ideas: the `/pg/` page of each box on zombicide.com (through the Wayback Machine), BoardGameGeek galleries, photos of the printed cards.
+- Nothing: every subject has official art in place (13 of the sixteen former `to do` rows are official art whose missing parts were completed with OpenAI, per the owner; two were supplied by the owner; Samurai Eddie is shared with `assets/invader`).
