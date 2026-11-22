@@ -33,6 +33,7 @@ import {
   drawNextCard,
   liveBosses,
   MAX_ZONES,
+  newGroups,
   noPowers,
   pendingChoice,
   pendingZones,
@@ -144,6 +145,11 @@ export default function GameScreen() {
   const sequence = zoneDisplay === 'sequence';
   const drawnCards = game?.piles.drawn;
   const announced = useRef(drawnCards);
+  // Set by `draw` (never by an undo): whether the deal opened a new Spawn step, so the escorts it brought get read out.
+  const dealtRef = useRef<{ fresh: boolean } | null>(null);
+  // The boss piles of the previous render, to tell what a deal brought.
+  const bossPiles = game?.piles.bosses;
+  const previousBossesRef = useRef(bossPiles);
   const currentDanger = game?.danger;
   const zoneCount = game?.zones;
   const revealed = game?.piles.bosses?.revealed;
@@ -177,10 +183,21 @@ export default function GameScreen() {
   useEffect(() => {
     if (drawnCards === announced.current) return;
     announced.current = drawnCards;
+    if (Platform.OS === 'web') dealtRef.current = null;
     if (!drawnCards?.length || !currentDanger || !zoneCount || Platform.OS === 'web') return;
     const reveal = revealOf(revealed, bossRule);
-    AccessibilityInfo.announceForAccessibility(announcement(drawnCards, currentDanger, zoneCount, sequence, t, reveal));
-  }, [drawnCards, currentDanger, zoneCount, sequence, t, revealed, bossRule]);
+    // One announcement: the cards, then the escorts a bringer brought (set by `draw`, never by an undo).
+    // The groups of `manual` that the deal added, from the state actually applied: a new Spawn step moves the previous
+    // ones to the board first, so they are not counted as before.
+    const dealt = dealtRef.current;
+    dealtRef.current = null;
+    const before = dealt?.fresh && previousBossesRef.current ? { ...previousBossesRef.current, manual: [] } : previousBossesRef.current;
+    const escorts = dealt && bossRule ? newGroups(before, bossPiles, 'manual').map((group) => bossLabel(groupReveal(group, bossRule), t)) : [];
+    AccessibilityInfo.announceForAccessibility([announcement(drawnCards, currentDanger, zoneCount, sequence, t, reveal), ...escorts].join(' '));
+  }, [drawnCards, currentDanger, zoneCount, sequence, t, revealed, bossRule, bossPiles]);
+  useEffect(() => {
+    previousBossesRef.current = bossPiles;
+  });
 
   if (!game) return <Redirect href="/menu" />;
 
@@ -228,35 +245,44 @@ export default function GameScreen() {
     if (next === game) return;
     if (haptics) drawFeedback();
     update(() => next);
-    if (Platform.OS !== 'web') AccessibilityInfo.announceForAccessibility(t('boss.removed', { name: abominationName(entry.boss, t) }));
-    // A removed beast of a chain brings the next one by hand: say so (the removal itself was announced just before).
-    // (Compared by length: removing a boss rebuilds the groups already there, so identity says nothing.)
-    const after = next.piles.bosses?.manual ?? [];
-    if (after.length > (game.piles.bosses?.manual.length ?? 0)) announceGroup(after.at(-1));
+    // A removed beast of a chain brings the next one by hand (and a bringer's escorts come with it): the removal and
+    // what arrived go in ONE announcement, since consecutive ones cut each other off.
+    say([t('boss.removed', { name: abominationName(entry.boss, t) }), ...arrivedAfter(game, next, 'manual')]);
   };
-  // Focus stays on the button after these two, and neither changes `drawn`: each says what it just did.
-  const announceGroup = (group: Revealed | undefined) => {
-    if (group && manualRule && Platform.OS !== 'web') {
-      AccessibilityInfo.announceForAccessibility(bossLabel(groupReveal(group, manualRule), t));
-    }
+  // Focus stays on the button after these, and none changes `drawn`: each says what it just did, in one announcement.
+  const labelOf = (group: Revealed) => (manualRule ? bossLabel(groupReveal(group, manualRule), t) : '');
+  const say = (texts: readonly string[]) => {
+    const text = texts.filter(Boolean).join(' ');
+    if (text && Platform.OS !== 'web') AccessibilityInfo.announceForAccessibility(text);
   };
-  const groupsOf = (state: GameState) => [...Object.values(state.piles.bosses?.revealed ?? {}), ...(state.piles.bosses?.manual ?? [])];
+  // What an action brought: the groups of `next` that `game` did not have, as the text to read out (see `newGroups`).
+  const arrivedAfter = (from: GameState, to: GameState, scope: 'manual' | 'all') =>
+    newGroups(from.piles.bosses, to.piles.bosses, scope).map(labelOf);
   const drawByHand = () => {
     const next = drawAbomination(game, Math.random, bossPowers);
     if (next === game) return;
     if (haptics) drawFeedback();
     // The new Abomination comes into view, whichever card of the step was looked at.
-    setViewed({ step: `${drawnKey}#${extra + 1}`, index: drawn.length + extra });
+    // The boss drawn is the first group added; a bringer's escorts come after it, so the step key counts all of them.
+    setViewed({ step: `${drawnKey}#${next.piles.bosses?.manual.length ?? extra + 1}`, index: drawn.length + extra });
     update(() => next);
-    announceGroup(next.piles.bosses?.manual.at(-1));
+    // The Abomination drawn, then the escorts it brought (each its own group appended after it).
+    say(arrivedAfter(game, next, 'manual'));
+  };
+  const changeDanger = (level: DangerLevel) => {
+    // The level already chosen changes nothing: nothing to read out.
+    if (level === game.danger) return;
+    const next = setDanger(game, level, bossTrigger, Math.random, bossPowers);
+    update(() => next);
+    // A card that now calls on a boss deck reveals its boss, a bringer its escorts: `drawn` does not change, so say it.
+    say(arrivedAfter(game, next, 'all'));
   };
   const confirmChoice = (picked: string[]) => {
     const next = chooseGained(game, picked);
     if (next === game) return;
     update(() => next);
-    // The group just resolved is the one that is new: the others keep their identity.
-    const before = groupsOf(game);
-    announceGroup(groupsOf(next).find((group) => !before.includes(group)));
+    // The group just resolved is the one that is new.
+    say(arrivedAfter(game, next, 'all'));
   };
   const reveal = revealOf(game.piles.bosses?.revealed, game.bossRule);
   const isFlipped = (index: number) => flips.step === drawnKey && flips.open.includes(index);
@@ -272,7 +298,7 @@ export default function GameScreen() {
   const fade = (face: React.ReactNode, faceReveal?: Reveal) => (isGone(faceReveal) ? <View style={styles.gone}>{face}</View> : face);
   // A card with words on its back turns over; one without stays a plain face.
   // `onTap` is what a tap on the face does (turn it, or reopen Gozer's choice): the faces take it themselves.
-  const cardFace = (card: ZombieCard, index: number, faceWidth: number, onTap: () => void) => {
+  const cardFace = (card: ZombieCard, index: number, faceWidth: number, onTap: () => void, zoomButton?: boolean) => {
     const shownReveal = reveal(card.id);
     const front = <CardFace card={card} danger={danger} width={faceWidth} reveal={shownReveal} />;
     if (!cardHasBack(card, danger, t, shownReveal)) return fade(front, shownReveal);
@@ -281,13 +307,13 @@ export default function GameScreen() {
         flipped={isFlipped(index)}
         onPress={onTap}
         front={front}
-        back={<CardFace card={card} danger={danger} width={faceWidth} reveal={shownReveal} side="back" onFlip={onTap} />}
+        back={<CardFace card={card} danger={danger} width={faceWidth} reveal={shownReveal} side="back" onFlip={onTap} zoomButton={zoomButton} />}
       />,
       shownReveal,
     );
   };
   // An Abomination drawn by hand, at the same place in the flips as the cards of the step.
-  const bossFace = (faceReveal: Reveal, index: number, faceWidth: number, onTap: () => void) => {
+  const bossFace = (faceReveal: Reveal, index: number, faceWidth: number, onTap: () => void, zoomButton?: boolean) => {
     const front = <BossFace reveal={faceReveal} width={faceWidth} universe={game.universe} />;
     if (!bossHasBack(faceReveal, t)) return fade(front, faceReveal);
     return fade(
@@ -295,7 +321,7 @@ export default function GameScreen() {
         flipped={isFlipped(index)}
         onPress={onTap}
         front={front}
-        back={<BossFace reveal={faceReveal} width={faceWidth} universe={game.universe} side="back" onFlip={onTap} />}
+        back={<BossFace reveal={faceReveal} width={faceWidth} universe={game.universe} side="back" onFlip={onTap} zoomButton={zoomButton} />}
       />,
       faceReveal,
     );
@@ -303,9 +329,12 @@ export default function GameScreen() {
   const flipHint = (flipped: boolean) => t(flipped ? 'card.flipBackHint' : 'card.flipHint');
   const draw = () => {
     // No card left to deal (the rest are on display for this step): no vibration, no draw counted.
-    if (deal(game) === game) return;
+    const next = deal(game);
+    if (next === game) return;
     // The rating prompt counts Spawn steps, however the zones are dealt.
     if (!sequence || startsNewStep(game, cardEffect)) countDraw();
+    // The announcement (cards, then the escorts a bringer brought) is made once the state is applied, by the effect on `drawn`.
+    dealtRef.current = { fresh: !sequence || startsNewStep(game, cardEffect) };
     update(deal);
     if (haptics) drawFeedback();
   };
@@ -377,7 +406,7 @@ export default function GameScreen() {
                 accessibilityElementsHidden={asButton}
                 importantForAccessibility={asButton ? 'no-hide-descendants' : 'auto'}
               >
-                {cardFace(card, index, width, waiting ? reopenChoice : () => toggleFlip(index))}
+                {cardFace(card, index, width, waiting ? reopenChoice : () => toggleFlip(index), zoomable)}
               </Animated.View>
             )}
           </CardButton>
@@ -408,7 +437,7 @@ export default function GameScreen() {
             expanded={waiting ? undefined : flipped}
           >
             <View style={styles.drawn} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              {bossFace(groupFace, index, width, waiting ? reopenChoice : () => toggleFlip(index))}
+              {bossFace(groupFace, index, width, waiting ? reopenChoice : () => toggleFlip(index), shown > 1)}
             </View>
           </CardButton>
           {shown > 1 && <ZoomButton label={t('game.zoom')} onPress={() => setZoomed({ step: drawnKey, index })} />}
@@ -526,7 +555,7 @@ export default function GameScreen() {
                   level === danger && styles.levelActive,
                   pressed && PRESSED,
                 ]}
-                onPress={() => update((state) => setDanger(state, level, bossTrigger, Math.random, bossPowers))}
+                onPress={() => changeDanger(level)}
                 accessibilityRole="button"
                 accessibilityState={{ selected: level === danger }}
               >

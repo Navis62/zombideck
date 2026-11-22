@@ -145,6 +145,12 @@ const westernBossOf = (card: ZombieCard, reveal?: Reveal): WesternAbomination | 
 /** A cream halo round the ink of a Western plank, so the letters stand out from the wood grain. */
 const westernGlow = (s: number) => ({ textShadowColor: WESTERN_COLORS.inkGlow, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 * s });
 
+/**
+ * Room kept at the bottom of a card back's scrolling text where the round "enlarge" button (zoom-button.tsx: 30 px plus a
+ * 6 px inset) covers the card, plus a small gap. In screen pixels, not scaled with the card: the button keeps its size
+ * on a small card, so a share of the card width would leave it over the last line.
+ */
+const ZOOM_BUTTON_CLEARANCE = 30 + 6 + 4;
 /** An image filling its parent: `absoluteFill` alone would leave it at its own pixel size on the web. */
 const FILL = { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' } as const;
 
@@ -369,6 +375,7 @@ export function CardFace({
   reveal,
   side = 'front',
   onFlip,
+  zoomButton,
 }: {
   card: ZombieCard;
   danger: DangerLevel;
@@ -377,12 +384,14 @@ export function CardFace({
   side?: CardSide;
   /** Taps on the back (its text and header) turn the card over again. */
   onFlip?: () => void;
+  /** The enlarge button sits over the bottom-left corner of this card: the back's text scrolls clear of it. */
+  zoomButton?: boolean;
 }) {
   const scale = Math.max(0.5, width / DESIGN_WIDTH);
   const style = useMemo(() => ({ styles: makeStyles(scale), scale }), [scale]);
   return (
     <CardStyle.Provider value={style}>
-      <Card card={card} danger={danger} reveal={reveal} side={side} onFlip={onFlip} />
+      <Card card={card} danger={danger} reveal={reveal} side={side} onFlip={onFlip} zoomButton={zoomButton} />
     </CardStyle.Provider>
   );
 }
@@ -524,7 +533,7 @@ export function bossLabel(reveal: Reveal, t: Translate): string {
 }
 
 /** The face of an Abomination drawn by hand: its picture, its rule and the powers it carries. */
-export function BossFace({ reveal, width, universe, side = 'front', onFlip }: { reveal: Reveal; width: number; universe: UniverseId; side?: CardSide; onFlip?: () => void }) {
+export function BossFace({ reveal, width, universe, side = 'front', onFlip, zoomButton }: { reveal: Reveal; width: number; universe: UniverseId; side?: CardSide; onFlip?: () => void; zoomButton?: boolean }) {
   const { t } = useApp();
   const scale = Math.max(0.5, width / DESIGN_WIDTH);
   const style = useMemo(() => ({ styles: makeStyles(scale), scale }), [scale]);
@@ -532,7 +541,7 @@ export function BossFace({ reveal, width, universe, side = 'front', onFlip }: { 
   return (
     <CardStyle.Provider value={style}>
       {side === 'back' ? (
-        <RuleSide text={bossFaceText(reveal, t)} header={BOSS_LOOK[universe].header} universe={universe} onFlip={onFlip} />
+        <RuleSide text={bossFaceText(reveal, t)} header={BOSS_LOOK[universe].header} universe={universe} onFlip={onFlip} zoomButton={zoomButton} />
       ) : universe === 'western' ? (
         <WesternBoss reveal={reveal} text={bossFaceText(reveal, t)} footerOnFront={!bossHasBack(reveal, t)} />
       ) : universe === 'fantasy' ? (
@@ -632,7 +641,7 @@ function westernText(card: WesternCard, danger: DangerLevel, t: Translate, revea
 const extraLine = (zombie: ExtraZombie | InvaderXeno | WesternActivated, at: DangerLevel, t: Translate) =>
   at === 'blue' ? t('card.extraNobody') : t(`zombie.${zombie}.all`);
 
-function Card({ card: printed, danger, reveal, side, onFlip }: { card: ZombieCard; danger: DangerLevel; reveal?: Reveal; side: CardSide; onFlip?: () => void }) {
+function Card({ card: printed, danger, reveal, side, onFlip, zoomButton }: { card: ZombieCard; danger: DangerLevel; reveal?: Reveal; side: CardSide; onFlip?: () => void; zoomButton?: boolean }) {
   const { t, cardDisplay } = useApp();
   const { styles } = useContext(CardStyle);
   const card = asRevealed(printed, reveal);
@@ -640,7 +649,7 @@ function Card({ card: printed, danger, reveal, side, onFlip }: { card: ZombieCar
   const footerOnFront = !cardHasBack(printed, danger, t, reveal);
 
   if (side === 'back') {
-    return <RuleSide card={card} text={text} header={headerFor(card)} universe={universeOf(card)} onFlip={onFlip} {...backHeading(printed, card, danger, text, reveal, t)} />;
+    return <RuleSide card={card} text={text} header={headerFor(card)} universe={universeOf(card)} onFlip={onFlip} zoomButton={zoomButton} {...backHeading(printed, card, danger, text, reveal, t)} />;
   }
 
   if (isFantasyCard(card)) return <FantasyFace card={card} danger={danger} text={text} reveal={reveal} footerOnFront={footerOnFront} />;
@@ -1398,6 +1407,8 @@ function RuleSide(props: {
   printedText?: string[];
   /** Turns the card back to its front. */
   onFlip?: () => void;
+  /** The enlarge button covers the bottom-left corner: the text can scroll up clear of it. */
+  zoomButton?: boolean;
 }) {
   const { styles } = useContext(CardStyle);
   const { title, footer } = props.text;
@@ -1416,7 +1427,7 @@ function RuleSide(props: {
       </Pressable>
       <View style={[styles.sideFrame, { backgroundColor: panel.frame }]}>
         <ScrollView style={[styles.sideBox, { backgroundColor: panel.box }]} {...SCROLL_TRACKING}>
-          <Pressable style={({ pressed }) => [styles.sideContent, pressed && PRESSED]} onPress={props.onFlip} accessible={false}>
+          <Pressable style={({ pressed }) => [styles.sideContent, props.zoomButton && { paddingBottom: styles.sideContent.padding + ZOOM_BUTTON_CLEARANCE }, pressed && PRESSED]} onPress={props.onFlip} accessible={false}>
           {props.name !== undefined && <Text style={[styles.sideName, { color: panel.ink }]}>{props.name}</Text>}
           {props.revealedAs !== undefined && <Text style={[styles.sideRevealed, { color: panel.ink }]}>{props.revealedAs}</Text>}
           {[...(props.printedText ?? []), ...(footer ?? '').split('\n')].map((line, index) => (

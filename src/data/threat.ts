@@ -122,7 +122,9 @@ export const NECROMANCER_BOSSES: readonly Boss[] = [
   { zombie: 'erikSummoner', setId: 'specialGuests' },
   { zombie: 'innsmouth', setId: 'specialGuests' },
   { zombie: 'faolan', setId: 'specialGuests' },
-  { zombie: 'lordOfSkulls', setId: 'specialGuests' },
+  // "Spawns with both Doom and Gloom, if they are in the Zombie reserve" (Special Guest Adrian Smith 2, Lord of Skulls #279-#284;
+  // fan wiki, read 2026-11-22).
+  { zombie: 'lordOfSkulls', setId: 'specialGuests', power: { kind: 'brings', bosses: ['doom', 'gloom'], bossKind: 'abomination' } },
   // A Necromancer printed as a spawn card: his picture over the Swarms of Ratz he brings.
   { zombie: 'ratKing', setId: 'ratKingSwampTroll' },
   { zombie: 'bomoh', setId: 'frozenFortress' },
@@ -140,6 +142,17 @@ export const NECROMANCER_BOSSES: readonly Boss[] = [
   { zombie: 'zhangJiao', setId: 'warlordsMiddleKingdom' },
   // Three identical cards, all in the Necromancer deck.
   { zombie: 'fumaKotaro', setId: 'warlordsRisingSun', copies: 3, power: { kind: 'single' } },
+  // Timecrash rulebook p.3 and p.8: the printed, unnumbered "Shredder" Necromancer card ("1 Necromancer Card"), with the
+  // Necromancer card back, meant for White Death's Necromancer deck or as a reference card in Black Plague / Green Horde.
+  { zombie: 'shredder', setId: 'timecrash' },
+];
+/**
+ * Doom and Gloom (Special Guest Adrian Smith 2): two Abominations with no card of their own, which the Lord of Skulls brings
+ * when they are in the Zombie reserve (fan wiki, read 2026-11-22). In no deck and no menu: each leaves the game when removed.
+ */
+export const LORD_OF_SKULLS_ESCORT: readonly Boss[] = [
+  { zombie: 'doom', setId: 'specialGuests', power: { kind: 'escort' } },
+  { zombie: 'gloom', setId: 'specialGuests', power: { kind: 'escort' } },
 ];
 
 const CORE_NECROMANCERS: readonly { zombie: FantasyNecromancer; setId: string }[] = [
@@ -162,7 +175,11 @@ const DECK_BOSSES = new Set<string>(
   [...SET_ABOMINATIONS, ...ABOMINATION_BOSSES, ...BIG_BOSSES, ...CORE_NECROMANCERS, ...NECROMANCER_BOSSES].map((boss) => boss.zombie),
 );
 /** The bosses a saved fantasy boss deck may hold. */
-export const FANTASY_BOSS_IDS: ReadonlySet<string> = new Set([...DECK_BOSSES, ...DIVINE_BEASTS.map((boss) => boss.zombie)]);
+export const FANTASY_BOSS_IDS: ReadonlySet<string> = new Set([
+  ...DECK_BOSSES,
+  ...DIVINE_BEASTS.map((boss) => boss.zombie),
+  ...LORD_OF_SKULLS_ESCORT.map((boss) => boss.zombie),
+]);
 
 /** How many cards of each boss the boxes can hold at most; a boss absent from the map has no known bound. */
 function copiesOf(bosses: readonly Boss[]): ReadonlyMap<string, number> {
@@ -173,7 +190,7 @@ function copiesOf(bosses: readonly Boss[]): ReadonlyMap<string, number> {
 // The generic Abominations and Necromancers of the core boxes are not bounded here: their cards are those of the deck.
 const GENERIC_BOSSES = new Set<string>([...SET_ABOMINATIONS, ...CORE_NECROMANCERS].map((boss) => boss.zombie));
 export const FANTASY_BOSS_COPIES: ReadonlyMap<string, number> = new Map(
-  [...copiesOf([...ABOMINATION_BOSSES, ...DIVINE_BEASTS, ...BIG_BOSSES, ...NECROMANCER_BOSSES])].filter(([boss]) => !GENERIC_BOSSES.has(boss)),
+  [...copiesOf([...ABOMINATION_BOSSES, ...DIVINE_BEASTS, ...LORD_OF_SKULLS_ESCORT, ...BIG_BOSSES, ...NECROMANCER_BOSSES])].filter(([boss]) => !GENERIC_BOSSES.has(boss)),
 );
 
 // A named card, or a card of the pack printed "Divine Beasts" (title 'zombies', plural): both name their boss in a level.

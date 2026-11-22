@@ -39,11 +39,12 @@ import {
   drawAbomination,
   groupCards,
   liveBosses,
+  newGroups,
   pendingChoice,
   powersOf,
   removeFromBoard,
 } from './engine.ts';
-import type { BossKind, BossPiles, BossRule, CardSet, GameState, Piles, ZombieCard } from './types.ts';
+import type { BossKind, BossPiles, BossRule, CardSet, GameState, Piles, Revealed, ZombieCard } from './types.ts';
 import { isInvaderCard, isWesternCard, NO_BOSS, NO_DECK } from './types.ts';
 
 const sets: CardSet[] = [
@@ -1184,18 +1185,30 @@ test('the Necromancers of the packs sit where their sheets print them', () => {
 });
 
 const BEASTS_IN_ORDER = ['vermillionBird', 'whiteTiger', 'blackTortoise', 'azureDragon'];
+/** The Abominations the packs of `NEW_SETS` add to the Abomination deck: Massive Darkness 2, Comic Book Extras Vol. 2, Bebop & Rocksteady, Iron Maiden. */
+const PACK_ABOMINATIONS = [
+  'reaper', 'baalberith', 'horseman', 'queenCaenedra', 'hugBear', 'banshee', 'cerberus',
+  'lordJanas', 'marike', 'bebop', 'rocksteady',
+  'pharaohEddie', 'samuraiEddie', 'mummyEddie', 'wickerManEddie', 'fearEddie',
+];
 
 test('the bosses of the packs join their decks, the spawned zombies stay in the Zombie deck and the Divine Beasts card goes to the Abomination deck', () => {
   const setIds = ['blackPlague', ...NEW_SETS.map(([id]) => id)];
   const deck = fantasyDeck(setIds);
   const bosses = [...(deck.bosses?.abomination ?? []), ...(deck.bosses?.necromancer ?? [])];
   // The four Divine Beasts are revealed by their card, they are in no deck.
-  for (const boss of BOSSES_WITHOUT_RULE.filter((boss) => !BEASTS_IN_ORDER.includes(boss) && boss !== 'divineBeast')) assert.ok(bosses.includes(boss), boss);
-  for (const boss of ['mummRa', 'grandVizier', 'theSparrow', 'erinn', 'reaperEddie', 'shamanEddie']) {
+  for (const boss of PACK_ABOMINATIONS) assert.ok(bosses.includes(boss), boss);
+  // Timecrash's Shredder is a Necromancer boss; Doom and Gloom (Lord of Skulls' escort) have no card and join no deck.
+  for (const boss of ['mummRa', 'grandVizier', 'theSparrow', 'erinn', 'reaperEddie', 'shamanEddie', 'shredder']) {
     assert.ok(deck.bosses?.necromancer.includes(boss), boss);
   }
-  assert.equal(deck.bosses?.abomination.length, 1 + BOSSES_WITHOUT_RULE.length - BEASTS_IN_ORDER.length);
-  assert.equal(deck.bosses?.necromancer.length, 1 + 6);
+  // Black Plague's Abomination, the 16 pack Abominations and the Divine Beasts card.
+  assert.equal(deck.bosses?.abomination.length, 1 + PACK_ABOMINATIONS.length + 1);
+  // Black Plague's Necromancer, the six Necromancers of the packs and Shredder.
+  assert.equal(deck.bosses?.necromancer.length, 1 + 6 + 1);
+  for (const boss of ['doom', 'gloom']) {
+    assert.ok(!bosses.includes(boss), boss);
+  }
   // Only Black Plague's 54 cards and the spawn cards (12 Berserker + 18 Climbers and Terrorcotta + 6 Crossfire + 6 Foot Ninjas) stay.
   assert.equal(deck.cards.length, 54 + 12 + 18 + 6 + 6);
   // The Divine Beasts card is the pack's White Death Abomination card: it is dealt from the Abomination deck, once.
@@ -2462,4 +2475,244 @@ test('Divine Beasts: the card reveals the Vermillion Bird, each removal brings t
   assert.deepEqual(bossesOf(end).abomination, { draw: [], discard: [] }, 'divineBeast is in no pile');
   assert.ok(!bossCardsOf(end).includes('divineBeast'));
   assert.ok(isValidSave(JSON.parse(JSON.stringify(end)), cardIdsOf, bossIdsOf, bossCopiesOf));
+});
+
+// Escorts (Lord of Skulls with Doom and Gloom): a boss that brings others from the reserve. They have no card of
+// their own: each arrives as its own group in `manual` and is never put in a pile. Made-up bosses.
+const ESCORT_POWERS: Record<string, BossPower> = {
+  lord: { kind: 'brings', bosses: ['doom', 'gloom'], bossKind: 'abomination' },
+  lord2: { kind: 'brings', bosses: ['doom'], bossKind: 'abomination' },
+  mage: { kind: 'brings', bosses: ['doom'], bossKind: 'abomination' },
+  doom: { kind: 'escort' },
+  gloom: { kind: 'escort' },
+  vamp: { kind: 'drawOnDeath' },
+};
+const escortPowers: BossPowers = (boss) => ESCORT_POWERS[boss];
+const callsNecro = (...cards: string[]): BossTrigger => (id) => (cards.includes(id) ? 'necromancer' : undefined);
+const callsAbom = (...cards: string[]): BossTrigger => (id) => (cards.includes(id) ? 'abomination' : undefined);
+const mixed = (necro: string[], abomination: string[]): BossTrigger => (id) => (necro.includes(id) ? 'necromancer' : abomination.includes(id) ? 'abomination' : undefined);
+const escortGame = (necromancer: string[], abomination: string[] = ['x'], zones = 1, rule: BossRule = 'oneAtATime') => {
+  const start = powerGame(abomination, [], zones, rule);
+  const bosses = bossesOf(start);
+  return { ...start, piles: { ...start.piles, bosses: { ...bosses, necromancer: { draw: necromancer, discard: [] } } } };
+};
+const escortStep = (state: GameState, trigger: BossTrigger) => drawCards(state, undefined, () => 0, trigger, escortPowers);
+const escortRemove = (state: GameState, target: Parameters<typeof removeFromBoard>[1]) => removeFromBoard(state, target, () => 0, escortPowers);
+const abom = (boss: string) => ({ kind: 'abomination', boss });
+const withBoard = (state: GameState, boss: string): GameState => ({
+  ...state,
+  piles: { ...state.piles, bosses: { ...bossesOf(state), onBoard: [{ kind: 'abomination', boss }] } },
+});
+const everywhere = (state: GameState) => bossCardsOf(state);
+const A_IDS = () => new Set(['a1', 'a2', 'a3']);
+
+test('a boss that brings escorts reveals each as its own group, with no pile touched', () => {
+  const start = escortGame(['lord']);
+  const state = escortStep(start, callsNecro('a1'));
+  assert.deepEqual(bossesOf(state).revealed.a1, { kind: 'necromancer', boss: 'lord' });
+  assert.deepEqual(bossesOf(state).manual, [abom('doom'), abom('gloom')]);
+  assert.deepEqual(bossesOf(state).abomination, { draw: ['x'], discard: [] });
+  assert.deepEqual(bossesOf(state).necromancer, { draw: [], discard: [] });
+  assert.deepEqual(undo(state).piles, start.piles);
+});
+
+test('escorts are brought by hand too, and removing one by its manual index leaves the others', () => {
+  const start = escortGame([], ['mage', 'x']);
+  const state = drawAbomination(start, () => 0, escortPowers);
+  assert.deepEqual(bossesOf(state).manual, [abom('mage'), abom('doom')]);
+  assert.deepEqual(undo(state).piles, start.piles);
+  const out = escortRemove(state, inManual(1, 'doom'));
+  assert.deepEqual(bossesOf(out).manual[1], { kind: 'abomination', boss: 'doom', gone: ['doom'] });
+  assert.deepEqual(bossesOf(out).abomination, { draw: ['x'], discard: [] }, 'an escort is not discarded');
+  assert.deepEqual(liveBosses(bossesOf(out).manual[0]), ['mage']);
+  assert.deepEqual(undo(out).piles, state.piles);
+});
+
+test('in one at a time a later Abomination card gives the escorts the Extra Activation and draws nothing', () => {
+  const state = escortStep(escortGame(['lord'], ['x'], 2), mixed(['a1'], ['a2']));
+  assert.deepEqual(bossesOf(state).revealed.a2, { kind: 'abomination', boss: NO_BOSS, activates: 'doom' });
+  assert.deepEqual(bossesOf(state).abomination, { draw: ['x'], discard: [] });
+});
+
+test('a bringer only named for an Extra Activation brings nothing', () => {
+  const state = escortStep(escortGame(['lord'], ['x'], 2), callsNecro('a1', 'a2'));
+  assert.deepEqual(bossesOf(state).revealed.a2, { kind: 'necromancer', boss: NO_BOSS, activates: 'lord' });
+  assert.deepEqual(bossesOf(state).manual, [abom('doom'), abom('gloom')]);
+  // Same from a bringer already on the board: the next step names it and the escorts stay as they were.
+  const next = escortStep(escortStep(escortGame(['lord'], ['x'], 1), callsNecro('a1')), callsNecro('a2'));
+  assert.deepEqual(bossesOf(next).revealed.a2, { kind: 'necromancer', boss: NO_BOSS, activates: 'lord' });
+  assert.deepEqual(bossesOf(next).manual, []);
+  assert.deepEqual(boardOf(next), ['lord', 'doom', 'gloom']);
+});
+
+test('in the Fest the escorts arrive beside the bringer and are named by later cards, with no duplicate', () => {
+  const state = escortStep(escortGame(['lord'], ['x'], 2, 'fest'), mixed(['a1'], ['a2']));
+  assert.deepEqual(bossesOf(state).revealed.a2, { kind: 'abomination', boss: 'x', activated: ['doom', 'gloom'] });
+  // A second bringer, doom being there already, brings nothing.
+  const second = escortStep(escortGame(['lord', 'lord2'], ['x'], 2, 'fest'), callsNecro('a1', 'a2'));
+  assert.deepEqual(bossesOf(second).revealed.a2, { kind: 'necromancer', boss: 'lord2', activated: ['lord'] });
+  assert.deepEqual(bossesOf(second).manual, [abom('doom'), abom('gloom')]);
+});
+
+test('only the escort that is missing arrives when another is still on the board', () => {
+  const state = escortStep(withBoard(escortGame(['lord']), 'doom'), callsNecro('a1'));
+  assert.deepEqual(bossesOf(state).manual, [abom('gloom')]);
+  assert.deepEqual(boardOf(state), ['doom']);
+});
+
+test('the bringer removed leaves its escorts in play; a removed escort comes back with the next reveal', () => {
+  const state = escortStep(escortGame(['lord']), callsNecro('a1'));
+  const lordOut = escortRemove(state, { from: 'step', card: 'a1', boss: 'lord' });
+  assert.deepEqual(bossesOf(lordOut).manual.flatMap(liveBosses), ['doom', 'gloom']);
+  assert.deepEqual(bossesOf(lordOut).necromancer.discard, ['lord']);
+  assert.deepEqual(undo(lordOut).piles, state.piles);
+  const doomOut = escortRemove(lordOut, inManual(0, 'doom'));
+  assert.deepEqual(bossesOf(doomOut).abomination.discard, [], 'no escort in the discard');
+  // New step: gloom goes to the board, the lord comes back from the reshuffled discard and brings doom only.
+  const again = escortStep(doomOut, callsNecro('a2'));
+  assert.deepEqual(boardOf(again), ['gloom']);
+  assert.deepEqual(bossesOf(again).manual, [abom('doom')]);
+  assert.deepEqual(undo(again).piles, doomOut.piles);
+});
+
+test('a new Spawn step moves the escorts to the board, where each is removed on its own without a discard', () => {
+  const state = escortStep(escortStep(escortGame(['lord']), callsNecro('a1')), callsAbom());
+  assert.deepEqual(boardOf(state), ['lord', 'doom', 'gloom']);
+  assert.deepEqual(bossesOf(state).manual, []);
+  const oneOut = escortRemove(state, OUT('doom'));
+  const out = escortRemove(oneOut, OUT('gloom'));
+  assert.deepEqual(boardOf(out), ['lord']);
+  assert.deepEqual(bossesOf(out).abomination, { draw: ['x'], discard: [] });
+  assert.deepEqual(undo(out).piles, oneOut.piles);
+});
+
+test('a bringer sent back to the deck takes the escorts it brought, not the ones already on the board', () => {
+  const trigger: BossTrigger = (id, danger) => (id === 'a1' && danger === 'blue' ? 'necromancer' : undefined);
+  const played = escortStep(escortGame(['lord']), trigger);
+  const back = setDanger(played, 'yellow', trigger, () => 0, escortPowers);
+  assert.deepEqual(bossesOf(back).manual, []);
+  assert.deepEqual(bossesOf(back).necromancer.discard, ['lord']);
+  assert.deepEqual(bossCardsOf(back), ['lord', 'x']);
+  const partial = setDanger(escortStep(withBoard(escortGame(['lord']), 'doom'), trigger), 'yellow', trigger, () => 0, escortPowers);
+  assert.deepEqual(bossesOf(partial).manual, []);
+  assert.deepEqual(boardOf(partial), ['doom']);
+});
+
+test('a bringer sent back to the deck leaves no escort in the Extra Activations of the Fest or one at a time', () => {
+  const trigger: BossTrigger = (id, danger) => (id === 'a1' && danger === 'blue' ? 'necromancer' : id === 'a2' ? 'abomination' : undefined);
+  const fest = setDanger(escortStep(escortGame(['lord'], ['x'], 2, 'fest'), trigger), 'yellow', trigger, () => 0, escortPowers);
+  assert.deepEqual(bossesOf(fest).revealed.a2, { kind: 'abomination', boss: 'x' });
+  const one = setDanger(escortStep(escortGame(['lord'], ['x'], 2), trigger), 'yellow', trigger, () => 0, escortPowers);
+  // With no escort left to name, the card draws its own Abomination.
+  assert.deepEqual(bossesOf(one).revealed.a2, { kind: 'abomination', boss: 'x' });
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(one)), A_IDS));
+});
+
+test('reshuffling everything drops the escorts, on display or on the board, and keeps the others', () => {
+  const state = escortStep(escortStep(escortGame(['lord']), callsNecro('a1')), callsNecro('a2'));
+  assert.deepEqual(boardOf(state), ['lord', 'doom', 'gloom']);
+  const fresh = reshuffleAll(state, () => 0, escortPowers);
+  assert.deepEqual(everywhere(fresh), ['lord', 'x']);
+  assert.deepEqual(bossesOf(fresh).manual, []);
+  assert.deepEqual(undo(fresh).piles, state.piles);
+  const mid = reshuffleAll(escortStep(escortGame(['lord']), callsNecro('a1')), () => 0, escortPowers);
+  assert.deepEqual(everywhere(mid), ['lord', 'x']);
+});
+
+test('a save holding escorts on display and on the board is valid, and the version is unchanged', () => {
+  const state = escortStep(escortStep(escortGame(['lord']), callsNecro('a1')), callsNecro('a2'));
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(state)), A_IDS));
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(escortStep(escortGame(['lord']), callsNecro('a1')))), A_IDS));
+  assert.equal(state.version, 7);
+});
+
+test('newGroups names the escorts a bringer brought, after the bringer revealed by a card or by hand', () => {
+  const start = escortGame(['lord']);
+  const dealt = escortStep(start, callsNecro('a1'));
+  assert.deepEqual(newGroups(bossesOf(start), bossesOf(dealt), 'manual'), [abom('doom'), abom('gloom')]);
+  assert.deepEqual(newGroups(bossesOf(start), bossesOf(dealt), 'all').map((group) => group.boss), ['lord', 'doom', 'gloom']);
+  const byHand = drawAbomination(escortGame([], ['mage', 'x']), () => 0, escortPowers);
+  assert.deepEqual(newGroups(bossesOf(escortGame([], ['mage', 'x'])), bossesOf(byHand), 'manual').map((group) => group.boss), ['mage', 'doom']);
+});
+
+test('newGroups at a new Spawn step ignores what was released and finds the same escort again', () => {
+  const first = escortStep(escortGame(['lord', 'lord']), callsNecro('a1'));
+  const second = escortStep(first, callsNecro('a2'));
+  // Doom and Gloom of the first step went to the board, so none arrives again.
+  assert.deepEqual(newGroups({ ...bossesOf(first), manual: [] }, bossesOf(second), 'manual'), []);
+  // Without Doom on the board (removed), the same Doom arrives again: new once the release is accounted for.
+  const dealtAgain = escortStep(escortGame(['lord', 'lord']), callsNecro('a1'));
+  const doomOut = escortRemove(escortRemove(escortRemove(dealtAgain, { from: 'step', card: 'a1', boss: 'lord' }), inManual(0, 'doom')), inManual(1, 'gloom'));
+  const again = escortStep(doomOut, callsNecro('a2'));
+  assert.deepEqual(newGroups({ ...bossesOf(doomOut), manual: [] }, bossesOf(again), 'manual').map((group) => group.boss), ['doom', 'gloom']);
+});
+
+test('newGroups says nothing when a level is picked again or a rebuilt Extra Activation is the same', () => {
+  const state = escortStep(escortGame(['lord'], ['x'], 2), mixed(['a1'], ['a2']));
+  const same = setDanger(state, state.danger, mixed(['a1'], ['a2']), () => 0, escortPowers);
+  assert.deepEqual(newGroups(bossesOf(state), bossesOf(same), 'all'), []);
+  const rebuilt = { ...bossesOf(state), revealed: Object.fromEntries(Object.entries(bossesOf(state).revealed).map(([card, group]) => [card, { ...group }])), manual: bossesOf(state).manual.map((group) => ({ ...group })) };
+  assert.deepEqual(newGroups(bossesOf(state), rebuilt, 'all'), []);
+});
+
+test('newGroups finds a boss replaced (Fuma Kotaro) and a chained beast, even when a group left', () => {
+  const before: BossPiles = { ...bossesOf(escortGame([])), manual: [abom('a'), abom('b')] as Revealed[] };
+  const replaced: BossPiles = { ...before, manual: [abom('b'), abom('c')] as Revealed[] };
+  assert.deepEqual(newGroups(before, replaced, 'manual'), [abom('c')]);
+});
+
+test('newGroups after a removal says nothing about the group itself, nor when the removal is undone', () => {
+  const state = escortStep(escortGame(['lord']), callsNecro('a1'));
+  const removed = escortRemove(state, inManual(0, 'doom'));
+  // A removal makes the group shorter, not new: its own card is not read out again.
+  assert.deepEqual(newGroups(bossesOf(state), bossesOf(removed), 'manual'), []);
+  assert.deepEqual(newGroups(bossesOf(removed), bossesOf(undo(removed)), 'manual'), [], 'the same group, whole again');
+});
+
+// Real Fantasy data: the Lord of Skulls brings Doom and Gloom, which have no card of their own.
+test('the Lord of Skulls brings Doom and Gloom as Abominations, which are escorts with one copy each', () => {
+  assert.deepEqual(fantasyPowers('lordOfSkulls'), { kind: 'brings', bosses: ['doom', 'gloom'], bossKind: 'abomination' });
+  assert.deepEqual(fantasyPowers('doom'), { kind: 'escort' });
+  assert.deepEqual(fantasyPowers('gloom'), { kind: 'escort' });
+  assert.equal(UNIVERSES.fantasy.bosses?.copies.get('doom'), 1);
+  assert.equal(UNIVERSES.fantasy.bosses?.copies.get('gloom'), 1);
+  assert.ok(FANTASY_BOSS_IDS.has('doom') && FANTASY_BOSS_IDS.has('gloom'));
+});
+
+test('a Fantasy save refuses Doom twice (by hand and on the board) and accepts it once', () => {
+  const start = beastsGame();
+  const withDoom = (manual: { kind: 'abomination'; boss: string }[], onBoard: { kind: 'abomination'; boss: string }[]): GameState => ({
+    ...start,
+    piles: { ...start.piles, bosses: { ...bossesOf(start), manual, onBoard } },
+  });
+  const doom = { kind: 'abomination' as const, boss: 'doom' };
+  const once = withDoom([doom], []);
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(once)), cardIdsOf, bossIdsOf, bossCopiesOf));
+  assert.ok(isValidSave(JSON.parse(JSON.stringify(withDoom([], [doom]))), cardIdsOf, bossIdsOf, bossCopiesOf));
+  const twice = withDoom([doom], [doom]);
+  assert.equal(isValidSave(JSON.parse(JSON.stringify(twice)), cardIdsOf, bossIdsOf, bossCopiesOf), false);
+});
+
+test('newGroups after the removal of a boss of Alpha Vampire reads out only the newcomer it draws', () => {
+  const start = escortGame([], ['vamp', 'x']);
+  const state = drawAbomination(start, () => 0, escortPowers);
+  const dead = escortRemove(state, inManual(0, 'vamp'));
+  assert.deepEqual(newGroups(bossesOf(state), bossesOf(dead), 'manual'), [abom('x')]);
+});
+
+test('newGroups after a chained beast is removed reads out only the next beast, a Fest removal nothing', () => {
+  const beast = (boss: string, gone?: string[]): Revealed => ({ kind: 'abomination', boss, ...(gone && { gone }) });
+  const piles = (manual: Revealed[]): BossPiles => ({ ...bossesOf(escortGame([])), manual });
+  assert.deepEqual(newGroups(piles([beast('tiger')]), piles([beast('tiger', ['tiger']), beast('tortoise')]), 'manual'), [beast('tortoise')]);
+  // Fest: the removed boss leaves the Extra Activation list, and the group left with none says so.
+  const fest = (group: Revealed) => piles([group]);
+  const activation: Revealed = { kind: 'abomination', boss: NO_BOSS, activated: ['doom'] };
+  assert.deepEqual(newGroups(fest(activation), fest({ kind: 'abomination', boss: NO_BOSS, none: true }), 'manual'), []);
+  assert.deepEqual(newGroups(fest({ ...activation, activated: ['doom', 'gloom'] }), fest({ ...activation, activated: ['gloom'] }), 'manual'), []);
+});
+
+test('newGroups still reads out an Extra Activation that now names another boss (a Danger Level change)', () => {
+  const piles = (activates: string): BossPiles => ({ ...bossesOf(escortGame([])), manual: [{ kind: 'abomination', boss: NO_BOSS, activates }] });
+  assert.deepEqual(newGroups(piles('doom'), piles('gloom'), 'manual'), [{ kind: 'abomination', boss: NO_BOSS, activates: 'gloom' }]);
+  assert.deepEqual(newGroups(piles('doom'), piles('doom'), 'manual'), []);
 });

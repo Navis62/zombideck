@@ -330,7 +330,8 @@ export const ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
 ]);
 /**
  * Bosses with a rule of their own (`card.<id>Rule`), shown when they are revealed from their deck: the boss cards of
- * Frozen Fortress, White Death and Eternal Empire, and the named Necromancers.
+ * Frozen Fortress, White Death and Eternal Empire, and the named Necromancers. The rules of the groups at the end are
+ * not printed on their cards: they come from other sources, listed next to them.
  */
 export const BOSS_RULE_IDS = [
   'fantasyAbomination',
@@ -402,18 +403,44 @@ export const BOSS_RULE_IDS = [
   'dongZhuo',
   'zhangJiao',
   'fumaKotaro',
+  // Rules written from the printed Massive Darkness 2 "Heroes and Enemies in Zombicide Fantasy" sheet (owner's photo).
+  'reaper',
+  'baalberith',
+  'horseman',
+  'queenCaenedra',
+  'hugBear',
+  'banshee',
+  'cerberus',
+  // Rules from the Zombicide fan wiki (zombicide.fandom.com), read on 2026-11-22.
+  'lordJanas',
+  'marike',
+  'bebop',
+  'rocksteady',
+  'pharaohEddie',
+  'samuraiEddie',
+  'mummyEddie',
+  'wickerManEddie',
+  'fearEddie',
+  // (The Pharaoh and Mummy Eddie rules match the owner's previews of the Modern Pharaoh and Mummy cards, a second source.)
+  // Doom and Gloom have no card: their rule comes with the Lord of Skulls (fan wiki, 2026-11-22).
+  'doom',
+  'gloom',
+  // The Divine Beasts: the owner's reference cards and the Divine Beasts rulebook. The White Tiger's free action is a
+  // "Combat Action" as printed on the reference card; the rulebook says "Melee Action" (the card is followed). Its
+  // elimination reads "2 hits in a single Melee Action" as printed on the owner's reference card (the rulebook says
+  // "Attack Action": the card is followed).
+  'vermillionBird',
+  'whiteTiger',
+  'blackTortoise',
+  'azureDragon',
+  // Timecrash rulebook p.3 and p.8 (printed card, unnumbered).
+  'shredder',
 ] as const;
 /**
- * Bosses whose cards print no rule, only a picture: there is nothing to show when they are revealed. Their rules are on
- * the rules cards of their boxes, which are not transcribed.
+ * Bosses with no rule to show when they are revealed: only the Divine Beasts card, which is no boss itself (it stands for
+ * the chain of the four beasts, each with its own rule above) and never appears on its own.
  */
-export const BOSSES_WITHOUT_RULE = [
-  'reaper', 'baalberith', 'horseman', 'queenCaenedra', 'hugBear', 'banshee', 'cerberus',
-  'lordJanas', 'marike', 'bebop', 'rocksteady',
-  'pharaohEddie', 'samuraiEddie', 'mummyEddie', 'wickerManEddie', 'fearEddie',
-  // The Divine Beasts pack prints names only: the rules are in its rulebook, not on a reference card.
-  'divineBeast', 'vermillionBird', 'whiteTiger', 'blackTortoise', 'azureDragon',
-] as const;
+export const BOSSES_WITHOUT_RULE = ['divineBeast'] as const;
 export type BossRuleId = (typeof BOSS_RULE_IDS)[number];
 /** Necromancers with a name: the normal Necromancer rules, plus one of their own. */
 export const NAMED_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<NamedNecromancer>([
@@ -444,12 +471,13 @@ export const NAMED_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<Named
   'shamanEddie',
   'zhangJiao',
   'fumaKotaro',
+  'shredder',
 ]);
 /**
  * Necromancers whose card does not start with "Normal Necromancer rules": the Mumm-Ra, Zhang Jiao and Fūma Kotarō cards
- * print their own rule alone.
+ * print their own rule alone, and so does Shredder's (it also tells how he plays in Black Plague and Green Horde).
  */
-export const PLAIN_RULE_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<NamedNecromancer>(['mummRa', 'zhangJiao', 'fumaKotaro']);
+export const PLAIN_RULE_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<NamedNecromancer>(['mummRa', 'zhangJiao', 'fumaKotaro', 'shredder']);
 
 // Friends and Foes: the levels as printed (the fan wiki adds the Horde zombie to most counts, not to Red on #253).
 const TAINTED_SPAWNS: readonly Specs[] = [
@@ -628,7 +656,7 @@ const eddie = (first: number, zombie: NamedAbomination | NamedNecromancer, count
       : namedAbomination(IRON_MAIDEN, id, zombie as NamedAbomination),
   );
 const ironMaidenCards: ZombieCard[] = [
-  // Reaper, Pharaoh, Samurai, Shaman, Mummy, Wicker Man, Fear.
+  // Reaper, Pharaoh, Samurai, Shaman, Mummy, Wicker, Fear.
   ...eddie(371, 'reaperEddie', 6),
   ...eddie(377, 'pharaohEddie', 4),
   ...eddie(381, 'samuraiEddie', 4),

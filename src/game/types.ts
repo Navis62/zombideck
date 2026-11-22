@@ -221,7 +221,10 @@ export type NamedAbomination =
   | 'mummyEddie'
   | 'wickerManEddie'
   | 'fearEddie'
-  | 'dongZhuo';
+  | 'dongZhuo'
+  // Lord of Skulls' escort: no card of their own (`LORD_OF_SKULLS_ESCORT`, threat.ts).
+  | 'doom'
+  | 'gloom';
 /** Zombies an Extra Activation card can name. */
 export type FantasyActivated =
   | 'fantasyWalker'
@@ -264,7 +267,8 @@ export type NamedNecromancer =
   | 'reaperEddie'
   | 'shamanEddie'
   | 'zhangJiao'
-  | 'fumaKotaro';
+  | 'fumaKotaro'
+  | 'shredder';
 export type FantasyNecromancer = 'necromancer' | 'orcNecromancer' | 'defilerNecromancer' | NamedNecromancer;
 
 /** Title printed on a fantasy spawn card when it is not the core box one ("Zombies Invasion", "Assemble the HORDE!"). */

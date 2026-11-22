@@ -127,6 +127,9 @@ type OfficialArt = {
 const FANTASY_OFFICIAL = {
   fumaKotaro: { source: require('../../assets/fantasy/necromancers/fuma-kotaro-official.png'), ratio: 1.374, cutout: true },
   dongZhuo: { source: require('../../assets/fantasy/abominations/dong-zhuo-official.png'), ratio: 0.834, cutout: true },
+  gloom: { source: require('../../assets/fantasy/abominations/gloom-official.png'), ratio: 0.931, cutout: true },
+  doom: { source: require('../../assets/fantasy/abominations/doom-official.png'), ratio: 0.916, cutout: true },
+  shredder: { source: require('../../assets/fantasy/necromancers/shredder-official.png'), ratio: 0.804, cutout: true },
   zhangJiao: { source: require('../../assets/fantasy/necromancers/zhang-jiao-official.png'), ratio: 0.666, cutout: true },
   asura: { source: require('../../assets/fantasy/abominations/asura-official.png'), ratio: 0.656, cutout: true },
   chimimoryo: { source: require('../../assets/fantasy/abominations/chimimoryo-official.png'), ratio: 1.096, cutout: true },
