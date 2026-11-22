@@ -21,7 +21,7 @@ Zombie Deck replaces the zombie spawn deck of Zombicide 2nd Edition on your phon
 • Every spawn card of the core box, with the zombie count for your Danger Level
 • Rush, Extra Activation and Abomination cards, just like the real ones
 • Modern Abomination deck: named Abominations with their rules, drawn when a Zombie card spawns one, plus special cards (SPAM, Gozer, Batman Who Laughs)
-• A “Draw an Abomination” button, in Modern and in Fantasy (when named bosses are picked)
+• A “Draw an Abomination” button, in Modern, Western and Fantasy (when named bosses are picked)
 • Choose the Danger Level in one tap; show only the current level or all four
 • Shuffle the draw pile or reshuffle everything, and undo a draw
 • Your game is saved automatically: close the app and pick up where you left off; each universe keeps its own game
@@ -34,6 +34,8 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 The medieval-fantasy era. When the app opens, pick your universe: Zombicide 2nd Edition, or Black Plague, Green Horde, White Death and Eternal Empire, alone or mixed. Every spawn card of the core boxes, with Double Spawn, Enter the Horde, the Horde symbol and White Death's Zombie Siege; each universe has its own expansions. Fantasy expansions: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, the Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, the Kickstarter packs and Special Guest boxes, and Frozen Fortress's bosses, with named Abominations and Necromancers.
 
 The sci-fi universe. Invader: the Invader and Dark Side core boxes, alone or together, with Xeno Workers, Tanks and Hunters (Drillers in Dark Side), Spoiler and Driller Abominations, Mold Spawn and Pit Spawn cards and Extra Activations. Switch on the easier or the harder half of the cards in the options. Invader expansions: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 and the Comic Book Extras, with named Abominations.
+
+The Western universe. Zombicide: Undead or Alive: the core box with Walkers, Runners, Brutes, Abomination and Extra Activation cards, the Long-Dead Walkers, and a deck of named Abominations with their rules, dealt one at a time. Western expansions: Long-Dead Walkers, Running Wild, Gears & Guns, Abominape vs Crocosaur, Deadstock Abominations, Dead West Abominations, Promos and Iron Maiden.
 
 Available in English, French, German, Spanish, Italian, Polish, Brazilian Portuguese, Russian, Ukrainian and Czech, with the official zombie names of each edition.
 
@@ -56,7 +58,7 @@ Zombie Deck remplace la pioche zombie de Zombicide 2e édition sur votre télép
 • Toutes les cartes d'apparition de la boîte de base, avec le nombre de zombies de votre niveau de danger
 • Les cartes Ruée, Activation supplémentaire et Abomination, comme les vraies
 • Paquet d'Abominations en Moderne : Abominations nommées avec leur règle, piochées quand une carte Zombie en fait apparaître une, et cartes spéciales (SPAM, Gozer, Batman Who Laughs)
-• Bouton « Piocher une Abomination », en Moderne et en Médiéval-fantastique (quand des boss nommés sont choisis)
+• Bouton « Piocher une Abomination », en Moderne, en Western et en Médiéval-fantastique (quand des boss nommés sont choisis)
 • Choisissez le niveau de danger d'un geste ; affichez seulement le niveau en cours ou les quatre
 • Mélangez la pioche ou remélangez tout, et annulez une pioche
 • La partie est sauvegardée automatiquement : fermez l'appli et reprenez où vous en étiez ; chaque univers garde sa propre partie
@@ -69,6 +71,8 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 L'univers médiéval-fantastique. À l'ouverture, choisissez votre univers : Zombicide 2e édition, ou Black Plague, Green Horde, White Death et Eternal Empire, seuls ou mélangés. Toutes les cartes d'invasion des boîtes de base, avec Double invasion, La Horde arrive, le symbole de la Horde et le Siège zombie de White Death ; chaque univers a ses propres extensions. Extensions Fantasy : Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, la Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, les packs Kickstarter et invités spéciaux, et les boss de Frozen Fortress, avec des Abominations et des Nécromanciens nommés.
 
 L'univers science-fiction. Invader : les boîtes de base Invader et Dark Side, seules ou ensemble, avec des Ouvriers, Tanks et Chasseurs Xenos (Fouisseurs dans Dark Side), les Abominations Putrescentes et Fouisseuses, les cartes Invasion de Fonge et Invasion de Tunnel et les Activations supplémentaires. Activez dans les options la moitié facile ou la moitié difficile des cartes. Extensions Invader : Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 et les Comic Book Extras, avec des Abominations nommées.
+
+L'univers western. Zombicide: Undead or Alive : la boîte de base avec ses cartes Rôdeurs, Forcenés, Brutes, Abomination et Activation supplémentaire, les Long-Dead Walkers, et un paquet d'Abominations nommées avec leur règle, distribuées une par une. Extensions Western : Long-Dead Walkers, Running Wild, Gears & Guns, Abominape vs Crocosaur, Deadstock Abominations, Dead West Abominations, les promos et Iron Maiden.
 
 Disponible en français, anglais, allemand, espagnol, italien, polonais, portugais (Brésil), russe, ukrainien et tchèque, avec les noms officiels des zombies de chaque édition.
 
@@ -91,7 +95,7 @@ Zombie Deck ersetzt den Zombie-Stapel von Zombicide Zweite Edition auf deinem Ha
 • Alle Zombiekarten des Grundspiels, mit der Zombieanzahl für deine Gefahrenstufe
 • Ansturm-, Zusätzliche-Aktivierung- und Monstrum-Karten wie im echten Spiel
 • Monstrum-Stapel in Moderne: benannte Monstren mit ihren Regeln, gezogen, wenn eine Zombiekarte eines erscheinen lässt, dazu Spezialkarten (SPAM, Gozer, Batman Who Laughs)
-• Button „Monstrum ziehen“, in Moderne und in Fantasy (bei benannten Bossen)
+• Button „Monstrum ziehen“, in Moderne, Western und Fantasy (bei benannten Bossen)
 • Gefahrenstufe mit einem Tippen wählen; nur die aktuelle Stufe oder alle vier anzeigen
 • Nachziehstapel mischen oder alles neu mischen, und einen Zug rückgängig machen
 • Die Partie wird automatisch gespeichert: App schließen und später weiterspielen; jedes Universum behält seine eigene Partie
@@ -104,6 +108,8 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 Die Fantasy-Welt. Beim Start wählst du dein Universum: Zombicide Zweite Edition oder Black Plague, Green Horde, White Death und Eternal Empire, einzeln oder gemischt. Alle Spawnkarten der Grundboxen, mit Doppel-Spawn, „Die Horde kommt!“, dem Horden-Symbol und der Zombie-Belagerung von White Death; jedes Universum hat seine eigenen Erweiterungen. Fantasy-Erweiterungen: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, die Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, die Kickstarter-Pakete und Special-Guest-Boxen sowie die Bosse von Frozen Fortress, mit benannten Monstren und Nekromanten.
 
 Das Science-Fiction-Universum. Invader: die Grundboxen Invader und Dark Side, einzeln oder zusammen, mit Xeno-Arbeitern, -Berserkern und -Jägern (Minen-Varianten in Dark Side), Fauligen und Minen-Monstren, Fäulnis-Brut- und Schacht-Brut-Karten und Zusätzlichen Aktivierungen. Schalte in den Optionen die leichtere oder die schwerere Kartenhälfte ein. Invader-Erweiterungen: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 und die Comic Book Extras, mit benannten Monstren.
+
+Das Western-Universum. Zombicide: Undead or Alive: die Grundbox mit Karten für Schlurfer, Läufer, Brutes, Monstren und Zusätzliche Aktivierung, die Long-Dead Walkers und ein Stapel benannter Monstren mit ihren Regeln, einzeln gezogen. Western-Erweiterungen: Long-Dead Walkers, Running Wild, Gears & Guns, Abominape vs Crocosaur, Deadstock Abominations, Dead West Abominations, Promos und Iron Maiden.
 
 Verfügbar auf Deutsch, Englisch, Französisch, Spanisch, Italienisch, Polnisch, brasilianischem Portugiesisch, Russisch, Ukrainisch und Tschechisch, mit den offiziellen Zombienamen jeder Ausgabe.
 
@@ -126,7 +132,7 @@ Zombie Deck sustituye el mazo de zombis de Zombicide Segunda Edición en tu móv
 • Todas las cartas de aparición de la caja básica, con el número de zombis de tu nivel de peligro
 • Cartas de Avance impetuoso, Activación adicional y Abominación, como las de verdad
 • Mazo de Abominaciones en Moderno: Abominaciones con nombre y su regla, que se roban cuando una carta de Zombi hace aparecer una, y cartas especiales (SPAM, Gozer, Batman Who Laughs)
-• Botón «Robar una Abominación», en Moderno y en Fantasía (con jefes con nombre)
+• Botón «Robar una Abominación», en Moderno, en Western y en Fantasía (con jefes con nombre)
 • Elige el nivel de peligro con un toque; muestra solo el nivel actual o los cuatro
 • Baraja el mazo o vuelve a barajarlo todo, y deshaz un robo
 • La partida se guarda sola: cierra la app y continúa donde lo dejaste; cada universo conserva su propia partida
@@ -139,6 +145,8 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 El universo de fantasía medieval. Al abrir la app, elige tu universo: Zombicide Segunda Edición, o Black Plague, Green Horde, White Death y Eternal Empire, por separado o mezclados. Todas las cartas de aparición de las cajas básicas, con Aparición doble, ¡Llega la Horda!, el símbolo de la Horda y el Asedio zombi de White Death; cada universo tiene sus propias expansiones. Expansiones de fantasía: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, la Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, los packs de Kickstarter y las cajas de invitados especiales, y los jefes de Frozen Fortress, con Abominaciones y Nigromantes con nombre.
 
 El universo de ciencia ficción. Invader: las cajas básicas Invader y Dark Side, por separado o juntas, con Obreros, Tanques y Cazadores Xeno (Driller en Dark Side), Abominaciones supurantes y Driller, cartas de Aparición micótica y de Aparición en Pit y Activaciones adicionales. Activa en las opciones la mitad fácil o la difícil de las cartas. Expansiones de Invader: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 y los Comic Book Extras, con Abominaciones con nombre.
+
+El universo Western. Zombicide: Undead or Alive: la caja básica con cartas de Caminantes, Corredores, Brutos, Abominación y Activación adicional, los Long-Dead Walkers y un mazo de Abominaciones con nombre y su regla, que se roban de una en una. Expansiones Western: Long-Dead Walkers, Running Wild, Gears & Guns, Abominape vs Crocosaur, Deadstock Abominations, Dead West Abominations, los promos e Iron Maiden.
 
 Disponible en español, inglés, francés, alemán, italiano, polaco, portugués de Brasil, ruso, ucraniano y checo, con los nombres oficiales de los zombis de cada edición.
 
@@ -161,7 +169,7 @@ Zombie Deck sostituisce il mazzo Zombie di Zombicide 2a Edizione sul tuo telefon
 • Tutte le carte Zombie della scatola base, con il numero di zombie del tuo Livello di Pericolo
 • Carte Assalto, Attivazione Extra e Abominio, come quelle vere
 • Mazzo Abomini in Moderno: Abomini con nome e la loro regola, pescati quando una carta Zombie ne genera uno, più carte speciali (SPAM, Gozer, Batman Who Laughs)
-• Pulsante «Pesca un Abominio», in Moderno e in Fantasy (con boss con nome)
+• Pulsante «Pesca un Abominio», in Moderno, in Western e in Fantasy (con boss con nome)
 • Scegli il Livello di Pericolo con un tocco; mostra solo il livello attuale o tutti e quattro
 • Mescola il mazzo o rimescola tutto, e annulla una pescata
 • La partita si salva da sola: chiudi l'app e riprendi da dove eri rimasto; ogni universo conserva la sua partita
@@ -174,6 +182,8 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 L'universo fantasy medievale. All'apertura, scegli il tuo universo: Zombicide 2a Edizione, oppure Black Plague, Green Horde, White Death ed Eternal Empire, da soli o insieme. Tutte le carte Zombie delle scatole base, con Generazione doppia, Arriva l'Orda!, il simbolo dell'Orda e l'Assedio zombie di White Death; ogni universo ha le sue espansioni. Espansioni fantasy: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, la Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, i pacchetti Kickstarter e le scatole degli ospiti speciali, e i boss di Frozen Fortress, con Abomini e Negromanti con nome.
 
 L'universo fantascientifico. Invader: le scatole base Invader e Dark Side, da sole o insieme, con Operai, Tank e Cacciatori Xeno (Scavatori in Dark Side), Abomini Corruttori e Scavatori, carte Generazione nella Melma e nella Fossa e Attivazioni Extra. Attiva nelle opzioni la metà facile o la metà difficile delle carte. Espansioni Invader: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 e i Comic Book Extras, con Abomini con nome.
+
+L'universo Western. Zombicide: Undead or Alive: la scatola base con carte Deambulanti, Corridori, Bruti, Abominio e Attivazione Extra, i Long-Dead Walkers e un mazzo di Abomini con nome e la loro regola, pescati uno alla volta. Espansioni Western: Long-Dead Walkers, Running Wild, Gears & Guns, Abominape vs Crocosaur, Deadstock Abominations, Dead West Abominations, le promo e Iron Maiden.
 
 Disponibile in italiano, inglese, francese, tedesco, spagnolo, polacco, portoghese brasiliano, russo, ucraino e ceco, con i nomi ufficiali degli zombie di ogni edizione.
 
@@ -196,7 +206,7 @@ Zombie Deck zastępuje talię Zombie z Zombicide 2. edycja na twoim telefonie lu
 • Wszystkie karty Zombie z podstawowego pudełka, z liczbą zombie dla twojego poziomu zagrożenia
 • Karty Zrywu, Dodatkowej Aktywacji i Abominacji, jak prawdziwe
 • Talia Abominacji we Współczesności: nazwane Abominacje wraz z zasadami, dobierane, gdy karta Zombie je namnaża, oraz karty specjalne (SPAM, Gozer, Batman Who Laughs)
-• Przycisk „Dobierz Abominację” we Współczesności i w Fantasy (przy nazwanych bossach)
+• Przycisk „Dobierz Abominację” we Współczesności, w Westernie i w Fantasy (przy nazwanych bossach)
 • Wybierz poziom zagrożenia jednym dotknięciem; pokaż tylko bieżący poziom lub wszystkie cztery
 • Potasuj talię lub przetasuj wszystko i cofnij dobranie karty
 • Gra zapisuje się automatycznie: zamknij aplikację i wróć do rozgrywki później; każdy świat ma własną zapisaną grę
@@ -209,6 +219,8 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 Świat fantasy. Po uruchomieniu wybierz swój świat: Zombicide 2. edycja albo Czarna Plaga, Zielona Horda, White Death i Eternal Empire, osobno lub razem. Wszystkie karty namnażania z podstawowych pudełek, z Podwójnym namnażaniem, kartami „Nadchodzi Horda!”, symbolem Hordy i Oblężeniem zombie z White Death; każdy świat ma własne dodatki. Dodatki fantasy: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, zestawy Kickstarter i pudełka gości specjalnych oraz bossowie z Frozen Fortress, z nazwanymi Abominacjami i Nekromantami.
 
 Świat science fiction. Invader: podstawowe pudełka Invader i Dark Side, osobno lub razem, z Robotnikami, Mięśniakami i Łowcami Xeno (Driller w Dark Side), Gnijącymi Abominacjami i Abominacjami Driller, kartami Namnażania z Pleśni i z Pit oraz Dodatkowymi Aktywacjami. W opcjach włączysz łatwiejszą lub trudniejszą połowę kart. Dodatki Invader: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 i Comic Book Extras, z nazwanymi Abominacjami.
+
+Świat Western. Zombicide: Undead or Alive: podstawowe pudełko z kartami Szwendaczy, Biegaczy, Osiłków, Abominacji i Dodatkowej Aktywacji, Long-Dead Walkers oraz talia nazwanych Abominacji z ich zasadami, dobieranych pojedynczo. Dodatki Western: Long-Dead Walkers, Running Wild, Gears & Guns, Abominape vs Crocosaur, Deadstock Abominations, Dead West Abominations, Promo i Iron Maiden.
 
 Dostępna po polsku, angielsku, francusku, niemiecku, hiszpańsku, włosku, w portugalskim brazylijskim, rosyjskim, ukraińskim i czeskim.
 
@@ -231,7 +243,7 @@ Zombie Deck substitui o baralho de zumbis de Zombicide 2ª Edição no seu celul
 • Todas as cartas de entrada da caixa básica, com o número de zumbis do seu Nível de Perigo
 • Cartas de Investida, Ativação Extra e Abominação, iguais às de verdade
 • Baralho de Abominações no Moderno: Abominações nomeadas com suas regras, compradas quando uma carta de Zumbi gera uma, e cartas especiais (SPAM, Gozer, Batman Who Laughs)
-• Botão “Comprar uma Abominação”, no Moderno e na Fantasia (com chefes nomeados)
+• Botão “Comprar uma Abominação”, no Moderno, no Western e na Fantasia (com chefes nomeados)
 • Escolha o Nível de Perigo com um toque; mostre só o nível atual ou os quatro
 • Embaralhe o baralho ou embaralhe tudo de novo, e desfaça uma compra
 • A partida é salva automaticamente: feche o app e continue de onde parou; cada universo guarda a sua própria partida
@@ -244,6 +256,8 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 O universo de fantasia medieval. Ao abrir o app, escolha seu universo: Zombicide 2ª Edição, ou Black Plague, Green Horde, White Death e Eternal Empire, separados ou misturados. Todas as cartas de entrada das caixas básicas, com Entrada dupla, A Horda chegou!, o símbolo da Horda e o Cerco zumbi de White Death; cada universo tem suas próprias expansões. Expansões de fantasia: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, a Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, os pacotes Kickstarter e as caixas de convidados especiais, e os chefes de Frozen Fortress, com Abominações e Necromantes nomeados.
 
 O universo de ficção científica. Invader: as caixas básicas Invader e Dark Side, separadas ou juntas, com Operários, Tanques e Corredores Xeno (Driller em Dark Side), Abominações Destruidoras e Driller, cartas de Entrada no Mofo e no Pit e Ativações Extras. Ative nas opções a metade fácil ou a difícil das cartas. Expansões de Invader: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 e os Comic Book Extras, com Abominações nomeadas.
+
+O universo Western. Zombicide: Undead or Alive: a caixa básica com cartas de Lerdos, Corredores, Brutos, Abominação e Ativação Extra, os Long-Dead Walkers e um baralho de Abominações nomeadas com suas regras, compradas uma de cada vez. Expansões Western: Long-Dead Walkers, Running Wild, Gears & Guns, Abominape vs Crocosaur, Deadstock Abominations, Dead West Abominations, os promos e Iron Maiden.
 
 Disponível em português do Brasil, inglês, francês, alemão, espanhol, italiano, polonês, russo, ucraniano e tcheco, com os nomes oficiais dos zumbis de cada edição.
 
@@ -266,7 +280,7 @@ Zombie Deck заменяет колоду зомби из «Зомбицид. В
 • Все карты зомби из базовой коробки с количеством зомби для вашего уровня опасности
 • Карты натиска, дополнительного хода и отродий — как настоящие
 • Колода отродий в «Современности»: именные отродья с их правилами, берутся, когда карта зомби их порождает, и особые карты (SPAM, Gozer, Batman Who Laughs)
-• Кнопка «Взять отродье» в «Современности» и в фэнтези (при именных боссах)
+• Кнопка «Взять отродье» в «Современности», в Western и в фэнтези (при именных боссах)
 • Выбирайте уровень опасности одним касанием; показывайте только текущий уровень или все четыре
 • Перемешайте колоду или перемешайте всё, отмените взятие карты
 • Партия сохраняется автоматически: закройте приложение и продолжите позже; в каждом мире своя партия
@@ -279,6 +293,8 @@ Zombie Deck заменяет колоду зомби из «Зомбицид. В
 Мир фэнтези. При запуске выберите свой мир: «Зомбицид. Вторая редакция» или «Чёрная чума», «Зелёная орда», White Death и Eternal Empire, по отдельности или вместе. Все карты появления из базовых коробок, с двойным появлением, картами «Орда идёт!», символом орды и осадой зомби из White Death; у каждого мира свои дополнения. Дополнения фэнтези: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, наборы Kickstarter и коробки особых гостей, а также боссы Frozen Fortress, с именными отродьями и некромантами.
 
 Научно-фантастический мир. Invader: базовые коробки Invader и Dark Side, по отдельности или вместе, с Xeno Workers, Tanks и Hunters (Drillers в Dark Side), Отродья Spoiler и Driller, картами появления Mold и Pit и дополнительными ходами. В настройках включается лёгкая или сложная половина карт. Дополнения Invader: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 и Comic Book Extras, с именными отродьями.
+
+Мир Western. Zombicide: Undead or Alive: базовая коробка с картами ходоков, бегунов, громил, отродий и дополнительного хода, Long-Dead Walkers и колода именных отродий с их правилами, берутся по одному. Дополнения Western: Long-Dead Walkers, Running Wild, Gears & Guns, Abominape vs Crocosaur, Deadstock Abominations, Dead West Abominations, промо и Iron Maiden.
 
 Доступно на русском, английском, французском, немецком, испанском, итальянском, польском и бразильском португальском, украинском и чешском, с официальными названиями зомби каждого издания.
 
@@ -301,7 +317,7 @@ Zombie Deck замінює колоду зомбі з «Зомбіцид. Дру
 • Усі карти зомбі з базової коробки з кількістю зомбі для вашого рівня небезпеки
 • Карти натиску, додаткової активації та потвор — як справжні
 • Колода потвор у «Сучасності»: іменні потвори з їхніми правилами, беруться, коли карта зомбі їх породжує, та особливі карти (SPAM, Gozer, Batman Who Laughs)
-• Кнопка «Взяти потвору» в «Сучасності» і у фентезі (з іменними босами)
+• Кнопка «Взяти потвору» в «Сучасності», у Western і у фентезі (з іменними босами)
 • Обирайте рівень небезпеки одним дотиком; показуйте лише поточний рівень або всі чотири
 • Перетасуйте колоду або перетасуйте все, скасуйте взяття карти
 • Гру збережено автоматично: закрийте застосунок і продовжте пізніше; у кожному світі своя гра
@@ -313,6 +329,8 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 Світ фентезі. Під час запуску оберіть свій світ: «Зомбіцид. Друга редакція» або «Чорна чума», «Зелена орда», «Біла смерть» і «Нескорена Імперія», окремо чи разом. Усі карти появи з базових коробок, із подвійною появою, картами «Орда надходить!», символом орди та облогою зомбі з «Білої смерті»; кожен світ має свої доповнення. Доповнення фентезі: Вульфсбург, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, набори Kickstarter і коробки Special Guests, а також боси Frozen Fortress, з іменними потворами й некромантами.
 
 Науково-фантастичний світ. Invader: базові коробки Invader і Dark Side, окремо чи разом, з Xeno Workers, Tanks і Hunters (Drillers у Dark Side), Потвори Spoiler і Driller, картами появи Mold і Pit та додатковими активаціями. У налаштуваннях вмикається легка або складна половина карт. Доповнення Invader: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 і Comic Book Extras, з іменними потворами.
+
+Світ Western. Zombicide: Undead or Alive: базова коробка з картами блукачів, бігунів, виродків, потвор і додаткової активації, Long-Dead Walkers та колода іменних потвор з їхніми правилами, беруться по одній. Доповнення Western: Long-Dead Walkers, Running Wild, Gears & Guns, Abominape vs Crocosaur, Deadstock Abominations, Dead West Abominations, промо та Iron Maiden.
 
 Доступно українською, англійською, французькою, німецькою, іспанською, італійською, польською, бразильською португальською, російською та чеською, з офіційними назвами зомбі кожного видання.
 
@@ -335,7 +353,7 @@ Zombie Deck nahrazuje balíček karet zombií ze hry Zombicide 2. edice ve vaše
 • Všechny karty zombií ze základní krabice s počtem zombií pro vaši úroveň nebezpečí
 • Karty Horda, Extra aktivace a zrůd, přesně jako ty skutečné
 • Balíček zrůd v Moderním světě: pojmenované zrůdy s pravidly, tažené, když je karta zombie oživí, a zvláštní karty (SPAM, Gozer, Batman Who Laughs)
-• Tlačítko „Vytáhnout zrůdu“ v Moderním světě i ve Fantasy (s pojmenovanými bossy)
+• Tlačítko „Vytáhnout zrůdu“ v Moderním světě, ve Westernu i ve Fantasy (s pojmenovanými bossy)
 • Úroveň nebezpečí vyberete jedním klepnutím; zobrazte jen aktuální úroveň, nebo všechny čtyři
 • Zamíchejte balíček nebo vše znovu zamíchejte a vraťte vytažení karty zpět
 • Hra se ukládá automaticky: zavřete aplikaci a pokračujte později; každý svět si drží vlastní hru
@@ -348,6 +366,8 @@ Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zom
 Středověký fantasy svět. Po spuštění aplikace si vyberete svůj svět: Zombicide 2. edice, nebo Černý mor, Zelená horda, Bílá smrt a Věčné císařství, samostatně či smíchané. Všechny karty oživení ze základních krabic, s dvojitým oživením, kartami Příchod hordy, symbolem hordy a Obléháním zombií z Bílé smrti; každý svět má vlastní rozšíření. Fantasy rozšíření: Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, balíčky z Kickstarteru a krabice Special Guests, a také bossové z Frozen Fortress, s pojmenovanými zrůdami a nekromanty.
 
 Sci-fi svět. Invader: základní krabice Invader a Dark Side, samostatně či spolu, s Xeno Workers, Tanks a Hunters (Drillers v Dark Side), Zrůdy Spoiler a Driller, kartami oživení Mold a Pit a Extra aktivacemi. V nastavení zapnete lehčí nebo těžší polovinu karet. Rozšíření Invaderu: Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 a Comic Book Extras, s pojmenovanými zrůdami.
+
+Western svět. Zombicide: Undead or Alive: základní krabice s kartami chodců, běžců, ranařů, zrůd a Extra aktivace, Long-Dead Walkers a balíček pojmenovaných zrůd s pravidly, tažených jednotlivě. Rozšíření Western: Long-Dead Walkers, Running Wild, Gears & Guns, Abominape vs Crocosaur, Deadstock Abominations, Dead West Abominations, promo a Iron Maiden.
 
 Dostupné v češtině, angličtině, francouzštině, němčině, španělštině, italštině, polštině, brazilské portugalštině, ruštině a ukrajinštině, s oficiálními názvy zombií z každého vydání.
 
@@ -362,61 +382,91 @@ Fanouškovský, neoficiální projekt. Zombicide je ochranná známka společnos
 Play Console, 500 characters per language.
 
 <en-US>
-New: the Invader universe, third in the opening carousel. The Invader and Dark Side core boxes, alone or together, plus 11 expansions and promos (Black Ops, Civilian and Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 and more) with named Abominations and new Xenos.
-• Easier or harder half of the deck, in the options
-• The opening carousel's background now follows the universe shown
+New: the Western universe (Zombicide: Undead or Alive). The core box, the Long-Dead Walkers and a deck of named Abominations, with Gears & Guns, Running Wild, the Iron Maiden Eddies and more.
+• Abominations and Necromancers stay on the board until you remove them
+• Divine Beasts spawn one after the other
+• Official Fantasy art, drawn larger
+• Cards turn over to read their rule; 20 more Fantasy bosses have one
+• Shredder joins Timecrash; Lord of Skulls comes with Doom and Gloom
 </en-US>
 
 <fr-FR>
-Nouveau : l'univers Invader, troisième du carrousel d'ouverture. Les boîtes de base Invader et Dark Side, seules ou ensemble, plus 11 extensions et promos (Black Ops, Civilian et Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 et d'autres) avec des Abominations nommées et de nouveaux Xenos.
-• Moitié facile ou difficile du paquet, dans les options
-• Le fond du carrousel d'ouverture suit désormais l'univers affiché
+Nouveau : l'univers Western (Zombicide: Undead or Alive). La boîte de base, les Long-Dead Walkers et un paquet d'Abominations nommées, avec Gears & Guns, Running Wild, les Eddies d'Iron Maiden.
+• Les Abominations et Nécromanciens restent sur le plateau jusqu'à leur retrait
+• Les Divine Beasts apparaissent l'une après l'autre
+• Art officiel Fantasy, plus grand
+• Cartes retournables pour lire leur règle ; 20 boss Fantasy de plus
+• Shredder dans Timecrash ; Lord of Skulls avec Doom and Gloom
 </fr-FR>
 
 <de-DE>
-Neu: das Invader-Universum, das dritte im Auswahl-Karussell. Die Grundboxen Invader und Dark Side, einzeln oder zusammen, dazu 11 Erweiterungen und Promos (Black Ops, Civilian und Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 u. a.) mit benannten Monstren und neuen Xenos.
-• Leichtere oder schwerere Stapelhälfte in den Optionen
-• Der Hintergrund des Auswahl-Karussells folgt jetzt dem gezeigten Universum
+Neu: das Western-Universum (Zombicide: Undead or Alive). Die Grundbox, die Long-Dead Walkers und ein Stapel benannter Monstren, mit Gears & Guns, Running Wild, den Iron-Maiden-Eddies.
+• Monstren und Nekromanten bleiben auf dem Plan, bis du sie entfernst
+• Die Divine Beasts erscheinen nacheinander
+• Offizielle Fantasy-Bilder, jetzt größer
+• Karten lassen sich umdrehen, um die Regel zu lesen; 20 weitere Fantasy-Bosse haben eine
+• Shredder kommt zu Timecrash; Lord of Skulls mit Doom and Gloom
 </de-DE>
 
 <es-ES>
-Novedad: el universo Invader, el tercero del carrusel de inicio. Las cajas básicas Invader y Dark Side, por separado o juntas, más 11 expansiones y promos (Black Ops, Civilian y Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 y más) con Abominaciones con nombre y nuevos Xenos.
-• Mitad fácil o difícil del mazo, en las opciones
-• El fondo del carrusel de inicio ahora sigue al universo mostrado
+Novedad: el universo Western (Zombicide: Undead or Alive). La caja básica, los Long-Dead Walkers y un mazo de Abominaciones con nombre, con Gears & Guns, Running Wild, los Eddies de Iron Maiden.
+• Las Abominaciones y los Nigromantes siguen en el tablero hasta retirarlos
+• Divine Beasts aparecen una tras otra
+• Arte oficial de Fantasía, más grande
+• Las cartas se giran para leer su regla; 20 jefes más de Fantasía tienen una
+• Shredder se une a Timecrash; Lord of Skulls llega con Doom and Gloom
 </es-ES>
 
 <it-IT>
-Novità: l'universo Invader, il terzo del carosello iniziale. Le scatole base Invader e Dark Side, da sole o insieme, più 11 espansioni e promo (Black Ops, Civilian e Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 e altre) con Abomini con nome e nuovi Xeno.
-• Metà facile o difficile del mazzo, nelle opzioni
-• Lo sfondo del carosello iniziale ora segue l'universo mostrato
+Novità: l'universo Western (Zombicide: Undead or Alive). La scatola base, i Long-Dead Walkers e un mazzo di Abomini con nome, con Gears & Guns, Running Wild, gli Eddie di Iron Maiden.
+• Abomini e Negromanti restano sul tabellone finché non li rimuovi
+• Le Divine Beasts compaiono una dopo l'altra
+• Illustrazioni ufficiali Fantasy, più grandi
+• Le carte si girano per leggerne la regola; altri 20 boss Fantasy ne hanno una
+• Shredder entra in Timecrash; Lord of Skulls arriva con Doom and Gloom
 </it-IT>
 
 <pl-PL>
-Nowość: świat Invader, trzeci w karuzeli startowej. Podstawowe pudełka Invader i Dark Side, osobno lub razem, plus 11 dodatków i promo (Black Ops, Civilian i Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 i inne) z nazwanymi Abominacjami i nowymi Xenos.
-• Łatwiejsza lub trudniejsza połowa talii w opcjach
-• Tło karuzeli startowej podąża teraz za pokazywanym światem
+Nowość: świat Western (Zombicide: Undead or Alive). Podstawowe pudełko, Long-Dead Walkers i talia nazwanych Abominacji, z Gears & Guns, Running Wild, Eddiemi z Iron Maiden i innymi.
+• Abominacje i Nekromanci zostają na planszy, dopóki ich nie usuniesz
+• Divine Beasts pojawiają się jedna po drugiej
+• Oficjalne ilustracje Fantasy, teraz większe
+• Karty można odwrócić, by przeczytać zasadę; 20 kolejnych bossów Fantasy ją ma
+• Shredder w Timecrash; Lord of Skulls z Doom and Gloom
 </pl-PL>
 
 <pt-BR>
-Novidade: o universo Invader, o terceiro do carrossel inicial. As caixas básicas Invader e Dark Side, separadas ou juntas, mais 11 expansões e promos (Black Ops, Civilian e Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 e outras) com Abominações nomeadas e novos Xenos.
-• Metade fácil ou difícil do baralho, nas opções
-• O fundo do carrossel inicial agora acompanha o universo exibido
+Novidade: o universo Western (Zombicide: Undead or Alive). A caixa básica, os Long-Dead Walkers e um baralho de Abominações nomeadas, com Gears & Guns, Running Wild, os Eddies de Iron Maiden e mais.
+• Abominações e Necromantes ficam no tabuleiro até você removê-los
+• As Divine Beasts surgem uma após a outra
+• Arte oficial de Fantasia, em tamanho maior
+• As cartas viram para ler a regra; mais 20 chefes de Fantasia têm uma
+• Shredder entra em Timecrash; Lord of Skulls chega com Doom and Gloom
 </pt-BR>
 
 <ru-RU>
-Новое: мир Invader, третий в стартовой карусели. Базовые коробки Invader и Dark Side, по отдельности или вместе, плюс 11 дополнений и промо (Black Ops, Civilian и Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 и другие) с именными отродьями и новыми Xenos.
-• Лёгкая или сложная половина колоды в настройках
-• Фон стартовой карусели теперь меняется вместе с показанным миром
+Новое: мир Western (Zombicide: Undead or Alive). Базовая коробка, Long-Dead Walkers и колода именных отродий, с Gears & Guns, Running Wild, Эдди из Iron Maiden и другими.
+• Отродья и некроманты остаются на поле, пока вы их не уберёте
+• Divine Beasts появляются одна за другой
+• Официальные иллюстрации фэнтези стали крупнее
+• Карты переворачиваются, чтобы прочитать правило; ещё у 20 боссов фэнтези оно есть
+• Shredder в Timecrash; Lord of Skulls с Doom and Gloom
 </ru-RU>
 
 <uk>
-Нове: світ Invader, третій у стартовій каруселі. Базові коробки Invader і Dark Side, окремо чи разом, плюс 11 доповнень і промо (Black Ops, Civilian і Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 та інші) з іменними потворами та новими Xenos.
-• Легка або складна половина колоди в налаштуваннях
-• Тло стартової каруселі тепер змінюється разом із показаним світом
+Нове: світ Western (Zombicide: Undead or Alive). Базова коробка, Long-Dead Walkers і колода іменних потвор, з Gears & Guns, Running Wild, Едді з Iron Maiden та іншими.
+• Потвори й некроманти залишаються на полі, поки ви їх не приберете
+• Divine Beasts з’являються одна за одною
+• Офіційні ілюстрації фентезі стали більшими
+• Карти перевертаються, щоб прочитати правило; ще у 20 босів фентезі воно є
+• Shredder у Timecrash; Lord of Skulls з Doom and Gloom
 </uk>
 
 <cs-CZ>
-Novinka: svět Invader, třetí v úvodním karuselu. Základní krabice Invader a Dark Side, samostatně či spolu, plus 11 rozšíření a promo (Black Ops, Civilian a Soldier Extras, Project: ELITE Crossover, Iron Maiden Packs 1–2 a další) s pojmenovanými zrůdami a novými Xenos.
-• Lehčí nebo těžší polovina balíčku v nastavení
-• Pozadí úvodního karuselu teď sleduje zobrazený svět
+Novinka: svět Western (Zombicide: Undead or Alive). Základní krabice, Long-Dead Walkers a balíček pojmenovaných zrůd, s Gears & Guns, Running Wild, Eddie z Iron Maiden a dalšími.
+• Zrůdy a nekromanti zůstávají na desce, dokud je neodstraníte
+• Divine Beasts se objevují jedna po druhé
+• Oficiální fantasy ilustrace, teď větší
+• Karty se otáčejí kvůli pravidlu; dalších 20 fantasy bossů ho má
+• Shredder v Timecrash; Lord of Skulls s Doom and Gloom
 </cs-CZ>
