@@ -26,6 +26,20 @@ export const CARD_COLORS = {
   horde: '#2f7d3a',
 };
 
+/** The printed Modern (2nd Edition) card: banner colours with the ink of their title, the paper labels and the level colours behind them. */
+export const MODERN_COLORS = {
+  spawn: { background: '#0b0b0b', text: '#ffffff' },
+  rush: { background: '#fed000', text: '#0b0b0b' },
+  extra: { background: '#db121a', text: '#0b0b0b' },
+  abomination: { background: '#0b0b0b', text: '#fed000' },
+  /** The white of the count labels (the picture is pure white, so a colour laid behind it shows through its torn end). */
+  paper: '#ffffff',
+  paperInk: '#0b0b0b',
+  /** The thin dark line under each label. */
+  labelShadow: '#0b0b0b',
+  levels: { red: '#dc0f20', orange: '#e87c00', yellow: '#fed100', blue: '#4594b2' } satisfies Record<DangerLevel, string>,
+};
+
 /** The drawn stand-ins of the printed Fantasy card, used where a part picture (`fantasy-parts.ts`) is absent. */
 export const FANTASY_COLORS = {
   /** Title plate: lighter parchment with its thin brown outline. */

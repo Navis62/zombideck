@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
+import { modernTextSize, wrappedLines } from '../components/modern-text.ts';
+import { variantFor } from '../data/card-number.ts';
 import { CARD_SETS, OPTIONAL_SETS } from '../data/decks.ts';
 import { BOSS_RULE_IDS, BOSSES_WITHOUT_RULE, FANTASY_SETS } from '../data/fantasy.ts';
 import { WESTERN_SETS } from '../data/western.ts';
@@ -1409,11 +1411,12 @@ test('every modern Abomination has an illustration', () => {
   // zombie-art.tsx pulls in React Native, so the test reads its source instead of importing it.
   const file = new URL('../components/zombie-art.tsx', import.meta.url);
   const source = readFileSync(file, 'utf8');
-  const block = source.slice(source.indexOf('const MODERN_ART'), source.indexOf('const FANTASY_ART'));
-  const art = new Map([...block.matchAll(/^\s+(\w+): require\('([^']+)'\)/gm)].map((match) => [match[1], match[2]]));
+  const block = source.slice(source.indexOf('const MODERN_OFFICIAL'), source.indexOf('const FANTASY_ART'));
+  // Both tables: the official cut-outs (`key: { source: require(...) }`) and the cartoon drawings (`key: require(...)`).
+  const art = new Map([...block.matchAll(/^\s+(\w+): (?:\{ source: )?require\('([^']+)'\)/gm)].map((match) => [match[1], match[2]]));
   for (const boss of MODERN_ABOMINATIONS) {
     const path = art.get(boss.zombie);
-    assert.ok(path, `${boss.zombie}: no MODERN_ART entry`);
+    assert.ok(path, `${boss.zombie}: no MODERN_OFFICIAL or MODERN_ART entry`);
     assert.ok(existsSync(new URL(path, file)), `${boss.zombie}: missing file ${path}`);
   }
 });
@@ -2130,11 +2133,14 @@ test('every artwork zombie-art.tsx requires exists', () => {
   for (const path of paths) assert.ok(existsSync(new URL(path, file)), `missing file ${path}`);
 });
 
-test('the ratio of every Fantasy official cut-out is that of its PNG', () => {
+test('the ratio of every Fantasy and Modern official cut-out is that of its PNG', () => {
   const file = new URL('../components/zombie-art.tsx', import.meta.url);
   const source = readFileSync(file, 'utf8');
-  const entries = [...source.matchAll(/require\('(\.\.\/\.\.\/assets\/fantasy\/[^']+-official\.png)'\), ratio: ([\d.]+)/g)];
+  // The Western windows come after the two tables and carry the ratio of their window, not of a file.
+  const tables = source.slice(0, source.indexOf('const WESTERN_WINDOWS'));
+  const entries = [...tables.matchAll(/require\('(\.\.\/\.\.\/assets\/[^']+\.png)'\), ratio: ([\d.]+)/g)];
   assert.ok(entries.length > 0, 'no official cut-out found');
+  assert.ok(entries.some(([, path]) => path.includes('/modern/')), 'no Modern official cut-out found');
   for (const [, path, ratio] of entries) {
     // PNG header: 8 bytes of signature, then the IHDR chunk with the width and the height as big-endian 32-bit integers.
     const header = readFileSync(new URL(path, file));
@@ -2715,4 +2721,52 @@ test('newGroups still reads out an Extra Activation that now names another boss 
   const piles = (activates: string): BossPiles => ({ ...bossesOf(escortGame([])), manual: [{ kind: 'abomination', boss: NO_BOSS, activates }] });
   assert.deepEqual(newGroups(piles('doom'), piles('gloom'), 'manual'), [{ kind: 'abomination', boss: NO_BOSS, activates: 'gloom' }]);
   assert.deepEqual(newGroups(piles('doom'), piles('doom'), 'manual'), []);
+});
+
+test('the constants makeStyles reads are declared before its first call (the card style context, at load)', () => {
+  const source = readFileSync(new URL('../components/card-face.tsx', import.meta.url), 'utf8');
+  const firstCall = source.indexOf('makeStyles(1)');
+  const body = source.slice(source.indexOf('function makeStyles('));
+  assert.ok(firstCall > 0 && body.length < source.length);
+  const late = [...source.matchAll(/^const ([A-Z][A-Z0-9_]*)\b/gm)]
+    .filter((match) => match.index > firstCall && new RegExp(`\\b${match[1]}\\b`).test(body))
+    .map((match) => match[1]);
+  assert.deepEqual(late, []);
+});
+
+test('wrappedLines breaks between words only, one paragraph per line', () => {
+  assert.equal(wrappedLines('All Walkers', 11), 1);
+  assert.equal(wrappedLines('All Walkers', 10), 2);
+  assert.equal(wrappedLines('one two three', 7), 2);
+  assert.equal(wrappedLines('one\ntwo', 20), 2);
+  assert.equal(wrappedLines('Walkers', 6), Infinity);
+});
+
+test('modernTextSize takes the largest size that fits, never under the minimum', () => {
+  const box = { width: 100, height: 40, max: 20, min: 8, line: 1, charEm: 0.5 };
+  assert.equal(modernTextSize('short', box), 20);
+  // Ten characters on a line at 20: two lines, which is what the height holds.
+  assert.equal(modernTextSize('eight chrs eight chrs', box), 20);
+  // On one line it has to shrink to 100 / (0.5 * 21) = 9.5.
+  assert.equal(modernTextSize('eight chrs eight chrs', { ...box, lines: 1 }), 9.5);
+  // A word that fits at no size, or a text too long for the box: the minimum.
+  assert.equal(modernTextSize('x'.repeat(60), box), 8);
+  assert.equal(modernTextSize('word '.repeat(200), box), 8);
+  for (const text of ['Visiteurs importants putréfiés', 'Все ветхие ходоки', 'Wszystkie Obdarte Szwendacze']) {
+    const size = modernTextSize(text, { ...box, lines: 2 });
+    assert.ok(size >= box.min && size <= box.max, `${text}: ${size}`);
+    if (size > box.min) assert.ok(wrappedLines(text, Math.floor(box.width / (box.charEm * size))) <= 2, text);
+  }
+});
+
+test('the pictures of a zombie alternate with the printed card numbers', () => {
+  const cards = CARD_SETS.flatMap((set) => set.cards).filter((card) => card.kind !== 'extra' && 'zombie' in card && card.zombie === 'toxicWalker');
+  assert.deepEqual(cards.map((card) => [card.id, variantFor(card, ['jacket', 'sunglasses'])]), [
+    ['toxic-087', 'sunglasses'],
+    ['toxic-088', 'jacket'],
+    ['toxic-089', 'sunglasses'],
+    ['toxic-090', 'jacket'],
+    ['toxic-091', 'sunglasses'],
+    ['toxic-092', 'jacket'],
+  ]);
 });

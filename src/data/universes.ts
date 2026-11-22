@@ -93,7 +93,7 @@ export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {
     defaultExpansions: ['core2e'],
     deckParts: true,
     tagline: 'menu.tagline',
-    heroes: ['runner', 'fatty', 'walker'],
+    heroes: ['walkerSign', 'runnerKneePads', 'fattySecurity'],
     bosses: {
       abominations: MODERN_ABOMINATIONS,
       necromancers: [],

@@ -300,7 +300,7 @@ export default function GameScreen() {
   // `onTap` is what a tap on the face does (turn it, or reopen Gozer's choice): the faces take it themselves.
   const cardFace = (card: ZombieCard, index: number, faceWidth: number, onTap: () => void, zoomButton?: boolean) => {
     const shownReveal = reveal(card.id);
-    const front = <CardFace card={card} danger={danger} width={faceWidth} reveal={shownReveal} />;
+    const front = <CardFace card={card} danger={danger} width={faceWidth} reveal={shownReveal} zoomButton={zoomButton} />;
     if (!cardHasBack(card, danger, t, shownReveal)) return fade(front, shownReveal);
     return fade(
       <FlipCard

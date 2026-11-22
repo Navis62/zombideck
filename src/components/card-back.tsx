@@ -5,7 +5,7 @@ import type { UniverseId } from '@/game/types';
 
 /** One card back per universe: a new UniverseId must pick its own. */
 const CARD_BACKS: Record<UniverseId, number> = {
-  modern: require('../../assets/cards/back.jpg'),
+  modern: require('../../assets/modern/cards/back-spawn.jpg'),
   fantasy: require('../../assets/fantasy/cards/back-spawn.jpg'),
   invader: require('../../assets/invader/cards/back-invader.jpg'),
   western: require('../../assets/western/cards/back-western.jpg'),

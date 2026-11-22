@@ -5,6 +5,8 @@ import Svg, { Path, Polygon } from 'react-native-svg';
 import { FANTASY_FLAMES, FANTASY_PARTS } from '@/components/fantasy-parts';
 
 import { COUNT_TAB_HEXAGON, INVADER_PARTS } from '@/components/invader-parts';
+import { MODERN_FOOTER_SIZE, MODERN_FOOTER_TEXT, MODERN_HEADER_SIZE, MODERN_PAPER, MODERN_PAPER_SEAM, MODERN_PARTS } from '@/components/modern-parts';
+import { modernTextSize } from '@/components/modern-text';
 import { SCROLL_TRACKING } from '@/components/scroll-guard';
 import { COUNT_LABEL_STRIP, WESTERN_PARTS } from '@/components/western-parts';
 import { type ArtSubject, artSubject, npcWalkerArt, WESTERN_BACKDROP, westernCardArt, westernTextCardArt, westernWhiteBruteArt, westernWindow, ZombieFigure } from '@/components/zombie-art';
@@ -39,7 +41,7 @@ import {
   type ZombieType,
 } from '@/game/types';
 import type { Translate, TranslationKey } from '@/i18n/translations';
-import { CARD_COLORS, DANGER_COLORS, FANTASY_COLORS, INVADER_COLORS, PRESSED, WESTERN_COLORS, fantasyFonts, invaderFonts, westernFonts } from '@/theme';
+import { CARD_COLORS, DANGER_COLORS, FANTASY_COLORS, INVADER_COLORS, MODERN_COLORS, PRESSED, WESTERN_COLORS, fantasyFonts, invaderFonts, westernFonts } from '@/theme';
 
 // Printed top-down on the cards, red first.
 const PRINTED_LEVELS = [...DANGER_LEVELS].reverse();
@@ -260,6 +262,83 @@ const INVADER_TITLE_LIFT = 0.08;
 /** Smallest share of the title size a long title is shrunk to. */
 const INVADER_MIN_TITLE_SCALE = 0.6;
 
+/** The Modern kinds and what each is printed with: the banner, and (Rush, Extra Activation, Abomination) the footer band. */
+type ModernKind = 'spawn' | 'rush' | 'extra' | 'abomination';
+const MODERN_HEADERS: Record<ModernKind, ImageSourcePropType> = {
+  spawn: MODERN_PARTS.headerSpawn,
+  rush: MODERN_PARTS.headerRush,
+  extra: MODERN_PARTS.headerExtra,
+  abomination: MODERN_PARTS.headerAbomination,
+};
+const MODERN_FOOTERS = { rush: MODERN_PARTS.footerRush, extra: MODERN_PARTS.footerExtra, abomination: MODERN_PARTS.footerAbomination };
+
+/** One printed Danger Level: a count, on an Extra Activation card a sentence ("All Walkers"), on a SPAM card a letter (the same at every level). */
+type ModernLabelSpec = { level: DangerLevel; count?: number; sentence?: string; letter?: string };
+
+/** The text panel of a Trejo or SPAM card, at the bottom: its colour, its ink, an optional heading and its lines; `spam` lays it out left of the four letters, over the band with white dashes. */
+type ModernBody = { background: string; ink: string; heading?: string; lines: string[]; spam?: boolean };
+
+/*
+ * The Modern card, rebuilt from the printed 2nd Edition one (references in .art-sources/modern/references/): the picture
+ * runs edge to edge under everything, the banner lies over its top with its slanted dashes, the four count labels run
+ * off the right edge, a footer band closes Rush, Extra Activation and Abomination cards. Sizes are in design px for a
+ * card DESIGN_WIDTH (230) wide, 63:88, multiplied by the card scale; positions were measured on the printed cards.
+ */
+const MODERN_CARD_HEIGHT = (DESIGN_WIDTH * 88) / 63;
+/** The title: its box in the banner's black part (above the dashes, 6 to 55 px), the size it starts at, and the share of the width kept free for the number and the "i" on its right. */
+const MODERN_TITLE = { left: 11, top: 5, height: 50, size: 22, reserve: 0.22 } as const;
+/** The title never goes over this many lines nor under this size (design px): it shrinks, it is not cut. */
+const MODERN_TITLE_LINES = 2;
+const MODERN_TITLE_MIN_SIZE = 10;
+/** Width of a capital in em to size a title; Play (Cyrillic) is wider than Barlow Condensed. */
+const MODERN_TITLE_CHAR_EM = { latin: 0.45, cyrillic: 0.75 };
+/** Capitals of Barlow Condensed sit below the middle of their line box: text is lifted by this share of its size. */
+const MODERN_TEXT_LIFT = 0.08;
+/** The number at the top right (design px from the top and the right edge, size, dimness) and the "i" badge under it. */
+const MODERN_NUMBER = { top: 4, right: 11, size: 11, opacity: 0.55 };
+const MODERN_BADGE = { top: 19, right: 11 };
+/** The expansion symbol, over the banner's right end above the first label: design px from the top and the right edge, and its size share. */
+const MODERN_SYMBOL = { top: 54, right: 7, size: 56, shrink: 0.55 };
+/**
+ * Count labels, in design px. The four of them: top of the first (Red), distance from one to the next, height of a
+ * label and of the current one (taller, and starting further left); then the lone label of the "current level only"
+ * display, and the longer ones of an Extra Activation card. `torn` is the part of a label's height its torn end shows
+ * inside the card, `veil` the opacity of a label that is not the current level, `overflow` how far the colour runs
+ * past the card's edge, `shadow` the thin dark line under a label.
+ */
+const MODERN_LABEL = {
+  top: 91,
+  pitch: 44,
+  height: 30,
+  activeHeight: 40,
+  singleHeight: 62,
+  left: { count: 154, activeCount: 142, singleCount: 104, sentence: 107, activeSentence: 97, singleSentence: 60 },
+  torn: 0.85,
+  veil: 0.8,
+  overflow: 40,
+  shadow: 2,
+};
+/** Text of a label, as shares of its height: a count, a SPAM letter, the smaller "x" of a count, and the largest and smallest size of a sentence. */
+const MODERN_LABEL_FONT = { count: 0.95, letter: 1.15, x: 0.6, sentence: 0.5, sentenceMin: 0.2 };
+/** A count of two digits is set this much smaller to stay on its white part. */
+const MODERN_TWO_DIGITS = 0.85;
+/** A sentence on a label: its most lines, its line height over its size, and the design px kept free on each side of it. */
+const MODERN_SENTENCE = { lines: 2, line: 1.05, inset: 5 };
+/** Width of a letter of Barlow Condensed (capitals and lowercase) in em, to size the footer text; Play (Cyrillic) is wider. */
+const MODERN_TEXT_CHAR_EM = { latin: 0.44, cyrillic: 0.62 };
+/**
+ * Footers: the band is the part at its own ratio, except under four labels, where a tall Abomination band would cover
+ * the last one: it is then squashed to this share of the card's height. The text starts at the largest size (design px)
+ * that fits its box (web has no shrink-to-fit) and goes down to the smallest; `line` is the line height over the size.
+ */
+const MODERN_FOOTER = { squashed: 0.2, maxSize: 13, minSize: 7, line: 1.1 };
+/** The Trejo or SPAM text panel: its most share of the card's height, its padding and gap, and its text and heading sizes (design px). */
+const MODERN_BODY = { share: 0.6, paddingX: 10, paddingY: 8, gap: 4, maxSize: 12, minSize: 6, line: 1.2, heading: 0.95 };
+/** The SPAM panel: its text is clear of the dashes on the left and at the bottom and of the letters on the right (design px). */
+const MODERN_SPAM = { letters: ['S', 'P', 'A', 'M'], left: 21, right: 82, bottom: 14 };
+/** Lines of a footer on native, where the text shrinks to fit (more than the band holds at the smallest size). */
+const MODERN_FOOTER_LINES = 6;
+
 type CardStyles = ReturnType<typeof makeStyles>;
 const CardStyle = createContext<{ styles: CardStyles; scale: number }>({ styles: makeStyles(1), scale: 1 });
 
@@ -330,9 +409,6 @@ function useWordFit(text: string | undefined, textStyle: StyleProp<TextStyle>, i
 /** Width taken by the "+1" Horde badge next to a name: its minimum width and its two margins. */
 const HORDE_BADGE_RESERVE = 30;
 
-/** Horizontal padding of the name pill (`fantasyBigLabel`), in card design units. */
-const BIG_LABEL_PADDING = 6;
-
 /**
  * Zombie or boss name above a count: one word never breaks, several wrap between words, and the text shrinks before
  * it is cut. Without `row` it is stretched across its parent (and measures itself); with `row` it is a pill centred
@@ -384,7 +460,7 @@ export function CardFace({
   side?: CardSide;
   /** Taps on the back (its text and header) turn the card over again. */
   onFlip?: () => void;
-  /** The enlarge button sits over the bottom-left corner of this card: the back's text scrolls clear of it. */
+  /** The enlarge button sits over the bottom-left corner of this card: the back's text scrolls clear of it, and so does a text panel on the front. */
   zoomButton?: boolean;
 }) {
   const scale = Math.max(0.5, width / DESIGN_WIDTH);
@@ -482,7 +558,7 @@ function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: 
       };
     }
     case 'spam':
-      return { title: 'Spam', spoken: `${t('card.spam1')} ${t('card.spam2')}` };
+      return { title: t('card.spamTitle'), spoken: `${t('card.spam1')} ${t('card.spam2')}` };
     case 'extra':
       return { title: t('card.extra'), footer: t('card.extraRule'), spoken: `${level}: ${extraLine(card.zombie, danger, t)}` };
     default: {
@@ -544,6 +620,8 @@ export function BossFace({ reveal, width, universe, side = 'front', onFlip, zoom
         <RuleSide text={bossFaceText(reveal, t)} header={BOSS_LOOK[universe].header} universe={universe} onFlip={onFlip} zoomButton={zoomButton} />
       ) : universe === 'western' ? (
         <WesternBoss reveal={reveal} text={bossFaceText(reveal, t)} footerOnFront={!bossHasBack(reveal, t)} />
+      ) : universe === 'modern' ? (
+        <ModernBoss reveal={reveal} text={bossFaceText(reveal, t)} footerOnFront={!bossHasBack(reveal, t)} />
       ) : universe === 'fantasy' ? (
         <FantasyBossFace reveal={reveal} text={bossFaceText(reveal, t)} footerOnFront={!bossHasBack(reveal, t)} />
       ) : (
@@ -642,8 +720,7 @@ const extraLine = (zombie: ExtraZombie | InvaderXeno | WesternActivated, at: Dan
   at === 'blue' ? t('card.extraNobody') : t(`zombie.${zombie}.all`);
 
 function Card({ card: printed, danger, reveal, side, onFlip, zoomButton }: { card: ZombieCard; danger: DangerLevel; reveal?: Reveal; side: CardSide; onFlip?: () => void; zoomButton?: boolean }) {
-  const { t, cardDisplay } = useApp();
-  const { styles } = useContext(CardStyle);
+  const { t } = useApp();
   const card = asRevealed(printed, reveal);
   const text = cardText(card, danger, t, reveal);
   const footerOnFront = !cardHasBack(printed, danger, t, reveal);
@@ -656,87 +733,247 @@ function Card({ card: printed, danger, reveal, side, onFlip, zoomButton }: { car
   if (isInvaderCard(card)) return <InvaderFace card={card} danger={danger} text={text} footerOnFront={footerOnFront} />;
   if (isWesternCard(card)) return <WesternFace card={card} danger={danger} text={text} reveal={reveal} footerOnFront={footerOnFront} />;
 
+  return <ModernCardFace card={card} danger={danger} text={text} reveal={reveal} footerOnFront={footerOnFront} zoomButton={zoomButton} />;
+}
+
+/** What a Modern card says in each of its kinds: banner, picture, labels, footer or text panel (see `ModernFace`). */
+function ModernCardFace({ card, danger, text, reveal, footerOnFront, zoomButton }: { card: ModernCard; danger: DangerLevel; text: CardText; reveal?: Reveal; footerOnFront: boolean; zoomButton?: boolean }) {
+  const { t, cardDisplay } = useApp();
+  const current = cardDisplay === 'current';
+  const levels = current ? [danger] : PRINTED_LEVELS;
+  const common = { card, danger, text, footerOnFront, zoomButton, current, symbol: specialSymbol(card) };
   if (card.kind === 'trejo' || card.kind === 'trejoRush') {
     const isRush = card.kind === 'trejoRush';
-    const choices = trejoChoices(isRush);
-    return (
-      <Frame card={card} text={text} headerColor={headerFor(card)} footerOnFront={footerOnFront}>
-        <Art card={card} short />
-        <View style={[styles.textBody, { backgroundColor: isRush ? CARD_COLORS.rush.background : CARD_COLORS.spawn.background }]}>
-          <Text style={[styles.bodyHeading, { color: isRush ? CARD_COLORS.ink : '#ffffff' }]}>{t('card.trejoChoice')}</Text>
-          {choices.map((key, index) => (
-            <Text key={key} style={[styles.bodyText, { color: isRush ? CARD_COLORS.ink : '#ffffff' }]}>
-              {index + 1}. {t(key)}
+    const palette = isRush ? MODERN_COLORS.rush : MODERN_COLORS.spawn;
+    const body = { background: palette.background, ink: palette.text, heading: t('card.trejoChoice'), lines: trejoChoices(isRush).map((key, index) => `${index + 1}. ${t(key)}`) };
+    return <ModernFace {...common} kind={isRush ? 'rush' : 'spawn'} title={text.title} subject={artSubject(card)} labels={[]} body={body} />;
+  }
+  if (card.kind === 'spam') {
+    const body = { background: MODERN_COLORS.spawn.background, ink: MODERN_COLORS.spawn.text, lines: [`- ${t('card.spam1')}`, `- ${t('card.spam2')}`], spam: true };
+    const labels = PRINTED_LEVELS.map((level, index) => ({ level, letter: MODERN_SPAM.letters[index] }));
+    return <ModernFace {...common} kind="spawn" title={text.title} subject="spam" labels={labels} body={body} />;
+  }
+  if (card.kind === 'extra') {
+    const labels = levels.map((level) => ({ level, sentence: extraLine(card.zombie, level, t) }));
+    return <ModernFace {...common} kind="extra" title={text.title} subject={artSubject(card)} labels={labels} />;
+  }
+  // A spawn card whose Abomination was revealed is the named Abomination's card: its banner and its name.
+  const abomination = revealedAbomination(card, reveal);
+  const labels = levels.map((level) => ({ level, count: card.counts[DANGER_LEVELS.indexOf(level)] }));
+  return (
+    <ModernFace
+      {...common}
+      kind={abomination ? 'abomination' : card.kind === 'rush' ? 'rush' : 'spawn'}
+      title={abomination ? t(`zombie.${abomination}.one`) : text.title}
+      subject={abomination ?? artSubject(card)}
+      labels={labels}
+    />
+  );
+}
+
+/** The face of a Modern Abomination drawn by hand: the Abomination banner, its picture, its rule in the footer band. */
+function ModernBoss({ reveal, text, footerOnFront }: { reveal: Reveal; text: CardText; footerOnFront: boolean }) {
+  return <ModernFace kind="abomination" title={text.title} subject={revealedName(reveal) ?? 'abomination'} text={text} footerOnFront={footerOnFront} labels={[]} current={false} symbol={null} />;
+}
+
+function ModernFace(props: {
+  /** Absent on the face of an Abomination drawn by hand, which has no card number. */
+  card?: ModernCard;
+  kind: ModernKind;
+  title: string;
+  subject: ArtSubject;
+  text: CardText;
+  footerOnFront: boolean;
+  labels: ModernLabelSpec[];
+  /** Only the current Danger Level is shown: one big label and a larger picture. */
+  current: boolean;
+  danger?: DangerLevel;
+  symbol: SymbolKind | null;
+  body?: ModernBody;
+  zoomButton?: boolean;
+}) {
+  const { language } = useApp();
+  const { styles, scale } = useContext(CardStyle);
+  const announced = useContext(CardAnnounced);
+  const fonts = invaderFonts(language);
+  const cyrillic = language === 'ru' || language === 'uk';
+  const palette = MODERN_COLORS[props.kind];
+  const number = props.card && /\d{3}$/.test(props.card.id) ? `#${props.card.id.slice(-3)}` : '';
+  const { footer } = props.text;
+  const onFront = !!footer && props.footerOnFront;
+  const footerKind = props.kind === 'rush' || props.kind === 'extra' ? props.kind : 'abomination';
+  // Under labels a tall band would hide the last one, so it is squashed; the others keep the ratio of their file.
+  const squashed = footerKind === 'abomination' && props.labels.length > 0;
+  const footerSize = MODERN_FOOTER_SIZE[footerKind];
+  const footerHeight = squashed ? MODERN_FOOTER.squashed * MODERN_CARD_HEIGHT : (DESIGN_WIDTH * footerSize.height) / footerSize.width;
+  const footerBox = MODERN_FOOTER_TEXT[footerKind];
+  const textEm = cyrillic ? MODERN_TEXT_CHAR_EM.cyrillic : MODERN_TEXT_CHAR_EM.latin;
+  const footerFit = onFront
+    ? modernTextSize(footer, {
+        width: DESIGN_WIDTH * (1 - footerBox.left - footerBox.right),
+        height: footerHeight * (1 - footerBox.top - footerBox.bottom),
+        max: MODERN_FOOTER.maxSize,
+        min: MODERN_FOOTER.minSize,
+        line: MODERN_FOOTER.line,
+        charEm: textEm,
+      })
+    : 0;
+  // The picture stops at the top of a tall footer (its feet would be hidden); a Rush or Extra Activation one covers them, as printed.
+  const reserve = onFront && footerKind === 'abomination' ? footerHeight / MODERN_CARD_HEIGHT : 0;
+  const titleEm = cyrillic ? MODERN_TITLE_CHAR_EM.cyrillic : MODERN_TITLE_CHAR_EM.latin;
+  const titleSize =
+    modernTextSize(props.title, {
+      width: DESIGN_WIDTH * (1 - MODERN_TITLE.reserve) - MODERN_TITLE.left,
+      height: MODERN_TITLE.height,
+      max: MODERN_TITLE.size,
+      min: MODERN_TITLE_MIN_SIZE,
+      line: 1,
+      charEm: titleEm,
+      lines: MODERN_TITLE_LINES,
+    }) * scale;
+  // The enlarge button covers the bottom-left corner: the text panel keeps clear of it.
+  const bodyInsets = props.body?.spam ? MODERN_SPAM : { left: MODERN_BODY.paddingX, right: MODERN_BODY.paddingX, bottom: MODERN_BODY.paddingY };
+  const clearance = Math.max(bodyInsets.bottom * scale, props.zoomButton ? ZOOM_BUTTON_CLEARANCE : 0);
+  const bodySize = props.body
+    ? modernTextSize([props.body.heading, ...props.body.lines].filter((line) => line !== undefined).join('\n'), {
+        width: DESIGN_WIDTH - bodyInsets.left - bodyInsets.right,
+        height: MODERN_BODY.share * MODERN_CARD_HEIGHT - MODERN_BODY.paddingY - clearance / scale - MODERN_BODY.gap * props.body.lines.length,
+        max: MODERN_BODY.maxSize,
+        min: MODERN_BODY.minSize,
+        line: MODERN_BODY.line,
+        charEm: textEm,
+      }) * scale
+    : 0;
+
+  return (
+    <View style={styles.face} {...readerProps(props.text, announced)}>
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <ZombieFigure subject={props.subject} anchor="card" frame={{ reserve, larger: props.current }} />
+      </View>
+      {props.body && (
+        <View style={[styles.modernBody, { backgroundColor: props.body.background, paddingLeft: bodyInsets.left * scale, paddingRight: bodyInsets.right * scale, paddingBottom: clearance }]}>
+          {props.body.spam && <Image source={MODERN_PARTS.footerSpam} style={styles.modernSpamBand} resizeMode="stretch" />}
+          {props.body.heading !== undefined && (
+            <Text style={[styles.modernBodyHeading, { color: props.body.ink, fontFamily: fonts.title, fontSize: bodySize * MODERN_BODY.heading, lineHeight: bodySize * MODERN_BODY.line }]}>{props.body.heading}</Text>
+          )}
+          {props.body.lines.map((line) => (
+            <Text key={line} style={{ color: props.body?.ink, fontFamily: fonts.text, fontSize: bodySize, lineHeight: bodySize * MODERN_BODY.line }}>
+              {line}
             </Text>
           ))}
         </View>
-      </Frame>
-    );
-  }
-
-  if (card.kind === 'spam') {
-    return (
-      <Frame card={card} text={text} headerColor={headerFor(card)} footerOnFront={footerOnFront}>
-        <Art card={card} short />
-        <View style={[styles.textBody, { backgroundColor: CARD_COLORS.spawn.background }]}>
-          <Text style={[styles.bodyText, { color: '#ffffff' }]}>{t('card.spam1')}</Text>
-          <Text style={[styles.bodyText, { color: '#ffffff' }]}>{t('card.spam2')}</Text>
-        </View>
-      </Frame>
-    );
-  }
-
-  const symbol = specialSymbol(card);
-
-  if (card.kind === 'extra') {
-    return (
-      <Frame card={card} text={text} headerColor={headerFor(card)} footerOnFront={footerOnFront}>
-        <View style={styles.spawnBody}>
-          <Art card={card} />
-          <View style={styles.levels}>
-            <LevelSymbol kind={symbol} />
-            {(cardDisplay === 'current' ? [danger] : PRINTED_LEVELS).map((shown) => (
-              <Level key={shown} level={shown} active={shown === danger} wide large={cardDisplay === 'current'}>
-                {extraLine(card.zombie, shown, t)}
-              </Level>
-            ))}
+      )}
+      {props.labels.map((label) => (
+        // The letters of a SPAM card are the same at every level: always the four of them.
+        <ModernLabel key={label.level} spec={label} slot={props.current && !label.letter ? undefined : PRINTED_LEVELS.indexOf(label.level)} active={!label.letter && label.level === props.danger} />
+      ))}
+      {onFront && (
+        <View pointerEvents="none" style={[styles.modernFooter, { height: footerHeight * scale }]}>
+          <Image source={MODERN_FOOTERS[footerKind]} style={styles.invaderLayer} resizeMode="stretch" />
+          <View style={[styles.modernFooterText, { left: `${footerBox.left * 100}%`, right: `${footerBox.right * 100}%`, top: `${footerBox.top * 100}%`, bottom: `${footerBox.bottom * 100}%` }]}>
+            <Text
+              style={[styles.modernFooterLine, { color: MODERN_COLORS[footerKind].text, fontFamily: fonts.count, fontSize: footerFit * scale, lineHeight: footerFit * MODERN_FOOTER.line * scale }]}
+              // Web has no shrink-to-fit: a line limit there would only cut the rule short.
+              numberOfLines={Platform.OS === 'web' ? undefined : MODERN_FOOTER_LINES}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+            >
+              {footer}
+            </Text>
           </View>
         </View>
-      </Frame>
-    );
-  }
-
-  const { counts } = card;
-  const abomination = revealedAbomination(card, reveal);
-  return (
-    <Frame card={card} text={text} headerColor={headerFor(card)} footerOnFront={footerOnFront}>
-      <View style={styles.spawnBody}>
-        {abomination ? (
-          <View style={styles.art}>
-            <ZombieFigure subject={abomination} anchor="center" />
-          </View>
-        ) : (
-          <Art card={card} />
-        )}
-        <View style={styles.levels}>
-          <LevelSymbol kind={symbol} />
-          {abomination && (
-            <NameLabel style={styles.fantasyBigLabel} minimumFontScale={0.6} padding={BIG_LABEL_PADDING} text={t(`zombie.${abomination}.one`)} />
-          )}
-          {cardDisplay === 'current' ? (
-            <Level level={danger} active large>
-              ×{counts[DANGER_LEVELS.indexOf(danger)]}
-            </Level>
-          ) : (
-            PRINTED_LEVELS.map((shown) => (
-              <Level key={shown} level={shown} active={shown === danger}>
-                ×{counts[DANGER_LEVELS.indexOf(shown)]}
-              </Level>
-            ))
-          )}
-        </View>
+      )}
+      <View pointerEvents="none" style={styles.modernHeader}>
+        <Image source={MODERN_HEADERS[props.kind]} style={styles.invaderLayer} resizeMode="stretch" />
       </View>
-    </Frame>
+      <View style={styles.modernTitleBox}>
+        <NameLabel
+          text={props.title}
+          style={[styles.modernTitle, { color: palette.text, fontFamily: fonts.title, fontSize: titleSize, lineHeight: titleSize, transform: [{ translateY: -titleSize * MODERN_TEXT_LIFT }] }]}
+          minimumFontScale={0.5}
+          charEm={titleEm}
+        />
+      </View>
+      {number !== '' && <Text style={[styles.modernNumber, { color: palette.text, fontFamily: fonts.count }]}>{number}</Text>}
+      {!!footer && !props.footerOnFront && (
+        <View style={[styles.infoBadge, styles.modernBadge]}>
+          <Text style={styles.infoBadgeText}>i</Text>
+        </View>
+      )}
+      {props.symbol && (
+        <View pointerEvents="none" style={styles.modernSymbol}>
+          <LevelSymbol kind={props.symbol} />
+        </View>
+      )}
+    </View>
+  );
+}
+
+/**
+ * One printed Danger Level label: a level-coloured rectangle with the white paper over its left part (the plain white
+ * stretched to its width, the torn end drawn at its own ratio), a thin dark line under it, and the count or sentence on
+ * the white. `slot` is its place in the stack of four (none: the lone label of the current level, in the middle).
+ */
+function ModernLabel({ spec, slot, active }: { spec: ModernLabelSpec; slot: number | undefined; active: boolean }) {
+  const { styles, scale: s } = useContext(CardStyle);
+  const { language } = useApp();
+  const fonts = invaderFonts(language);
+  const wide = spec.sentence !== undefined;
+  const alone = slot === undefined;
+  const bigger = alone || active;
+  const veiled = !bigger && !spec.letter;
+  const height = alone ? MODERN_LABEL.singleHeight : active ? MODERN_LABEL.activeHeight : MODERN_LABEL.height;
+  const lefts = MODERN_LABEL.left;
+  const left = wide ? (alone ? lefts.singleSentence : active ? lefts.activeSentence : lefts.sentence) : alone ? lefts.singleCount : active ? lefts.activeCount : lefts.count;
+  // A label is centred on its slot; the lone one on the middle of the stack of four.
+  const centre = MODERN_LABEL.top + (alone ? 1.5 : slot) * MODERN_LABEL.pitch + MODERN_LABEL.height / 2;
+  const paper = wide ? MODERN_PAPER.activation : MODERN_PAPER.count;
+  const k = height / paper.height;
+  // The white ends where the torn piece shows `torn` of the label's height inside the card.
+  const whiteWidth = DESIGN_WIDTH - MODERN_LABEL.torn * height - left;
+  const crop = paper.solid - MODERN_PAPER_SEAM;
+  const sentence = spec.sentence ?? '';
+  const countSize = height * (spec.letter ? MODERN_LABEL_FONT.letter : MODERN_LABEL_FONT.count) * ((spec.count ?? 0) >= 10 ? MODERN_TWO_DIGITS : 1) * s;
+  const sentenceBox = {
+    width: whiteWidth - 2 * MODERN_SENTENCE.inset,
+    height: height * 0.95,
+    max: height * MODERN_LABEL_FONT.sentence,
+    min: height * MODERN_LABEL_FONT.sentenceMin,
+    line: MODERN_SENTENCE.line,
+    charEm: language === 'ru' || language === 'uk' ? MODERN_TEXT_CHAR_EM.cyrillic : MODERN_TEXT_CHAR_EM.latin,
+    lines: MODERN_SENTENCE.lines,
+  };
+  const size = wide ? modernTextSize(sentence, sentenceBox) * s : countSize;
+  const textStyle = {
+    fontFamily: fonts.count,
+    fontSize: size,
+    lineHeight: wide ? size * MODERN_SENTENCE.line : size,
+    textAlign: 'center' as const,
+    color: MODERN_COLORS.paperInk,
+    transform: [{ translateY: -size * MODERN_TEXT_LIFT }],
+  };
+  return (
+    <View pointerEvents="none" style={[styles.modernLabel, { left: left * s, top: (centre - height / 2) * s, height: height * s, right: -MODERN_LABEL.overflow * s }, veiled && { opacity: MODERN_LABEL.veil }]}>
+      <View style={{ position: 'absolute', top: 0, bottom: 0, left: whiteWidth * s, right: 0, backgroundColor: MODERN_COLORS.levels[spec.level] }} />
+      <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: whiteWidth * s, backgroundColor: MODERN_COLORS.paper }} />
+      {/* The torn end, cropped from where the white is still plain, at the ratio of its file. */}
+      <View style={{ position: 'absolute', top: 0, bottom: 0, left: (whiteWidth - MODERN_PAPER_SEAM * k) * s, width: (paper.width - crop) * k * s, overflow: 'hidden' }}>
+        <Image source={wide ? MODERN_PARTS.activationPaper : MODERN_PARTS.countPaper} style={{ position: 'absolute', top: 0, left: -crop * k * s, width: paper.width * k * s, height: '100%' }} resizeMode="stretch" />
+      </View>
+      <View style={{ position: 'absolute', left: 0, right: 0, top: '100%', height: MODERN_LABEL.shadow * s, backgroundColor: MODERN_COLORS.labelShadow }} />
+      <View style={[styles.modernLabelText, { width: whiteWidth * s, paddingHorizontal: wide ? MODERN_SENTENCE.inset * s : 0 }]}>
+        <Text style={textStyle} numberOfLines={wide ? MODERN_SENTENCE.lines : 1} adjustsFontSizeToFit minimumFontScale={0.5}>
+          {wide || spec.letter ? (
+            (spec.letter ?? sentence)
+          ) : (
+            <>
+              <Text style={{ fontSize: countSize * MODERN_LABEL_FONT.x }}>x</Text>
+              {spec.count}
+            </>
+          )}
+        </Text>
+      </View>
+    </View>
   );
 }
 
@@ -1170,15 +1407,6 @@ function WesternWindowCard(props: {
   );
 }
 
-function Art({ card, short }: { card: ModernCard; short?: boolean }) {
-  const { styles } = useContext(CardStyle);
-  return (
-    <View style={short ? styles.artShort : styles.art}>
-      <ZombieFigure subject={artSubject(card)} anchor={short ? 'top' : 'center'} />
-    </View>
-  );
-}
-
 // Symbols printed above the Danger Levels: an image for most, a small drawing for the rest.
 type ImageSymbol = 'toxic' | 'berserker' | 'skinner' | 'dog' | 'crow' | 'seeker' | 'lostZombivor' | 'shooter';
 type DrawnSymbol = 'vip';
@@ -1355,8 +1583,8 @@ function headerFor(card: ZombieCard): Colors {
   if (isFantasyCard(card)) return FANTASY_HEADER;
   if (isInvaderCard(card)) return card.kind === 'xenoExtra' ? CARD_COLORS.extra : INVADER_COLORS.header;
   if (isWesternCard(card)) return WESTERN_COLORS.header;
-  if (card.kind === 'extra') return CARD_COLORS.extra;
-  return card.kind === 'rush' || card.kind === 'trejoRush' ? CARD_COLORS.rush : CARD_COLORS.spawn;
+  if (card.kind === 'extra') return MODERN_COLORS.extra;
+  return card.kind === 'rush' || card.kind === 'trejoRush' ? MODERN_COLORS.rush : MODERN_COLORS.spawn;
 }
 
 const universeOf = (card: ZombieCard): UniverseId => (isFantasyCard(card) ? 'fantasy' : isInvaderCard(card) ? 'invader' : isWesternCard(card) ? 'western' : 'modern');
@@ -1442,53 +1670,11 @@ function RuleSide(props: {
   );
 }
 
-function Level(props: {
-  level: DangerLevel;
-  active: boolean;
-  wide?: boolean;
-  /** Alone on the card, when only the current Danger Level is shown. */
-  large?: boolean;
-  children: React.ReactNode;
-}) {
-  const { styles, scale } = useContext(CardStyle);
-  const textStyle = [
-    props.wide ? styles.levelTextWide : styles.levelText,
-    props.active && (props.wide ? styles.levelTextWideActive : styles.levelTextActive),
-    props.large && (props.wide ? styles.levelTextWideLarge : styles.levelTextLarge),
-  ];
-  // Only a wide (sentence) panel is capped; the padding of the value box is not part of the room for the text.
-  const fit = useWordFit(props.wide && typeof props.children === 'string' ? props.children : undefined, textStyle, 6 * scale);
-  return (
-    <View style={[styles.level, props.active && styles.levelActive, props.large && styles.levelLarge]}>
-      <View style={styles.levelValue} onLayout={fit.onLayout}>
-        <Text
-          style={[...textStyle, fit.style]}
-          // "×10" stays on one line, "All Walkers" on up to three: the text shrinks instead of wrapping (Android
-          // fonts run wider than the web ones).
-          // Web has no shrink-to-fit: a line limit there would only cut "×5" down to "×…".
-          numberOfLines={Platform.OS === 'web' ? undefined : props.wide ? 3 : 1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.4}
-        >
-          {props.children}
-        </Text>
-      </View>
-      {/* Torn paint stripe, as if sprayed on the card. */}
-      <Svg width={(props.large ? 34 : 20) * scale} height="100%" viewBox="0 0 20 34" preserveAspectRatio="none">
-        <Polygon
-          points="7,0 20,0 20,34 4,34 8,27 3,20 9,13 4,6"
-          fill={DANGER_COLORS[props.level].background}
-        />
-      </Svg>
-    </View>
-  );
-}
-
 const FANTASY_HEADER = { background: CARD_COLORS.parchment, text: CARD_COLORS.parchmentInk };
 
 /** Header and stock of a hand-drawn Abomination, per universe: a new UniverseId must pick its own. */
 const BOSS_LOOK: Record<UniverseId, { header: { background: string; text: string }; face: string | undefined }> = {
-  modern: { header: CARD_COLORS.spawn, face: undefined },
+  modern: { header: MODERN_COLORS.abomination, face: undefined },
   fantasy: { header: FANTASY_HEADER, face: CARD_COLORS.parchment },
   invader: { header: INVADER_COLORS.header, face: INVADER_COLORS.face },
   western: { header: WESTERN_COLORS.header, face: WESTERN_COLORS.face },
@@ -2184,10 +2370,25 @@ function makeStyles(s: number) {
     westernFooterText: { color: WESTERN_COLORS.header.text, fontSize: 11 * s, fontWeight: 'normal', textAlign: 'center' },
     westernExtraFooterText: { color: WESTERN_COLORS.header.text, fontSize: 12 * s, textAlign: 'center', fontWeight: 'normal' },
     westernPanelText: { color: WESTERN_COLORS.header.text, fontSize: 10 * s, lineHeight: 12.5 * s, textAlign: 'center', fontWeight: 'normal' },
+    // The Modern card (see MODERN_* above): banner over the top, labels, footer band, all absolutely placed on the picture.
+    modernHeader: { position: 'absolute', top: 0, left: 0, width: '100%', aspectRatio: MODERN_HEADER_SIZE.width / MODERN_HEADER_SIZE.height },
+    modernTitleBox: { position: 'absolute', left: MODERN_TITLE.left * s, top: MODERN_TITLE.top * s, height: MODERN_TITLE.height * s, right: `${MODERN_TITLE.reserve * 100}%`, justifyContent: 'center' },
+    modernTitle: { textTransform: 'uppercase', textAlign: 'left', includeFontPadding: false },
+    modernNumber: { position: 'absolute', top: MODERN_NUMBER.top * s, right: MODERN_NUMBER.right * s, fontSize: MODERN_NUMBER.size * s, opacity: MODERN_NUMBER.opacity, textAlign: 'right', includeFontPadding: false },
+    modernBadge: { position: 'absolute', top: MODERN_BADGE.top * s, right: MODERN_BADGE.right * s },
+    modernSymbol: { position: 'absolute', top: MODERN_SYMBOL.top * s, right: MODERN_SYMBOL.right * s, width: MODERN_SYMBOL.size * s, height: MODERN_SYMBOL.size * s, transform: [{ scale: MODERN_SYMBOL.shrink }], transformOrigin: 'right top' },
+    modernLabel: { position: 'absolute' },
+    modernLabelText: { position: 'absolute', top: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
+    modernFooter: { position: 'absolute', bottom: 0, left: 0, right: 0 },
+    modernFooterText: { position: 'absolute', justifyContent: 'center' },
+    modernFooterLine: { textAlign: 'center', includeFontPadding: false },
+    modernBody: { position: 'absolute', bottom: 0, left: 0, right: 0, gap: MODERN_BODY.gap * s, paddingTop: MODERN_BODY.paddingY * s },
+    modernSpamBand: { position: 'absolute', left: 0, bottom: 0, width: DESIGN_WIDTH * s, height: ((DESIGN_WIDTH * MODERN_FOOTER_SIZE.abomination.height) / MODERN_FOOTER_SIZE.abomination.width) * s },
+    modernBodyHeading: { textTransform: 'uppercase' },
     face: { flex: 1, borderRadius: 12 * s, overflow: 'hidden', backgroundColor: CARD_COLORS.body },
     header: { flexDirection: 'row', gap: 6 * s, paddingHorizontal: 10 * s, paddingVertical: 6 * s, minHeight: 44 * s },
     title: { flex: 1, fontSize: 15 * s, lineHeight: 17 * s, fontWeight: '900', textTransform: 'uppercase' },
-    levelSymbolWrap: { alignItems: 'center', justifyContent: 'center', height: 60 * s, marginTop: -52 * s, marginBottom: 2 * s },
+    levelSymbolWrap: { alignItems: 'center', justifyContent: 'center', width: MODERN_SYMBOL.size * s, height: MODERN_SYMBOL.size * s },
     levelSymbolBadge: {
       width: 56 * s,
       height: 56 * s,
@@ -2206,24 +2407,7 @@ function makeStyles(s: number) {
     shooterSymbolBadge: { backgroundColor: '#ffffff', borderColor: '#d8352a', borderWidth: 4 * s },
     number: { fontSize: 10 * s, fontWeight: '700', opacity: 0.8 },
     body: { flex: 1 },
-    art: { height: '100%', aspectRatio: 0.5, overflow: 'hidden' },
     artShort: { flex: 1, minHeight: 72 * s, overflow: 'hidden' },
-    textBody: { gap: 4 * s, paddingHorizontal: 10 * s, paddingVertical: 8 * s },
-    bodyHeading: { fontSize: 10 * s, fontWeight: '900', textTransform: 'uppercase' },
-    bodyText: { fontSize: 11 * s, lineHeight: 13 * s, fontWeight: '600' },
-    spawnBody: { flex: 1, flexDirection: 'row' },
-    levels: { flex: 1, justifyContent: 'center', gap: 4 * s, backgroundColor: CARD_COLORS.back },
-    level: { flexDirection: 'row', height: 32 * s, backgroundColor: '#ffffff', borderTopLeftRadius: 3 * s, borderBottomLeftRadius: 3 * s, borderWidth: 1 * s, borderRightWidth: 0, borderColor: CARD_COLORS.ink },
-    levelActive: { height: 46 * s, marginLeft: -12 * s, borderWidth: 3 * s, borderRightWidth: 0 },
-    levelValue: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 * s },
-    levelLarge: { height: 110 * s },
-    levelText: { color: CARD_COLORS.ink, fontSize: 15 * s, fontWeight: '700' },
-    levelTextActive: { fontSize: 26 * s, fontWeight: '900' },
-    levelTextLarge: { fontSize: 56 * s },
-    levelTextWideLarge: { fontSize: 15 * s, lineHeight: 18 * s },
-    levelTextWide: { color: CARD_COLORS.ink, fontSize: 10 * s, lineHeight: 12 * s, fontWeight: '600', textAlign: 'center' },
-    levelTextWideActive: { fontSize: 11 * s, fontWeight: '900' },
-    // The "i" in the header: this card has a rule on its back. White ring on ink, so it reads on every header colour.
     // A short rule under the picture (the longer ones are on the back).
     footer: { paddingHorizontal: 8 * s, paddingVertical: 5 * s },
     footerText: { fontSize: 11 * s, fontWeight: '700', textAlign: 'center' },
