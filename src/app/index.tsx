@@ -154,7 +154,7 @@ export default function UniverseScreen() {
                 <View style={styles.heroes}>
                   {UNIVERSES[slide.id].heroes.map((subject) => (
                     <View key={subject} style={styles.hero}>
-                      <ZombieFigure subject={subject} backdrop />
+                      <ZombieFigure subject={subject} backdrop plain />
                     </View>
                   ))}
                 </View>

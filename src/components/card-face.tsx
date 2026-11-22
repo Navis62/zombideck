@@ -228,6 +228,12 @@ const INVADER_TAB_DIM_OPACITY = 0.85;
 /** Veils over the card: the red backdrop over the navy grid, and over the picture (the official renders sit on navy). */
 const INVADER_BACKDROP_OPACITY = 0.88;
 const INVADER_ART_VEIL_OPACITY = 0.4;
+/**
+ * The faded stamp of a zombie on a Fantasy Danger Level row, as shares of the row: it was 22 % wide with 6 % above and
+ * below, too small. Now 26 % wide with 2 % margins (about +10 % taller, +18 % wider); the text cell gives up the same
+ * width on the right so the count and name stay clear of it.
+ */
+const FANTASY_STAMP = { width: '26%', margin: '2%', right: '1.5%', cellRight: '25%' } as const;
 /** Shadow behind a count so it reads on the pale tab, and how far its font may shrink on native. */
 const INVADER_COUNT_SHADOW_RADIUS = 2;
 const INVADER_COUNT_MIN_SCALE = 0.45;
@@ -825,7 +831,7 @@ function InvaderFace({ card, danger, text, footerOnFront }: { card: InvaderCard;
           </View>
         </View>
       )}
-      {text.footer && !footerOnFront && (
+      {!!text.footer && !footerOnFront && (
         <View style={styles.invaderInfo}>
           <View style={styles.infoBadge}><Text style={styles.infoBadgeText}>i</Text></View>
         </View>
@@ -1068,6 +1074,8 @@ function Plank({ style, part, children }: { style?: StyleProp<ViewStyle>; part?:
 
 /** Height over width of a full Abomination illustration (a 63:88 card). */
 const WESTERN_PICTURE_RATIO = 88 / 63;
+/** Eddie cut-outs in an Abomination window were too small: 15 % larger, from the top edge so the head and hair stay (their PNG touches it); an Eddie with its own `cutoutZoom` (Trooper, 1.3) keeps that total. */
+const WESTERN_CUTOUT_ZOOM = 1.15;
 
 /**
  * Where a full illustration sits in a window of `ratio`, in shares of the window's height (an absolute `top` and
@@ -1106,7 +1114,7 @@ function FramedPicture({ source, ratio, center, style, cutout, cutoutAspectRatio
               source={source}
               style={[
                 cutoutAspectRatio === undefined ? pictureFill : { position: 'absolute', top: 0, alignSelf: 'center', height: '100%', aspectRatio: cutoutAspectRatio },
-                cutoutZoom !== undefined && { transform: [{ scale: cutoutZoom }], transformOrigin: 'center 35%' },
+                { transform: [{ scale: cutoutZoom ?? WESTERN_CUTOUT_ZOOM }], transformOrigin: 'center top' },
               ]}
               resizeMode="contain"
             />
@@ -1283,7 +1291,7 @@ function Frame(props: {
     <View style={[styles.face, props.faceColor !== undefined && { backgroundColor: props.faceColor }]} {...readerProps(props.text, announced)}>
       <CardHeader card={props.card} title={title} color={props.headerColor} badge={!!footer && !props.footerOnFront} />
       <View style={styles.body}>{props.children}</View>
-      {footer && props.footerOnFront && (
+      {!!footer && props.footerOnFront && (
         <View style={[styles.footer, { backgroundColor: props.headerColor.background }]}>
           <Text style={[styles.footerText, { color: props.headerColor.text }]}>{footer}</Text>
         </View>
@@ -1770,7 +1778,7 @@ function FantasyScroll({ rules, horde }: { rules: string[]; horde?: string }) {
             {rule}
           </Text>
         ))}
-        {horde && <Text style={styles.fantasyHordeRule}>{horde}</Text>}
+        {!!horde && <Text style={styles.fantasyHordeRule}>{horde}</Text>}
       </ScrollView>
     </View>
   );
@@ -1798,7 +1806,7 @@ function FantasyShell({ text, number, footerOnFront, children }: { text: CardTex
       </View>
       <FantasyNumberBar number={number} />
       <View style={styles.fantasyBorder} pointerEvents="none" />
-      {text.footer && !footerOnFront && (
+      {!!text.footer && !footerOnFront && (
         <View style={styles.fantasyInfo}>
           <View style={styles.infoBadge}>
             <Text style={styles.infoBadgeText}>i</Text>
@@ -1870,7 +1878,7 @@ function FantasyFace({ card, danger, text, reveal, footerOnFront }: { card: Fant
               })
             )}
           </View>
-          {text.footer && footerOnFront && (
+          {!!text.footer && footerOnFront && (
             <View style={styles.fantasyFooter}>
               <Text style={[styles.fantasyFooterText, { fontFamily: fantasyFonts(language).name, fontStyle: fantasyFonts(language).italic }]}>{text.footer}</Text>
             </View>
@@ -2030,14 +2038,14 @@ function makeStyles(s: number) {
     // The flame: a third of the strip, low on its left, under the text.
     fantasyFlame: { position: 'absolute', left: 0, bottom: 0, width: FANTASY_FLAME_WIDTH, aspectRatio: FANTASY_FLAME_RATIO },
     // The faded zombie stamp on the right of a strip, and the large picture of the one-row mode.
-    fantasySilhouette: { position: 'absolute', right: '1.5%', width: '22%', top: '6%', bottom: '6%', overflow: 'hidden' },
+    fantasySilhouette: { position: 'absolute', right: FANTASY_STAMP.right, width: FANTASY_STAMP.width, top: FANTASY_STAMP.margin, bottom: FANTASY_STAMP.margin, overflow: 'hidden' },
     // The one big row: the zombie takes the left two thirds, whole; the tag on the right edge keeps clear of it.
     fantasyLargeFigure: { position: 'absolute', left: 0, top: 0, bottom: 0, width: '64%', overflow: 'hidden' },
     fantasyTag: { position: 'absolute', right: '2%', bottom: '12%', width: '35%', alignItems: 'center', paddingHorizontal: 3 * s, paddingTop: 5 * s, paddingBottom: 7 * s, backgroundColor: FANTASY_COLORS.row, borderWidth: 1 * s, borderColor: FANTASY_COLORS.rowEdge, overflow: 'hidden' },
     fantasyTagNote: { fontSize: 11 * s },
     fantasyTagFlame: { width: '55%' },
     // The name above the count sit right of the flame, left of the silhouette; beside the large picture they take the left.
-    fantasyCell: { position: 'absolute', left: '38%', right: '21%', top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2 * s },
+    fantasyCell: { position: 'absolute', left: '38%', right: FANTASY_STAMP.cellRight, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2 * s },
     // A sentence (Extra Activation, Nothing in sight) has more room: no silhouette-sized column to keep clear.
     fantasyCellNote: { left: '28%' },
     fantasyCountLine: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 * s, maxWidth: '100%' },

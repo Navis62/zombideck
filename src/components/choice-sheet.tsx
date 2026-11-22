@@ -74,7 +74,7 @@ export function ChoiceSheet(props: {
         <View style={styles.tiles}>
           <View style={[styles.tile, styles.boss, { height }]}>
             <View style={[styles.art, { height: Math.round(height * ART_SHARE) }]}>
-              {bossId && <ZombieFigure subject={bossId} anchor="upper" />}
+              {bossId && <ZombieFigure subject={bossId} anchor="upper" plain />}
             </View>
             <Text style={styles.name} numberOfLines={2}>
               {bossName}
@@ -98,7 +98,7 @@ export function ChoiceSheet(props: {
                 accessibilityLabel={`${name}. ${rule}`}
               >
                 <View style={[styles.art, { height: Math.round(height * ART_SHARE) }]}>
-                  {named && <ZombieFigure subject={id} anchor="upper" />}
+                  {named && <ZombieFigure subject={id} anchor="upper" plain />}
                 </View>
                 <Text style={styles.name} numberOfLines={2}>
                   {name}

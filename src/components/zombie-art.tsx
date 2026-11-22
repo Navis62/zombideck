@@ -105,25 +105,10 @@ const MODERN_ART: Record<ZombieType | 'trejo' | 'spam' | NamedModernAbomination,
   batmanEarth52: require('../../assets/modern/abominations/batman-earth-52-cartoon.jpg'),
 };
 
-const FANTASY_ART = {
-  eeWalker: require('../../assets/fantasy/zombies/ee-walker-cartoon.jpg'),
-  eeRunner: require('../../assets/fantasy/zombies/ee-runner-cartoon.jpg'),
-  eeBrute: require('../../assets/fantasy/zombies/ee-brute-cartoon.jpg'),
-  amaterasu: require('../../assets/fantasy/abominations/amaterasu-cartoon.jpg'),
-  asura: require('../../assets/fantasy/abominations/asura-cartoon.jpg'),
-  chimimoryo: require('../../assets/fantasy/abominations/chimimoryo-cartoon.jpg'),
-  qilin: require('../../assets/fantasy/abominations/qilin-cartoon.jpg'),
-  redHare: require('../../assets/fantasy/abominations/red-hare-cartoon.jpg'),
-  shakokiDogu: require('../../assets/fantasy/abominations/shakoki-dogu-cartoon.jpg'),
-  sojobo: require('../../assets/fantasy/abominations/sojobo-cartoon.jpg'),
-  takemikazuchi: require('../../assets/fantasy/abominations/takemikazuchi-cartoon.jpg'),
-  divineBeast: require('../../assets/fantasy/zombies/divine-beast-cartoon.jpg'),
-  dongZhuo: require('../../assets/fantasy/abominations/dong-zhuo-cartoon.jpg'),
-  zhangJiao: require('../../assets/fantasy/necromancers/zhang-jiao-cartoon.jpg'),
-  fumaKotaro: require('../../assets/fantasy/necromancers/fuma-kotaro-cartoon.jpg'),
-  samuraiEddie: require('../../assets/fantasy/abominations/samurai-eddie-cartoon.jpg'),
-  mummyEddie: require('../../assets/fantasy/abominations/mummy-eddie-cartoon.jpg'),
-} satisfies Record<Exclude<FantasyZombie | FantasyNecromancer, keyof typeof FANTASY_OFFICIAL>, ImageSourcePropType>;
+const SAMURAI_EDDIE_ART = require('../../assets/invader/abominations/samurai-eddie-abomination-official.png');
+
+// Every Fantasy subject has official art now; a new one without it would go here.
+const FANTASY_ART = {} satisfies Record<Exclude<FantasyZombie | FantasyNecromancer, keyof typeof FANTASY_OFFICIAL>, ImageSourcePropType>;
 
 type OfficialArt = {
   source: ImageSourcePropType;
@@ -140,9 +125,31 @@ type OfficialArt = {
  * marks a transparent PNG.
  */
 const FANTASY_OFFICIAL = {
+  fumaKotaro: { source: require('../../assets/fantasy/necromancers/fuma-kotaro-official.png'), ratio: 1.374, cutout: true },
+  dongZhuo: { source: require('../../assets/fantasy/abominations/dong-zhuo-official.png'), ratio: 0.834, cutout: true },
+  zhangJiao: { source: require('../../assets/fantasy/necromancers/zhang-jiao-official.png'), ratio: 0.666, cutout: true },
+  asura: { source: require('../../assets/fantasy/abominations/asura-official.png'), ratio: 0.656, cutout: true },
+  chimimoryo: { source: require('../../assets/fantasy/abominations/chimimoryo-official.png'), ratio: 1.096, cutout: true },
+  shakokiDogu: { source: require('../../assets/fantasy/abominations/shakoki-dogu-official.png'), ratio: 0.784, cutout: true },
+  sojobo: { source: require('../../assets/fantasy/abominations/sojobo-official.png'), ratio: 1.5, cutout: true },
+  takemikazuchi: { source: require('../../assets/fantasy/abominations/takemikazuchi-official.png'), ratio: 1.068, cutout: true },
+  redHare: { source: require('../../assets/fantasy/abominations/red-hare-official.png'), ratio: 1.133, cutout: true },
+  amaterasu: { source: require('../../assets/fantasy/abominations/amaterasu-wings.png'), ratio: 1.33, cutout: true },
+  qilin: { source: require('../../assets/fantasy/abominations/qilin-official.png'), ratio: 0.818, cutout: true },
+  mummyEddie: { source: require('../../assets/fantasy/abominations/mummy-eddie-official.png'), ratio: 0.805, cutout: true },
+  samuraiEddie: { source: SAMURAI_EDDIE_ART, ratio: 1.2, cutout: true },
+  eeWalker: { source: require('../../assets/fantasy/zombies/ee-walker-official.png'), ratio: 0.511, cutout: true },
+  eeRunner: { source: require('../../assets/fantasy/zombies/ee-runner-official.png'), ratio: 0.678, cutout: true },
+  eeBrute: { source: require('../../assets/fantasy/zombies/ee-brute-official.png'), ratio: 0.75, cutout: true },
   necromanticDragon: { source: require('../../assets/fantasy/abominations/necromantic-dragon-official.png'), ratio: 0.702, cutout: true },
   feralDragon: { source: require('../../assets/fantasy/abominations/feral-dragon-official.png'), ratio: 0.807, cutout: true },
   crowz: { source: require('../../assets/fantasy/zombies/crowz-official.png'), ratio: 1.486, cutout: true },
+  // The Divine Beasts cards print the Vermillion Bird, the first beast to spawn.
+  divineBeast: { source: require('../../assets/fantasy/abominations/vermillion-bird-official.png'), ratio: 0.744, cutout: true },
+  vermillionBird: { source: require('../../assets/fantasy/abominations/vermillion-bird-official.png'), ratio: 0.744, cutout: true },
+  whiteTiger: { source: require('../../assets/fantasy/abominations/white-tiger-official.png'), ratio: 1.312, cutout: true },
+  blackTortoise: { source: require('../../assets/fantasy/abominations/black-tortoise-official.png'), ratio: 1.259, cutout: true },
+  azureDragon: { source: require('../../assets/fantasy/abominations/azure-dragon-official.png'), ratio: 0.952, cutout: true },
   pharaohEddie: { source: require('../../assets/fantasy/abominations/pharaoh-eddie-official.png'), ratio: 1.603, cutout: true },
   fearEddie: { source: require('../../assets/fantasy/abominations/fear-eddie-official.png'), ratio: 1.249, cutout: true },
   reaperEddie: { source: require('../../assets/fantasy/necromancers/reaper-eddie-official.png'), ratio: 0.743, cutout: true },
@@ -154,15 +161,15 @@ const FANTASY_OFFICIAL = {
   rocksteady: { source: require('../../assets/fantasy/abominations/rocksteady-official.png'), ratio: 0.696, cutout: true },
   bebop: { source: require('../../assets/fantasy/abominations/bebop-official.png'), ratio: 0.811, cutout: true },
   footNinja: { source: require('../../assets/fantasy/zombies/foot-ninja-official.png'), ratio: 0.644, cutout: true },
-  erinn: { source: require('../../assets/fantasy/necromancers/erinn-official.png'), ratio: 0.71, cutout: true },
+  erinn: { source: require('../../assets/fantasy/necromancers/erinn-official.png'), ratio: 0.673, cutout: true },
   lordJanas: { source: require('../../assets/fantasy/abominations/lord-janas-official.png'), ratio: 0.576, cutout: true },
   cerberus: { source: require('../../assets/fantasy/abominations/cerberus-official.png'), ratio: 1.093, cutout: true },
   banshee: { source: require('../../assets/fantasy/abominations/banshee-official.png'), ratio: 0.591, cutout: true },
   queenCaenedra: { source: require('../../assets/fantasy/abominations/queen-caenedra-official.png'), ratio: 0.761, cutout: true },
-  horseman: { source: require('../../assets/fantasy/abominations/horseman-official.png'), ratio: 0.658, cutout: true },
+  horseman: { source: require('../../assets/fantasy/abominations/horseman-official.png'), ratio: 0.629, cutout: true },
   baalberith: { source: require('../../assets/fantasy/abominations/baalberith-official.png'), ratio: 0.888, cutout: true },
   reaper: { source: require('../../assets/fantasy/abominations/reaper-official.png'), ratio: 0.87, cutout: true },
-  climber: { source: require('../../assets/fantasy/zombies/climber-official.png'), ratio: 0.667, cutout: true },
+  climber: { source: require('../../assets/fantasy/zombies/climber-official.png'), ratio: 0.622, cutout: true },
   evilTroy: { source: require('../../assets/fantasy/necromancers/evil-troy-official.png'), ratio: 0.855, cutout: true },
   blackheart: { source: require('../../assets/fantasy/necromancers/blackheart-official.png'), ratio: 0.699, cutout: true },
   yukiOnna: { source: require('../../assets/fantasy/necromancers/yuki-onna-official.png'), ratio: 0.625, cutout: true },
@@ -187,13 +194,13 @@ const FANTASY_OFFICIAL = {
   npcWalkerHeadless: { source: require('../../assets/fantasy/zombies/npc-walker-headless-official.png'), ratio: 0.831, cutout: true },
   ablobination: { source: require('../../assets/fantasy/abominations/ablobination-official.png'), ratio: 0.935, cutout: true },
   abominabunny: { source: require('../../assets/fantasy/abominations/abominabunny-official.png'), ratio: 1.154, cutout: true },
-  abominalpha: { source: require('../../assets/fantasy/abominations/abominalpha-official.png'), ratio: 0.807, cutout: true },
+  abominalpha: { source: require('../../assets/fantasy/abominations/abominalpha-official.png'), ratio: 0.766, cutout: true },
   abominarat: { source: require('../../assets/fantasy/abominations/abominarat-official.png'), ratio: 0.94, cutout: true },
   abominatroll: { source: require('../../assets/fantasy/abominations/abominatroll-official.png'), ratio: 0.763, cutout: true },
   abominotaur: { source: require('../../assets/fantasy/abominations/abominotaur-official.png'), ratio: 0.571, cutout: true },
   chromatiz: { source: require('../../assets/fantasy/abominations/chromatiz-official.png'), ratio: 0.686, cutout: true },
   fantasyAbomination: { source: require('../../assets/fantasy/abominations/fantasy-abomination-official.png'), ratio: 0.613, cutout: true },
-  godEaterAbomination: { source: require('../../assets/fantasy/abominations/god-eater-abomination-official.png'), ratio: 0.939, cutout: true },
+  godEaterAbomination: { source: require('../../assets/fantasy/abominations/god-eater-abomination-official.png'), ratio: 0.831, cutout: true },
   gorgomination: { source: require('../../assets/fantasy/abominations/gorgomination-official.png'), ratio: 1.042, cutout: true },
   hordeBrother: { source: require('../../assets/fantasy/abominations/horde-brother-official.png'), ratio: 0.642, cutout: true },
   khanAbomination: { source: require('../../assets/fantasy/abominations/khan-abomination-official.png'), ratio: 1.035, cutout: true },
@@ -206,37 +213,37 @@ const FANTASY_OFFICIAL = {
   vaultWarden: { source: require('../../assets/fantasy/abominations/vault-warden-official.png'), ratio: 0.637, cutout: true },
   werezombie: { source: require('../../assets/fantasy/abominations/werezombie-official.png'), ratio: 1.114, cutout: true },
   wolfbomination: { source: require('../../assets/fantasy/abominations/wolfbomination-official.png'), ratio: 1.058, cutout: true },
-  zombieGiant: { source: require('../../assets/fantasy/abominations/zombie-giant-official.png'), ratio: 1.103, cutout: true },
-  countTemeraire: { source: require('../../assets/fantasy/necromancers/count-temeraire-official.png'), ratio: 0.85, cutout: true },
-  defilerNecromancer: { source: require('../../assets/fantasy/necromancers/defiler-necromancer-official.png'), ratio: 0.871, cutout: true },
-  erikSummoner: { source: require('../../assets/fantasy/necromancers/erik-summoner-official.png'), ratio: 1.171, cutout: true },
-  faolan: { source: require('../../assets/fantasy/necromancers/faolan-official.png'), ratio: 0.736, cutout: true },
+  zombieGiant: { source: require('../../assets/fantasy/abominations/zombie-giant-official.png'), ratio: 0.77, cutout: true },
+  countTemeraire: { source: require('../../assets/fantasy/necromancers/count-temeraire-official.png'), ratio: 0.785, cutout: true },
+  defilerNecromancer: { source: require('../../assets/fantasy/necromancers/defiler-necromancer-official.png'), ratio: 0.617, cutout: true },
+  erikSummoner: { source: require('../../assets/fantasy/necromancers/erik-summoner-official.png'), ratio: 0.793, cutout: true },
+  faolan: { source: require('../../assets/fantasy/necromancers/faolan-official.png'), ratio: 0.699, cutout: true },
   grin: { source: require('../../assets/fantasy/necromancers/grin-official.png'), ratio: 0.799, cutout: true },
-  innsmouth: { source: require('../../assets/fantasy/necromancers/innsmouth-official.png'), ratio: 0.757, cutout: true },
+  innsmouth: { source: require('../../assets/fantasy/necromancers/innsmouth-official.png'), ratio: 0.523, cutout: true },
   lordOfSkulls: { source: require('../../assets/fantasy/necromancers/lord-of-skulls-official.png'), ratio: 0.585, cutout: true },
   necromancer: { source: require('../../assets/fantasy/necromancers/necromancer-official.png'), ratio: 0.731, cutout: true },
   orcNecromancer: { source: require('../../assets/fantasy/necromancers/orc-necromancer-official.png'), ratio: 0.734, cutout: true },
   ostokar: { source: require('../../assets/fantasy/necromancers/ostokar-official.png'), ratio: 0.775, cutout: true },
-  queenMedea: { source: require('../../assets/fantasy/necromancers/queen-medea-official.png'), ratio: 0.517, cutout: true },
-  queenSevera: { source: require('../../assets/fantasy/necromancers/queen-severa-official.png'), ratio: 0.957, cutout: true },
+  queenMedea: { source: require('../../assets/fantasy/necromancers/queen-medea-official.png'), ratio: 0.388, cutout: true },
+  queenSevera: { source: require('../../assets/fantasy/necromancers/queen-severa-official.png'), ratio: 0.765, cutout: true },
   ratKing: { source: require('../../assets/fantasy/necromancers/rat-king-official.png'), ratio: 0.686, cutout: true },
-  toMeKuPa: { source: require('../../assets/fantasy/necromancers/to-me-ku-pa-official.png'), ratio: 0.883, cutout: true },
+  toMeKuPa: { source: require('../../assets/fantasy/necromancers/to-me-ku-pa-official.png'), ratio: 0.779, cutout: true },
   deadboltWalker: { source: require('../../assets/fantasy/zombies/deadbolt-walker-official.png'), ratio: 0.5, cutout: true },
   deadeyeWalker: { source: require('../../assets/fantasy/zombies/deadeye-walker-official.png'), ratio: 0.888, cutout: true },
   fantasyFatty: { source: require('../../assets/fantasy/zombies/fantasy-fatty-official.png'), ratio: 0.672, cutout: true },
   fantasyRunner: { source: require('../../assets/fantasy/zombies/fantasy-runner-official.png'), ratio: 0.59, cutout: true },
   fantasyWalker: { source: require('../../assets/fantasy/zombies/fantasy-walker-official.png'), ratio: 0.474, cutout: true },
   fattyBurster: { source: require('../../assets/fantasy/zombies/fatty-burster-official.png'), ratio: 0.985, cutout: true },
-  orcFatty: { source: require('../../assets/fantasy/zombies/orc-fatty-official.png'), ratio: 0.947, cutout: true },
+  orcFatty: { source: require('../../assets/fantasy/zombies/orc-fatty-official.png'), ratio: 0.884, cutout: true },
   orcRunner: { source: require('../../assets/fantasy/zombies/orc-runner-official.png'), ratio: 0.725, cutout: true },
   orcWalker: { source: require('../../assets/fantasy/zombies/orc-walker-official.png'), ratio: 0.639, cutout: true },
   ratz: { source: require('../../assets/fantasy/zombies/ratz-official.png'), ratio: 0.972, cutout: true },
   spectralWalker: { source: require('../../assets/fantasy/zombies/spectral-walker-official.png'), ratio: 0.689, cutout: true },
   taintedWalker: { source: require('../../assets/fantasy/zombies/tainted-walker-official.png'), ratio: 0.805, cutout: true },
   terrorcottaWalker: { source: require('../../assets/fantasy/zombies/terrorcotta-walker-official.png'), ratio: 0.475, cutout: true },
-  wdBrute: { source: require('../../assets/fantasy/zombies/wd-brute-official.png'), ratio: 0.686, cutout: true },
+  wdBrute: { source: require('../../assets/fantasy/zombies/wd-brute-official.png'), ratio: 0.659, cutout: true },
   wdRunner: { source: require('../../assets/fantasy/zombies/wd-runner-official.png'), ratio: 0.724, cutout: true },
-  wdWalker: { source: require('../../assets/fantasy/zombies/wd-walker-official.png'), ratio: 0.521, cutout: true },
+  wdWalker: { source: require('../../assets/fantasy/zombies/wd-walker-official.png'), ratio: 0.452, cutout: true },
   wolfz: { source: require('../../assets/fantasy/zombies/wolfz-official.png'), ratio: 1.335, cutout: true },
   // Stand-in: only named in a card footer, never drawn.
   wardenBrute: { source: require('../../assets/fantasy/zombies/fantasy-fatty-official.png'), ratio: 0.672, cutout: true },
@@ -255,7 +262,7 @@ const SILHOUETTE_OPACITY = 0.5;
 // Official Eddie silhouettes extracted from the larger card illustrations in the CMON pack previews.
 const INVADER_EDDIE_ART = {
   cyborgEddieAbomination: require('../../assets/invader/abominations/cyborg-eddie-abomination-official.png'),
-  samuraiEddieAbomination: require('../../assets/invader/abominations/samurai-eddie-abomination-official.png'),
+  samuraiEddieAbomination: SAMURAI_EDDIE_ART,
   bassistEddieAbomination: require('../../assets/invader/abominations/bassist-eddie-abomination-official.png'),
   bountyHunterEddieAbomination: require('../../assets/invader/abominations/bounty-hunter-eddie-abomination-official.png'),
 } satisfies Partial<Record<InvaderAbomination, ImageSourcePropType>>;
@@ -430,6 +437,25 @@ export const artSubject = (card: ModernCard): ArtSubject =>
 const ART_RATIO = 2.25;
 /** Height over width of the fantasy illustrations (640 × 1280). */
 const FIGURE_RATIO = 2;
+/**
+ * The players found the pictures too small: a cut-out that covers its panel (`center`, on the cards) is drawn 18 % larger,
+ * from the top so no head is cut. The `upper` anchor is not enlarged: its cut-outs were just trimmed of their transparent
+ * margins (0-2 % left), so 1.18 would cut 8.5 % of the figure on each side (arms, weapons, wings) and show only ~40 % of a
+ * tall one's height, while the trimmed file already fills the width, larger than before.
+ */
+const CUTOUT_ZOOM = 1.18;
+/** Width over height above which a cut-out is landscape (wings, tails, mounts). */
+const WIDE_RATIO = 1;
+/** Landscape cut-outs grow less: more would trim their sides. */
+const CUTOUT_WIDE_ZOOM = 1.08;
+/** Share of the panel width the Modern drawn illustration overflows to hide its printed border (it was an unnamed 1.08). */
+const TOP_FIGURE_OVERSIZE = 1.08;
+/** Drawn illustrations (Modern, Fantasy without a cut-out) are 12 % larger, centred on their column, head kept at the top. */
+const DRAWN_ZOOM = 1.12;
+/** Official Invader Xeno pictures cover their window; enlarged 12 % from the top edge, under the title plate. */
+const INVADER_XENO_ZOOM = 1.12;
+/** Invader Abominations hang from the top at the full card width; 10 % wider, centred, when no blurred-fill rule sets its own scale. */
+const INVADER_ABOMINATION_ZOOM = 1.1;
 /** Share of the window width a drawn illustration overflows on each side in an Invader card, to hide its torn border. */
 const FILL_BLEED = 0.06;
 /** Share of the illustration above the head (border and halo) left out when showing its upper part. */
@@ -442,7 +468,7 @@ const HIGH_HEADS: readonly ArtSubject[] = [
   'godEaterAbomination', 'amaterasu', 'asura', 'bishamon', 'chimimoryo', 'hachiman', 'kijin', 'kumiho', 'nian', 'qilin',
   'redHare', 'shakokiDogu', 'sojobo', 'susanoWo', 'takemikazuchi', 'yeti', 'bomoh', 'deathNotes', 'hannya',
   'kaguya', 'tengu', 'yukiOnna', 'fantasyBerserkerWalker', 'deadboltWalker', 'terrorcottaWalker', 'climber',
-  'divineBeast', 'reaper', 'baalberith', 'horseman', 'queenCaenedra', 'hugBear', 'banshee', 'cerberus', 'lordJanas', 'marike',
+  'divineBeast', 'vermillionBird', 'whiteTiger', 'blackTortoise', 'azureDragon', 'reaper', 'baalberith', 'horseman', 'queenCaenedra', 'hugBear', 'banshee', 'cerberus', 'lordJanas', 'marike',
   'erinn', 'grandVizier', 'theSparrow', 'dongZhuo', 'zhangJiao', 'fumaKotaro',
   'pharaohEddie', 'samuraiEddie', 'mummyEddie', 'wickerManEddie', 'fearEddie', 'reaperEddie', 'shamanEddie',
   'bebop', 'rocksteady', 'mummRa', 'footNinja',
@@ -466,14 +492,16 @@ const UPPER_OFFSETS: Partial<Record<ArtSubject, number>> = {
  * covers the panel (`whole` fits the figure in it instead); in a wide or low one (`upper`, `top`: a boss picture, a window above the rows) it takes the full
  * width, head and chest, and a figure too short for the panel is centred in it.
  */
-function Cutout({ art, anchor, silhouette }: { art: OfficialArt; anchor: string; silhouette?: boolean }) {
+function Cutout({ art, anchor, silhouette, zoomed }: { art: OfficialArt; anchor: string; silhouette?: boolean; zoomed: boolean }) {
   const [box, setBox] = useState({ width: 0, height: 0 });
   const tint = silhouette ? { tintColor: FANTASY_COLORS.silhouette, opacity: SILHOUETTE_OPACITY } : undefined;
   if (anchor === 'full') return <Image source={art.source} style={[styles.fullFigure, tint]} resizeMode="contain" />;
   let layout;
   if (box.width > 0 && box.height > 0) {
     const byWidth = box.width / art.ratio;
-    const height = anchor === 'center' ? Math.max(byWidth, box.height) : anchor === 'whole' ? Math.min(byWidth, box.height) : byWidth;
+    // Only a `center` cut-out on a card is enlarged, from the top: the head stays and only the sides and feet are trimmed.
+    const zoom = zoomed && anchor === 'center' ? (art.ratio > WIDE_RATIO ? CUTOUT_WIDE_ZOOM : CUTOUT_ZOOM) : 1;
+    const height = (anchor === 'center' ? Math.max(byWidth, box.height) : anchor === 'whole' ? Math.min(byWidth, box.height) : byWidth) * zoom;
     const width = height * art.ratio;
     layout = { width, height, left: (box.width - width) / 2, top: anchor !== 'center' && height < box.height ? (box.height - height) / 2 : 0 };
   }
@@ -490,6 +518,7 @@ export function ZombieFigure({
   anchor = 'center',
   silhouette,
   backdrop,
+  plain,
 }: {
   subject: ArtSubject;
   anchor?: 'center' | 'top' | 'upper' | 'full' | 'fill' | 'whole';
@@ -497,15 +526,18 @@ export function ZombieFigure({
   silhouette?: boolean;
   /** Lay a Fantasy cut-out on the backdrop of the Fantasy cards (carousel, menu), where nothing else is behind it. */
   backdrop?: boolean;
+  /** No enlargement: the carousel and the menu show the pictures at their own size, only the cards are enlarged. */
+  plain?: boolean;
 }) {
   const [width, setWidth] = useState(0);
   const official = officialOf(subject);
+  const drawnZoom = plain ? 1 : DRAWN_ZOOM;
   // `whole`: a cut-out in full, head to feet, in its panel; a drawing has its border to crop and covers the panel as ever.
   if (anchor === 'whole' && !official?.cutout) anchor = 'center';
   const source = official?.source ?? (isWesternBoss(subject) ? WESTERN_WINDOWS[subject].source : ART[subject]);
   // A cut-out has no border to crop and sits on whatever is behind it.
   if (official?.cutout) {
-    const cutout = <Cutout art={official} anchor={anchor} silhouette={silhouette} />;
+    const cutout = <Cutout art={official} anchor={anchor} silhouette={silhouette} zoomed={!plain} />;
     if (!backdrop || !FANTASY_PARTS.artBackground) return cutout;
     return (
       <>
@@ -526,7 +558,7 @@ export function ZombieFigure({
       // being the red backdrop behind the rule box; a portrait one (a Xeno) covers the window.
       if (subject in INVADER_ABOMINATION_ART) {
         const fit = INVADER_BLURRED_FILL[subject];
-        const wide = fit?.scale ?? 1;
+        const wide = fit?.scale ?? INVADER_ABOMINATION_ZOOM;
         return (
           <Image
             source={official}
@@ -535,7 +567,7 @@ export function ZombieFigure({
           />
         );
       }
-      return <Image source={official} style={styles.fullFigure} resizeMode="cover" />;
+      return <Image source={official} style={[styles.fullFigure, { transform: [{ scale: INVADER_XENO_ZOOM }], transformOrigin: 'center top' }]} resizeMode="cover" />;
     }
     // No official picture: the drawn illustration, wider than the window so its cream torn border is cut off.
     return (
@@ -550,7 +582,7 @@ export function ZombieFigure({
     );
   }
   if (anchor === 'full') return <Image source={source} style={styles.fullFigure} resizeMode="contain" />;
-  if (anchor === 'center') return <Image source={source} style={styles.figure} resizeMode="cover" />;
+  if (anchor === 'center') return <Image source={source} style={[styles.figure, !plain && { transform: [{ scale: drawnZoom }], transformOrigin: 'center top' }]} resizeMode="cover" />;
   if (anchor === 'upper') {
     // Head and chest of a full-length figure in a wide panel: the width fills the panel, the halo above the head and
     // the legs are cropped.
@@ -559,20 +591,20 @@ export function ZombieFigure({
         {width > 0 && (
           <Image
             source={source}
-            style={{ position: 'absolute', top: -width * FIGURE_RATIO * (UPPER_OFFSETS[subject] ?? UPPER_OFFSET), left: 0, width, height: width * FIGURE_RATIO }}
+            style={{ position: 'absolute', top: -width * drawnZoom * FIGURE_RATIO * (UPPER_OFFSETS[subject] ?? UPPER_OFFSET), left: (-width * (drawnZoom - 1)) / 2, width: width * drawnZoom, height: width * drawnZoom * FIGURE_RATIO }}
           />
         )}
       </View>
     );
   }
   // Scaled to the panel width and pinned to the top, cropping the legs instead of the head.
-  const scaled = width * 1.08;
+  const scaled = width * TOP_FIGURE_OVERSIZE * drawnZoom;
   return (
     <View style={StyleSheet.absoluteFill} onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
       {width > 0 && (
         <Image
           source={source}
-          style={{ position: 'absolute', top: -width * 0.03, left: -width * 0.04, width: scaled, height: scaled * ART_RATIO }}
+          style={{ position: 'absolute', top: -width * 0.03, left: (width - scaled) / 2, width: scaled, height: scaled * ART_RATIO }}
         />
       )}
     </View>

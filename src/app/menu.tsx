@@ -75,7 +75,7 @@ export default function MenuScreen() {
           >
             {heroes.map((subject) => (
               <View key={subject} style={[styles.zombie, { width: zombieWidth, aspectRatio: ART_RATIO }]}>
-                <ZombieFigure subject={subject} backdrop />
+                <ZombieFigure subject={subject} backdrop plain />
               </View>
             ))}
           </View>
