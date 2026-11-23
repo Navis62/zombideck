@@ -11,6 +11,7 @@ import type {
   GameState,
   Piles,
   Revealed,
+  TrejoPiles,
   UniverseId,
   ZombieCard,
 } from './types';
@@ -25,6 +26,30 @@ export const UNIVERSE_IDS: readonly UniverseId[] = ['modern', 'fantasy', 'invade
 export const gameKey = (universe: UniverseId) => `zombideck.game.${universe}`;
 export const MAX_UNDO = 20;
 export const MAX_ZONES = 8;
+
+const NO_TREJO: TrejoPiles = { stage: 'none', resolved: {} };
+/** Whether a card is a Trejo card (Danny Trejo set); the engine does not know the cards. */
+export type IsTrejoCard = (cardId: string) => boolean;
+const noTrejo: IsTrejoCard = () => false;
+
+/** Resolves the Trejo cards among `cards`, in order, from the stage of the board. */
+function resolveTrejo(from: TrejoPiles['stage'], cards: readonly string[], isTrejo: IsTrejoCard, kept: TrejoPiles['resolved'] = {}): TrejoPiles {
+  let stage = from;
+  const resolved = { ...kept };
+  for (const card of cards) {
+    if (!isTrejo(card)) continue;
+    if (stage === 'none') {
+      resolved[card] = 3;
+      stage = 'walker';
+    } else if (stage === 'walker') {
+      resolved[card] = 2;
+      stage = 'abomination';
+    } else {
+      resolved[card] = 1;
+    }
+  }
+  return { stage, resolved };
+}
 
 const remember = (state: GameState) => [...state.history, state.piles].slice(-MAX_UNDO);
 
@@ -98,11 +123,11 @@ export function newGame(
     ? { abomination: bossDeck(deck.bosses.abomination), necromancer: bossDeck(deck.bosses.necromancer), revealed: {}, manual: [], onBoard: [] }
     : null;
   return {
-    version: 7,
+    version: 8,
     bossRule: deck.bosses?.rule ?? null,
     universe,
     setIds,
-    piles: { draw: shuffle(ids, rng), discard: [], drawn: [], reshuffled: false, bosses },
+    piles: { draw: shuffle(ids, rng), discard: [], drawn: [], reshuffled: false, bosses, trejo: NO_TREJO },
     history: [],
     danger: 'blue',
     zones: clampZones(zones),
@@ -508,6 +533,7 @@ export function drawCards(
   rng: Rng = Math.random,
   trigger: BossTrigger = noBosses,
   powers: BossPowers = noPowers,
+  isTrejo: IsTrejoCard = noTrejo,
 ): GameState {
   let draw = state.piles.draw;
   let discard = [...state.piles.discard, ...state.piles.drawn];
@@ -528,7 +554,7 @@ export function drawCards(
   }
   if (drawn.length === 0) return state;
   const bosses = revealBosses(state.piles.bosses, state.piles.drawn, drawn, trigger, state.danger, rng, powers, state.bossRule, true, 'board');
-  return { ...state, history: remember(state), piles: { draw, discard, drawn, reshuffled, bosses } };
+  return { ...state, history: remember(state), piles: { draw, discard, drawn, reshuffled, bosses, trejo: resolveTrejo(state.piles.trejo.stage, drawn, isTrejo) } };
 }
 
 /** Whether the next card dealt one zone at a time opens a new Spawn step: none on display, or the step is over. */
@@ -560,6 +586,7 @@ export function drawNextCard(
   rng: Rng = Math.random,
   trigger: BossTrigger = noBosses,
   powers: BossPowers = noPowers,
+  isTrejo: IsTrejoCard = noTrejo,
 ): GameState {
   const { piles } = state;
   const newStep = startsNewStep(state, effect);
@@ -575,7 +602,8 @@ export function drawNextCard(
   const [card, ...rest] = draw;
   const drawn = newStep ? [card] : [...piles.drawn, card];
   const bosses = revealBosses(piles.bosses, newStep ? piles.drawn : [], [card], trigger, state.danger, rng, powers, state.bossRule, newStep, 'board');
-  return { ...state, history: remember(state), piles: { draw: rest, discard, drawn, reshuffled, bosses } };
+  const trejo = resolveTrejo(piles.trejo.stage, [card], isTrejo, newStep ? {} : piles.trejo.resolved);
+  return { ...state, history: remember(state), piles: { draw: rest, discard, drawn, reshuffled, bosses, trejo } };
 }
 
 /**
@@ -613,8 +641,13 @@ export function reshuffleAll(state: GameState, rng: Rng = Math.random, powers: B
   return {
     ...state,
     history: remember(state),
-    piles: { draw: shuffle([...draw, ...discard, ...drawn], rng), discard: [], drawn: [], reshuffled: false, bosses },
+    piles: { draw: shuffle([...draw, ...discard, ...drawn], rng), discard: [], drawn: [], reshuffled: false, bosses, trejo: NO_TREJO },
   };
+}
+
+/** The players killed the Trejobomination: the next Trejo card spawns a Walker again. The cards on display keep their resolution. */
+export function removeTrejo(state: GameState): GameState {
+  return { ...state, history: remember(state), piles: { ...state.piles, trejo: { ...state.piles.trejo, stage: 'none' } } };
 }
 
 /** Shuffles the cards left in the deck; the discard and the cards on display stay put. */
@@ -829,7 +862,7 @@ export function isValidSave(
 ): value is GameState {
   const state = value as GameState | null;
   // Closed beta: no migration, a game saved by an older version is rejected.
-  if (state?.version !== 7 || !DANGER_LEVELS.includes(state.danger) || !UNIVERSE_IDS.includes(state.universe)) return false;
+  if (state?.version !== 8 || !DANGER_LEVELS.includes(state.danger) || !UNIVERSE_IDS.includes(state.universe)) return false;
   if (state.bossRule !== null && state.bossRule !== 'oneAtATime' && state.bossRule !== 'fest') return false;
   if (!Number.isInteger(state.zones) || state.zones !== clampZones(state.zones)) return false;
   if (!Array.isArray(state.setIds) || !state.setIds.every((id) => typeof id === 'string')) return false;
@@ -844,7 +877,15 @@ export function isValidSave(
 
 function isValidPiles(piles: Piles | null | undefined, knownCardIds: ReadonlySet<string>): boolean {
   if (!piles || !Array.isArray(piles.draw) || !Array.isArray(piles.discard) || !Array.isArray(piles.drawn)) return false;
+  if (!isValidTrejo(piles.trejo, piles.drawn)) return false;
   return [...piles.draw, ...piles.discard, ...piles.drawn].every((id) => knownCardIds.has(id));
+}
+
+const TREJO_STAGES: readonly string[] = ['none', 'walker', 'abomination'];
+
+function isValidTrejo(trejo: TrejoPiles | undefined, drawn: readonly string[]): boolean {
+  if (!trejo || !TREJO_STAGES.includes(trejo.stage) || !trejo.resolved || typeof trejo.resolved !== 'object') return false;
+  return Object.entries(trejo.resolved).every(([card, choice]) => drawn.includes(card) && (choice === 1 || choice === 2 || choice === 3));
 }
 
 const isStrings = (value: unknown): value is string[] => Array.isArray(value) && value.every((id) => typeof id === 'string');

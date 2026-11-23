@@ -339,6 +339,8 @@ export const cs: Record<TranslationKey, string> = {
   'card.trejo2': 'Trejo Walker je ve hře: promění se v Trejobomination.',
   'card.trejo3': 'Trejobomination ani Trejo Walker není ve hře: oživte Trejo Walkera.',
   'card.trejo3Rush': 'Trejobomination ani Trejo Walker není ve hře: oživte Trejo Walkera a poté ho aktivujte.',
+  'trejo.walker': 'Trejo Walker',
+  'trejo.abomination': 'Trejobomination',
   'set.core2e': 'Základní krabice',
   'set.fortHendrix': 'Fort Hendrix',
   'set.trejo': 'Danny Trejo',

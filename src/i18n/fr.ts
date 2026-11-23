@@ -334,6 +334,8 @@ export const fr = {
   'card.trejo2': 'Rôdeur Trejo en jeu : il se transforme en Trejobomination.',
   'card.trejo3': 'Ni Trejobomination ni Rôdeur Trejo en jeu : générez un Rôdeur Trejo.',
   'card.trejo3Rush': 'Ni Trejobomination ni Rôdeur Trejo en jeu : générez un Rôdeur Trejo, puis activez-le.',
+  'trejo.walker': 'Rôdeur Trejo',
+  'trejo.abomination': 'Trejobomination',
   'set.core2e': 'Boîte de base',
   'set.fortHendrix': 'Fort Hendrix',
   'set.trejo': 'Danny Trejo',

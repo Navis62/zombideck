@@ -9,7 +9,7 @@ import { BOSS_RULE_IDS, BOSSES_WITHOUT_RULE, FANTASY_SETS } from '../data/fantas
 import { WESTERN_SETS } from '../data/western.ts';
 import { en } from '../i18n/en.ts';
 import { type Boss, DEFAULT_THREAT, FANTASY_BOSS_IDS, MODERN_ABOMINATIONS, MODERN_BOSS_IDS, parseThreat, WESTERN_ABOMINATIONS, WESTERN_BOSS_IDS, WESTERN_BOSS_RULES, presentSetIds, tailorFantasyDeck, tailorModernDeck, tailorWesternDeck, type Threat } from '../data/threat.ts';
-import { allExpansions, tailorDeck, bossCopiesOf, bossIdsOf, bossTrigger as fantasyBossTrigger, CARDS_BY_ID, cardEffect, cardIdsOf, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
+import { allExpansions, tailorDeck, bossCopiesOf, bossIdsOf, bossTrigger as fantasyBossTrigger, CARDS_BY_ID, cardEffect, cardIdsOf, isTrejoCard, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
 import {
   activeSetIds,
   ALL_PARTS,
@@ -22,6 +22,7 @@ import {
   MAX_UNDO,
   MAX_ZONES,
   newGame,
+  removeTrejo,
   reshuffleAll,
   selectCards,
   setDanger,
@@ -1763,16 +1764,16 @@ test('no boss or card is ever lost or duplicated, whatever the players do', () =
   assert.ok(choices > 0, 'the run chose among candidates');
 });
 
-test('a save is version 7: version 6 is rejected, groups drawn by hand and pending choices are kept', () => {
+test('a save is version 8: version 7 is rejected, groups drawn by hand and pending choices are kept', () => {
   const state = manualDraw(step(powerGame(['gozer', 'p', 'q', 'r', 'x'], [], 1, 'fest')));
   const known = () => new Set(['a1', 'a2', 'a3']);
   const bossIds = () => new Set(['gozer', 'p', 'q', 'r', 'x']);
   const copy = () => JSON.parse(JSON.stringify(state));
-  assert.equal(state.version, 7);
-  assert.equal(newGame(sets, ['a']).version, 7);
+  assert.equal(state.version, 8);
+  assert.equal(newGame(sets, ['a']).version, 8);
   assert.deepEqual(newGame(sets, ['a'], ALL_PARTS, () => 0, 1, 'modern', (cards) => ({ cards, bosses: { rule: 'fest', abomination: ['x'], necromancer: [] } })).piles.bosses?.manual, []);
   assert.ok(isValidSave(copy(), known, bossIds));
-  assert.equal(isValidSave({ ...copy(), version: 6 }, known, bossIds), false, 'the old game is rejected');
+  assert.equal(isValidSave({ ...copy(), version: 7 }, known, bossIds), false, 'the old game is rejected');
   const broken = (change: (bosses: any) => void) => {
     const save = copy();
     change(save.piles.bosses);
@@ -1809,7 +1810,7 @@ test('powers come from the boss lists, and only Modern draws its Abominations by
 test('a Fantasy game has no group fields and nothing drawn by hand', () => {
   const setIds = ['blackPlague', 'greenHorde'];
   let state = newGame(FANTASY_SETS, setIds, ALL_PARTS, () => 0.3, 2, 'fantasy', (cards) => tailorFantasyDeck(cards, DEFAULT_THREAT, new Set(setIds)));
-  assert.equal(state.version, 7);
+  assert.equal(state.version, 8);
   for (let i = 0; i < 60; i++) {
     state = drawCards(state, cardEffect, () => 0.3, fantasyBossTrigger);
     assert.deepEqual(bossesOf(state).manual, []);
@@ -2280,7 +2281,7 @@ test('a Danger Level change with a boss on the board names it, and giving the ca
 
 test('the board is saved: a version 6 game is rejected, a boss on the board counts against its copies', () => {
   const board = step(step(powerGame(['x', 'y']), firstTwo), firstTwo);
-  assert.equal(board.version, 7);
+  assert.equal(board.version, 8);
   assert.ok(validSave(board));
   assert.equal(validSave({ ...board, version: 6 }), false);
   const bosses = bossesOf(board);
@@ -2629,7 +2630,7 @@ test('a save holding escorts on display and on the board is valid, and the versi
   const state = escortStep(escortStep(escortGame(['lord']), callsNecro('a1')), callsNecro('a2'));
   assert.ok(isValidSave(JSON.parse(JSON.stringify(state)), A_IDS));
   assert.ok(isValidSave(JSON.parse(JSON.stringify(escortStep(escortGame(['lord']), callsNecro('a1')))), A_IDS));
-  assert.equal(state.version, 7);
+  assert.equal(state.version, 8);
 });
 
 test('newGroups names the escorts a bringer brought, after the bringer revealed by a card or by hand', () => {
@@ -2769,4 +2770,124 @@ test('the pictures of a zombie alternate with the printed card numbers', () => {
     ['toxic-091', 'sunglasses'],
     ['toxic-092', 'jacket'],
   ]);
+});
+
+// Danny Trejo: a Trejo card turns into a Trejobomination in three steps (spawn, transform, activate).
+const trejoSets: CardSet[] = [
+  {
+    id: 't',
+    optional: false,
+    isHard: () => false,
+    cards: [
+      { id: 't1', setId: 't', kind: 'trejo' },
+      { id: 't2', setId: 't', kind: 'trejo' },
+      { id: 't3', setId: 't', kind: 'trejoRush' },
+      { id: 'f1', setId: 't', kind: 'spawn', zombie: 'walker', counts: [1, 1, 1, 1] },
+      { id: 'f2', setId: 't', kind: 'spawn', zombie: 'walker', counts: [1, 1, 1, 1] },
+    ],
+  },
+];
+const isTrejo = (id: string) => /^t\d$/.test(id);
+const trejoGame = (order: string[], zones = 1): GameState => {
+  const state = newGame(trejoSets, ['t'], ALL_PARTS, () => 0, zones);
+  return { ...state, piles: { ...state.piles, draw: order } };
+};
+const dealt = (state: GameState) => drawCards(state, undefined, () => 0.99, undefined, undefined, isTrejo);
+const dealtOne = (state: GameState) => drawNextCard(state, undefined, () => 0.99, undefined, undefined, isTrejo);
+
+test('Trejo cards spawn a Walker, turn it into a Trejobomination, then activate it, one step after the other', () => {
+  let state = trejoGame(['t1', 't2', 't3', 'f1']);
+  assert.deepEqual(state.piles.trejo, { stage: 'none', resolved: {} });
+  assert.equal(state.piles.bosses, null);
+  state = dealt(state);
+  assert.deepEqual(state.piles.trejo, { stage: 'walker', resolved: { t1: 3 } });
+  state = dealt(state);
+  assert.deepEqual(state.piles.trejo, { stage: 'abomination', resolved: { t2: 2 } });
+  state = dealt(state);
+  assert.deepEqual(state.piles.trejo, { stage: 'abomination', resolved: { t3: 1 } });
+  state = dealt(state);
+  assert.deepEqual(state.piles.trejo, { stage: 'abomination', resolved: {} }, 'the Trejobomination stays until it is removed');
+});
+
+test('three Trejo cards of one step resolve in zone order, 3 then 2 then 1', () => {
+  const state = dealt(trejoGame(['t1', 't2', 't3', 'f1'], 3));
+  assert.deepEqual(state.piles.trejo, { stage: 'abomination', resolved: { t1: 3, t2: 2, t3: 1 } });
+});
+
+test('one zone at a time, each Trejo card resolves when it is dealt and the next step clears them', () => {
+  let state = trejoGame(['t1', 'f1', 't2', 'f2'], 3);
+  state = dealtOne(state);
+  assert.deepEqual(state.piles.trejo, { stage: 'walker', resolved: { t1: 3 } });
+  state = dealtOne(state);
+  assert.deepEqual(state.piles.trejo, { stage: 'walker', resolved: { t1: 3 } });
+  state = dealtOne(state);
+  assert.deepEqual(state.piles.trejo, { stage: 'abomination', resolved: { t1: 3, t2: 2 } });
+  state = dealtOne(state);
+  assert.deepEqual(state.piles.trejo, { stage: 'abomination', resolved: {} });
+});
+
+test('undo restores the Trejo stage after a draw and after removing the Trejobomination', () => {
+  const start = trejoGame(['t1', 't2', 'f1']);
+  const first = dealt(start);
+  const second = dealt(first);
+  assert.deepEqual(undo(second).piles.trejo, first.piles.trejo);
+  const removed = removeTrejo(second);
+  assert.deepEqual(removed.piles.trejo, { stage: 'none', resolved: { t2: 2 } }, 'the card on display keeps its resolution');
+  assert.deepEqual(undo(removed).piles.trejo, second.piles.trejo);
+  assert.equal(removed.history.length, second.history.length + 1);
+  assert.deepEqual(undo(undo(second)).piles.trejo, start.piles.trejo);
+});
+
+test('after the Trejobomination is removed, the next Trejo card spawns a Walker again', () => {
+  const state = dealt(removeTrejo(dealt(dealt(trejoGame(['t1', 't2', 't3', 'f1'])))));
+  assert.deepEqual(state.piles.trejo, { stage: 'walker', resolved: { t3: 3 } });
+});
+
+test('the Trejo stage survives an automatic reshuffle and a deck shuffle, not a full reshuffle', () => {
+  let state = dealt(trejoGame(['t1', 'f1']));
+  state = { ...state, piles: { ...state.piles, draw: [], discard: ['f2'] } };
+  state = dealt(state);
+  assert.equal(state.piles.reshuffled, true);
+  assert.deepEqual(state.piles.trejo, { stage: 'walker', resolved: {} });
+  assert.equal(shuffleDeck(state).piles.trejo.stage, 'walker');
+  assert.equal(setDanger(state, 'red').piles.trejo.stage, 'walker');
+  assert.deepEqual(reshuffleAll(state).piles.trejo, { stage: 'none', resolved: {} });
+  const shown = reshuffleAll(dealt(trejoGame(['t1', 'f1'])));
+  assert.deepEqual(shown.piles.trejo, { stage: 'none', resolved: {} });
+});
+
+test('Trejo cards are told apart by their kind', () => {
+  assert.equal(isTrejoCard('trejo-081'), true);
+  assert.equal(isTrejoCard('trejo-086'), true);
+  assert.equal(isTrejoCard('core2e-001'), false);
+  assert.equal(isTrejoCard('unknown'), false);
+});
+
+test('a save with a wrong Trejo field is rejected, in the game and in its history', () => {
+  const known = () => new Set(['t1', 't2', 't3', 'f1', 'f2']);
+  const base = dealt(dealt(trejoGame(['t1', 't2', 'f1'])));
+  const copy = () => JSON.parse(JSON.stringify(base));
+  assert.equal(base.version, 8);
+  assert.ok(isValidSave(copy(), known));
+  assert.equal(isValidSave({ ...copy(), version: 7 }, known), false, 'the old game is rejected');
+  const broken = (change: (trejo: any) => void, where: 'piles' | 'history' = 'piles') => {
+    const save = copy();
+    change(where === 'piles' ? save.piles.trejo : save.history[0].trejo);
+    return isValidSave(save, known);
+  };
+  for (const where of ['piles', 'history'] as const) {
+    assert.equal(broken((t) => (t.stage = 'dragon'), where), false, where);
+    assert.equal(broken((t) => delete t.stage, where), false, where);
+    assert.equal(broken((t) => (t.resolved = null), where), false, where);
+    assert.equal(broken((t) => (t.resolved.f2 = 1), where), false, `${where}: a card not on display`);
+    assert.equal(broken((t) => (t.resolved = { t1: 4 }), where), false, where);
+    assert.equal(broken((t) => (t.resolved = { t1: 0 }), where), false, where);
+    assert.equal(broken((t) => (t.resolved = { t1: 1.5 }), where), false, where);
+  }
+  const noTrejo = copy();
+  delete noTrejo.piles.trejo;
+  assert.equal(isValidSave(noTrejo, known), false);
+  const noHistoryTrejo = copy();
+  delete noHistoryTrejo.history[0].trejo;
+  assert.equal(isValidSave(noHistoryTrejo, known), false);
 });

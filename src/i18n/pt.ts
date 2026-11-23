@@ -336,6 +336,8 @@ export const pt: Record<TranslationKey, string> = {
   'card.trejo2': 'Lerdo Trejo em jogo: ele se transforma na Trejobominação.',
   'card.trejo3': 'Nem Trejobominação nem Lerdo Trejo em jogo: faça entrar um Lerdo Trejo.',
   'card.trejo3Rush': 'Nem Trejobominação nem Lerdo Trejo em jogo: faça entrar um Lerdo Trejo e, em seguida, ative-o.',
+  'trejo.walker': 'Lerdo Trejo',
+  'trejo.abomination': 'Trejobominação',
   'set.core2e': 'Caixa base',
   'set.fortHendrix': 'Fort Hendrix',
   'set.trejo': 'Danny Trejo',

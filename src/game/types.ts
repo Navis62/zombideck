@@ -530,6 +530,16 @@ export type BossPiles = {
 /** Dead Men Tales: one Abomination at a time (the one on the board gets an Extra Activation), or the Abomination Fest. */
 export type BossRule = 'oneAtATime' | 'fest';
 
+/**
+ * Danny Trejo: where the Trejo of the board stands. A Trejo card spawns a Trejo Walker when there is none, turns it into
+ * the Trejobomination when there is one, and gives the Trejobomination an Extra Activation when it is there. The
+ * Trejobomination is not a boss of `Piles.bosses`.
+ */
+export type TrejoStage = 'none' | 'walker' | 'abomination';
+/** Which of the three choices (1 Activate, 2 Transform, 3 Spawn) a Trejo card of `drawn` resolved to. */
+export type TrejoChoice = 1 | 2 | 3;
+export type TrejoPiles = { stage: TrejoStage; resolved: Record<string, TrejoChoice> };
+
 export type Piles = {
   draw: string[];
   discard: string[];
@@ -538,10 +548,12 @@ export type Piles = {
   reshuffled: boolean;
   /** Only with boss decks (`GameState.bossRule`); `null` when the deck holds its bosses. */
   bosses: BossPiles | null;
+  /** Trejo of the board and what each Trejo card on display resolved to. */
+  trejo: TrejoPiles;
 };
 
 export type GameState = {
-  version: 7;
+  version: 8;
   /** Boss decks in play and how their bosses arrive; `null`: the bosses are cards of the Zombie deck. */
   bossRule: BossRule | null;
   /** The game's era: its sets, its cards and the menu it is resumed from. */

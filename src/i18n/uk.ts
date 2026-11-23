@@ -336,6 +336,8 @@ export const uk: Record<TranslationKey, string> = {
   'card.trejo2': 'Trejo Walker на полі: він перетворюється на Trejobomination.',
   'card.trejo3': 'Ні Trejobomination, ні Trejo Walker на полі немає: розмістіть Trejo Walker.',
   'card.trejo3Rush': 'Ні Trejobomination, ні Trejo Walker на полі немає: розмістіть Trejo Walker, потім активуйте його.',
+  'trejo.walker': 'Trejo Walker',
+  'trejo.abomination': 'Trejobomination',
   'set.core2e': 'Базова коробка',
   'set.fortHendrix': 'Fort Hendrix',
   'set.trejo': 'Danny Trejo',

@@ -338,6 +338,8 @@ export const pl: Record<TranslationKey, string> = {
   'card.trejo2': 'Szwendacz Trejo w grze: zmienia się w Trejominację.',
   'card.trejo3': 'Brak Trejominacji i Szwendacza Trejo w grze: namnóżcie Szwendacza Trejo.',
   'card.trejo3Rush': 'Brak Trejominacji i Szwendacza Trejo w grze: namnóżcie Szwendacza Trejo, a następnie go aktywujcie.',
+  'trejo.walker': 'Szwendacz Trejo',
+  'trejo.abomination': 'Trejominacja',
   'set.core2e': 'Gra podstawowa',
   'set.fortHendrix': 'Fort Hendrix',
   'set.trejo': 'Danny Trejo',

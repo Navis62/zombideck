@@ -27,6 +27,7 @@ import {
   type InvaderXeno,
   type NamedModernAbomination,
   type NamedNecromancer,
+  type TrejoChoice,
   type UniverseId,
   type WesternAbomination,
   type WesternActivated,
@@ -276,7 +277,7 @@ const MODERN_FOOTERS = { rush: MODERN_PARTS.footerRush, extra: MODERN_PARTS.foot
 type ModernLabelSpec = { level: DangerLevel; count?: number; sentence?: string; letter?: string };
 
 /** The text panel of a Trejo or SPAM card, at the bottom: its colour, its ink, an optional heading and its lines; `spam` lays it out left of the four letters, over the band with white dashes. */
-type ModernBody = { background: string; ink: string; heading?: string; lines: string[]; spam?: boolean };
+type ModernBody = { background: string; ink: string; heading?: string; lines: string[]; spam?: boolean; /** Index of the line that applies (the others are dimmed); all lines read the same without it. */ applies?: number };
 
 /*
  * The Modern card, rebuilt from the printed 2nd Edition one (references in .art-sources/modern/references/): the picture
@@ -336,7 +337,7 @@ const MODERN_TEXT_CHAR_EM = { latin: 0.44, cyrillic: 0.62 };
  */
 const MODERN_FOOTER = { squashed: 0.2, maxSize: 13, minSize: 7, line: 1.1 };
 /** The Trejo or SPAM text panel: its most share of the card's height, its padding and gap, and its text and heading sizes (design px). */
-const MODERN_BODY = { share: 0.6, paddingX: 10, paddingY: 8, gap: 4, maxSize: 12, minSize: 6, line: 1.2, heading: 0.95 };
+const MODERN_BODY = { share: 0.6, paddingX: 10, paddingY: 8, gap: 4, maxSize: 12, minSize: 6, line: 1.2, heading: 0.95, dim: 0.5 }; // dim: opacity of a printed line that does not apply
 /** The SPAM panel: its text is clear of the dashes on the left and at the bottom and of the letters on the right (design px). */
 const MODERN_SPAM = { letters: ['S', 'P', 'A', 'M'], left: 21, right: 82, bottom: 14 };
 /** Lines of a footer on native, where the text shrinks to fit (more than the band holds at the smallest size). */
@@ -455,11 +456,14 @@ export function CardFace({
   side = 'front',
   onFlip,
   zoomButton,
+  trejoOutcome,
 }: {
   card: ZombieCard;
   danger: DangerLevel;
   width: number;
   reveal?: Reveal;
+  /** A Trejo card on display: which of its three printed lines applies (unknown in the discard: all three read the same). */
+  trejoOutcome?: TrejoChoice;
   side?: CardSide;
   /** Taps on the back (its text and header) turn the card over again. */
   onFlip?: () => void;
@@ -470,7 +474,7 @@ export function CardFace({
   const style = useMemo(() => ({ styles: makeStyles(scale), scale }), [scale]);
   return (
     <CardStyle.Provider value={style}>
-      <Card card={card} danger={danger} reveal={reveal} side={side} onFlip={onFlip} zoomButton={zoomButton} />
+      <Card card={card} danger={danger} reveal={reveal} side={side} onFlip={onFlip} zoomButton={zoomButton} trejoOutcome={trejoOutcome} />
     </CardStyle.Provider>
   );
 }
@@ -546,7 +550,7 @@ function withPowers(text: CardText, reveal: Reveal | undefined, t: Translate): C
 }
 
 /** Title, footer and what a screen reader says about the body of a card, at the given Danger Level. */
-function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: Reveal): CardText {
+function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: Reveal, trejoOutcome?: TrejoChoice): CardText {
   if (isFantasyCard(card)) return withReveal(fantasyText(card, danger, t), reveal, t, card.kind !== 'necromancer');
   if (isInvaderCard(card)) return invaderText(card, danger, t);
   if (isWesternCard(card)) return westernText(card, danger, t, reveal);
@@ -557,7 +561,10 @@ function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: 
       const isRush = card.kind === 'trejoRush';
       return {
         title: isRush ? t('card.rushTitle', { zombies: 'Trejo' }) : 'Trejo',
-        spoken: [t('card.trejoChoice'), ...trejoChoices(isRush).map((key, index) => `${index + 1}. ${t(key)}`)].join(' '),
+        // The title already says "Trejo": a known outcome reads only the line that applies.
+        spoken: trejoOutcome
+          ? t(trejoChoices(isRush)[trejoOutcome - 1])
+          : [t('card.trejoChoice'), ...trejoChoices(isRush).map((key, index) => `${index + 1}. ${t(key)}`)].join(' '),
       };
     }
     case 'spam':
@@ -658,8 +665,8 @@ export const bossHasBack = (reveal: Reveal, t: Translate): boolean => {
 };
 
 /** The whole card as a screen reader says it, to announce a card as it is drawn. */
-export function cardLabel(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: Reveal): string {
-  const { title, spoken, footer } = cardText(asRevealed(card, reveal), danger, t, reveal);
+export function cardLabel(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: Reveal, trejoOutcome?: TrejoChoice): string {
+  const { title, spoken, footer } = cardText(asRevealed(card, reveal), danger, t, reveal, trejoOutcome);
   return sentences([title, spoken, footer]);
 }
 
@@ -722,10 +729,10 @@ function westernText(card: WesternCard, danger: DangerLevel, t: Translate, revea
 const extraLine = (zombie: ExtraZombie | InvaderXeno | WesternActivated, at: DangerLevel, t: Translate) =>
   at === 'blue' ? t('card.extraNobody') : t(`zombie.${zombie}.all`);
 
-function Card({ card: printed, danger, reveal, side, onFlip, zoomButton }: { card: ZombieCard; danger: DangerLevel; reveal?: Reveal; side: CardSide; onFlip?: () => void; zoomButton?: boolean }) {
+function Card({ card: printed, danger, reveal, side, onFlip, zoomButton, trejoOutcome }: { card: ZombieCard; danger: DangerLevel; reveal?: Reveal; side: CardSide; onFlip?: () => void; zoomButton?: boolean; trejoOutcome?: TrejoChoice }) {
   const { t } = useApp();
   const card = asRevealed(printed, reveal);
-  const text = cardText(card, danger, t, reveal);
+  const text = cardText(card, danger, t, reveal, trejoOutcome);
   const footerOnFront = !cardHasBack(printed, danger, t, reveal);
 
   if (side === 'back') {
@@ -736,11 +743,11 @@ function Card({ card: printed, danger, reveal, side, onFlip, zoomButton }: { car
   if (isInvaderCard(card)) return <InvaderFace card={card} danger={danger} text={text} footerOnFront={footerOnFront} />;
   if (isWesternCard(card)) return <WesternFace card={card} danger={danger} text={text} reveal={reveal} footerOnFront={footerOnFront} />;
 
-  return <ModernCardFace card={card} danger={danger} text={text} reveal={reveal} footerOnFront={footerOnFront} zoomButton={zoomButton} />;
+  return <ModernCardFace card={card} danger={danger} text={text} reveal={reveal} footerOnFront={footerOnFront} zoomButton={zoomButton} trejoOutcome={trejoOutcome} />;
 }
 
 /** What a Modern card says in each of its kinds: banner, picture, labels, footer or text panel (see `ModernFace`). */
-function ModernCardFace({ card, danger, text, reveal, footerOnFront, zoomButton }: { card: ModernCard; danger: DangerLevel; text: CardText; reveal?: Reveal; footerOnFront: boolean; zoomButton?: boolean }) {
+function ModernCardFace({ card, danger, text, reveal, footerOnFront, zoomButton, trejoOutcome }: { card: ModernCard; danger: DangerLevel; text: CardText; reveal?: Reveal; footerOnFront: boolean; zoomButton?: boolean; trejoOutcome?: TrejoChoice }) {
   const { t, cardDisplay } = useApp();
   const current = cardDisplay === 'current';
   const levels = current ? [danger] : PRINTED_LEVELS;
@@ -748,7 +755,7 @@ function ModernCardFace({ card, danger, text, reveal, footerOnFront, zoomButton 
   if (card.kind === 'trejo' || card.kind === 'trejoRush') {
     const isRush = card.kind === 'trejoRush';
     const palette = isRush ? MODERN_COLORS.rush : MODERN_COLORS.spawn;
-    const body = { background: palette.background, ink: palette.text, heading: t('card.trejoChoice'), lines: trejoChoices(isRush).map((key, index) => `${index + 1}. ${t(key)}`) };
+    const body = { background: palette.background, ink: palette.text, heading: t('card.trejoChoice'), lines: trejoChoices(isRush).map((key, index) => `${index + 1}. ${t(key)}`), applies: trejoOutcome && trejoOutcome - 1 };
     return <ModernFace {...common} kind={isRush ? 'rush' : 'spawn'} title={text.title} subject={artSubject(card)} labels={[]} body={body} />;
   }
   if (card.kind === 'spam') {
@@ -859,11 +866,18 @@ function ModernFace(props: {
           {props.body.heading !== undefined && (
             <Text style={[styles.modernBodyHeading, { color: props.body.ink, fontFamily: fonts.title, fontSize: bodySize * MODERN_BODY.heading, lineHeight: bodySize * MODERN_BODY.line }]}>{props.body.heading}</Text>
           )}
-          {props.body.lines.map((line) => (
-            <Text key={line} style={{ color: props.body?.ink, fontFamily: fonts.text, fontSize: bodySize, lineHeight: bodySize * MODERN_BODY.line }}>
+          {props.body.lines.map((line, index) => {
+            const known = props.body?.applies !== undefined;
+            const applies = props.body?.applies === index;
+            return (
+            <Text
+              key={line}
+              style={{ color: props.body?.ink, fontFamily: applies ? fonts.title : fonts.text, fontSize: bodySize, lineHeight: bodySize * MODERN_BODY.line, opacity: known && !applies ? MODERN_BODY.dim : 1 }}
+            >
               {line}
             </Text>
-          ))}
+            );
+          })}
         </View>
       )}
       {props.labels.map((label) => (

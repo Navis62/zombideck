@@ -338,6 +338,8 @@ export const it: Record<TranslationKey, string> = {
   'card.trejo2': 'Deambulante Trejo in gioco: si trasforma nel Trejobominio.',
   'card.trejo3': 'Né Trejobominio né Deambulante Trejo in gioco: generate un Deambulante Trejo.',
   'card.trejo3Rush': 'Né Trejobominio né Deambulante Trejo in gioco: generate un Deambulante Trejo, poi attivatelo.',
+  'trejo.walker': 'Deambulante Trejo',
+  'trejo.abomination': 'Trejobominio',
   'set.core2e': 'Scatola base',
   'set.fortHendrix': 'Fort Hendrix',
   'set.trejo': 'Danny Trejo',

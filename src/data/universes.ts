@@ -194,6 +194,12 @@ export const cardEffect: CardEffect = (cardId) => {
   }
 };
 
+/** Danny Trejo cards, which the engine tracks apart from the bosses. */
+export const isTrejoCard = (cardId: string): boolean => {
+  const kind = CARDS_BY_ID.get(cardId)?.kind;
+  return kind === 'trejo' || kind === 'trejoRush';
+};
+
 /**
  * With boss decks (Dead Men Tales rules): a Necromancer card reveals its Necromancer, a card that spawns an
  * Abomination at the current Danger Level reveals which one.

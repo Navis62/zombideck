@@ -336,6 +336,8 @@ export const en: Record<TranslationKey, string> = {
   'card.trejo2': 'Trejo Walker is on the board: turns into a Trejobomination.',
   'card.trejo3': 'No Trejobomination or Trejo Walker is on the board: spawn a Trejo Walker.',
   'card.trejo3Rush': 'No Trejobomination or Trejo Walker is on the board: spawn a Trejo Walker, then Activate it.',
+  'trejo.walker': 'Trejo Walker',
+  'trejo.abomination': 'Trejobomination',
   'set.core2e': 'Core box',
   'set.fortHendrix': 'Fort Hendrix',
   'set.trejo': 'Danny Trejo',

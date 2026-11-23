@@ -24,7 +24,7 @@ import { DiscardSheet } from '@/components/discard-sheet';
 import { FlipCard } from '@/components/flip-card';
 import { scrolledRecently } from '@/components/scroll-guard';
 import { ZoomButton } from '@/components/zoom-button';
-import { bossTrigger, CARDS_BY_ID, cardEffect, UNIVERSES } from '@/data/universes';
+import { bossTrigger, CARDS_BY_ID, cardEffect, isTrejoCard, UNIVERSES } from '@/data/universes';
 import {
   chooseGained,
   DANGER_LEVELS,
@@ -50,7 +50,7 @@ import type { BossTarget } from '@/game/engine';
 import { drawFeedback } from '@/game/feedback';
 import { countDraw } from '@/game/review';
 import { useApp } from '@/game/store';
-import type { BossKind, BossRule, DangerLevel, GameState, Revealed, ZombieCard } from '@/game/types';
+import type { BossKind, BossRule, DangerLevel, GameState, Revealed, TrejoChoice, ZombieCard } from '@/game/types';
 import type { Translate } from '@/i18n/translations';
 import { COLORS, DANGER_COLORS, PRESSED } from '@/theme';
 
@@ -90,7 +90,7 @@ const BOARD_NAME_SIZE = 17;
 const KIND_BAR_WIDTH = 6;
 
 export default function GameScreen() {
-  const { game, setGame, haptics, zoneDisplay, t } = useApp();
+  const { game, setGame, haptics, zoneDisplay, t, trejoChoice, removeTrejo } = useApp();
   const drawnKey = game?.piles.drawn.join('|') ?? '';
   // The phone lies on the table for the whole game: keep the screen on.
   useKeepAwake();
@@ -193,8 +193,8 @@ export default function GameScreen() {
     dealtRef.current = null;
     const before = dealt?.fresh && previousBossesRef.current ? { ...previousBossesRef.current, manual: [] } : previousBossesRef.current;
     const escorts = dealt && bossRule ? newGroups(before, bossPiles, 'manual').map((group) => bossLabel(groupReveal(group, bossRule), t)) : [];
-    AccessibilityInfo.announceForAccessibility([announcement(drawnCards, currentDanger, zoneCount, sequence, t, reveal), ...escorts].join(' '));
-  }, [drawnCards, currentDanger, zoneCount, sequence, t, revealed, bossRule, bossPiles]);
+    AccessibilityInfo.announceForAccessibility([announcement(drawnCards, currentDanger, zoneCount, sequence, t, reveal, trejoChoice), ...escorts].join(' '));
+  }, [drawnCards, currentDanger, zoneCount, sequence, t, revealed, bossRule, bossPiles, trejoChoice]);
   useEffect(() => {
     previousBossesRef.current = bossPiles;
   });
@@ -230,8 +230,8 @@ export default function GameScreen() {
   const extra = manualGroups.length;
   const deal = (state: GameState) =>
     sequence
-      ? drawNextCard(state, cardEffect, Math.random, bossTrigger, bossPowers)
-      : drawCards(state, cardEffect, Math.random, bossTrigger, bossPowers);
+      ? drawNextCard(state, cardEffect, Math.random, bossTrigger, bossPowers, isTrejoCard)
+      : drawCards(state, cardEffect, Math.random, bossTrigger, bossPowers, isTrejoCard);
   const reopenChoice = () => setDismissed('');
   const abominationDeck = game.piles.bosses?.abomination;
   const board = bossesInPlay(game);
@@ -241,6 +241,12 @@ export default function GameScreen() {
       return;
     }
     setConfirmingRemove('');
+    if (entry.kind === 'trejo') {
+      if (haptics) drawFeedback();
+      removeTrejo();
+      say([t('boss.removed', { name: t(`trejo.${entry.stage}`) })]);
+      return;
+    }
     const next = removeFromBoard(game, entry.target, Math.random, bossPowers);
     if (next === game) return;
     if (haptics) drawFeedback();
@@ -300,7 +306,7 @@ export default function GameScreen() {
   // `onTap` is what a tap on the face does (turn it, or reopen Gozer's choice): the faces take it themselves.
   const cardFace = (card: ZombieCard, index: number, faceWidth: number, onTap: () => void, zoomButton?: boolean) => {
     const shownReveal = reveal(card.id);
-    const front = <CardFace card={card} danger={danger} width={faceWidth} reveal={shownReveal} zoomButton={zoomButton} />;
+    const front = <CardFace card={card} danger={danger} width={faceWidth} reveal={shownReveal} zoomButton={zoomButton} trejoOutcome={trejoChoice(card.id)} />;
     if (!cardHasBack(card, danger, t, shownReveal)) return fade(front, shownReveal);
     return fade(
       <FlipCard
@@ -394,7 +400,7 @@ export default function GameScreen() {
             // One announcement per card: a button hides what it holds from TalkBack, so it carries the whole card.
             label={
               asButton && card
-                ? `${label > 0 ? `${t('game.zone', { n: cardZones[index] })}: ` : ''}${cardLabel(card, danger, t, reveal(id))}`
+                ? `${label > 0 ? `${t('game.zone', { n: cardZones[index] })}: ` : ''}${cardLabel(card, danger, t, reveal(id), trejoChoice(id))}`
                 : undefined
             }
             hint={waiting ? t('boss.tapToChoose') : flippable ? flipHint(flipped) : zoomable ? t('game.zoom') : undefined}
@@ -484,7 +490,7 @@ export default function GameScreen() {
                     faces={flippable}
                     onPress={waiting ? reopenChoice : () => toggleFlip(index)}
                     button
-                    label={cardLabel(card, danger, t, reveal(id))}
+                    label={cardLabel(card, danger, t, reveal(id), trejoChoice(id))}
                     hint={waiting ? t('boss.tapToChoose') : flipHint(flipped)}
                     expanded={waiting ? undefined : flipped}
                   >
@@ -596,14 +602,14 @@ export default function GameScreen() {
               <Text style={styles.boardHeading}>{t('boss.onBoard')}</Text>
               {board.map((entry) => {
                 const confirming = confirmingRemove === entry.key;
-                const name = abominationName(entry.boss, t);
+                const name = entry.kind === 'trejo' ? t(`trejo.${entry.stage}`) : abominationName(entry.boss, t);
                 return (
                   <Pressable
                     key={entry.key}
                     style={({ pressed }) => [styles.boardButton, confirming && styles.boardConfirm, pressed && PRESSED]}
                     onPress={() => removeBoss(entry)}
                     accessibilityRole="button"
-                    accessibilityLabel={t(entry.kind === 'necromancer' ? 'boss.removeNecromancerLabel' : 'boss.removeAbominationLabel', { name })}
+                    accessibilityLabel={t(entry.kind === 'necromancer' ? 'boss.removeNecromancerLabel' : entry.kind === 'trejo' && entry.stage === 'walker' ? 'boss.removeLabel' : 'boss.removeAbominationLabel', { name })}
                     accessibilityHint={confirming ? t('boss.removeConfirm') : undefined}
                   >
                     <View style={[styles.kindBar, { backgroundColor: entry.kind === 'necromancer' ? COLORS.accent : COLORS.warning }]} />
@@ -678,7 +684,7 @@ export default function GameScreen() {
               faces={zoomFlippable}
               onPress={zoomFlippable ? () => toggleFlip(zoomed.index) : () => setZoomed(null)}
               button
-              label={zoomedGroup ? bossLabel(zoomedGroup.reveal, t) : zoomedCard ? cardLabel(zoomedCard, danger, t, reveal(zoomedCard.id)) : undefined}
+              label={zoomedGroup ? bossLabel(zoomedGroup.reveal, t) : zoomedCard ? cardLabel(zoomedCard, danger, t, reveal(zoomedCard.id), trejoChoice(zoomedCard.id)) : undefined}
               hint={zoomFlippable ? flipHint(isFlipped(zoomed.index)) : undefined}
               expanded={zoomFlippable ? isFlipped(zoomed.index) : undefined}
             >
@@ -774,15 +780,18 @@ const revealOf =
     return shown && rule ? groupReveal(shown, rule) : undefined;
   };
 
-type BoardEntry = { key: string; kind: BossKind; boss: string; target: BossTarget };
+type BoardEntry = { key: string; kind: BossKind; boss: string; target: BossTarget } | { key: string; kind: 'trejo'; stage: 'walker' | 'abomination' };
 
 /**
  * Every boss the players can remove: the ones left on the board by earlier Spawn steps, then those of the current step
  * (on its cards and drawn by hand), which are on the board too from where they sit.
  */
 function bossesInPlay(game: GameState): BoardEntry[] {
+  const { stage } = game.piles.trejo;
+  // The Trejo of the board is not a boss of `Piles.bosses`: it comes after them and exists without any boss deck.
+  const trejo: BoardEntry[] = stage === 'none' ? [] : [{ key: `trejo:${stage}`, kind: 'trejo', stage }];
   const bosses = game.piles.bosses;
-  if (!bosses) return [];
+  if (!bosses) return trejo;
   const board = bosses.onBoard.map(({ kind, boss }, at): BoardEntry => ({ key: `board:${at}:${boss}`, kind, boss, target: { from: 'board', boss } }));
   const step = game.piles.drawn.flatMap((card) => {
     const group = bosses.revealed[card];
@@ -791,7 +800,7 @@ function bossesInPlay(game: GameState): BoardEntry[] {
   const manual = bosses.manual.flatMap((group, index) =>
     liveBosses(group).map((boss): BoardEntry => ({ key: `manual:${index}:${boss}`, kind: group.kind, boss, target: { from: 'manual', index, boss } })),
   );
-  return [...board, ...step, ...manual];
+  return [...board, ...step, ...manual, ...trejo];
 }
 
 /** A revealed group with its powers: the SPAMs, the bosses brought along or gained, a choice still to make. */
@@ -877,6 +886,7 @@ function announcement(
   sequence: boolean,
   t: Translate,
   reveal: (cardId: string) => Reveal | undefined,
+  trejoOutcome: (cardId: string) => TrejoChoice | undefined,
 ): string {
   const cardZones = zonesOf(drawn, cardEffect, zones);
   const withZones = zones > 1 || drawn.length > 1;
@@ -885,7 +895,7 @@ function announcement(
     .map((index) => {
       const card = CARDS_BY_ID.get(drawn[index]);
       if (!card) return '';
-      const label = cardLabel(card, danger, t, reveal(card.id));
+      const label = cardLabel(card, danger, t, reveal(card.id), trejoOutcome(card.id));
       return withZones ? `${t('game.zone', { n: cardZones[index] })}: ${label}` : label;
     })
     .filter(Boolean)

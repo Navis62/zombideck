@@ -336,6 +336,8 @@ export const de: Record<TranslationKey, string> = {
   'card.trejo2': 'Trejo-Schlurfer im Spiel: Er verwandelt sich in das Trejomonstrum.',
   'card.trejo3': 'Weder Trejomonstrum noch Trejo-Schlurfer im Spiel: Ein Trejo-Schlurfer erscheint.',
   'card.trejo3Rush': 'Weder Trejomonstrum noch Trejo-Schlurfer im Spiel: Ein Trejo-Schlurfer erscheint und wird sofort aktiviert.',
+  'trejo.walker': 'Trejo-Schlurfer',
+  'trejo.abomination': 'Trejomonstrum',
   'set.core2e': 'Grundspiel',
   'set.fortHendrix': 'Fort Hendrix',
   'set.trejo': 'Danny Trejo',

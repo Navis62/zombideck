@@ -15,8 +15,8 @@ import { DEFAULT_THREAT, parseThreat, type Threat } from '@/data/threat';
 import { bossCopiesOf, bossIdsOf, cardIdsOf, UNIVERSES, withCoreBox } from '@/data/universes';
 import { deviceLanguage } from '@/i18n/device-language';
 import { isLanguage, type Language, type Translate, translator } from '@/i18n/translations';
-import { ALL_PARTS, gameKey, isValidSave, UNIVERSE_IDS, upgradeSave } from './engine';
-import type { DeckParts, GameState, UniverseId } from './types';
+import { ALL_PARTS, gameKey, isValidSave, removeTrejo, UNIVERSE_IDS, upgradeSave } from './engine';
+import type { DeckParts, GameState, TrejoChoice, TrejoStage, UniverseId } from './types';
 
 /** The single save of the first betas: no longer read, removed at startup. */
 const OLD_GAME_KEY = 'zombideck.game';
@@ -61,6 +61,12 @@ type AppContextValue = {
   /** The game of every universe, for the carousel. */
   games: ByUniverse<GameState | null>;
   setGame: (update: (game: GameState | null) => GameState | null) => void;
+  /** Danny Trejo on the board in the current game (`none` without a game). */
+  trejoStage: TrejoStage;
+  /** What a Trejo card on display resolved to: 1 Activate, 2 Transform, 3 Spawn; undefined for any other card. */
+  trejoChoice: (cardId: string) => TrejoChoice | undefined;
+  /** The players killed the Trejobomination (undoable). */
+  removeTrejo: () => void;
   language: Language;
   setLanguage: (language: Language) => void;
   /** The era picked in the carousel: its sets fill the menu, the expansions and the next game. */
@@ -188,6 +194,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [universe],
   );
 
+  const trejoStage: TrejoStage = game?.piles.trejo.stage ?? 'none';
+  const trejoChoice = useCallback((cardId: string) => game?.piles.trejo.resolved[cardId], [game]);
+  const removeTrejoFromBoard = useCallback(() => setGame((current) => (current ? removeTrejo(current) : current)), [setGame]);
+
   const chooseLanguage = useCallback((next: Language) => {
     setLanguage(next);
     save(LANGUAGE_KEY, next, 'language');
@@ -254,6 +264,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       game,
       games,
       setGame,
+      trejoStage,
+      trejoChoice,
+      removeTrejo: removeTrejoFromBoard,
       language,
       setLanguage: chooseLanguage,
       universe,
@@ -276,6 +289,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       game,
       games,
       setGame,
+      trejoStage,
+      trejoChoice,
+      removeTrejoFromBoard,
       language,
       chooseLanguage,
       universe,

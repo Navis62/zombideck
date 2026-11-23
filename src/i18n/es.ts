@@ -336,6 +336,8 @@ export const es: Record<TranslationKey, string> = {
   'card.trejo2': 'Caminante Trejo en juego: se transforma en la Trejobominación.',
   'card.trejo3': 'Ni Trejobominación ni Caminante Trejo en juego: aparece un Caminante Trejo.',
   'card.trejo3Rush': 'Ni Trejobominación ni Caminante Trejo en juego: aparece un Caminante Trejo y se activa.',
+  'trejo.walker': 'Caminante Trejo',
+  'trejo.abomination': 'Trejobominación',
   'set.core2e': 'Caja básica',
   'set.fortHendrix': 'Fort Hendrix',
   'set.trejo': 'Danny Trejo',
