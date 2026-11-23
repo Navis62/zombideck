@@ -51,6 +51,19 @@ function resolveTrejo(from: TrejoPiles['stage'], cards: readonly string[], isTre
   return { stage, resolved };
 }
 
+/**
+ * Whether the Trejobomination is on the board, as an Abomination, when a card of `drawn` is dealt: it is there (stage
+ * `abomination`) and the card comes after the last card of the step that transformed it (zone order decides). Derived,
+ * never saved.
+ */
+export function trejoOnBoardAt(trejo: TrejoPiles, drawn: readonly string[]): (card: string) => boolean {
+  let transformed = -1;
+  drawn.forEach((card, i) => {
+    if (trejo.resolved[card] === 2) transformed = i;
+  });
+  return (card) => trejo.stage === 'abomination' && drawn.indexOf(card) > transformed;
+}
+
 const remember = (state: GameState) => [...state.history, state.piles].slice(-MAX_UNDO);
 
 export function shuffle<T>(items: readonly T[], rng: Rng = Math.random): T[] {
@@ -123,7 +136,7 @@ export function newGame(
     ? { abomination: bossDeck(deck.bosses.abomination), necromancer: bossDeck(deck.bosses.necromancer), revealed: {}, manual: [], onBoard: [] }
     : null;
   return {
-    version: 8,
+    version: 9,
     bossRule: deck.bosses?.rule ?? null,
     universe,
     setIds,
@@ -228,7 +241,7 @@ function forgetBoss(revealed: Record<string, Revealed>, manual: Revealed[], kind
     const { activated, ...rest } = group;
     const left = withoutGone(activated, [boss]);
     const next: Revealed = left.length > 0 ? { ...rest, activated: left } : rest;
-    return left.length === 0 && group.boss === NO_BOSS ? { ...next, none: true } : next;
+    return left.length === 0 && group.boss === NO_BOSS && !group.trejo ? { ...next, none: true } : next;
   };
   return {
     revealed: Object.fromEntries(Object.entries(revealed).map(([card, group]) => [card, without(group)])),
@@ -255,14 +268,26 @@ const unblocks = (power: BossPower | undefined) => power?.kind === 'unblocks' ||
 /**
  * How a card calling on a boss deck arrives, given every group on the board and on display: with the one at a time
  * rule, a boss of its kind already there is named and gets the Extra Activation (nothing is drawn), unless one lets
- * others spawn; in the Abomination Fest the bosses there all get it and a new one is revealed.
+ * others spawn; in the Abomination Fest the bosses there all get it and a new one is revealed. The Trejobomination
+ * (`trejoOnBoard`) is an Abomination of the board too: it gets the Extra Activation beside the named bosses (`trejo` on
+ * the group) and, alone, nothing is drawn; it never blocks a boss that lets others spawn.
  */
-function arrive(decks: Decks, shown: readonly Revealed[], kind: BossKind, rng: Rng, powers: BossPowers, rule: BossRule | null): Revealed {
+function arrive(decks: Decks, shown: readonly Revealed[], kind: BossKind, rng: Rng, powers: BossPowers, rule: BossRule | null, trejoOnBoard = false): Revealed {
   const live = shown.filter((group) => group.kind === kind).flatMap(liveBosses);
   const open = kind === 'abomination' && live.some((boss) => unblocks(powers(boss)));
-  if (rule === 'oneAtATime' && live.length > 0 && !open) return { kind, boss: NO_BOSS, activates: live[0] };
+  const trejo = kind === 'abomination' && trejoOnBoard;
+  if (rule === 'oneAtATime' && (live.length > 0 || trejo) && !open) {
+    return { kind, boss: NO_BOSS, ...(live.length > 0 ? { activates: live[0] } : {}), ...(trejo ? { trejo: true as const } : {}) };
+  }
   const group = revealOne(decks, shown, kind, rng, powers);
   if (rule === 'fest' && live.length > 0) group.activated = live;
+  if (trejo) {
+    group.trejo = true;
+    // The Trejobomination is an Abomination: the game did have one, an empty deck is only exhausted.
+    if (group.boss === NO_DECK) group.boss = NO_BOSS;
+    // One at a time, a boss that lets others spawn leaves an empty deck: the named bosses still get theirs.
+    if (rule === 'oneAtATime' && group.boss === NO_BOSS && group.activates === undefined && live.length > 0) group.activates = live[0];
+  }
   return group;
 }
 
@@ -296,6 +321,8 @@ function revealBosses(
   /** The groups drawn by hand leave too (a new Spawn step starts). */
   releaseManual = false,
   to: 'board' | 'deck' = 'deck',
+  /** Whether the Trejobomination is on the board for a card dealt (an Abomination card then names it too). */
+  trejoOnBoard: (card: string) => boolean = () => false,
 ): BossPiles | null {
   if (!bosses) return null;
   const decks = { abomination: bosses.abomination, necromancer: bosses.necromancer };
@@ -333,7 +360,7 @@ function revealBosses(
     // Abomination card, then spawn it. If there is already an Abomination: it gets an extra Activation." The step is
     // resolved zone after zone, so a boss of this kind already on the board (an earlier step), revealed earlier in the
     // step or drawn by hand is named and activated: nothing is drawn. The Abomination Fest draws for every card.
-    const group = arrive(decks, shownGroups({ ...bosses, onBoard }, revealed, manual), kind, rng, powers, rule);
+    const group = arrive(decks, shownGroups({ ...bosses, onBoard }, revealed, manual), kind, rng, powers, rule, trejoOnBoard(card));
     revealed[card] = group;
     if (powers(group.boss)?.kind === 'single') {
       const next = supersede(decks, { revealed, manual, onBoard }, card, group);
@@ -360,7 +387,8 @@ function orderActivations(bosses: BossPiles, drawn: readonly string[]): BossPile
     const cards = drawn.filter((card) => revealed[card]?.kind === kind);
     const owner = cards.find((card) => liveBosses(revealed[card]).length > 0);
     if (owner !== undefined && owner !== cards[0] && !isRealBoss(revealed[cards[0]].boss)) {
-      revealed[cards[0]] = revealed[owner];
+      // The Trejobomination activation stays with the first card.
+      revealed[cards[0]] = revealed[cards[0]].trejo ? { ...revealed[owner], trejo: true } : revealed[owner];
       revealed[owner] = { kind, boss: NO_BOSS };
     }
     const named = bosses.onBoard.find((boss) => boss.kind === kind)?.boss ?? firstBoss([...cards.map((card) => revealed[card]), ...bosses.manual], kind);
@@ -369,7 +397,7 @@ function orderActivations(bosses: BossPiles, drawn: readonly string[]): BossPile
       if (group.boss !== NO_BOSS) continue;
       const { activates: _old, none: _none, ...bare } = group;
       // With no boss of this kind left anywhere, `none` tells the screen (not the deck being out of bosses).
-      revealed[card] = named ? { ...bare, activates: named } : { ...bare, none: true };
+      revealed[card] = named ? { ...bare, activates: named } : group.trejo ? bare : { ...bare, none: true };
     }
   }
   return { ...bosses, revealed };
@@ -553,8 +581,10 @@ export function drawCards(
     plan = nextPlan(plan, effect(card), state.zones);
   }
   if (drawn.length === 0) return state;
-  const bosses = revealBosses(state.piles.bosses, state.piles.drawn, drawn, trigger, state.danger, rng, powers, state.bossRule, true, 'board');
-  return { ...state, history: remember(state), piles: { draw, discard, drawn, reshuffled, bosses, trejo: resolveTrejo(state.piles.trejo.stage, drawn, isTrejo) } };
+  // The Trejo cards resolve first: an Abomination card dealt after a transform finds the Trejobomination on the board.
+  const trejo = resolveTrejo(state.piles.trejo.stage, drawn, isTrejo);
+  const bosses = revealBosses(state.piles.bosses, state.piles.drawn, drawn, trigger, state.danger, rng, powers, state.bossRule, true, 'board', trejoOnBoardAt(trejo, drawn));
+  return { ...state, history: remember(state), piles: { draw, discard, drawn, reshuffled, bosses, trejo } };
 }
 
 /** Whether the next card dealt one zone at a time opens a new Spawn step: none on display, or the step is over. */
@@ -601,8 +631,8 @@ export function drawNextCard(
   }
   const [card, ...rest] = draw;
   const drawn = newStep ? [card] : [...piles.drawn, card];
-  const bosses = revealBosses(piles.bosses, newStep ? piles.drawn : [], [card], trigger, state.danger, rng, powers, state.bossRule, newStep, 'board');
   const trejo = resolveTrejo(piles.trejo.stage, [card], isTrejo, newStep ? {} : piles.trejo.resolved);
+  const bosses = revealBosses(piles.bosses, newStep ? piles.drawn : [], [card], trigger, state.danger, rng, powers, state.bossRule, newStep, 'board', trejoOnBoardAt(trejo, drawn));
   return { ...state, history: remember(state), piles: { draw: rest, discard, drawn, reshuffled, bosses, trejo } };
 }
 
@@ -647,7 +677,19 @@ export function reshuffleAll(state: GameState, rng: Rng = Math.random, powers: B
 
 /** The players killed the Trejobomination: the next Trejo card spawns a Walker again. The cards on display keep their resolution. */
 export function removeTrejo(state: GameState): GameState {
-  return { ...state, history: remember(state), piles: { ...state.piles, trejo: { ...state.piles.trejo, stage: 'none' } } };
+  const { bosses } = state.piles;
+  // The groups that named it no longer do: one left with nothing to name says `none`, or goes if drawn by hand.
+  const without = (group: Revealed): Revealed => {
+    if (!group.trejo) return group;
+    const { trejo: _trejo, ...rest } = group;
+    return rest.boss === NO_BOSS && rest.activates === undefined && !rest.activated?.length ? { ...rest, none: true } : rest;
+  };
+  const next = bosses && {
+    ...bosses,
+    revealed: Object.fromEntries(Object.entries(bosses.revealed).map(([card, group]) => [card, without(group)])),
+    manual: bosses.manual.map(without).filter((group) => !group.none),
+  };
+  return { ...state, history: remember(state), piles: { ...state.piles, bosses: next, trejo: { ...state.piles.trejo, stage: 'none' } } };
 }
 
 /** Shuffles the cards left in the deck; the discard and the cards on display stay put. */
@@ -683,7 +725,7 @@ export function setDanger(
     (card) => bosses.revealed[card] && (trigger(card, danger) !== bosses.revealed[card].kind || (oneAtATime && bosses.revealed[card].boss === NO_BOSS)),
   );
   const calling = drawn.filter((card) => trigger(card, danger) && (!bosses.revealed[card] || leaving.includes(card)));
-  const next = revealBosses(bosses, leaving, calling, trigger, danger, rng, powers, state.bossRule);
+  const next = revealBosses(bosses, leaving, calling, trigger, danger, rng, powers, state.bossRule, false, 'deck', trejoOnBoardAt(state.piles.trejo, drawn));
   return { ...state, danger, piles: { ...state.piles, bosses: next && oneAtATime ? orderActivations(next, drawn) : next } };
 }
 
@@ -697,9 +739,9 @@ export function drawAbomination(state: GameState, rng: Rng = Math.random, powers
   const { bosses } = state.piles;
   if (!bosses) return state;
   const decks = { abomination: bosses.abomination, necromancer: bosses.necromancer };
-  const group = arrive(decks, shownGroups(bosses), 'abomination', rng, powers, state.bossRule);
-  // Nothing left to draw still gives the Extra Activation to the Abominations on the board.
-  if (group.activates === undefined && group.activated === undefined && bosses.abomination.draw.length + bosses.abomination.discard.length === 0) return state;
+  const group = arrive(decks, shownGroups(bosses), 'abomination', rng, powers, state.bossRule, state.piles.trejo.stage === 'abomination');
+  // Nothing left to draw still gives the Extra Activation to the Abominations on the board, the Trejobomination too.
+  if (group.activates === undefined && group.activated === undefined && !group.trejo && bosses.abomination.draw.length + bosses.abomination.discard.length === 0) return state;
   const next: BossPiles = { ...bosses, ...decks, manual: [...bosses.manual, group, ...escortsOf(group, shownGroups(bosses), powers)] };
   // A boss now on display is the one the cards without boss name (and no longer "none").
   const named = state.bossRule === 'oneAtATime' ? orderActivations(next, state.piles.drawn) : next;
@@ -718,7 +760,10 @@ function nameActivations(bosses: BossPiles, drawn: readonly string[]): BossPiles
     manual: next.manual.flatMap((group) => {
       if (group.activates === undefined || isLive(next, group.kind, group.activates)) return [group];
       const boss = named(group);
-      return boss === undefined ? [] : [{ ...group, activates: boss }];
+      if (boss !== undefined) return [{ ...group, activates: boss }];
+      // The Trejobomination still gets its activation when no named boss is left.
+      const { activates: _gone, ...rest } = group;
+      return group.trejo ? [rest] : [];
     }),
   };
 }
@@ -862,7 +907,7 @@ export function isValidSave(
 ): value is GameState {
   const state = value as GameState | null;
   // Closed beta: no migration, a game saved by an older version is rejected.
-  if (state?.version !== 8 || !DANGER_LEVELS.includes(state.danger) || !UNIVERSE_IDS.includes(state.universe)) return false;
+  if (state?.version !== 9 || !DANGER_LEVELS.includes(state.danger) || !UNIVERSE_IDS.includes(state.universe)) return false;
   if (state.bossRule !== null && state.bossRule !== 'oneAtATime' && state.bossRule !== 'fest') return false;
   if (!Number.isInteger(state.zones) || state.zones !== clampZones(state.zones)) return false;
   if (!Array.isArray(state.setIds) || !state.setIds.every((id) => typeof id === 'string')) return false;
@@ -871,7 +916,10 @@ export function isValidSave(
   const bossIds = bossIdsOf?.(state.universe);
   const bossCopies = bossCopiesOf?.(state.universe);
   return [state.piles, ...state.history].every(
-    (piles) => isValidPiles(piles, knownCardIds) && (piles.bosses === null) === (state.bossRule === null) && isValidBosses(piles.bosses, bossIds, bossCopies),
+    (piles) =>
+      isValidPiles(piles, knownCardIds) &&
+      (piles.bosses === null) === (state.bossRule === null) &&
+      isValidBosses(piles.bosses, bossIds, bossCopies, piles.trejo.stage === 'abomination'),
   );
 }
 
@@ -892,7 +940,7 @@ const isStrings = (value: unknown): value is string[] => Array.isArray(value) &&
 const isBossDeck = (deck: BossDeck | undefined) => !!deck && isStrings(deck.draw) && isStrings(deck.discard);
 const BOSS_KINDS: readonly BossKind[] = ['abomination', 'necromancer'];
 
-function isValidBosses(bosses: BossPiles | null | undefined, bossIds?: ReadonlySet<string>, bossCopies?: ReadonlyMap<string, number>): boolean {
+function isValidBosses(bosses: BossPiles | null | undefined, bossIds?: ReadonlySet<string>, bossCopies?: ReadonlyMap<string, number>, trejoOnBoard = false): boolean {
   if (bosses === null) return true;
   if (!bosses || !isBossDeck(bosses.abomination) || !isBossDeck(bosses.necromancer)) return false;
   if (!bosses.revealed || typeof bosses.revealed !== 'object') return false;
@@ -902,6 +950,8 @@ function isValidBosses(bosses: BossPiles | null | undefined, bossIds?: ReadonlyS
   if (!bosses.onBoard.every((boss) => !!boss && BOSS_KINDS.includes(boss.kind) && typeof boss.boss === 'string' && isRealBoss(boss.boss) && known(boss.boss))) return false;
   const groups = [...Object.values(bosses.revealed), ...bosses.manual];
   if (!decks.every(known) || !groups.every((shown) => isValidRevealed(shown, known))) return false;
+  // The Trejobomination activation needs the Trejobomination on the board.
+  if (!trejoOnBoard && groups.some((shown) => shown.trejo)) return false;
   // An Extra Activation names a boss of its kind that is on the board or on display.
   const alive = shownGroups(bosses);
   if (!groups.every((shown) => shown.activates === undefined || alive.some((other) => other.kind === shown.kind && liveBosses(other).includes(shown.activates!)))) return false;
@@ -924,6 +974,8 @@ function isValidRevealed(shown: Revealed | undefined, known: (boss: string) => b
   if (!knownList(shown.spam) || !knownList(shown.along) || !knownList(shown.gained) || !knownList(shown.activated) || !knownList(shown.gone)) return false;
   // `none` marks an Extra Activation with no boss left to name.
   if (shown.none !== undefined && (shown.none !== true || shown.boss !== NO_BOSS || shown.activates !== undefined)) return false;
+  // `trejo`: the Trejobomination, an Abomination of the board, also gets the Extra Activation; `none` says nobody does.
+  if (shown.trejo !== undefined && (shown.trejo !== true || shown.kind !== 'abomination' || shown.none !== undefined)) return false;
   // What was removed from a group was in it.
   if (shown.gone !== undefined && withoutGone(bossList(shown), shown.gone).length !== bossList(shown).length - shown.gone.length) return false;
   const { choice } = shown;

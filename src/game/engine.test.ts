@@ -8,6 +8,7 @@ import { CARD_SETS, OPTIONAL_SETS } from '../data/decks.ts';
 import { BOSS_RULE_IDS, BOSSES_WITHOUT_RULE, FANTASY_SETS } from '../data/fantasy.ts';
 import { WESTERN_SETS } from '../data/western.ts';
 import { en } from '../i18n/en.ts';
+import { entryPosition, slotOf, slotPosition, tableSlots } from './table.ts';
 import { type Boss, DEFAULT_THREAT, FANTASY_BOSS_IDS, MODERN_ABOMINATIONS, MODERN_BOSS_IDS, parseThreat, WESTERN_ABOMINATIONS, WESTERN_BOSS_IDS, WESTERN_BOSS_RULES, presentSetIds, tailorFantasyDeck, tailorModernDeck, tailorWesternDeck, type Threat } from '../data/threat.ts';
 import { allExpansions, tailorDeck, bossCopiesOf, bossIdsOf, bossTrigger as fantasyBossTrigger, CARDS_BY_ID, cardEffect, cardIdsOf, isTrejoCard, noExpansions, switchableSets, UNIVERSES, withCoreBox } from '../data/universes.ts';
 import {
@@ -23,6 +24,7 @@ import {
   MAX_ZONES,
   newGame,
   removeTrejo,
+  trejoOnBoardAt,
   reshuffleAll,
   selectCards,
   setDanger,
@@ -1764,13 +1766,13 @@ test('no boss or card is ever lost or duplicated, whatever the players do', () =
   assert.ok(choices > 0, 'the run chose among candidates');
 });
 
-test('a save is version 8: version 7 is rejected, groups drawn by hand and pending choices are kept', () => {
+test('a save is version 9: version 8 is rejected, groups drawn by hand and pending choices are kept', () => {
   const state = manualDraw(step(powerGame(['gozer', 'p', 'q', 'r', 'x'], [], 1, 'fest')));
   const known = () => new Set(['a1', 'a2', 'a3']);
   const bossIds = () => new Set(['gozer', 'p', 'q', 'r', 'x']);
   const copy = () => JSON.parse(JSON.stringify(state));
-  assert.equal(state.version, 8);
-  assert.equal(newGame(sets, ['a']).version, 8);
+  assert.equal(state.version, 9);
+  assert.equal(newGame(sets, ['a']).version, 9);
   assert.deepEqual(newGame(sets, ['a'], ALL_PARTS, () => 0, 1, 'modern', (cards) => ({ cards, bosses: { rule: 'fest', abomination: ['x'], necromancer: [] } })).piles.bosses?.manual, []);
   assert.ok(isValidSave(copy(), known, bossIds));
   assert.equal(isValidSave({ ...copy(), version: 7 }, known, bossIds), false, 'the old game is rejected');
@@ -1810,7 +1812,7 @@ test('powers come from the boss lists, and only Modern draws its Abominations by
 test('a Fantasy game has no group fields and nothing drawn by hand', () => {
   const setIds = ['blackPlague', 'greenHorde'];
   let state = newGame(FANTASY_SETS, setIds, ALL_PARTS, () => 0.3, 2, 'fantasy', (cards) => tailorFantasyDeck(cards, DEFAULT_THREAT, new Set(setIds)));
-  assert.equal(state.version, 8);
+  assert.equal(state.version, 9);
   for (let i = 0; i < 60; i++) {
     state = drawCards(state, cardEffect, () => 0.3, fantasyBossTrigger);
     assert.deepEqual(bossesOf(state).manual, []);
@@ -2281,7 +2283,7 @@ test('a Danger Level change with a boss on the board names it, and giving the ca
 
 test('the board is saved: a version 6 game is rejected, a boss on the board counts against its copies', () => {
   const board = step(step(powerGame(['x', 'y']), firstTwo), firstTwo);
-  assert.equal(board.version, 8);
+  assert.equal(board.version, 9);
   assert.ok(validSave(board));
   assert.equal(validSave({ ...board, version: 6 }), false);
   const bosses = bossesOf(board);
@@ -2630,7 +2632,7 @@ test('a save holding escorts on display and on the board is valid, and the versi
   const state = escortStep(escortStep(escortGame(['lord']), callsNecro('a1')), callsNecro('a2'));
   assert.ok(isValidSave(JSON.parse(JSON.stringify(state)), A_IDS));
   assert.ok(isValidSave(JSON.parse(JSON.stringify(escortStep(escortGame(['lord']), callsNecro('a1')))), A_IDS));
-  assert.equal(state.version, 8);
+  assert.equal(state.version, 9);
 });
 
 test('newGroups names the escorts a bringer brought, after the bringer revealed by a card or by hand', () => {
@@ -2867,7 +2869,7 @@ test('a save with a wrong Trejo field is rejected, in the game and in its histor
   const known = () => new Set(['t1', 't2', 't3', 'f1', 'f2']);
   const base = dealt(dealt(trejoGame(['t1', 't2', 'f1'])));
   const copy = () => JSON.parse(JSON.stringify(base));
-  assert.equal(base.version, 8);
+  assert.equal(base.version, 9);
   assert.ok(isValidSave(copy(), known));
   assert.equal(isValidSave({ ...copy(), version: 7 }, known), false, 'the old game is rejected');
   const broken = (change: (trejo: any) => void, where: 'piles' | 'history' = 'piles') => {
@@ -2890,4 +2892,225 @@ test('a save with a wrong Trejo field is rejected, in the game and in its histor
   const noHistoryTrejo = copy();
   delete noHistoryTrejo.history[0].trejo;
   assert.equal(isValidSave(noHistoryTrejo, known), false);
+});
+
+// Danny Trejo on the board counts as an Abomination for the cards that call on the Abomination deck and for the button.
+const trejoBossGame = (order: string[], abomination: string[], zones = 1, rule: BossRule = 'oneAtATime', stage: 'none' | 'walker' | 'abomination' = 'abomination'): GameState => {
+  const start = newGame(trejoSets, ['t'], ALL_PARTS, () => 0, zones, 'modern', (cards) => ({ cards, bosses: { rule, abomination: [], necromancer: [] } }));
+  const bosses = bossesOf(start);
+  return { ...start, piles: { ...start.piles, draw: order, trejo: { stage, resolved: {} }, bosses: { ...bosses, abomination: { draw: abomination, discard: [] } } } };
+};
+const callsF = callsAbom('f1', 'f2');
+const trejoStep = (state: GameState, trigger: BossTrigger = callsF) => drawCards(state, undefined, () => 0, trigger, powers, isTrejo);
+const trejoStepOne = (state: GameState, trigger: BossTrigger = callsF) => drawNextCard(state, undefined, () => 0, trigger, powers, isTrejo);
+const trejoGroup = { kind: 'abomination', boss: NO_BOSS, trejo: true };
+
+test('trejoOnBoardAt is true only once the Trejobomination is there and the card comes after the transform', () => {
+  const resolved = { t1: 2 } as const;
+  const at = trejoOnBoardAt({ stage: 'abomination', resolved }, ['f1', 't1', 'f2']);
+  assert.deepEqual(['f1', 't1', 'f2'].map(at), [false, false, true]);
+  assert.equal(trejoOnBoardAt({ stage: 'abomination', resolved: {} }, ['f1'])('f1'), true, 'it was there before the step');
+  assert.equal(trejoOnBoardAt({ stage: 'walker', resolved: {} }, ['f1'])('f1'), false);
+  assert.equal(trejoOnBoardAt({ stage: 'none', resolved: { t1: 2 } }, ['t1', 'f1'])('f1'), false, 'removed since');
+});
+
+test('an Abomination card after the transform of its step names the Trejobomination, one before it reveals a boss', () => {
+  const after = trejoStep(trejoBossGame(['t1', 'f1'], ['x', 'y'], 2, 'oneAtATime', 'walker'));
+  assert.deepEqual(bossesOf(after).revealed.f1, trejoGroup);
+  assert.deepEqual(bossesOf(after).abomination, { draw: ['x', 'y'], discard: [] }, 'the Abomination deck is untouched');
+  const before = trejoStep(trejoBossGame(['f1', 't1'], ['x', 'y'], 2, 'oneAtATime', 'walker'));
+  assert.deepEqual(bossesOf(before).revealed.f1, { kind: 'abomination', boss: 'x' });
+});
+
+test('one zone at a time, the Trejobomination counts for the Abomination cards dealt after the transform only', () => {
+  let state = trejoBossGame(['t1', 'f1'], ['x'], 2, 'oneAtATime', 'walker');
+  state = trejoStepOne(trejoStepOne(state));
+  assert.deepEqual(bossesOf(state).revealed.f1, trejoGroup);
+  assert.deepEqual(bossesOf(state).abomination.draw, ['x']);
+  let reverse = trejoBossGame(['f1', 't1'], ['x'], 2, 'oneAtATime', 'walker');
+  reverse = trejoStepOne(trejoStepOne(reverse));
+  assert.deepEqual(bossesOf(reverse).revealed.f1, { kind: 'abomination', boss: 'x' });
+});
+
+test('with named bosses and the Trejobomination, one at a time, both get the Extra Activation', () => {
+  const state = trejoStep(withBoard(trejoBossGame(['f1'], ['y']), 'x'));
+  assert.deepEqual(bossesOf(state).revealed.f1, { kind: 'abomination', boss: NO_BOSS, activates: 'x', trejo: true });
+  assert.deepEqual(bossesOf(state).abomination.draw, ['y']);
+});
+
+test('in the Fest the Trejobomination gets the Extra Activation beside a newly revealed boss', () => {
+  const alone = trejoStep(trejoBossGame(['f1'], ['x'], 1, 'fest'));
+  assert.deepEqual(bossesOf(alone).revealed.f1, { kind: 'abomination', boss: 'x', trejo: true });
+  const joined = trejoStep(withBoard(trejoBossGame(['f1'], ['x'], 1, 'fest'), 'b'));
+  assert.deepEqual(bossesOf(joined).revealed.f1, { kind: 'abomination', boss: 'x', activated: ['b'], trejo: true });
+  const bare = trejoStep(trejoBossGame(['f1'], ['x'], 1, 'fest', 'walker'));
+  assert.deepEqual(bossesOf(bare).revealed.f1, { kind: 'abomination', boss: 'x' }, 'a Walker is not an Abomination');
+});
+
+test('a boss that lets others spawn leaves the card drawing a boss, which the Trejobomination also joins', () => {
+  const state = trejoStep(withBoard(trejoBossGame(['f1'], ['y']), 'zuul'));
+  assert.deepEqual(bossesOf(state).revealed.f1, { kind: 'abomination', boss: 'y', trejo: true });
+});
+
+test('the Draw an Abomination button activates the Trejobomination, even with the deck empty', () => {
+  const alone = manualDraw(trejoBossGame(['f1'], []));
+  assert.deepEqual(bossesOf(alone).manual, [trejoGroup]);
+  assert.equal(alone.history.length, 1, 'undoable');
+  assert.deepEqual(bossesOf(undo(alone)).manual, []);
+  const named = manualDraw(withBoard(trejoBossGame(['f1'], []), 'x'));
+  assert.deepEqual(bossesOf(named).manual, [{ kind: 'abomination', boss: NO_BOSS, activates: 'x', trejo: true }]);
+  const walker = trejoBossGame(['f1'], [], 1, 'oneAtATime', 'walker');
+  assert.equal(manualDraw(walker), walker, 'nothing to draw and no Abomination on the board');
+  const fest = manualDraw(trejoBossGame(['f1'], [], 1, 'fest'));
+  assert.deepEqual(bossesOf(fest).manual, [trejoGroup]);
+});
+
+test('removing the Trejobomination drops the flag: a card group says none, one drawn by hand goes', () => {
+  const stepped = manualDraw(trejoStep(trejoBossGame(['f1'], ['x'])));
+  assert.deepEqual(bossesOf(stepped).revealed.f1, trejoGroup);
+  assert.deepEqual(bossesOf(stepped).manual, [trejoGroup]);
+  const removed = removeTrejo(stepped);
+  assert.deepEqual(bossesOf(removed).revealed.f1, { kind: 'abomination', boss: NO_BOSS, none: true });
+  assert.deepEqual(bossesOf(removed).manual, []);
+  assert.equal(removed.piles.trejo.stage, 'none');
+  assert.deepEqual(undo(removed).piles, stepped.piles, 'undone in one go');
+  const named = removeTrejo(trejoStep(withBoard(trejoBossGame(['f1'], []), 'x')));
+  assert.deepEqual(bossesOf(named).revealed.f1, { kind: 'abomination', boss: NO_BOSS, activates: 'x' });
+  const fest = removeTrejo(trejoStep(withBoard(trejoBossGame(['f1'], ['y'], 1, 'fest'), 'b')));
+  assert.deepEqual(bossesOf(fest).revealed.f1, { kind: 'abomination', boss: 'y', activated: ['b'] });
+});
+
+test('a named boss that leaves does not take the Trejobomination activation with it', () => {
+  const state = manualDraw(trejoStep(withBoard(trejoBossGame(['f1'], []), 'x')));
+  const left = dropped(state, 'x');
+  assert.deepEqual(bossesOf(left).revealed.f1, trejoGroup);
+  assert.deepEqual(bossesOf(left).manual, [trejoGroup]);
+  assert.equal(left.piles.trejo.stage, 'abomination');
+});
+
+test('a Danger Level change that makes a card call, or stop, brings or takes the Trejobomination activation', () => {
+  const trigger = callsAt({ f1: ['red'] });
+  const start = { ...trejoBossGame(['f1'], ['x']), danger: 'blue' as const };
+  const played = drawCards(start, undefined, () => 0, trigger, powers, isTrejo);
+  assert.deepEqual(bossesOf(played).revealed, {});
+  const red = setDanger(played, 'red', trigger, () => 0, powers);
+  assert.deepEqual(bossesOf(red).revealed.f1, trejoGroup);
+  assert.deepEqual(bossesOf(setDanger(red, 'blue', trigger, () => 0, powers)).revealed, {});
+  const walker = setDanger({ ...played, piles: { ...played.piles, trejo: { stage: 'walker', resolved: {} } } }, 'red', trigger, () => 0, powers);
+  assert.deepEqual(bossesOf(walker).revealed.f1, { kind: 'abomination', boss: 'x' });
+});
+
+test('reshuffling everything clears the Trejobomination activations', () => {
+  const state = reshuffleAll(manualDraw(trejoStep(trejoBossGame(['f1'], ['x']))), () => 0, powers);
+  assert.equal(state.piles.trejo.stage, 'none');
+  assert.deepEqual(bossesOf(state).revealed, {});
+  assert.deepEqual(bossesOf(state).manual, []);
+});
+
+test('a save with a Trejobomination activation is read back, a malformed one or a version 8 game is rejected', () => {
+  const known = () => new Set(['t1', 't2', 't3', 'f1', 'f2']);
+  const base = trejoStep(trejoStep(trejoBossGame(['f1', 'f2'], ['x'], 1, 'oneAtATime')));
+  const copy = () => JSON.parse(JSON.stringify(base));
+  assert.deepEqual(bossesOf(base).revealed.f2, trejoGroup);
+  assert.ok(isValidSave(copy(), known));
+  assert.equal(isValidSave({ ...copy(), version: 8 }, known), false, 'the version 8 game is rejected');
+  const broken = (change: (save: any) => void) => {
+    const save = copy();
+    change(save);
+    return isValidSave(save, known);
+  };
+  assert.equal(broken((s) => (s.piles.bosses.revealed.f2.trejo = false)), false);
+  assert.equal(broken((s) => (s.piles.bosses.revealed.f2.trejo = 'yes')), false);
+  assert.equal(broken((s) => (s.piles.bosses.revealed.f2.kind = 'necromancer')), false);
+  assert.equal(broken((s) => (s.piles.bosses.revealed.f2.none = true)), false, 'none and trejo never together');
+  assert.equal(broken((s) => (s.piles.trejo.stage = 'walker')), false, 'no Trejobomination on the board');
+  assert.equal(broken((s) => (s.history[0].trejo.stage = 'none')), true, 'the history without flags is fine');
+  assert.equal(broken((s) => ((s.history[0].trejo.stage = 'none'), (s.history[0].bosses.manual = [{ kind: 'abomination', boss: '', trejo: true }]))), false, 'in the history too');
+});
+
+test('a boss that lets others spawn, with its deck empty, is still activated beside the Trejobomination', () => {
+  const state = trejoStep(withBoard(trejoBossGame(['f1'], []), 'zuul'));
+  assert.deepEqual(bossesOf(state).revealed.f1, { kind: 'abomination', boss: NO_BOSS, activates: 'zuul', trejo: true });
+  const step = trejoStepOne(withBoard(trejoBossGame(['f1'], []), 'zuul'));
+  assert.deepEqual(bossesOf(step).revealed.f1, { kind: 'abomination', boss: NO_BOSS, activates: 'zuul', trejo: true });
+});
+
+test('in the Fest with the boss deck empty, the group names the bosses and the Trejobomination without a new boss', () => {
+  const state = trejoStep(withBoard(trejoBossGame(['f1'], [], 1, 'fest'), 'x'));
+  assert.deepEqual(bossesOf(state).revealed.f1, { kind: 'abomination', boss: NO_BOSS, activated: ['x'], trejo: true });
+  const removed = removeTrejo(state);
+  assert.deepEqual(bossesOf(removed).revealed.f1, { kind: 'abomination', boss: NO_BOSS, activated: ['x'] }, 'the named boss keeps its activation, not none');
+});
+
+test('ordering the activations keeps the Trejobomination with the first card when a later card owns the boss', () => {
+  const start = trejoBossGame(['x'], [], 2);
+  const bosses = bossesOf(start);
+  const state: GameState = {
+    ...start,
+    piles: { ...start.piles, draw: [], drawn: ['f1', 'f2'], bosses: { ...bosses, revealed: { f1: trejoGroup as Revealed, f2: { kind: 'abomination', boss: 'y' } } } },
+  };
+  const next = bossesOf(setDanger(state, 'blue', callsF, () => 0, powers));
+  assert.deepEqual(next.revealed.f1, { kind: 'abomination', boss: 'y', trejo: true });
+  assert.deepEqual(next.revealed.f2, { kind: 'abomination', boss: NO_BOSS, activates: 'y' });
+});
+
+test('a save keeps a Trejobomination group drawn by hand only while the Trejobomination is on the board', () => {
+  const known = () => new Set(['t1', 't2', 't3', 'f1', 'f2']);
+  const base = manualDraw(trejoBossGame(['f1'], []));
+  const copy = () => JSON.parse(JSON.stringify(base));
+  assert.deepEqual(bossesOf(base).manual, [trejoGroup]);
+  assert.ok(isValidSave(copy(), known));
+  const gone = copy();
+  gone.piles.trejo.stage = 'none';
+  assert.equal(isValidSave(gone, known), false);
+  const wrong = copy();
+  wrong.piles.bosses.manual[0].kind = 'necromancer';
+  assert.equal(isValidSave(wrong, known), false);
+});
+
+test('table slots: a SPAM is its own card, laid just before the card that called the Abomination', () => {
+  const shape = (slots: ReturnType<typeof tableSlots>) => slots.map((s) => (s.kind === 'spam' ? `spam:${s.of.kind}${s.of.index}:${s.n}` : `${s.kind}${s.index}`));
+  // No SPAM: the cards, then the Abominations drawn by hand, as before.
+  assert.deepEqual(shape(tableSlots([undefined, []], [undefined])), ['card0', 'card1', 'manual0']);
+  assert.deepEqual(tableSlots([], []), []);
+  // One SPAM before the second card; two SPAMs before the first.
+  assert.deepEqual(shape(tableSlots([undefined, ['spam']], [])), ['card0', 'spam:card1:0', 'card1']);
+  assert.deepEqual(shape(tableSlots([['spam', 'spam'], undefined], [])), ['spam:card0:0', 'spam:card0:1', 'card0', 'card1']);
+  // An Abomination drawn by hand: its SPAMs come before it, after the cards of the step.
+  assert.deepEqual(shape(tableSlots([undefined], [['spam'], undefined])), ['card0', 'spam:manual0:0', 'manual0', 'manual1']);
+  // A group with no boss behind it (no deck, or every boss out) still lays the SPAMs it set aside; a Fest group with several
+  // SPAMs keeps their draw order.
+  assert.deepEqual(shape(tableSlots([], [['spam', 'spam']])), ['spam:manual0:0', 'spam:manual0:1', 'manual0']);
+});
+
+test('table slots: the position of a card or an Abomination drawn by hand, SPAMs counted', () => {
+  const slots = tableSlots([undefined, ['spam', 'spam']], [['spam']]);
+  assert.equal(slotOf(slots, { kind: 'card', index: 0 }), 0);
+  assert.equal(slotOf(slots, { kind: 'card', index: 1 }), 3);
+  assert.equal(slotOf(slots, { kind: 'manual', index: 0 }), 5);
+  assert.equal(slotOf(slots, { kind: 'manual', index: 1 }), -1);
+});
+
+test('table slots: a remembered place follows its owner when SPAMs appear, move or go', () => {
+  const second = { kind: 'card', index: 1 } as const;
+  const spamOfSecond = { kind: 'spam', of: second, n: 0 } as const;
+  // The second card on view; a SPAM then appears before it: the view stays on the card, not on the slot it left.
+  assert.equal(slotPosition(tableSlots([undefined, undefined], []), second), 1);
+  assert.equal(slotPosition(tableSlots([undefined, ['spam']], []), second), 2);
+  assert.equal(slotPosition(tableSlots([undefined, ['spam']], []), spamOfSecond), 1);
+  // The SPAM moves to the first card: the one viewed before the second is gone, so the caller falls back to its default.
+  assert.equal(slotPosition(tableSlots([['spam'], undefined], []), spamOfSecond), -1);
+  assert.equal(slotPosition(tableSlots([['spam'], undefined], []), second), 2);
+  // The second SPAM of a card is not the first.
+  assert.equal(slotPosition(tableSlots([undefined, ['spam', 'spam']], []), { kind: 'spam', of: second, n: 1 }), 2);
+});
+
+test('table slots: a card with SPAMs in front comes into view on its first SPAM', () => {
+  const slots = tableSlots([undefined, ['spam', 'spam']], [['spam']]);
+  assert.equal(entryPosition(slots, { kind: 'card', index: 0 }), 0);
+  assert.equal(entryPosition(slots, { kind: 'card', index: 1 }), 1);
+  assert.equal(entryPosition(slots, { kind: 'manual', index: 0 }), 4);
+  // The SPAMs of the card before it are not its own.
+  assert.equal(entryPosition(tableSlots([['spam'], undefined], []), { kind: 'card', index: 1 }), 2);
+  assert.equal(entryPosition([], { kind: 'card', index: 0 }), -1);
 });

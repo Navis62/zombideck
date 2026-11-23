@@ -4,7 +4,7 @@ Text for the Google Play and App Store listings, one section per language. Limit
 
 Language codes are the Play Console ones (Ukrainian is `uk`, not `uk-UA`).
 
-Images: `feature-graphic.png` (Play Store banner, 1024×500) and `screenshots/` (1920×1080, in display order: the universes carousel on Invader, an Invader game on four zones, a Fantasy game, the card zoom, an Invader game with an Iron Maiden Eddie, two Modern games, then the Invader expansions).
+Images: `feature-graphic.png` (Play Store banner, 1024×500) and `screenshots/` (1920×1080, in display order: `1-universes.png` the universes carousel, `2-modern-four-zones.png` a Modern game on four zones (official art), `3-modern-abomination.png` a Modern game with a named Abomination, `4-western.png` a Western game, `5-fantasy.png` a Fantasy game, `6-invader.png` an Invader game, `7-zoom.png` the card zoom, `8-expansions.png` the expansions menu).
 
 ---
 
@@ -20,7 +20,9 @@ Zombie Deck replaces the zombie spawn deck of Zombicide 2nd Edition on your phon
 
 • Every spawn card of the core box, with the zombie count for your Danger Level
 • Rush, Extra Activation and Abomination cards, just like the real ones
-• Modern Abomination deck: named Abominations with their rules, drawn when a Zombie card spawns one, plus special cards (SPAM, Gozer, Batman Who Laughs)
+• Modern Abomination deck: named Abominations with their rules, drawn when a Zombie card spawns one, plus special cards (SPAM, Gozer, Batman-Who-Laughs)
+• Official art on the Modern cards, drawn like the printed ones
+• Danny Trejo tracked: the card highlights the choice that applies, and the Trejo Walker or Trejobomination stays in the “On the board” panel
 • A “Draw an Abomination” button, in Modern, Western and Fantasy (when named bosses are picked)
 • Choose the Danger Level in one tap; show only the current level or all four
 • Shuffle the draw pile or reshuffle everything, and undo a draw
@@ -57,7 +59,8 @@ Zombie Deck remplace la pioche zombie de Zombicide 2e édition sur votre télép
 
 • Toutes les cartes d'apparition de la boîte de base, avec le nombre de zombies de votre niveau de danger
 • Les cartes Ruée, Activation supplémentaire et Abomination, comme les vraies
-• Paquet d'Abominations en Moderne : Abominations nommées avec leur règle, piochées quand une carte Zombie en fait apparaître une, et cartes spéciales (SPAM, Gozer, Batman Who Laughs)
+• Paquet d'Abominations en Moderne : Abominations nommées avec leur règle, piochées quand une carte Zombie en fait apparaître une, et cartes spéciales (SPAM, Gozer, Batman-qui-rit)
+• Art officiel sur les cartes Moderne ; Danny Trejo suivi dans « Sur le plateau », le choix applicable est mis en avant
 • Bouton « Piocher une Abomination », en Moderne, en Western et en Médiéval-fantastique (quand des boss nommés sont choisis)
 • Choisissez le niveau de danger d'un geste ; affichez seulement le niveau en cours ou les quatre
 • Mélangez la pioche ou remélangez tout, et annulez une pioche
@@ -65,12 +68,12 @@ Zombie Deck remplace la pioche zombie de Zombicide 2e édition sur votre télép
 • L'écran reste allumé pendant la partie
 • Fonctionne hors ligne, sans publicité, sans compte, sans collecte de données
 
-Extensions et promos (à activer dans le menu Extensions et promos) :
+Extensions et promos (menu Extensions et promos) :
 Fort Hendrix, Toxic City Mall, Prison Outbreak, Rue Morgue, Angry Neighbors, Zombie Dogz, Murder of Crowz, VIP: Very Infected People, Lost Zombivors, les cartes Abomination supplémentaires, Danny Trejo, Monty Python's Flying Circus, The Boys, Supernatural, Ghostbusters, Urban Legends, Dark Nights: Metal, Iron Maiden et les exclusivités Kickstarter.
 
-L'univers médiéval-fantastique. À l'ouverture, choisissez votre univers : Zombicide 2e édition, ou Black Plague, Green Horde, White Death et Eternal Empire, seuls ou mélangés. Toutes les cartes d'invasion des boîtes de base, avec Double invasion, La Horde arrive, le symbole de la Horde et le Siège zombie de White Death ; chaque univers a ses propres extensions. Extensions Fantasy : Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, la Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, les packs Kickstarter et invités spéciaux, et les boss de Frozen Fortress, avec des Abominations et des Nécromanciens nommés.
+L'univers médiéval-fantastique. Black Plague, Green Horde, White Death et Eternal Empire, seuls ou mélangés, en plus de Zombicide 2e édition. Toutes les cartes d'invasion des boîtes de base, avec Double invasion, La Horde arrive, le symbole de la Horde et le Siège zombie de White Death ; chaque univers a ses propres extensions. Extensions Fantasy : Wulfsburg, NPC-1, NPC-2, Zombie Bosses, Deadeye Walkers, Murder of Crowz, Friends and Foes, la Horde Box, No Rest for the Wicked, Rat King & Swamp Troll, Massive Darkness 2 Crossover, Iron Maiden, ThunderCats, Compagnia della Forca, Comic Book Extras Vol. 2, Timecrash, Berserker Walkers, Climbers & Terrorcotta Walkers, Crossfire Pack, Bebop & Rocksteady, Divine Beasts, Warlords of the Middle Kingdom, Warlords of the Rising Sun, les packs Kickstarter et invités spéciaux, et les boss de Frozen Fortress, avec des Abominations et des Nécromanciens nommés.
 
-L'univers science-fiction. Invader : les boîtes de base Invader et Dark Side, seules ou ensemble, avec des Ouvriers, Tanks et Chasseurs Xenos (Fouisseurs dans Dark Side), les Abominations Putrescentes et Fouisseuses, les cartes Invasion de Fonge et Invasion de Tunnel et les Activations supplémentaires. Activez dans les options la moitié facile ou la moitié difficile des cartes. Extensions Invader : Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 et les Comic Book Extras, avec des Abominations nommées.
+L'univers science-fiction. Invader : les boîtes de base Invader et Dark Side, seules ou ensemble, avec des Ouvriers, Tanks et Chasseurs Xenos (Fouisseurs dans Dark Side), les Abominations Putrescentes et Fouisseuses, les cartes Invasion de Fonge et Invasion de Tunnel et les Activations supplémentaires. Options : moitié facile ou difficile des cartes. Extensions Invader : Black Ops, Dark Side Extras, Civilian Extras, Soldier Extras, Promo Xenos, Project: ELITE Crossover, Iron Maiden Packs 1–2 et les Comic Book Extras, avec des Abominations nommées.
 
 L'univers western. Zombicide: Undead or Alive : la boîte de base avec ses cartes Rôdeurs, Forcenés, Brutes, Abomination et Activation supplémentaire, les Long-Dead Walkers, et un paquet d'Abominations nommées avec leur règle, distribuées une par une. Extensions Western : Long-Dead Walkers, Running Wild, Gears & Guns, Abominape vs Crocosaur, Deadstock Abominations, Dead West Abominations, les promos et Iron Maiden.
 
@@ -94,7 +97,9 @@ Zombie Deck ersetzt den Zombie-Stapel von Zombicide Zweite Edition auf deinem Ha
 
 • Alle Zombiekarten des Grundspiels, mit der Zombieanzahl für deine Gefahrenstufe
 • Ansturm-, Zusätzliche-Aktivierung- und Monstrum-Karten wie im echten Spiel
-• Monstrum-Stapel in Moderne: benannte Monstren mit ihren Regeln, gezogen, wenn eine Zombiekarte eines erscheinen lässt, dazu Spezialkarten (SPAM, Gozer, Batman Who Laughs)
+• Monstrum-Stapel in Moderne: benannte Monstren mit ihren Regeln, gezogen, wenn eine Zombiekarte eines erscheinen lässt, dazu Spezialkarten (SPAM, Gozer, Batman-Who-Laughs)
+• Offizielle Bilder auf den Moderne-Karten
+• Danny Trejo unter „Auf dem Spielplan“ verfolgt; die Karte hebt die geltende Wahl hervor
 • Button „Monstrum ziehen“, in Moderne, Western und Fantasy (bei benannten Bossen)
 • Gefahrenstufe mit einem Tippen wählen; nur die aktuelle Stufe oder alle vier anzeigen
 • Nachziehstapel mischen oder alles neu mischen, und einen Zug rückgängig machen
@@ -131,7 +136,9 @@ Zombie Deck sustituye el mazo de zombis de Zombicide Segunda Edición en tu móv
 
 • Todas las cartas de aparición de la caja básica, con el número de zombis de tu nivel de peligro
 • Cartas de Avance impetuoso, Activación adicional y Abominación, como las de verdad
-• Mazo de Abominaciones en Moderno: Abominaciones con nombre y su regla, que se roban cuando una carta de Zombi hace aparecer una, y cartas especiales (SPAM, Gozer, Batman Who Laughs)
+• Mazo de Abominaciones en Moderno: Abominaciones con nombre y su regla, que se roban cuando una carta de Zombi hace aparecer una, y cartas especiales (SPAM, Gozer, El Batman que Ríe)
+• Arte oficial en las cartas Moderno, como las impresas
+• Danny Trejo en «En el tablero»: la carta resalta la opción que se aplica
 • Botón «Robar una Abominación», en Moderno, en Western y en Fantasía (con jefes con nombre)
 • Elige el nivel de peligro con un toque; muestra solo el nivel actual o los cuatro
 • Baraja el mazo o vuelve a barajarlo todo, y deshaz un robo
@@ -168,7 +175,9 @@ Zombie Deck sostituisce il mazzo Zombie di Zombicide 2a Edizione sul tuo telefon
 
 • Tutte le carte Zombie della scatola base, con il numero di zombie del tuo Livello di Pericolo
 • Carte Assalto, Attivazione Extra e Abominio, come quelle vere
-• Mazzo Abomini in Moderno: Abomini con nome e la loro regola, pescati quando una carta Zombie ne genera uno, più carte speciali (SPAM, Gozer, Batman Who Laughs)
+• Mazzo Abomini in Moderno: Abomini con nome e la loro regola, pescati quando una carta Zombie ne genera uno, più carte speciali (SPAM, Gozer, Batman Che Ride)
+• Illustrazioni ufficiali sulle carte Moderno, come quelle stampate
+• Danny Trejo seguito: la carta evidenzia la scelta che vale; Deambulante Trejo e Trejobominio restano in «Sul tabellone»
 • Pulsante «Pesca un Abominio», in Moderno, in Western e in Fantasy (con boss con nome)
 • Scegli il Livello di Pericolo con un tocco; mostra solo il livello attuale o tutti e quattro
 • Mescola il mazzo o rimescola tutto, e annulla una pescata
@@ -205,7 +214,9 @@ Zombie Deck zastępuje talię Zombie z Zombicide 2. edycja na twoim telefonie lu
 
 • Wszystkie karty Zombie z podstawowego pudełka, z liczbą zombie dla twojego poziomu zagrożenia
 • Karty Zrywu, Dodatkowej Aktywacji i Abominacji, jak prawdziwe
-• Talia Abominacji we Współczesności: nazwane Abominacje wraz z zasadami, dobierane, gdy karta Zombie je namnaża, oraz karty specjalne (SPAM, Gozer, Batman Who Laughs)
+• Talia Abominacji we Współczesności: nazwane Abominacje wraz z zasadami, dobierane, gdy karta Zombie je namnaża, oraz karty specjalne (SPAM, Gozer, Batman-Who-Laughs)
+• Oficjalne ilustracje na kartach Współczesności, jak drukowane
+• Danny Trejo śledzony: karta wyróżnia obowiązujący wybór; Szwendacz Trejo i Trejominacja zostają w „Na planszy”
 • Przycisk „Dobierz Abominację” we Współczesności, w Westernie i w Fantasy (przy nazwanych bossach)
 • Wybierz poziom zagrożenia jednym dotknięciem; pokaż tylko bieżący poziom lub wszystkie cztery
 • Potasuj talię lub przetasuj wszystko i cofnij dobranie karty
@@ -242,7 +253,9 @@ Zombie Deck substitui o baralho de zumbis de Zombicide 2ª Edição no seu celul
 
 • Todas as cartas de entrada da caixa básica, com o número de zumbis do seu Nível de Perigo
 • Cartas de Investida, Ativação Extra e Abominação, iguais às de verdade
-• Baralho de Abominações no Moderno: Abominações nomeadas com suas regras, compradas quando uma carta de Zumbi gera uma, e cartas especiais (SPAM, Gozer, Batman Who Laughs)
+• Baralho de Abominações no Moderno: Abominações nomeadas com suas regras, compradas quando uma carta de Zumbi gera uma, e cartas especiais (SPAM, Gozer, Batman-Who-Laughs)
+• Arte oficial nas cartas do Moderno, como as impressas
+• Danny Trejo acompanhado: a carta destaca a escolha que vale; Lerdo Trejo e Trejobominação ficam em “No tabuleiro”
 • Botão “Comprar uma Abominação”, no Moderno, no Western e na Fantasia (com chefes nomeados)
 • Escolha o Nível de Perigo com um toque; mostre só o nível atual ou os quatro
 • Embaralhe o baralho ou embaralhe tudo de novo, e desfaça uma compra
@@ -279,7 +292,9 @@ Zombie Deck заменяет колоду зомби из «Зомбицид. В
 
 • Все карты зомби из базовой коробки с количеством зомби для вашего уровня опасности
 • Карты натиска, дополнительного хода и отродий — как настоящие
-• Колода отродий в «Современности»: именные отродья с их правилами, берутся, когда карта зомби их порождает, и особые карты (SPAM, Gozer, Batman Who Laughs)
+• Колода отродий в «Современности»: именные отродья с их правилами, берутся, когда карта зомби их порождает, и особые карты (SPAM, Gozer, Batman-Who-Laughs)
+• Официальные иллюстрации на картах «Современности», как печатные
+• Дэнни Трехо отслеживается: карта выделяет подходящий выбор; Треходок и Трехотродье остаются в «На поле»
 • Кнопка «Взять отродье» в «Современности», в Western и в фэнтези (при именных боссах)
 • Выбирайте уровень опасности одним касанием; показывайте только текущий уровень или все четыре
 • Перемешайте колоду или перемешайте всё, отмените взятие карты
@@ -316,7 +331,9 @@ Zombie Deck замінює колоду зомбі з «Зомбіцид. Дру
 
 • Усі карти зомбі з базової коробки з кількістю зомбі для вашого рівня небезпеки
 • Карти натиску, додаткової активації та потвор — як справжні
-• Колода потвор у «Сучасності»: іменні потвори з їхніми правилами, беруться, коли карта зомбі їх породжує, та особливі карти (SPAM, Gozer, Batman Who Laughs)
+• Колода потвор у «Сучасності»: іменні потвори з їхніми правилами, беруться, коли карта зомбі їх породжує, та особливі карти (SPAM, Gozer, Batman-Who-Laughs)
+• Офіційні ілюстрації на картах «Сучасності», як друковані
+• Danny Trejo відстежується: карта виділяє чинний вибір; Trejo Walker і Trejobomination лишаються в «На полі»
 • Кнопка «Взяти потвору» в «Сучасності», у Western і у фентезі (з іменними босами)
 • Обирайте рівень небезпеки одним дотиком; показуйте лише поточний рівень або всі чотири
 • Перетасуйте колоду або перетасуйте все, скасуйте взяття карти
@@ -352,7 +369,9 @@ Zombie Deck nahrazuje balíček karet zombií ze hry Zombicide 2. edice ve vaše
 
 • Všechny karty zombií ze základní krabice s počtem zombií pro vaši úroveň nebezpečí
 • Karty Horda, Extra aktivace a zrůd, přesně jako ty skutečné
-• Balíček zrůd v Moderním světě: pojmenované zrůdy s pravidly, tažené, když je karta zombie oživí, a zvláštní karty (SPAM, Gozer, Batman Who Laughs)
+• Balíček zrůd v Moderním světě: pojmenované zrůdy s pravidly, tažené, když je karta zombie oživí, a zvláštní karty (SPAM, Gozer, Batman-Who-Laughs)
+• Oficiální ilustrace na kartách Moderního světa, jako tištěné
+• Danny Trejo se sleduje: karta zvýrazní platnou volbu; Trejo Walker a Trejobomination zůstanou v „Na desce“
 • Tlačítko „Vytáhnout zrůdu“ v Moderním světě, ve Westernu i ve Fantasy (s pojmenovanými bossy)
 • Úroveň nebezpečí vyberete jedním klepnutím; zobrazte jen aktuální úroveň, nebo všechny čtyři
 • Zamíchejte balíček nebo vše znovu zamíchejte a vraťte vytažení karty zpět
@@ -382,91 +401,81 @@ Fanouškovský, neoficiální projekt. Zombicide je ochranná známka společnos
 Play Console, 500 characters per language.
 
 <en-US>
-New: the Western universe (Zombicide: Undead or Alive). The core box, the Long-Dead Walkers and a deck of named Abominations, with Gears & Guns, Running Wild, the Iron Maiden Eddies and more.
-• Abominations and Necromancers stay on the board until you remove them
-• Divine Beasts spawn one after the other
-• Official Fantasy art, drawn larger
-• Cards turn over to read their rule; 20 more Fantasy bosses have one
-• Shredder joins Timecrash; Lord of Skulls comes with Doom and Gloom
+New: the Western universe (Zombicide: Undead or Alive). The core box, the Long-Dead Walkers and a deck of named Abominations, with Gears & Guns, Running Wild and the Iron Maiden Eddies.
+• Modern: official art, cards drawn like the printed ones
+• Danny Trejo tracked in “On the board”: the card shows the choice that applies, and the Trejobomination counts as an Abomination
+• SPAM is its own card; card texts corrected
+• Abominations and Necromancers stay on the board until removed
 </en-US>
 
 <fr-FR>
-Nouveau : l'univers Western (Zombicide: Undead or Alive). La boîte de base, les Long-Dead Walkers et un paquet d'Abominations nommées, avec Gears & Guns, Running Wild, les Eddies d'Iron Maiden.
-• Les Abominations et Nécromanciens restent sur le plateau jusqu'à leur retrait
-• Les Divine Beasts apparaissent l'une après l'autre
-• Art officiel Fantasy, plus grand
-• Cartes retournables pour lire leur règle ; 20 boss Fantasy de plus
-• Shredder dans Timecrash ; Lord of Skulls avec Doom and Gloom
+Nouveau : l'univers Western (Zombicide: Undead or Alive). La boîte de base, les Long-Dead Walkers et un paquet d'Abominations nommées, avec Gears & Guns, Running Wild et les Eddies d'Iron Maiden.
+• Moderne : art officiel, cartes comme les imprimées
+• Danny Trejo suivi dans « Sur le plateau » : la carte indique le choix applicable, et la Trejobomination compte comme une Abomination
+• SPAM a sa propre carte ; textes corrigés
+• Abominations et Nécromanciens restent sur le plateau jusqu'au retrait
 </fr-FR>
 
 <de-DE>
-Neu: das Western-Universum (Zombicide: Undead or Alive). Die Grundbox, die Long-Dead Walkers und ein Stapel benannter Monstren, mit Gears & Guns, Running Wild, den Iron-Maiden-Eddies.
+Neu: das Western-Universum (Zombicide: Undead or Alive). Die Grundbox, die Long-Dead Walkers und ein Stapel benannter Monstren, mit Gears & Guns, Running Wild und den Iron-Maiden-Eddies.
+• Moderne: offizielle Bilder, Karten wie gedruckt
+• Danny Trejo unter „Auf dem Spielplan“: Die Karte zeigt die geltende Wahl, das Trejomonstrum zählt als Monstrum
+• SPAM ist eine eigene Karte; Kartentexte korrigiert
 • Monstren und Nekromanten bleiben auf dem Plan, bis du sie entfernst
-• Die Divine Beasts erscheinen nacheinander
-• Offizielle Fantasy-Bilder, jetzt größer
-• Karten lassen sich umdrehen, um die Regel zu lesen; 20 weitere Fantasy-Bosse haben eine
-• Shredder kommt zu Timecrash; Lord of Skulls mit Doom and Gloom
 </de-DE>
 
 <es-ES>
-Novedad: el universo Western (Zombicide: Undead or Alive). La caja básica, los Long-Dead Walkers y un mazo de Abominaciones con nombre, con Gears & Guns, Running Wild, los Eddies de Iron Maiden.
-• Las Abominaciones y los Nigromantes siguen en el tablero hasta retirarlos
-• Divine Beasts aparecen una tras otra
-• Arte oficial de Fantasía, más grande
-• Las cartas se giran para leer su regla; 20 jefes más de Fantasía tienen una
-• Shredder se une a Timecrash; Lord of Skulls llega con Doom and Gloom
+Novedad: el universo Western (Zombicide: Undead or Alive). La caja básica, los Long-Dead Walkers y un mazo de Abominaciones con nombre, con Gears & Guns, Running Wild y los Eddies de Iron Maiden.
+• Moderno: arte oficial, cartas como las impresas
+• Danny Trejo en «En el tablero»: la carta indica la opción que se aplica y la Trejobominación cuenta como Abominación
+• SPAM tiene su propia carta; textos corregidos
+• Abominaciones y Nigromantes siguen en el tablero hasta retirarlos
 </es-ES>
 
 <it-IT>
-Novità: l'universo Western (Zombicide: Undead or Alive). La scatola base, i Long-Dead Walkers e un mazzo di Abomini con nome, con Gears & Guns, Running Wild, gli Eddie di Iron Maiden.
+Novità: l'universo Western (Zombicide: Undead or Alive). La scatola base, i Long-Dead Walkers e un mazzo di Abomini con nome, con Gears & Guns, Running Wild e gli Eddie di Iron Maiden.
+• Moderno: illustrazioni ufficiali, carte come quelle stampate
+• Danny Trejo in «Sul tabellone»: la carta indica la scelta valida e il Trejobominio conta come Abominio
+• SPAM ha una carta tutta sua; testi corretti
 • Abomini e Negromanti restano sul tabellone finché non li rimuovi
-• Le Divine Beasts compaiono una dopo l'altra
-• Illustrazioni ufficiali Fantasy, più grandi
-• Le carte si girano per leggerne la regola; altri 20 boss Fantasy ne hanno una
-• Shredder entra in Timecrash; Lord of Skulls arriva con Doom and Gloom
 </it-IT>
 
 <pl-PL>
-Nowość: świat Western (Zombicide: Undead or Alive). Podstawowe pudełko, Long-Dead Walkers i talia nazwanych Abominacji, z Gears & Guns, Running Wild, Eddiemi z Iron Maiden i innymi.
+Nowość: świat Western (Zombicide: Undead or Alive). Podstawowe pudełko, Long-Dead Walkers i talia nazwanych Abominacji, z Gears & Guns, Running Wild i Eddiemi z Iron Maiden.
+• Współczesność: oficjalne ilustracje, karty jak drukowane
+• Danny Trejo w „Na planszy”: karta pokazuje obowiązujący wybór, a Trejominacja liczy się jako Abominacja
+• SPAM ma własną kartę; poprawione teksty
 • Abominacje i Nekromanci zostają na planszy, dopóki ich nie usuniesz
-• Divine Beasts pojawiają się jedna po drugiej
-• Oficjalne ilustracje Fantasy, teraz większe
-• Karty można odwrócić, by przeczytać zasadę; 20 kolejnych bossów Fantasy ją ma
-• Shredder w Timecrash; Lord of Skulls z Doom and Gloom
 </pl-PL>
 
 <pt-BR>
-Novidade: o universo Western (Zombicide: Undead or Alive). A caixa básica, os Long-Dead Walkers e um baralho de Abominações nomeadas, com Gears & Guns, Running Wild, os Eddies de Iron Maiden e mais.
+Novidade: o universo Western (Zombicide: Undead or Alive). A caixa básica, os Long-Dead Walkers e um baralho de Abominações nomeadas, com Gears & Guns, Running Wild e os Eddies de Iron Maiden.
+• Moderno: arte oficial, cartas como as impressas
+• Danny Trejo em “No tabuleiro”: a carta mostra a escolha que vale e a Trejobominação conta como Abominação
+• SPAM tem carta própria; textos corrigidos
 • Abominações e Necromantes ficam no tabuleiro até você removê-los
-• As Divine Beasts surgem uma após a outra
-• Arte oficial de Fantasia, em tamanho maior
-• As cartas viram para ler a regra; mais 20 chefes de Fantasia têm uma
-• Shredder entra em Timecrash; Lord of Skulls chega com Doom and Gloom
 </pt-BR>
 
 <ru-RU>
-Новое: мир Western (Zombicide: Undead or Alive). Базовая коробка, Long-Dead Walkers и колода именных отродий, с Gears & Guns, Running Wild, Эдди из Iron Maiden и другими.
+Новое: мир Western (Zombicide: Undead or Alive). Базовая коробка, Long-Dead Walkers и колода именных отродий, с Gears & Guns, Running Wild и Эдди из Iron Maiden.
+• Современность: официальные иллюстрации, карты как печатные
+• Дэнни Трехо в «На поле»: карта показывает подходящий выбор, а Трехотродье считается отродьем
+• У SPAM своя карта; тексты исправлены
 • Отродья и некроманты остаются на поле, пока вы их не уберёте
-• Divine Beasts появляются одна за другой
-• Официальные иллюстрации фэнтези стали крупнее
-• Карты переворачиваются, чтобы прочитать правило; ещё у 20 боссов фэнтези оно есть
-• Shredder в Timecrash; Lord of Skulls с Doom and Gloom
 </ru-RU>
 
 <uk>
-Нове: світ Western (Zombicide: Undead or Alive). Базова коробка, Long-Dead Walkers і колода іменних потвор, з Gears & Guns, Running Wild, Едді з Iron Maiden та іншими.
+Нове: світ Western (Zombicide: Undead or Alive). Базова коробка, Long-Dead Walkers і колода іменних потвор, з Gears & Guns, Running Wild та Едді з Iron Maiden.
+• Сучасність: офіційні ілюстрації, карти як друковані
+• Danny Trejo в «На полі»: карта показує чинний вибір, а Trejobomination вважається потворою
+• У SPAM своя карта; тексти виправлено
 • Потвори й некроманти залишаються на полі, поки ви їх не приберете
-• Divine Beasts з’являються одна за одною
-• Офіційні ілюстрації фентезі стали більшими
-• Карти перевертаються, щоб прочитати правило; ще у 20 босів фентезі воно є
-• Shredder у Timecrash; Lord of Skulls з Doom and Gloom
 </uk>
 
 <cs-CZ>
-Novinka: svět Western (Zombicide: Undead or Alive). Základní krabice, Long-Dead Walkers a balíček pojmenovaných zrůd, s Gears & Guns, Running Wild, Eddie z Iron Maiden a dalšími.
+Novinka: svět Western (Zombicide: Undead or Alive). Základní krabice, Long-Dead Walkers a balíček pojmenovaných zrůd, s Gears & Guns, Running Wild a Eddie z Iron Maiden.
+• Moderní svět: oficiální ilustrace, karty jako tištěné
+• Danny Trejo v „Na desce“: karta ukazuje platnou volbu a Trejobomination se počítá jako zrůda
+• SPAM má vlastní kartu; opravené texty
 • Zrůdy a nekromanti zůstávají na desce, dokud je neodstraníte
-• Divine Beasts se objevují jedna po druhé
-• Oficiální fantasy ilustrace, teď větší
-• Karty se otáčejí kvůli pravidlu; dalších 20 fantasy bossů ho má
-• Shredder v Timecrash; Lord of Skulls s Doom and Gloom
 </cs-CZ>

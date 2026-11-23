@@ -277,7 +277,7 @@ const MODERN_FOOTERS = { rush: MODERN_PARTS.footerRush, extra: MODERN_PARTS.foot
 type ModernLabelSpec = { level: DangerLevel; count?: number; sentence?: string; letter?: string };
 
 /** The text panel of a Trejo or SPAM card, at the bottom: its colour, its ink, an optional heading and its lines; `spam` lays it out left of the four letters, over the band with white dashes. */
-type ModernBody = { background: string; ink: string; heading?: string; lines: string[]; spam?: boolean; /** Index of the line that applies (the others are dimmed); all lines read the same without it. */ applies?: number };
+type ModernBody = { background: string; ink: string; heading?: string; lines: string[]; spam?: boolean; /** The printed SPAM Abomination card: yellow dashes under the text, no letters beside it. */ abomination?: boolean; /** Index of the line that applies (the others are dimmed); all lines read the same without it. */ applies?: number };
 
 /*
  * The Modern card, rebuilt from the printed 2nd Edition one (references in .art-sources/modern/references/): the picture
@@ -365,6 +365,8 @@ export type Reveal = {
   none?: true;
   /** Abomination Fest: the bosses already in play that get an Extra Activation before this one arrives. */
   activated?: readonly string[];
+  /** The Trejobomination (on the board) gets an Extra Activation from this Abomination card too. */
+  trejo?: true;
   /** Bosses of this group the players have removed from the board (the card is greyed out when its own boss is one). */
   gone?: readonly string[];
 };
@@ -505,6 +507,13 @@ const revealedName = (reveal?: Reveal): BossName | undefined => (reveal && isBos
 function noBossText(reveal: Reveal, t: Translate): string {
   const isNecromancer = reveal.kind === 'necromancer';
   if (reveal.boss === NO_DECK) return t(isNecromancer ? 'boss.necromancerNoDeck' : 'boss.abominationNoDeck');
+  if (reveal.trejo) {
+    const trejo = t('trejo.abomination');
+    // Every boss that gets the Extra Activation beside the Trejobomination: the named one, or those an empty Fest deck left.
+    const others = reveal.activates !== undefined ? [reveal.activates] : reveal.activated ?? [];
+    if (others.length === 0) return t('boss.abominationActivates', { name: trejo });
+    return t('boss.abominationsActivate', { names: [...others.map((id) => bossTitle(id, t)), trejo].join(', ') });
+  }
   if (reveal.none) return t(isNecromancer ? 'boss.necromancerNoneLeft' : 'boss.abominationNoneLeft');
   if (reveal.activates !== undefined) return t(isNecromancer ? 'boss.necromancerActivates' : 'boss.abominationActivates', { name: isBossName(reveal.activates) ? t(`zombie.${reveal.activates}.one`) : reveal.activates });
   return t(isNecromancer ? 'boss.necromancerNone' : 'boss.abominationNone');
@@ -517,8 +526,9 @@ const bossTitle = (id: string, t: Translate) => (isBossName(id) ? t(`zombie.${id
 const ruleLine = (id: string, t: Translate) => (isModernAbomination(id) ? `${t(`zombie.${id}.one`)}: ${t(`card.${id}Rule`)}` : undefined);
 
 /**
- * What the modern Abomination powers add to a revealed boss: the SPAMs come first (they were drawn before it), then
- * the bosses brought along, then what Gozer gained or the invitation to choose.
+ * What the modern Abomination powers add to a revealed boss: what the Extra Activations did, then the bosses brought
+ * along, then what Gozer gained or the invitation to choose. The SPAMs set aside are no text: each is a card of its own
+ * on the table (`SpamFace`).
  */
 function groupLines(reveal: Reveal, t: Translate): { before: string[]; after: string[] } {
   const named = (ids: readonly string[] | undefined) => (ids ?? []).flatMap((id) => ruleLine(id, t) ?? []);
@@ -526,10 +536,9 @@ function groupLines(reveal: Reveal, t: Translate): { before: string[]; after: st
   const along = named(reveal.along);
   const gained = named(reveal.gained);
   // Without a new boss to arrive the card already says that every boss in play gets its Extra Activation.
-  const activated = (isBoss(reveal) ? reveal.activated ?? [] : []).map((id) => bossTitle(id, t));
+  const activated = [...(isBoss(reveal) ? reveal.activated ?? [] : []).map((id) => bossTitle(id, t)), ...(isBoss(reveal) && reveal.trejo ? [t('trejo.abomination')] : [])];
   return {
     before: [
-      ...named(reveal.spam),
       ...(activated.length > 0 ? [t('boss.activatedThen', { names: activated.join(', ') })] : []),
     ],
     after: [
@@ -616,6 +625,28 @@ function WesternBoss({ reveal, text, footerOnFront }: { reveal: Reveal; text: Ca
 export function bossLabel(reveal: Reveal, t: Translate): string {
   const { title, footer } = bossFaceText(reveal, t);
   return sentences([title, footer]);
+}
+
+/** What a SPAM Abomination card says, as a screen reader reads it (no number, no rule beyond its two lines). */
+const spamText = (t: Translate): CardText => ({ title: t('card.spamTitle'), spoken: `${t('card.spam1')} ${t('card.spam2')}` });
+
+/** A SPAM card set aside by an Abomination, as a screen reader says it. */
+export const spamLabel = (t: Translate): string => sentences([spamText(t).title, spamText(t).spoken]);
+
+/**
+ * The printed SPAM Abomination card: the Abomination banner with SPAM in yellow, a wall of the word over the horde, and
+ * a black panel with its two lines. It has no back: its text is always on the front.
+ */
+export function SpamFace({ width, zoomButton }: { width: number; zoomButton?: boolean }) {
+  const { t } = useApp();
+  const scale = Math.max(0.5, width / DESIGN_WIDTH);
+  const style = useMemo(() => ({ styles: makeStyles(scale), scale }), [scale]);
+  const body = { background: MODERN_COLORS.abomination.background, ink: MODERN_COLORS.abomination.text, lines: [`• ${t('card.spam1')}`, `• ${t('card.spam2')}`], abomination: true };
+  return (
+    <CardStyle.Provider value={style}>
+      <ModernFace kind="abomination" title={t('card.spamTitle')} subject="spamAbomination" text={spamText(t)} footerOnFront labels={[]} current={false} symbol={null} body={body} zoomButton={zoomButton} />
+    </CardStyle.Provider>
+  );
 }
 
 /** The face of an Abomination drawn by hand: its picture, its rule and the powers it carries. */
@@ -842,7 +873,7 @@ function ModernFace(props: {
       lines: MODERN_TITLE_LINES,
     }) * scale;
   // The enlarge button covers the bottom-left corner: the text panel keeps clear of it.
-  const bodyInsets = props.body?.spam ? MODERN_SPAM : { left: MODERN_BODY.paddingX, right: MODERN_BODY.paddingX, bottom: MODERN_BODY.paddingY };
+  const bodyInsets = props.body?.spam ? MODERN_SPAM : props.body?.abomination ? { left: MODERN_BODY.paddingX, right: MODERN_BODY.paddingX, bottom: MODERN_SPAM.bottom } : { left: MODERN_BODY.paddingX, right: MODERN_BODY.paddingX, bottom: MODERN_BODY.paddingY };
   const clearance = Math.max(bodyInsets.bottom * scale, props.zoomButton ? ZOOM_BUTTON_CLEARANCE : 0);
   const bodySize = props.body
     ? modernTextSize([props.body.heading, ...props.body.lines].filter((line) => line !== undefined).join('\n'), {
@@ -862,7 +893,7 @@ function ModernFace(props: {
       </View>
       {props.body && (
         <View style={[styles.modernBody, { backgroundColor: props.body.background, paddingLeft: bodyInsets.left * scale, paddingRight: bodyInsets.right * scale, paddingBottom: clearance }]}>
-          {props.body.spam && <Image source={MODERN_PARTS.footerSpam} style={styles.modernSpamBand} resizeMode="stretch" />}
+          {(props.body.spam || props.body.abomination) && <Image source={props.body.abomination ? MODERN_PARTS.footerAbomination : MODERN_PARTS.footerSpam} style={styles.modernSpamBand} resizeMode="stretch" />}
           {props.body.heading !== undefined && (
             <Text style={[styles.modernBodyHeading, { color: props.body.ink, fontFamily: fonts.title, fontSize: bodySize * MODERN_BODY.heading, lineHeight: bodySize * MODERN_BODY.line }]}>{props.body.heading}</Text>
           )}
@@ -1853,7 +1884,7 @@ function revealedText(
   // A Necromancer card already reads as the Necromancer it revealed, its rule included.
   const own = withRule && ruled(boss) ? ` ${t(`card.${boss}Rule`)}` : '';
   // With the bosses in play named ("Extra Activation for X, then:" comes from groupLines), only the new one is left to say.
-  const intro = reveal.rule === 'fest' && reveal.activated?.length ? name : t(rule, { name });
+  const intro = reveal.rule === 'fest' && (reveal.activated?.length || reveal.trejo) ? name : t(rule, { name });
   return { ...text, footer: `${intro}${own}` };
 }
 

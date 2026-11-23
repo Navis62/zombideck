@@ -25,7 +25,7 @@ const MODERN_VARIANTS: Partial<Record<ZombieType, readonly (keyof typeof MODERN_
 const NPC_WALKER_ART = ['npcWalker', 'npcWalkerBishop', 'npcWalkerHeadless'] as const;
 type NpcWalkerArt = typeof NPC_WALKER_ART[number];
 
-export type ArtSubject = (typeof TOXIC_WALKER_ART)[number] | (typeof MODERN_FATTY_ART)[number] | (typeof MODERN_RUNNER_ART)[number] | (typeof MODERN_WALKER_ART)[number] | NpcWalkerArt | ZombieType | InvaderXeno | InvaderAbomination | FantasyZombie | FantasyNecromancer | NamedModernAbomination | WesternSubject | 'trejo' | 'spam' | 'berserkerWalkerJacket' | 'skinnerWalkerParka';
+export type ArtSubject = (typeof TOXIC_WALKER_ART)[number] | (typeof MODERN_FATTY_ART)[number] | (typeof MODERN_RUNNER_ART)[number] | (typeof MODERN_WALKER_ART)[number] | NpcWalkerArt | ZombieType | InvaderXeno | InvaderAbomination | FantasyZombie | FantasyNecromancer | NamedModernAbomination | WesternSubject | 'trejo' | 'spam' | 'spamAbomination' | 'berserkerWalkerJacket' | 'skinnerWalkerParka';
 
 type OfficialArt = {
   source: ImageSourcePropType;
@@ -45,6 +45,8 @@ type OfficialArt = {
   cardWidth?: number;
   /** Left edge of this figure on a Modern card, as a share of the card's width (negative: cut on the left), to bring a wide group's right end into the card. */
   cardLeft?: number;
+  /** A picture that covers the whole picture area of a Modern card, cut at the edges (the wall of the SPAM Abomination card), instead of standing in it. */
+  fill?: true;
 };
 
 /** Generic horde behind every Modern official cut-out (the drawings keep the background they were printed with). */
@@ -58,6 +60,28 @@ const MODERN_BACKDROP = require('../../assets/modern/backgrounds/generic-horde.j
  * of a tall panel where the centre of the picture would cut it.
  */
 const MODERN_OFFICIAL = {
+  nudeOrganist: { source: require('../../assets/modern/abominations/nude-organist-official.png'), ratio: 1.061, cutout: true, whole: true },
+  stayPuft: { source: require('../../assets/modern/abominations/stay-puft-official.png'), ratio: 0.914, cutout: true, whole: true },
+  gozer: { source: require('../../assets/modern/abominations/gozer-official.png'), ratio: 0.540, cutout: true, whole: true },
+  eddieOriginal: { source: require('../../assets/modern/abominations/original-eddie-official.png'), ratio: 0.716, cutout: true, whole: true },
+  zuul: { source: require('../../assets/modern/abominations/zuul-official.png'), ratio: 1.117, cutout: true, whole: true },
+  vinzClortho: { source: require('../../assets/modern/abominations/vinz-clortho-official.png'), ratio: 1.221, cutout: true, whole: true },
+  batmanWhoLaughs: { source: require('../../assets/modern/abominations/batman-who-laughs-official.png'), ratio: 0.748, cutout: true, whole: true },
+  loboBatman: { source: require('../../assets/modern/abominations/lobo-batman-official.png'), ratio: 0.845, cutout: true, whole: true },
+  batmanEarth11: { source: require('../../assets/modern/abominations/batman-earth-11-official.png'), ratio: 0.726, cutout: true, whole: true },
+  batmanEarth52: { source: require('../../assets/modern/abominations/batman-earth-52-official.png'), ratio: 0.631, cutout: true, whole: true },
+  batmanEarth12: { source: require('../../assets/modern/abominations/batman-earth-12-official.png'), ratio: 0.644, cutout: true, whole: true },
+  batmanEarth44: { source: require('../../assets/modern/abominations/batman-earth-44-official.png'), ratio: 0.621, cutout: true, whole: true },
+  batmanEarth1: { source: require('../../assets/modern/abominations/batman-earth-1-official.png'), ratio: 0.881, cutout: true, whole: true },
+  batmanEarth32: { source: require('../../assets/modern/abominations/batman-earth-32-official.png'), ratio: 0.49, cutout: true, whole: true },
+  theRobins: { source: require('../../assets/modern/abominations/the-robins-official.png'), ratio: 0.908, cutout: true, whole: true },
+  hellsGrannies: { source: require('../../assets/modern/abominations/hells-grannies-official.png'), ratio: 0.666, cutout: true, whole: true },
+  fishSlappingDancer: { source: require('../../assets/modern/abominations/fish-slapping-dancer-official.png'), ratio: 0.5, cutout: true, whole: true },
+  gumbys: { source: require('../../assets/modern/abominations/gumbys-official.png'), ratio: 1.275, cutout: true, whole: true },
+  homelander: { source: require('../../assets/modern/abominations/homelander-official.png'), ratio: 0.666, cutout: true, whole: true },
+  theDeep: { source: require('../../assets/modern/abominations/the-deep-official.png'), ratio: 0.666, cutout: true, whole: true },
+  undeadParrot: { source: require('../../assets/modern/abominations/undead-parrot-official.png'), ratio: 2.832, cutout: true, whole: true },
+  theFoot: { source: require('../../assets/modern/abominations/the-foot-official.png'), ratio: 1.374, cutout: true, whole: true },
   toxicWalkerJacket: { source: require('../../assets/modern/zombies/toxic-walker-1-official.png'), ratio: 0.666, cutout: true },
   toxicWalkerSunglasses: { source: require('../../assets/modern/zombies/toxic-walker-2-official.png'), ratio: 0.666, cutout: true },
   fattySecurity: { source: require('../../assets/modern/zombies/fatty-2e-1-official.png'), ratio: 0.856, cutout: true },
@@ -67,6 +91,7 @@ const MODERN_OFFICIAL = {
   walkerArgyle: { source: require('../../assets/modern/zombies/walker-2e-1-official.png'), ratio: 0.666, cutout: true },
   walkerSign: { source: require('../../assets/modern/zombies/walker-2e-2-official.png'), ratio: 0.666, cutout: true },
   spam: { source: require('../../assets/modern/zombies/spam-official.png'), ratio: 0.666, cutout: true },
+  spamAbomination: { source: require('../../assets/modern/abominations/spam-wall.png'), ratio: 1.333, cutout: true, fill: true },
   trejo: { source: require('../../assets/modern/zombies/trejo-official.png'), ratio: 0.576, cutout: true, whole: true },
   walkerDenim: { source: require('../../assets/modern/zombies/walker-2e-3-official.png'), ratio: 0.666, cutout: true },
   berserkerFatty: { source: require('../../assets/modern/zombies/berserker-fatty-official.png'), ratio: 0.836, cutout: true },
@@ -103,11 +128,11 @@ const MODERN_OFFICIAL = {
   queenMaeve: { source: require('../../assets/modern/abominations/queen-maeve-official.png'), ratio: 0.800, cutout: true, whole: true },
   aTrain: { source: require('../../assets/modern/abominations/a-train-official.png'), ratio: 0.584, cutout: true, whole: true },
   blackNoir: { source: require('../../assets/modern/abominations/black-noir-official.png'), ratio: 0.769, cutout: true, whole: true },
-  soldierBoy: { source: require('../../assets/modern/abominations/soldier-boy-official.png'), ratio: 0.508, cutout: true, whole: true },
+  soldierBoy: { source: require('../../assets/modern/abominations/soldier-boy-official.png'), ratio: 0.507, cutout: true, whole: true },
   starlight: { source: require('../../assets/modern/abominations/starlight-official.png'), ratio: 0.598, cutout: true, whole: true },
   archangelMichael: { source: require('../../assets/modern/abominations/archangel-michael-official.png'), ratio: 0.631, cutout: true, whole: true },
   wendigo: { source: require('../../assets/modern/abominations/wendigo-official.png'), ratio: 0.649, cutout: true, whole: true },
-  leviathan: { source: require('../../assets/modern/abominations/leviathan-official.png'), ratio: 0.813, cutout: true, whole: true },
+  leviathan: { source: require('../../assets/modern/abominations/leviathan-official.png'), ratio: 0.812, cutout: true, whole: true },
   alphaVampire: { source: require('../../assets/modern/abominations/alpha-vampire-official.png'), ratio: 0.431, cutout: true, whole: true },
   sillyWalker: { source: require('../../assets/modern/zombies/silly-walker-official.png'), ratio: 0.793, cutout: true, whole: true },
   inquisitor: { source: require('../../assets/modern/zombies/inquisitor-official.png'), ratio: 1.159, cutout: true, whole: true, bust: true, cardWidth: 1.2, cardLeft: -0.12 },
@@ -134,31 +159,9 @@ const MODERN_OFFICIAL = {
 } satisfies Partial<Record<ArtSubject, OfficialArt>>;
 
 const MODERN_ART = {
-  homelander: require('../../assets/modern/abominations/homelander-cartoon.jpg'),
-  theDeep: require('../../assets/modern/abominations/the-deep-cartoon.jpg'),
   // Invisible: the generic horde with nobody in front of it, on purpose (the printed card has no figure either).
   translucent: require('../../assets/modern/backgrounds/generic-horde.jpg'),
-  zuul: require('../../assets/modern/abominations/zuul-cartoon.jpg'),
-  vinzClortho: require('../../assets/modern/abominations/vinz-clortho-cartoon.jpg'),
-  stayPuft: require('../../assets/modern/abominations/stay-puft-cartoon.jpg'),
-  gozer: require('../../assets/modern/abominations/gozer-cartoon.jpg'),
-  nudeOrganist: require('../../assets/modern/abominations/nude-organist-cartoon.jpg'),
-  undeadParrot: require('../../assets/modern/abominations/undead-parrot-cartoon.jpg'),
-  gumbys: require('../../assets/modern/abominations/gumbys-cartoon.jpg'),
-  theFoot: require('../../assets/modern/abominations/the-foot-cartoon.jpg'),
-  fishSlappingDancer: require('../../assets/modern/abominations/fish-slapping-dancer-cartoon.jpg'),
-  hellsGrannies: require('../../assets/modern/abominations/hells-grannies-cartoon.jpg'),
-  eddieOriginal: require('../../assets/modern/abominations/original-eddie-cartoon.jpg'),
-  batmanEarth12: require('../../assets/modern/abominations/batman-earth-12-cartoon.jpg'),
-  batmanEarth44: require('../../assets/modern/abominations/batman-earth-44-cartoon.jpg'),
-  batmanWhoLaughs: require('../../assets/modern/abominations/batman-who-laughs-cartoon.jpg'),
-  theRobins: require('../../assets/modern/abominations/the-robins-cartoon.jpg'),
-  loboBatman: require('../../assets/modern/abominations/lobo-batman-cartoon.jpg'),
-  batmanEarth1: require('../../assets/modern/abominations/batman-earth-1-cartoon.jpg'),
-  batmanEarth11: require('../../assets/modern/abominations/batman-earth-11-cartoon.jpg'),
-  batmanEarth32: require('../../assets/modern/abominations/batman-earth-32-cartoon.jpg'),
-  batmanEarth52: require('../../assets/modern/abominations/batman-earth-52-cartoon.jpg'),
-} satisfies Record<Exclude<ZombieType | 'trejo' | 'spam' | NamedModernAbomination, keyof typeof MODERN_OFFICIAL>, ImageSourcePropType>;
+} satisfies Record<Exclude<ZombieType | 'trejo' | 'spam' | 'spamAbomination' | NamedModernAbomination, keyof typeof MODERN_OFFICIAL>, ImageSourcePropType>;
 
 const SAMURAI_EDDIE_ART = require('../../assets/invader/abominations/samurai-eddie-abomination-official.png');
 
@@ -575,6 +578,12 @@ function cardCutoutLayout(art: OfficialArt, box: { width: number; height: number
   const top = CARD_FIGURE.top * box.height;
   const bottom = box.height * (1 - reserve + (reserve > 0 ? 0 : CARD_FIGURE.feetBleed));
   const room = bottom - top;
+  if (art.fill) {
+    // Covers the room under the banner: the full width, or taller still if the room is higher; the banner and the text panel cut it.
+    const height = Math.max(room, box.width / art.ratio);
+    const width = height * art.ratio;
+    return { width, height, left: (box.width - width) / 2, top: top + (room - height) / 2 };
+  }
   const maxWidth = box.width * Math.max(art.cardWidth ?? 0, frame.larger ? CARD_FIGURE.widthLarger : CARD_FIGURE.width);
   const height = Math.min(room * (frame.larger ? CARD_FIGURE.largerZoom : 1), maxWidth / art.ratio);
   const width = height * art.ratio;
@@ -612,7 +621,7 @@ function Cutout({ art, anchor, silhouette, zoomed, frame }: { art: OfficialArt; 
     layout = { width, height, left, top: fit !== 'center' && height < box.height ? (box.height - height) / 2 : 0 };
   }
   return (
-    <View style={StyleSheet.absoluteFill} onLayout={(event) => setBox(event.nativeEvent.layout)}>
+    <View style={[StyleSheet.absoluteFill, art.fill && { overflow: 'hidden' }]} onLayout={(event) => setBox(event.nativeEvent.layout)}>
       {layout && <Image source={art.source} style={[{ position: 'absolute' }, layout, tint]} resizeMode="stretch" />}
     </View>
   );

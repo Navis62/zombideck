@@ -18,7 +18,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AppBackground } from '@/components/app-background';
 import { Button } from '@/components/button';
 import { CardBack } from '@/components/card-back';
-import { BossFace, bossHasBack, CardAnnounced, bossLabel, CardFace, cardHasBack, cardLabel, isGone, type Reveal } from '@/components/card-face';
+import { BossFace, bossHasBack, CardAnnounced, bossLabel, CardFace, cardHasBack, cardLabel, isGone, type Reveal, SpamFace, spamLabel } from '@/components/card-face';
 import { abominationName, ChoiceSheet } from '@/components/choice-sheet';
 import { DiscardSheet } from '@/components/discard-sheet';
 import { FlipCard } from '@/components/flip-card';
@@ -50,6 +50,8 @@ import type { BossTarget } from '@/game/engine';
 import { drawFeedback } from '@/game/feedback';
 import { countDraw } from '@/game/review';
 import { useApp } from '@/game/store';
+import { type SlotRef, entryPosition, slotPosition, type TableSlot, tableSlots } from '@/game/table';
+import { NO_BOSS } from '@/game/types';
 import type { BossKind, BossRule, DangerLevel, GameState, Revealed, TrejoChoice, ZombieCard } from '@/game/types';
 import type { Translate } from '@/i18n/translations';
 import { COLORS, DANGER_COLORS, PRESSED } from '@/theme';
@@ -90,7 +92,7 @@ const BOARD_NAME_SIZE = 17;
 const KIND_BAR_WIDTH = 6;
 
 export default function GameScreen() {
-  const { game, setGame, haptics, zoneDisplay, t, trejoChoice, removeTrejo } = useApp();
+  const { game, setGame, haptics, zoneDisplay, t, trejoChoice, removeTrejo, trejoOnBoard } = useApp();
   const drawnKey = game?.piles.drawn.join('|') ?? '';
   // The phone lies on the table for the whole game: keep the screen on.
   useKeepAwake();
@@ -131,10 +133,11 @@ export default function GameScreen() {
   }, [confirmingRemove]);
 
   const [showDiscard, setShowDiscard] = useState(false);
-  // One zone at a time: the card looked at, the last one dealt unless a zone above it was tapped since.
-  const [viewed, setViewed] = useState<{ step: string; index: number } | null>(null);
+  // One zone at a time: the place looked at (`tableSlots`), the last card dealt unless another was tapped since.
+  const [viewed, setViewed] = useState<{ step: string; ref: SlotRef } | null>(null);
   // Several cards side by side are small: one tapped is shown full screen, until the next draw.
-  const [zoomed, setZoomed] = useState<{ step: string; index: number } | null>(null);
+  // `slot` is the place on the table (see `tableSlots`), SPAM cards included.
+  const [zoomed, setZoomed] = useState<{ step: string; slot: number } | null>(null);
   // The cards turned over to their back (by position), until the next draw: each card has its own side.
   const [flips, setFlips] = useState<{ step: string; open: readonly number[] }>({ step: '', open: [] });
   const window = useWindowDimensions();
@@ -185,16 +188,17 @@ export default function GameScreen() {
     announced.current = drawnCards;
     if (Platform.OS === 'web') dealtRef.current = null;
     if (!drawnCards?.length || !currentDanger || !zoneCount || Platform.OS === 'web') return;
-    const reveal = revealOf(revealed, bossRule);
+    const reveal = revealOf(revealed, bossRule, currentDanger, trejoOnBoard);
     // One announcement: the cards, then the escorts a bringer brought (set by `draw`, never by an undo).
     // The groups of `manual` that the deal added, from the state actually applied: a new Spawn step moves the previous
     // ones to the board first, so they are not counted as before.
     const dealt = dealtRef.current;
     dealtRef.current = null;
     const before = dealt?.fresh && previousBossesRef.current ? { ...previousBossesRef.current, manual: [] } : previousBossesRef.current;
-    const escorts = dealt && bossRule ? newGroups(before, bossPiles, 'manual').map((group) => bossLabel(groupReveal(group, bossRule), t)) : [];
-    AccessibilityInfo.announceForAccessibility([announcement(drawnCards, currentDanger, zoneCount, sequence, t, reveal, trejoChoice), ...escorts].join(' '));
-  }, [drawnCards, currentDanger, zoneCount, sequence, t, revealed, bossRule, bossPiles, trejoChoice]);
+    const escorts = dealt && bossRule ? newGroups(before, bossPiles, 'manual').map((group) => groupLabel(group, bossRule, t)) : [];
+    const spamCount = (cardId: string) => revealed?.[cardId]?.spam?.length ?? 0;
+    AccessibilityInfo.announceForAccessibility([announcement(drawnCards, currentDanger, zoneCount, sequence, t, reveal, trejoChoice, spamCount), ...escorts].join(' '));
+  }, [drawnCards, currentDanger, zoneCount, sequence, t, revealed, bossRule, bossPiles, trejoChoice, trejoOnBoard]);
   useEffect(() => {
     previousBossesRef.current = bossPiles;
   });
@@ -228,6 +232,8 @@ export default function GameScreen() {
     ? (game.piles.bosses?.manual ?? []).map((group) => ({ group, reveal: groupReveal(group, manualRule) }))
     : [];
   const extra = manualGroups.length;
+  // Every place of the table in draw order: each SPAM set aside is a card before the one that called the Abomination.
+  const slots = slotsOf(game);
   const deal = (state: GameState) =>
     sequence
       ? drawNextCard(state, cardEffect, Math.random, bossTrigger, bossPowers, isTrejoCard)
@@ -256,7 +262,7 @@ export default function GameScreen() {
     say([t('boss.removed', { name: abominationName(entry.boss, t) }), ...arrivedAfter(game, next, 'manual')]);
   };
   // Focus stays on the button after these, and none changes `drawn`: each says what it just did, in one announcement.
-  const labelOf = (group: Revealed) => (manualRule ? bossLabel(groupReveal(group, manualRule), t) : '');
+  const labelOf = (group: Revealed) => (manualRule ? groupLabel(group, manualRule, t) : '');
   const say = (texts: readonly string[]) => {
     const text = texts.filter(Boolean).join(' ');
     if (text && Platform.OS !== 'web') AccessibilityInfo.announceForAccessibility(text);
@@ -270,7 +276,9 @@ export default function GameScreen() {
     if (haptics) drawFeedback();
     // The new Abomination comes into view, whichever card of the step was looked at.
     // The boss drawn is the first group added; a bringer's escorts come after it, so the step key counts all of them.
-    setViewed({ step: `${drawnKey}#${next.piles.bosses?.manual.length ?? extra + 1}`, index: drawn.length + extra });
+    // It opens on the first SPAM set aside before it, if any.
+    const hasSpam = (next.piles.bosses?.manual[extra]?.spam?.length ?? 0) > 0;
+    setViewed({ step: `${drawnKey}#${next.piles.bosses?.manual.length ?? extra + 1}`, ref: hasSpam ? { kind: 'spam', of: { kind: 'manual', index: extra }, n: 0 } : { kind: 'manual', index: extra } });
     update(() => next);
     // The Abomination drawn, then the escorts it brought (each its own group appended after it).
     say(arrivedAfter(game, next, 'manual'));
@@ -290,7 +298,7 @@ export default function GameScreen() {
     // The group just resolved is the one that is new.
     say(arrivedAfter(game, next, 'all'));
   };
-  const reveal = revealOf(game.piles.bosses?.revealed, game.bossRule);
+  const reveal = revealOf(game.piles.bosses?.revealed, game.bossRule, danger, trejoOnBoard);
   const isFlipped = (index: number) => flips.step === drawnKey && flips.open.includes(index);
   const toggleFlip = (index: number) => {
     // A tap that stopped a scrolling rule (or came right after) is not a request to turn the card.
@@ -354,21 +362,30 @@ export default function GameScreen() {
   };
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/menu'));
 
-  const shown = sequence ? 1 : Math.max(1, drawn.length + extra);
-  const label = zones > 1 || drawn.length > 1 || extra > 0 ? (sequence ? SEQUENCE_HEADER : ZONE_LABEL) : 0;
-  // The step being looked at: drawing an Abomination by hand brings it into view.
+  const shown = sequence ? 1 : Math.max(1, slots.length);
+  const label = zones > 1 || slots.length > 1 ? (sequence ? SEQUENCE_HEADER : ZONE_LABEL) : 0;
+  // The step being looked at: drawing an Abomination by hand brings it into view. The place looked at is remembered by its
+  // owner, so a SPAM appearing or moving (a new Danger Level) does not move the view to another card.
   const viewKey = `${drawnKey}#${extra}`;
-  // Unless a chip was tapped (or an Abomination just drawn by hand), the last card dealt: a new zone card shows at once.
-  const defaultView = drawn.length > 0 ? drawn.length - 1 : extra - 1;
-  const viewedIndex = Math.min(viewed?.step === viewKey ? viewed.index : defaultView, drawn.length + extra - 1);
+  // The enlarged card is remembered by position, so it closes when the places change.
+  const zoomKey = `${viewKey}#${slots.length}`;
+  // Unless a chip was tapped (or an Abomination just drawn by hand), the last card dealt (from its first SPAM): a new zone card shows at once.
+  const defaultView = entryPosition(slots, drawn.length > 0 ? { kind: 'card', index: drawn.length - 1 } : { kind: 'manual', index: extra - 1 });
+  const keptView = viewed?.step === viewKey ? slotPosition(slots, viewed.ref) : -1;
+  const viewedIndex = Math.min(keptView >= 0 ? keptView : defaultView, slots.length - 1);
   const { width, deckWidth, columns, rows } = tableLayout(table, shown, label);
   // A single card sits in a column as wide as the deck: when the zone line above it makes it a little smaller, it
   // stays centred there instead of shifting the deck.
   const column = shown === 1 ? Math.max(width, deckWidth) : width;
   const rowWidth = Math.max(0, Math.min(table.width - deckWidth - TABLE_GAP, columns * column + (columns - 1) * TABLE_GAP));
   const slot = { width, aspectRatio: CARD_RATIO };
-  const zoomedCard = zoomed?.step === drawnKey ? CARDS_BY_ID.get(drawn[zoomed.index]) : undefined;
-  const zoomedGroup = zoomed?.step === drawnKey && zoomed.index >= drawn.length ? manualGroups[zoomed.index - drawn.length] : undefined;
+  const zoomedSlot = zoomed?.step === zoomKey ? slots[zoomed.slot] : undefined;
+  const zoomedCard = zoomedSlot?.kind === 'card' ? CARDS_BY_ID.get(drawn[zoomedSlot.index]) : undefined;
+  const zoomedGroup = zoomedSlot?.kind === 'manual' ? manualGroups[zoomedSlot.index] : undefined;
+  const zoomedSpam = zoomedSlot?.kind === 'spam' ? zoomedSlot : undefined;
+  // Where a card or an Abomination drawn by hand keeps its side (`isFlipped`): the cards of the step, then the Abominations.
+  const flipIndex = zoomedSlot?.kind === 'manual' ? drawn.length + zoomedSlot.index : zoomedSlot?.kind === 'card' ? zoomedSlot.index : -1;
+  const zoom = (owner: { kind: 'card' | 'manual'; index: number }) => setZoomed({ step: zoomKey, slot: slotPosition(slots, owner) });
   const zoomFlippable = zoomedGroup
     ? bossHasBack(zoomedGroup.reveal, t)
     : !!zoomedCard && cardHasBack(zoomedCard, danger, t, reveal(zoomedCard.id));
@@ -395,7 +412,7 @@ export default function GameScreen() {
             // A card that turns over takes its taps in its faces: nothing touchable wraps the scrolling rule.
             faces={flippable}
             // Gozer's choice first; then the card turns over to its rule; a card with none enlarges, as it always did.
-            onPress={waiting ? reopenChoice : flippable ? () => toggleFlip(index) : () => setZoomed({ step: drawnKey, index })}
+            onPress={waiting ? reopenChoice : flippable ? () => toggleFlip(index) : () => zoom({ kind: 'card', index })}
             button={asButton}
             // One announcement per card: a button hides what it holds from TalkBack, so it carries the whole card.
             label={
@@ -416,7 +433,7 @@ export default function GameScreen() {
               </Animated.View>
             )}
           </CardButton>
-          {zoomable && card && <ZoomButton label={t('game.zoom')} onPress={() => setZoomed({ step: drawnKey, index })} />}
+          {zoomable && card && <ZoomButton label={t('game.zoom')} onPress={() => zoom({ kind: 'card', index })} />}
         </View>
       </View>
     );
@@ -446,11 +463,44 @@ export default function GameScreen() {
               {bossFace(groupFace, index, width, waiting ? reopenChoice : () => toggleFlip(index), shown > 1)}
             </View>
           </CardButton>
-          {shown > 1 && <ZoomButton label={t('game.zoom')} onPress={() => setZoomed({ step: drawnKey, index })} />}
+          {shown > 1 && <ZoomButton label={t('game.zoom')} onPress={() => zoom({ kind: 'manual', index: i })} />}
         </View>
       </View>
     );
   });
+
+  // A SPAM set aside, as its own printed card before the one that called the Abomination; it has no back, only to enlarge.
+  const spamCard = (place: Extract<TableSlot, { kind: 'spam' }>, position: number) => {
+    const owner = place.of;
+    const zoneText = owner.kind === 'card' ? t('game.zone', { n: cardZones[owner.index] }) : t('game.manualBoss');
+    const zoomable = shown > 1;
+    return (
+      <View key={`spam-${position}`} style={{ width: column, alignItems: 'center' }}>
+        {label > 0 && (
+          <Text style={[styles.zone, styles.zoneLine]} numberOfLines={1} importantForAccessibility={zoomable ? 'no' : 'auto'}>
+            {zoneText}
+          </Text>
+        )}
+        <View style={slot}>
+          <CardButton
+            style={styles.drawn}
+            disabled={!zoomable}
+            onPress={() => setZoomed({ step: zoomKey, slot: position })}
+            button={zoomable}
+            label={zoomable ? `${label > 0 ? `${zoneText}: ` : ''}${spamLabel(t)}` : undefined}
+            hint={zoomable ? t('game.zoom') : undefined}
+          >
+            <View style={styles.drawn} accessibilityElementsHidden={zoomable} importantForAccessibility={zoomable ? 'no-hide-descendants' : 'auto'}>
+              <SpamFace width={width} zoomButton={zoomable} />
+            </View>
+          </CardButton>
+          {zoomable && <ZoomButton label={t('game.zoom')} onPress={() => setZoomed({ step: zoomKey, slot: position })} />}
+        </View>
+      </View>
+    );
+  };
+  // The cards, SPAMs and Abominations drawn by hand in the order of the table.
+  const onTable = slots.map((place, position) => (place.kind === 'card' ? dealt[place.index] : place.kind === 'manual' ? manualCards[place.index] : spamCard(place, position)));
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right', 'bottom']}>
@@ -465,18 +515,39 @@ export default function GameScreen() {
           </Animated.View>
           {sequence ? (
             <OneAtATime
+              slots={slots}
               drawn={drawn}
               cardZones={cardZones}
               zones={zones}
               pending={pendingZones(game, cardEffect)}
-              extra={extra}
               extraLabel={t('game.manualBoss')}
               viewedIndex={viewedIndex}
-              onView={(index) => setViewed({ step: viewKey, index })}
+              onView={(index) => setViewed({ step: viewKey, ref: slots[index] })}
               header={label}
               width={width}
               column={column}
-              renderCard={(id, index) => {
+              renderSlot={(place) => {
+                if (place.kind === 'spam') return <SpamFace width={width} />;
+                if (place.kind === 'manual') {
+                  const { group, reveal: groupFace } = manualGroups[place.index];
+                  const index = drawn.length + place.index;
+                  const flipped = isFlipped(index);
+                  return (
+                    <CardButton
+                      style={styles.drawn}
+                      faces={bossHasBack(groupFace, t)}
+                      onPress={group.choice ? reopenChoice : () => toggleFlip(index)}
+                      button
+                      label={bossLabel(groupFace, t)}
+                      hint={group.choice ? t('boss.tapToChoose') : flipHint(flipped)}
+                      expanded={group.choice ? undefined : flipped}
+                    >
+                      {bossFace(groupFace, index, width, group.choice ? reopenChoice : () => toggleFlip(index))}
+                    </CardButton>
+                  );
+                }
+                const { index } = place;
+                const id = drawn[index];
                 const card = CARDS_BY_ID.get(id);
                 if (!card) return null;
                 const flipTap = () => toggleFlip(index);
@@ -500,30 +571,14 @@ export default function GameScreen() {
                   face
                 );
               }}
-              renderExtra={(i) => {
-                const { group, reveal: groupFace } = manualGroups[i];
-                const index = drawn.length + i;
-                const flipped = isFlipped(index);
-                return (
-                  <CardButton
-                    style={styles.drawn}
-                    faces={bossHasBack(groupFace, t)}
-                    onPress={group.choice ? reopenChoice : () => toggleFlip(index)}
-                    button
-                    label={bossLabel(groupFace, t)}
-                    hint={group.choice ? t('boss.tapToChoose') : flipHint(flipped)}
-                    expanded={group.choice ? undefined : flipped}
-                  >
-                    {bossFace(groupFace, index, width, group.choice ? reopenChoice : () => toggleFlip(index))}
-                  </CardButton>
-                );
-              }}
               chipLabel={t('game.manualChip')}
+              spamLabel={t('card.spamTitle')}
+              spamChip={t('card.spamTitle').split(' (')[0]}
               flip={rotateY}
               emptyText={t('game.noCard')}
               t={t}
             />
-          ) : drawn.length === 0 && extra === 0 ? (
+          ) : slots.length === 0 ? (
             <View style={{ width: column, paddingTop: label, alignItems: 'center' }}>
               <View style={[slot, styles.empty]}>
                 <Text style={styles.emptyText}>{t('game.noCard')}</Text>
@@ -531,8 +586,7 @@ export default function GameScreen() {
             </View>
           ) : rows > 1 ? (
             <View style={[styles.grid, { width: rowWidth }]}>
-              {dealt}
-              {manualCards}
+              {onTable}
             </View>
           ) : (
             <ScrollView
@@ -542,8 +596,7 @@ export default function GameScreen() {
               contentContainerStyle={styles.row}
               showsHorizontalScrollIndicator={false}
             >
-              {dealt}
-              {manualCards}
+              {onTable}
             </ScrollView>
           )}
         </View>
@@ -655,7 +708,7 @@ export default function GameScreen() {
           )}
         </ScrollView>
       </View>
-      {(zoomedCard || zoomedGroup) && zoomed && (
+      {(zoomedCard || zoomedGroup || zoomedSpam) && zoomed && (
         <Modal
           transparent
           animationType="fade"
@@ -675,22 +728,28 @@ export default function GameScreen() {
               accessibilityLabel={t('game.close')}
             />
             {label > 0 && (
-              <Text style={styles.zone}>{zoomedGroup ? t('game.manualBoss') : t('game.zone', { n: cardZones[zoomed.index] })}</Text>
+              <Text style={styles.zone}>
+                {zoomedGroup ? t('game.manualBoss') : zoomedSpam ? (zoomedSpam.of.kind === 'card' ? t('game.zone', { n: cardZones[zoomedSpam.of.index] }) : t('game.manualBoss')) : zoomedSlot?.kind === 'card' ? t('game.zone', { n: cardZones[zoomedSlot.index] }) : ''}
+              </Text>
             )}
             <CardButton
               // An explicit height, not aspectRatio: the card's back is a ScrollView, which only scrolls when its
               // height is bounded; with a height derived from the ratio Android lets it grow and clip instead.
               style={{ width: zoomWidth(window), height: zoomWidth(window) / CARD_RATIO }}
               faces={zoomFlippable}
-              onPress={zoomFlippable ? () => toggleFlip(zoomed.index) : () => setZoomed(null)}
+              onPress={zoomFlippable ? () => toggleFlip(flipIndex) : () => setZoomed(null)}
               button
-              label={zoomedGroup ? bossLabel(zoomedGroup.reveal, t) : zoomedCard ? cardLabel(zoomedCard, danger, t, reveal(zoomedCard.id), trejoChoice(zoomedCard.id)) : undefined}
-              hint={zoomFlippable ? flipHint(isFlipped(zoomed.index)) : undefined}
-              expanded={zoomFlippable ? isFlipped(zoomed.index) : undefined}
+              label={zoomedSpam ? spamLabel(t) : zoomedGroup ? bossLabel(zoomedGroup.reveal, t) : zoomedCard ? cardLabel(zoomedCard, danger, t, reveal(zoomedCard.id), trejoChoice(zoomedCard.id)) : undefined}
+              hint={zoomFlippable ? flipHint(isFlipped(flipIndex)) : undefined}
+              expanded={zoomFlippable ? isFlipped(flipIndex) : undefined}
             >
-              {zoomedGroup
-                ? bossFace(zoomedGroup.reveal, zoomed.index, zoomWidth(window), () => toggleFlip(zoomed.index))
-                : zoomedCard && cardFace(zoomedCard, zoomed.index, zoomWidth(window), () => toggleFlip(zoomed.index))}
+              {zoomedSpam ? (
+                <SpamFace width={zoomWidth(window)} />
+              ) : zoomedGroup ? (
+                bossFace(zoomedGroup.reveal, flipIndex, zoomWidth(window), () => toggleFlip(flipIndex))
+              ) : (
+                zoomedCard && cardFace(zoomedCard, flipIndex, zoomWidth(window), () => toggleFlip(flipIndex))
+              )}
             </CardButton>
             <Pressable
               style={({ pressed }) => [
@@ -723,6 +782,17 @@ export default function GameScreen() {
     </SafeAreaView>
   );
 }
+
+/** Every place of the table of a game, in draw order (see `tableSlots`). */
+const slotsOf = (state: GameState): TableSlot[] =>
+  tableSlots(
+    state.piles.drawn.map((id) => state.piles.bosses?.revealed[id]?.spam),
+    // Abominations drawn by hand only exist with a boss rule.
+    (state.bossRule ? state.piles.bosses?.manual ?? [] : []).map((group) => group.spam),
+  );
+
+/** What a screen reader says of an Abomination drawn by hand: the SPAMs it set aside first, then the boss. */
+const groupLabel = (group: Revealed, rule: BossRule, t: Translate): string => [...(group.spam ?? []).map(() => spamLabel(t)), bossLabel(groupReveal(group, rule), t)].join(' ');
 
 /** A tapped card as large as the screen allows, below its zone line. */
 const zoomWidth = (window: { width: number; height: number }) =>
@@ -774,10 +844,16 @@ function tableLayout(table: { width: number; height: number }, shown: number, la
  */
 /** The boss each card on display revealed from its deck, with the Dead Men Tales rules. */
 const revealOf =
-  (revealed: Record<string, Revealed> | undefined, rule: BossRule | null | undefined) =>
+  (revealed: Record<string, Revealed> | undefined, rule: BossRule | null | undefined, danger: DangerLevel | undefined, trejoOnBoard: (cardId: string) => boolean) =>
   (cardId: string): Reveal | undefined => {
     const shown = revealed?.[cardId];
-    return shown && rule ? groupReveal(shown, rule) : undefined;
+    if (shown && rule) return groupReveal(shown, rule);
+    // No named Abominations (`bosses` is null): the engine reveals nothing, but a card calling for an Abomination at this
+    // Danger Level still gives the Trejobomination on the board its Extra Activation instead of spawning one.
+    if (!rule && danger && bossTrigger(cardId, danger) === 'abomination' && trejoOnBoard(cardId)) {
+      return { kind: 'abomination', boss: NO_BOSS, rule: 'oneAtATime', trejo: true };
+    }
+    return undefined;
   };
 
 type BoardEntry = { key: string; kind: BossKind; boss: string; target: BossTarget } | { key: string; kind: 'trejo'; stage: 'walker' | 'abomination' };
@@ -815,6 +891,7 @@ const groupReveal = (group: Revealed, rule: BossRule): Reveal => ({
   activates: group.activates,
   none: group.none,
   activated: group.activated,
+  trejo: group.trejo,
   gone: group.gone,
 });
 
@@ -887,6 +964,7 @@ function announcement(
   t: Translate,
   reveal: (cardId: string) => Reveal | undefined,
   trejoOutcome: (cardId: string) => TrejoChoice | undefined,
+  spamCount: (cardId: string) => number,
 ): string {
   const cardZones = zonesOf(drawn, cardEffect, zones);
   const withZones = zones > 1 || drawn.length > 1;
@@ -895,79 +973,69 @@ function announcement(
     .map((index) => {
       const card = CARDS_BY_ID.get(drawn[index]);
       if (!card) return '';
-      const label = cardLabel(card, danger, t, reveal(card.id), trejoOutcome(card.id));
-      return withZones ? `${t('game.zone', { n: cardZones[index] })}: ${label}` : label;
+      // The SPAMs set aside were drawn before the card: read first, each as its own card.
+      const labels = [...Array.from({ length: spamCount(card.id) }, () => spamLabel(t)), cardLabel(card, danger, t, reveal(card.id), trejoOutcome(card.id))];
+      return labels.map((label) => (withZones ? `${t('game.zone', { n: cardZones[index] })}: ${label}` : label)).join(' ');
     })
     .filter(Boolean)
     .join(' ');
 }
 
-/** One zone per tap: the card of one zone in full size, the zones of the step as numbered chips above it. */
+/** One place per tap: the card of one zone (or a SPAM, or an Abomination drawn by hand) in full size, the places of the step as chips above it. */
 function OneAtATime(props: {
+  slots: readonly TableSlot[];
   drawn: readonly string[];
   cardZones: readonly number[];
   zones: number;
   /** The zone of each card still to come in this step: twice for a zone owed two cards by a Double Spawn. */
   pending: readonly number[];
-  /** Abominations drawn by hand, shown after the cards of the step (own chip each). */
-  extra: number;
   extraLabel: string;
   /** What the chip of an Abomination drawn by hand says. */
   chipLabel: string;
-  renderExtra: (index: number) => React.ReactNode;
-  /** Over the cards then the Abominations drawn by hand. */
+  /** What the chip of a SPAM says: its name on the card. */
+  spamLabel: string;
+  /** The SPAM chip: the name cut short, a long one ("SPAM (mielonka)") would squash the title. */
+  spamChip: string;
+  renderSlot: (slot: TableSlot, position: number) => React.ReactNode;
+  /** The position, among the slots, of the place on display. */
   viewedIndex: number;
   onView: (index: number) => void;
   header: number;
   width: number;
   /** Width of the column the card is centred in. */
   column: number;
-  renderCard: (id: string, index: number) => React.ReactNode;
   flip: Animated.AnimatedInterpolation<string>;
   emptyText: string;
   t: Translate;
 }) {
-  const { drawn, cardZones, zones, pending, viewedIndex, t } = props;
-  const viewedId = drawn[viewedIndex];
-  const viewedExtra = viewedIndex >= drawn.length && viewedIndex < drawn.length + props.extra;
+  const { slots, drawn, cardZones, zones, pending, viewedIndex, t } = props;
+  const viewed = slots[viewedIndex];
   // The card just dealt flips, also when an Abomination drawn by hand sits after it.
-  const isLast = viewedIndex === drawn.length - 1;
+  const isLast = viewed?.kind === 'card' && viewed.index === drawn.length - 1;
   const slot = { width: props.width, aspectRatio: CARD_RATIO };
+  // What each place is called: its zone, "Abomination" for one drawn by hand, "SPAM".
+  const nameOf = (place: TableSlot) => (place.kind === 'card' ? t('game.zone', { n: cardZones[place.index] }) : place.kind === 'manual' ? props.extraLabel : props.spamLabel);
+  const chipOf = (place: TableSlot) => (place.kind === 'card' ? String(cardZones[place.index]) : place.kind === 'manual' ? props.chipLabel : props.spamChip);
   return (
     <View style={{ width: props.column, alignItems: 'center' }}>
       {props.header > 0 && (
         <View style={[styles.sequenceHeader, { height: props.header, width: props.width }]}>
           <View style={styles.sequenceRow}>
             <Text style={[styles.zone, styles.sequenceTitle]} numberOfLines={1}>
-              {viewedExtra ? props.extraLabel : t('game.zoneOf', { n: viewedId ? cardZones[viewedIndex] : 1, total: zones })}
+              {viewed?.kind === 'card' || !viewed ? t('game.zoneOf', { n: viewed ? cardZones[viewed.index] : 1, total: zones }) : viewed.kind === 'manual' ? nameOf(viewed) : props.spamChip}
             </Text>
-            {drawn.map((id, index) => (
+            {slots.map((place, position) => (
               <Pressable
-                key={`${id}-${index}`}
-                style={({ pressed }) => [styles.chip, index === viewedIndex && styles.chipViewed, pressed && PRESSED]}
-                onPress={() => props.onView(index)}
+                key={`${place.kind}-${position}`}
+                style={({ pressed }) => [styles.chip, position === viewedIndex && styles.chipViewed, pressed && PRESSED]}
+                onPress={() => props.onView(position)}
                 accessibilityRole="button"
-                accessibilityLabel={t('game.zone', { n: cardZones[index] })}
-                accessibilityState={{ selected: index === viewedIndex }}
+                accessibilityLabel={nameOf(place)}
+                accessibilityState={{ selected: position === viewedIndex }}
               >
-                <Text style={[styles.chipText, index === viewedIndex && styles.chipTextViewed]}>{cardZones[index]}</Text>
+                <Text style={[styles.chipText, position === viewedIndex && styles.chipTextViewed]}>{chipOf(place)}</Text>
               </Pressable>
             ))}
-            {Array.from({ length: props.extra }, (_, i) => {
-              const index = drawn.length + i;
-              return (
-                <Pressable
-                  key={`extra-${i}`}
-                  style={({ pressed }) => [styles.chip, index === viewedIndex && styles.chipViewed, pressed && PRESSED]}
-                  onPress={() => props.onView(index)}
-                  accessibilityRole="button"
-                  accessibilityLabel={props.extraLabel}
-                  accessibilityState={{ selected: index === viewedIndex }}
-                >
-                  <Text style={[styles.chipText, index === viewedIndex && styles.chipTextViewed]}>{props.chipLabel}</Text>
-                </Pressable>
-              );
-            })}
             {pending.map((zone, index) => (
               <View
                 key={`pending-${index}`}
@@ -991,14 +1059,10 @@ function OneAtATime(props: {
           )}
         </View>
       )}
-      {viewedExtra ? (
-        <View style={slot}>
-          <View style={styles.drawn}>{props.renderExtra(viewedIndex - drawn.length)}</View>
-        </View>
-      ) : viewedId ? (
+      {viewed ? (
         <View style={slot}>
           <Animated.View style={[styles.drawn, isLast && { transform: [{ perspective: 800 }, { rotateY: props.flip }] }]}>
-            {props.renderCard(viewedId, viewedIndex)}
+            {props.renderSlot(viewed, viewedIndex)}
           </Animated.View>
         </View>
       ) : (

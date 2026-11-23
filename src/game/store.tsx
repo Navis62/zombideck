@@ -15,7 +15,7 @@ import { DEFAULT_THREAT, parseThreat, type Threat } from '@/data/threat';
 import { bossCopiesOf, bossIdsOf, cardIdsOf, UNIVERSES, withCoreBox } from '@/data/universes';
 import { deviceLanguage } from '@/i18n/device-language';
 import { isLanguage, type Language, type Translate, translator } from '@/i18n/translations';
-import { ALL_PARTS, gameKey, isValidSave, removeTrejo, UNIVERSE_IDS, upgradeSave } from './engine';
+import { ALL_PARTS, gameKey, isValidSave, removeTrejo, trejoOnBoardAt, UNIVERSE_IDS, upgradeSave } from './engine';
 import type { DeckParts, GameState, TrejoChoice, TrejoStage, UniverseId } from './types';
 
 /** The single save of the first betas: no longer read, removed at startup. */
@@ -65,6 +65,8 @@ type AppContextValue = {
   trejoStage: TrejoStage;
   /** What a Trejo card on display resolved to: 1 Activate, 2 Transform, 3 Spawn; undefined for any other card. */
   trejoChoice: (cardId: string) => TrejoChoice | undefined;
+  /** Whether the Trejobomination counts as an Abomination on the board for this card of the last Spawn step (see `trejoOnBoardAt`). */
+  trejoOnBoard: (cardId: string) => boolean;
   /** The players killed the Trejobomination (undoable). */
   removeTrejo: () => void;
   language: Language;
@@ -196,6 +198,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const trejoStage: TrejoStage = game?.piles.trejo.stage ?? 'none';
   const trejoChoice = useCallback((cardId: string) => game?.piles.trejo.resolved[cardId], [game]);
+  const trejoOnBoard = useCallback(
+    (cardId: string) => (game ? trejoOnBoardAt(game.piles.trejo, game.piles.drawn)(cardId) : false),
+    [game],
+  );
   const removeTrejoFromBoard = useCallback(() => setGame((current) => (current ? removeTrejo(current) : current)), [setGame]);
 
   const chooseLanguage = useCallback((next: Language) => {
@@ -266,6 +272,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setGame,
       trejoStage,
       trejoChoice,
+      trejoOnBoard,
       removeTrejo: removeTrejoFromBoard,
       language,
       setLanguage: chooseLanguage,
@@ -291,6 +298,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setGame,
       trejoStage,
       trejoChoice,
+      trejoOnBoard,
       removeTrejoFromBoard,
       language,
       chooseLanguage,

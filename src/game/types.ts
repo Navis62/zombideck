@@ -507,6 +507,11 @@ export type Revealed = {
    * was removed): `boss` is empty and `activates`, `activated` are absent. Not the same as every boss being out.
    */
   none?: true;
+  /**
+   * The Trejobomination (Danny Trejo, `Piles.trejo`) also gets the Extra Activation of this Abomination card: alone, with
+   * `boss` empty, or beside `activates` (named boss) or a newly revealed boss. Abomination groups only.
+   */
+  trejo?: true;
   /** Bosses of this group (`boss`, `along`, `gained`) the players removed during the Spawn step: they are already in the discard. */
   gone?: string[];
 };
@@ -553,7 +558,7 @@ export type Piles = {
 };
 
 export type GameState = {
-  version: 8;
+  version: 9;
   /** Boss decks in play and how their bosses arrive; `null`: the bosses are cards of the Zombie deck. */
   bossRule: BossRule | null;
   /** The game's era: its sets, its cards and the menu it is resumed from. */
