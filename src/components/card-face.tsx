@@ -298,7 +298,7 @@ const MODERN_TEXT_LIFT = 0.08;
 const MODERN_NUMBER = { top: 4, right: 11, size: 11, opacity: 0.55 };
 const MODERN_BADGE = { top: 19, right: 11 };
 /** The expansion symbol, over the banner's right end above the first label: design px from the top and the right edge, and its size share. */
-const MODERN_SYMBOL = { top: 54, right: 7, size: 56, shrink: 0.55 };
+const MODERN_SYMBOL = { top: 54, right: 7, size: 56, shrink: 0.6875 }; // shrink 0.55 x 1.25
 /**
  * Count labels, in design px. The four of them: top of the first (Red), distance from one to the next, height of a
  * label and of the current one (taller, and starting further left); then the lone label of the "current level only"
@@ -307,12 +307,15 @@ const MODERN_SYMBOL = { top: 54, right: 7, size: 56, shrink: 0.55 };
  * past the card's edge, `shadow` the thin dark line under a label.
  */
 const MODERN_LABEL = {
-  top: 91,
+  top: 94, // 91 + half of the 6 px the plates lost, so each plate keeps its centre
   pitch: 44,
-  height: 30,
-  activeHeight: 40,
-  singleHeight: 62,
-  left: { count: 154, activeCount: 142, singleCount: 104, sentence: 107, activeSentence: 97, singleSentence: 60 },
+  height: 24, // 30 x 0.8
+  activeHeight: 32, // 40 x 0.8
+  singleHeight: 49.6, // 62 x 0.8
+  singleDrop: 60, // the lone label sits this much below the middle of the stack, lower on the picture
+  // Count plates: 230 - 0.7 x (230 - old left), 30 % narrower than before (old lefts 154, 142, 104). Sentence plates
+  // (Extra Activation) keep their full width: "Todos los Caminantes descarnados" must stay readable on two lines.
+  left: { count: 176.8, activeCount: 168.4, singleCount: 141.8, sentence: 107, activeSentence: 97, singleSentence: 60 },
   torn: 0.85,
   veil: 0.8,
   overflow: 40,
@@ -926,7 +929,7 @@ function ModernLabel({ spec, slot, active }: { spec: ModernLabelSpec; slot: numb
   const lefts = MODERN_LABEL.left;
   const left = wide ? (alone ? lefts.singleSentence : active ? lefts.activeSentence : lefts.sentence) : alone ? lefts.singleCount : active ? lefts.activeCount : lefts.count;
   // A label is centred on its slot; the lone one on the middle of the stack of four.
-  const centre = MODERN_LABEL.top + (alone ? 1.5 : slot) * MODERN_LABEL.pitch + MODERN_LABEL.height / 2;
+  const centre = MODERN_LABEL.top + (alone ? 1.5 : slot) * MODERN_LABEL.pitch + MODERN_LABEL.height / 2 + (alone ? MODERN_LABEL.singleDrop : 0);
   const paper = wide ? MODERN_PAPER.activation : MODERN_PAPER.count;
   const k = height / paper.height;
   // The white ends where the torn piece shows `torn` of the label's height inside the card.
@@ -962,7 +965,8 @@ function ModernLabel({ spec, slot, active }: { spec: ModernLabelSpec; slot: numb
       </View>
       <View style={{ position: 'absolute', left: 0, right: 0, top: '100%', height: MODERN_LABEL.shadow * s, backgroundColor: MODERN_COLORS.labelShadow }} />
       <View style={[styles.modernLabelText, { width: whiteWidth * s, paddingHorizontal: wide ? MODERN_SENTENCE.inset * s : 0 }]}>
-        <Text style={textStyle} numberOfLines={wide ? MODERN_SENTENCE.lines : 1} adjustsFontSizeToFit minimumFontScale={0.5}>
+        {/* A SPAM letter is taller than its label on purpose: Android's shrink-to-fit would shrink it to a dot, and one letter always fits across. */}
+        <Text style={textStyle} numberOfLines={wide ? MODERN_SENTENCE.lines : 1} adjustsFontSizeToFit={!spec.letter} minimumFontScale={0.5}>
           {wide || spec.letter ? (
             (spec.letter ?? sentence)
           ) : (

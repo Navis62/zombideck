@@ -41,6 +41,10 @@ type OfficialArt = {
   focus?: number;
   /** The picture ends flat (cut at the waist or the knees): on a Modern card it stands on the bottom edge instead of floating. */
   bust?: true;
+  /** Widest this figure gets on a Modern card, as a share of the card's width, instead of CARD_FIGURE.width: a wide group runs under the count labels on the right to stand taller. */
+  cardWidth?: number;
+  /** Left edge of this figure on a Modern card, as a share of the card's width (negative: cut on the left), to bring a wide group's right end into the card. */
+  cardLeft?: number;
 };
 
 /** Generic horde behind every Modern official cut-out (the drawings keep the background they were printed with). */
@@ -106,7 +110,7 @@ const MODERN_OFFICIAL = {
   leviathan: { source: require('../../assets/modern/abominations/leviathan-official.png'), ratio: 0.813, cutout: true, whole: true },
   alphaVampire: { source: require('../../assets/modern/abominations/alpha-vampire-official.png'), ratio: 0.431, cutout: true, whole: true },
   sillyWalker: { source: require('../../assets/modern/zombies/silly-walker-official.png'), ratio: 0.793, cutout: true, whole: true },
-  inquisitor: { source: require('../../assets/modern/zombies/inquisitor-official.png'), ratio: 1.159, cutout: true, whole: true, bust: true },
+  inquisitor: { source: require('../../assets/modern/zombies/inquisitor-official.png'), ratio: 1.159, cutout: true, whole: true, bust: true, cardWidth: 1.2, cardLeft: -0.12 },
   seeker: { source: require('../../assets/modern/zombies/seeker-official.png'), ratio: 0.666, cutout: true },
   hobomination: { source: require('../../assets/modern/abominations/hobomination-official.png'), ratio: 0.765, cutout: true },
   abominawild: { source: require('../../assets/modern/abominations/abominawild-official.png'), ratio: 0.699, cutout: true },
@@ -527,7 +531,7 @@ const CARD_FIGURE = {
   /** Height factor of a figure when the current Danger Level is shown alone ("the picture larger"), head kept in place. */
   largerZoom: 1.12,
   /** Where the middle of a figure narrower than its room stands. */
-  centerX: 0.38,
+  centerX: 0.29, // was 0.38: 9 % of the card's width further left, clear of the count labels (never past the left edge, see cardCutoutLayout)
 };
 /**
  * A Modern drawing (no official cut-out) is this much wider than the card so that its printed border falls outside; the
@@ -571,13 +575,13 @@ function cardCutoutLayout(art: OfficialArt, box: { width: number; height: number
   const top = CARD_FIGURE.top * box.height;
   const bottom = box.height * (1 - reserve + (reserve > 0 ? 0 : CARD_FIGURE.feetBleed));
   const room = bottom - top;
-  const maxWidth = box.width * (frame.larger ? CARD_FIGURE.widthLarger : CARD_FIGURE.width);
+  const maxWidth = box.width * Math.max(art.cardWidth ?? 0, frame.larger ? CARD_FIGURE.widthLarger : CARD_FIGURE.width);
   const height = Math.min(room * (frame.larger ? CARD_FIGURE.largerZoom : 1), maxWidth / art.ratio);
   const width = height * art.ratio;
   return {
     width,
     height,
-    left: Math.max(0, Math.min(box.width - width, box.width * CARD_FIGURE.centerX - width / 2)),
+    left: art.cardLeft !== undefined ? box.width * art.cardLeft : Math.max(0, Math.min(box.width - width, box.width * CARD_FIGURE.centerX - width / 2)),
     // A figure that fills its width before its height (a wide group, a beast) is centred in the room it has; one cut flat stands on its bottom.
     top: height < room ? top + (room - height) / (art.bust ? 1 : 2) : top,
   };
