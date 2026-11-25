@@ -379,7 +379,7 @@ export const cs: Record<TranslationKey, string> = {
   'zombie.runner.other': 'Běžci',
   'zombie.fatty.other': 'Tlusťoši',
   'zombie.abomination.other': 'Zrůdy',
-  // The zombie names in a Rush title, as printed ("Horda chodců": the Czech rulebook names the Rush cards "Horda").
+  // Zombie names in a Rush title ("Horda chodců": the Czech rulebook calls Rush cards "Horda").
   'zombie.walker.rush': 'chodců',
   'zombie.fatty.rush': 'tlusťochů',
   'zombie.toxicWalker.rush': 'toxických chodců',
@@ -838,7 +838,6 @@ export const cs: Record<TranslationKey, string> = {
   'card.moldSpawnRule': '{count} {zombies} v každé aktivní zóně Mold. Pokud není žádná aktivní zóna Mold, vytáhněte jinou kartu.',
   'card.pitSpawnTitle': 'Oživení Pit: {count} {zombies}!',
   'card.pitSpawnRule': '{count} {zombies} v každé otevřené zóně Pit.',
-  // Invader expansions: set names are product names kept in English; the new Xenos keep their English names (no known edition), with the official Worker / Driller terms where the language has them; named Abominations keep their names after the language’s Abomination word
   'set.blackOps': 'Black Ops',
   'set.darkSideExtras': 'Dark Side Extras',
   'set.civilianExtras': 'Civilian Extras',
@@ -889,7 +888,6 @@ export const cs: Record<TranslationKey, string> = {
   'zombie.samuraiEddieAbomination.other': 'Zrůda Samurai Eddie',
   'zombie.bassistEddieAbomination.other': 'Zrůda Bassist Eddie',
   'zombie.bountyHunterEddieAbomination.other': 'Zrůda Bounty Hunter Eddie',
-  // Western (Zombicide: Undead or Alive)
   'universe.western': 'Western',
   'universe.westernGame': 'Zombicide: Undead or Alive',
   'menu.taglineWestern': 'Neoficiální pomocník pro Zombicide: Undead or Alive',

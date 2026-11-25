@@ -3,7 +3,6 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CARD_COLORS } from '@/theme';
 import type { UniverseId } from '@/game/types';
 
-/** One card back per universe: a new UniverseId must pick its own. */
 const CARD_BACKS: Record<UniverseId, number> = {
   modern: require('../../assets/modern/cards/back-spawn.jpg'),
   fantasy: require('../../assets/fantasy/cards/back-spawn.jpg'),
@@ -11,7 +10,7 @@ const CARD_BACKS: Record<UniverseId, number> = {
   western: require('../../assets/western/cards/back-western.jpg'),
 };
 
-/** Card width the badge was drawn for; it grows with the card on tablets. */
+/** Card width the badge was drawn for; it scales with the card. */
 const DESIGN_WIDTH = 230;
 
 export function CardBack(props: { count: number; label: string; width: number; universe: UniverseId; onPress: () => void }) {
@@ -23,7 +22,6 @@ export function CardBack(props: { count: number; label: string; width: number; u
       accessibilityRole="button"
       accessibilityLabel={props.label}
     >
-      {/* Two offset edges make it read as a stack of cards. */}
       <View style={[styles.edge, styles.edgeFar]} />
       <View style={[styles.edge, styles.edgeNear]} />
       <View style={styles.back}>

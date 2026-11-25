@@ -1,8 +1,7 @@
 import type { CardSet, ExtraZombie, RushZombie, SpawnCounts, ZombieCard, ZombieType } from '../game/types';
 import { hardBetween, numberOf } from './card-number.ts';
 
-// Transcribed from the physical cards; ids follow the numbers printed on them.
-// Counts are in Danger Level order: blue, yellow, orange, red (the cards print them top-down, red first).
+// `counts` run Blue, Yellow, Orange, Red; the printed cards list Red first.
 
 const spawn = (setId: string, id: string, zombie: ZombieType, counts: SpawnCounts): ZombieCard => ({
   id: `${setId}-${id}`,
@@ -32,7 +31,6 @@ const hardNumbers =
   (...numbers: number[]) =>
   (card: ZombieCard) =>
     numbers.includes(numberOf(card));
-/** Hard from this many zombies at the Blue Danger Level. */
 const hardFromBlue = (count: number) => (card: ZombieCard) =>
   (card.kind === 'spawn' || card.kind === 'rush') && card.counts[0] >= count;
 
@@ -381,7 +379,6 @@ export const CARD_SETS: readonly CardSet[] = [
       special(PYTHON, '214', 'spam'),
     ],
   },
-  // Boxes that only supply named Abominations (see `MODERN_ABOMINATIONS`): they add no card to the Zombie deck.
   abominationBox('theBoys'),
   abominationBox('supernatural'),
   abominationBox('ghostbusters'),
@@ -391,5 +388,4 @@ export const CARD_SETS: readonly CardSet[] = [
   abominationBox('darkNightsMetal'),
 ];
 
-/** Expansions and promos the players switch on for the next game. */
 export const OPTIONAL_SETS: readonly CardSet[] = CARD_SETS.filter((set) => set.optional);

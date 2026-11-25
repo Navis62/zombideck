@@ -10,13 +10,11 @@ import { useApp } from '@/game/store';
 import type { TranslationKey } from '@/i18n/translations';
 import { COLORS, PRESSED } from '@/theme';
 
-/** Expansions and promos switched on for the next game, two to a row so the whole list fits in landscape. */
 export default function ExpansionsScreen() {
   const { universe, expansions, setExpansions, t } = useApp();
   const current = UNIVERSES[universe];
   const { optionalSets } = current;
   const allEnabled = switchableSets(current).every((set) => expansions.includes(set.id));
-  // The core boxes stand apart from the expansions: a section and a frame of their own, the same in every universe.
   const coreSets = optionalSets.filter((set) => set.core);
   const otherSets = optionalSets.filter((set) => !set.core);
 
@@ -82,7 +80,6 @@ const RULE_LABELS: Record<BossRule, { label: TranslationKey; detail: Translation
   fest: { label: 'threat.fest', detail: 'threat.festDetail' },
 };
 
-/** A row of choices, the one in use outlined. */
 function Choices<T extends string>(props: { options: readonly T[]; selected: T; label: (value: T) => string; onSelect: (value: T) => void }) {
   return (
     <View style={styles.choices}>
@@ -101,10 +98,7 @@ function Choices<T extends string>(props: { options: readonly T[]; selected: T; 
   );
 }
 
-/**
- * How the bosses of the expansions switched on join the game: picked one by one, in decks of their own (White Death
- * and Dead Men Tales). Only for an era whose rulebooks build the deck that way (see `threat.ts`).
- */
+// Only for eras whose rulebooks deal bosses from decks of their own (see `threat.ts`).
 function ThreatOptions() {
   const { universe, expansions, threat, setThreat, t } = useApp();
   // The same boxes the deck is built from: Fort Hendrix keeps the core box's bosses.
@@ -169,10 +163,7 @@ function ThreatOptions() {
   );
 }
 
-/**
- * Two sets per line, in reading order. Explicit lines rather than a wrapping row: percentage widths in a wrapping
- * row fall back to one column on Android.
- */
+// Explicit lines, not a wrapping row: percentage widths in a wrapping row fall back to one column on Android.
 function pairs<T>(items: readonly T[]): T[][] {
   return Array.from({ length: Math.ceil(items.length / 2) }, (_, i) => items.slice(i * 2, i * 2 + 2));
 }
@@ -184,8 +175,7 @@ const styles = StyleSheet.create({
   hint: { flex: 1 },
   muted: { color: COLORS.muted, fontSize: 14 },
   line: { flexDirection: 'row', gap: 8 },
-  // The two cells of a line share its width; they carry no padding, which Yoga would count as a minimum width and
-  // which would widen an odd last set next to its empty cell.
+  // No padding on a cell: Yoga counts it as a minimum width and would widen an odd last set.
   cell: { flex: 1 },
   row: {
     flexGrow: 1,
@@ -199,7 +189,6 @@ const styles = StyleSheet.create({
   },
   rowLabel: { flex: 1, paddingVertical: 8 },
   rowText: { color: COLORS.text, fontSize: 16 },
-  // A core box: gold frame and bolder name, the colour the app uses for what needs a look (`warning`).
   coreRow: { borderWidth: 2, borderColor: COLORS.warning },
   coreText: { fontWeight: '800' },
   coreHeading: { color: COLORS.warning },

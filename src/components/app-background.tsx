@@ -7,25 +7,23 @@ const RUINED_CASTLE = require('../../assets/fantasy/backgrounds/ruined-castle.jp
 const MINING_OUTPOST = require('../../assets/invader/backgrounds/mining-outpost.jpg');
 const DUSTY_TOWN = require('../../assets/western/backgrounds/dusty-town.jpg');
 
-/** One scenery per universe: a new UniverseId must pick its own. */
 const SCENERY: Record<UniverseId, number> = { modern: RUINED_CITY, fantasy: RUINED_CASTLE, invader: MINING_OUTPOST, western: DUSTY_TOWN };
 
-/** Gentle crossfade between two sceneries: long enough to read as a dissolve, short enough not to lag behind the swipe. */
+/** Crossfade between sceneries: long enough to read as a dissolve, short enough not to lag behind the swipe. */
 const FADE_MS = 500;
 /** Past this share of the fade the incoming image is the one the eye sees. */
-const HALF = 0.5;
+const INCOMING_VISIBLE_FROM = 0.5;
 
-// Bundled scenery stays available offline; a scrim preserves foreground contrast.
 export const AppBackground = memo(function AppBackground({ universe, vivid = false }: { universe: UniverseId; vivid?: boolean }) {
-  // `top` fades in over `under`. Layers are derived while rendering, so the new image never shows at a stale opacity.
+  // `top` fades in over `under`; derived during render so the new image never shows at a stale opacity.
   const [layers, setLayers] = useState({ under: universe, top: universe });
   const opacity = useRef(new Animated.Value(1)).current;
   const progress = useRef(1);
   const reduceMotion = useRef(false);
 
   if (universe !== layers.top) {
-    // Changed mid-fade: keep the image that was the most visible underneath, so the picture never snaps to the half-faded one.
-    setLayers({ under: progress.current >= HALF ? layers.top : layers.under, top: universe });
+    // Mid-fade change: keep the more visible image underneath so the picture never snaps.
+    setLayers({ under: progress.current >= INCOMING_VISIBLE_FROM ? layers.top : layers.under, top: universe });
   }
 
   useEffect(() => {

@@ -1,9 +1,6 @@
 import type { ImageSourcePropType } from 'react-native';
 
-/**
- * Blank parts of the printed Invader card (metal frame, title plate, number badge, count tab to tint, rule box,
- * hazard band, background grid), layered by `InvaderFace`. Briefs in docs/art/invader-card-parts-prompts.md.
- */
+// Briefs: docs/art/invader-card-parts-prompts.md.
 export const INVADER_PARTS = {
   frame: require('../../assets/invader/cards/frame.png'),
   titlePlate: require('../../assets/invader/cards/title-plate.png'),

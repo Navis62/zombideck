@@ -47,223 +47,129 @@ import { CARD_COLORS, DANGER_COLORS, FANTASY_COLORS, INVADER_COLORS, MODERN_COLO
 // Printed top-down on the cards, red first.
 const PRINTED_LEVELS = [...DANGER_LEVELS].reverse();
 
-/*
- * The Western cards are the printed cards, scanned (see `westernCardArt`); the app writes over them, at the place and
- * size of the printed text. Every position below was measured on the scans, as a share of the card's width (x) or
- * height (y): the cards are all 311 x 478 px on the sheet, and the counts sit at the same place on every one.
- */
-/** Count labels: top of the first (red) one, height, and distance from one label to the next (y). */
+// Western positions are shares of the card's width (x) or height (y), measured on the 311 x 478 px scans.
 const WESTERN_LABEL_TOP = 0.274;
 const WESTERN_LABEL_HEIGHT = 0.115;
 const WESTERN_LABEL_PITCH = 0.14;
-/** Left edge of the labels (x): the counts of a spawn card, then the longer "All Walkers" of an Extra Activation card. */
 const WESTERN_LABEL_LEFT = { spawn: 0.666, extra: 0.447 } as const;
-/** How far the hand-drawn count label (`WESTERN_PARTS.countLabel`) overlaps the printed one, left of it and above and below (shares of the card). */
+/** Overlap of `WESTERN_PARTS.countLabel` over the printed label (shares of the card). */
 const WESTERN_LABEL_BLEED = { x: 0.008, y: 0.006 };
-/** The only label of the current Danger Level, as many times the printed one's height. */
 const WESTERN_CURRENT_LABEL = 1.25;
-/** Where the cream paper of a label ends and its coloured strip starts (x); the strip runs off the card's edge. */
+/** x where the cream paper ends; the coloured strip runs off the card's edge. */
 const WESTERN_PAPER_END = 0.875;
-/**
- * What is written on the plank (or panel) of each kind of card: the title box (y of its top and height, x of its left
- * edge and width) with its underlines (y of their top and height), the number, and the rule text under the card.
- */
 type WesternLayout = {
-  /** The plank behind the title, measured on the scans (y of its bottom edge, as a share of the card's height). */
   plank: { part: 'header' | 'footer'; top: number; bottom: number };
   title: { top: number; height: number; left: number; width: number };
-  /** The title is centred (the heading of the text card) rather than flush left. */
   centered?: boolean;
-  /** A two-line title in the red ink of the Extra Activation cards. */
+  /** Two-line title in the red ink of the Extra Activation cards. */
   extra?: boolean;
 };
-/**
- * The header plank of the spawn cards ends at 18.5 % of the card (its wavy lower edge), the Extra Activation one, which
- * holds two lines, at 21.5 %; the title sits between the plank's red stroke (14 % of its height) and the double rule
- * it carries (75 %). On the text card the panel of wood starts at 50 % and runs to the bottom.
- */
+// Header planks end at 18.5 % (spawn) and 21.5 % (extra, two lines); the title sits between the plank's red stroke (14 %) and its double rule (75 %).
 const WESTERN_LAYOUTS: Record<'spawn' | 'extra' | 'text', WesternLayout> = {
   spawn: { plank: { part: 'header', top: 0, bottom: 0.185 }, title: { top: 0.042, height: 0.096, left: 0.05, width: 0.9 } },
   extra: { plank: { part: 'header', top: 0, bottom: 0.215 }, title: { top: 0.045, height: 0.115, left: 0.05, width: 0.9 }, extra: true },
   text: { plank: { part: 'footer', top: 0.5, bottom: 1 }, title: { top: 0.545, height: 0.07, left: 0.07, width: 0.86 }, centered: true },
 };
-/**
- * Width of a capital letter in each Western face, in em (the word fit shrinks a title until its longest word fits):
- * the widest title words measured in the browser ("DEADHORN" 0.77 in Rye, 0.69 in Zilla Slab, "ДОПОЛНИТЕЛЬНЫЙ" 0.74
- * in PT Serif), plus about 5 % for the native text renderers.
- */
+// Measured in the browser ("DEADHORN" 0.77 in Rye, 0.69 in Zilla Slab, "ДОПОЛНИТЕЛЬНЫЙ" 0.74 in PT Serif), plus 5 % for native renderers.
 const WESTERN_CAPS_EM: Record<string, number> = { Rye: 0.81, 'ZillaSlab-Bold': 0.73, 'PTSerif-Bold': 0.78 };
-/** Size of a one-line printed title (`westernPrintedTitle`), in design px. */
 const WESTERN_TITLE_SIZE = 22;
-/** Whether a printed title fits on one line of its box (`width`, share of the card) at its full size. */
 const westernOneLine = (title: string, font: string, width: number) =>
   title.length * WESTERN_CAPS_EM[font] * WESTERN_TITLE_SIZE <= width * DESIGN_WIDTH;
-/** Width of a letter of the count labels' sentences ("All Walkers"), in em, as tuned for them (`WesternLabel`). */
 const WESTERN_LABEL_EM: Record<string, number> = { Rye: 0.95 * 0.7, 'ZillaSlab-Bold': 0.78 * 0.7, 'PTSerif-Bold': 0.82 * 0.7 };
-/**
- * Number of every card, in the top right corner above the title (x of its left edge and width, y of its top and height):
- * the title has the whole width of the plank under it, whichever of its lines is the longest.
- */
 const WESTERN_NUMBER = { left: 0.7, width: 0.25, top: 0.006, height: 0.036 };
-/**
- * The "i" that says there is a rule on the back, at the right: just under a header plank (the title has the whole
- * width of the plank), or near the top of a card whose plank is at the bottom.
- */
 const WESTERN_BADGE = { right: 0.035, top: 0.12, belowPlank: 0.012 };
-/** Rule text of the text card, and the "One Extra Activation" line of an Extra Activation card (y of top and height). */
 const WESTERN_RULE_TEXT = { top: 0.665, height: 0.32, left: 0.07, width: 0.86 };
 const WESTERN_EXTRA_FOOTER = { top: 0.89, height: 0.075 };
-/** The wooden footer of an Extra Activation card, under the labels (y of its top and height). */
 const WESTERN_EXTRA_PLANK = { top: 0.865, height: 0.135 };
-/** A sentence longer than this goes on two lines, in a smaller size ("Tous les Rôdeurs"). */
 const WESTERN_LABEL_ONE_LINE_CHARS = 10;
-/*
- * Whether a rule fits on the wooden panel of a Western card is decided outside the layout (`cardHasBack` tells the table
- * whether the card has a back), so it is estimated: the lines that fit in the panel at the smallest readable size
- * (`westernPanelText`: 10 design px on a 12.5 px line) times the characters of a line, with a margin for long words.
- */
+// A rule's fit is decided outside the layout (`cardHasBack`), so it is estimated from the smallest readable size (10 design px on a 12.5 px line).
 const WESTERN_PANEL_LINE = 12.5;
 const WESTERN_PANEL_CHARS_PER_LINE = 34;
-/** Vertical padding of the panel text, and the height of a header holding a two-line name and "Abomination". */
 const WESTERN_PANEL_PADDING = 12;
 const WESTERN_HEADER_TALLEST = 84;
 const panelChars = (height: number) => Math.max(0, Math.floor((height - WESTERN_PANEL_PADDING) / WESTERN_PANEL_LINE)) * WESTERN_PANEL_CHARS_PER_LINE;
-/** Characters a rule may have to stay on the front: under the window of a named Abomination, or on the text card. */
 const westernPanelChars = (boss?: WesternAbomination) => {
   const cardHeight = (DESIGN_WIDTH * 88) / 63;
   return panelChars(boss ? cardHeight - WESTERN_HEADER_TALLEST - DESIGN_WIDTH / westernWindow(boss).ratio : cardHeight * WESTERN_RULE_TEXT.height);
 };
-/**
- * Whether the rule of a Western card stays on its front. A named Abomination's panel shows its printed rule alone (its
- * name is the title); the text card's panel shows its whole text.
- */
+// A named Abomination's panel shows its printed rule alone; the text card's panel shows its whole text.
 const westernFits = (footer: string, t: Translate, boss?: WesternAbomination) =>
   (boss ? t(`card.${boss}Rule`) : footer).length <= westernPanelChars(boss);
-/** The named Western Abomination a card or a hand-drawn reveal shows, if any. */
 const westernBossOf = (card: ZombieCard, reveal?: Reveal): WesternAbomination | undefined => {
   const named = revealedAbomination(card, reveal);
   return named && isWesternAbomination(named) ? named : undefined;
 };
 
-/** A cream halo round the ink of a Western plank, so the letters stand out from the wood grain. */
 const westernGlow = (s: number) => ({ textShadowColor: WESTERN_COLORS.inkGlow, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 * s });
 
-/**
- * Room kept at the bottom of a card back's scrolling text where the round "enlarge" button (zoom-button.tsx: 30 px plus a
- * 6 px inset) covers the card, plus a small gap. In screen pixels, not scaled with the card: the button keeps its size
- * on a small card, so a share of the card width would leave it over the last line.
- */
+// Screen px, not scaled with the card: the enlarge button (zoom-button.tsx: 30 px + 6 px inset) keeps its size on a small card.
 const ZOOM_BUTTON_CLEARANCE = 30 + 6 + 4;
-/** An image filling its parent: `absoluteFill` alone would leave it at its own pixel size on the web. */
+// `absoluteFill` alone leaves an image at its own pixel size on web.
 const FILL = { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' } as const;
 
 /** Card width the sizes below were drawn for (a phone in landscape); the card scales from it. */
 const DESIGN_WIDTH = 230;
-/*
- * The printed Black Plague Zombie card, measured on the scan of "Standard Zombies Invasion #01" (590 x 897 px): the
- * parchment runs edge to edge at the top, with the title plate and, on its lower edge, the iron number bar; under them
- * four Danger Level strips touch one another on a red ground that shows only as a thin band down the sides and under
- * the last strip. Positions are shares of the card (see the fantasy* styles in `makeStyles`); the parts of
- * `fantasy-parts.ts` keep their own ratio, the drawn fallbacks fill the same boxes.
- */
-/** Width over height of a painted flame (260 x 200), the plate (820 x 200) and the bar (420 x 70). */
+// Black Plague card, measured on the scan of "Standard Zombies Invasion #01" (590 x 897 px); positions are shares of the card (see the fantasy* styles in `makeStyles`).
+// Part files: flame 260 x 200, plate 820 x 200, bar 420 x 70.
 const FANTASY_FLAME_RATIO = 260 / 200;
 const FANTASY_PLATE_RATIO = 820 / 200;
 const FANTASY_BAR_RATIO = 420 / 70;
-/** The scroll: its size and the width of each rolled end (in pixels of the file), which keep their proportions. */
+// Scroll file size and the width of each rolled end, in px.
 const FANTASY_SCROLL = { width: 820, height: 300, roll: 90 };
-/** Radius of the card corners, about 4 % of the card width as printed. */
 const FANTASY_RADIUS = 10;
-/** Width of a flame: about a third of the strip, as printed. */
 const FANTASY_FLAME_WIDTH = '33%';
-/** How far a strip slides under the one above it, in card design units, so that their torn edges meet with no red between. */
+/** Lets the torn edges of strips meet with no red between (design units). */
 const FANTASY_ROW_OVERLAP = 3;
-/** Average width of a character of the italic names, as a share of the font size: narrower than the default bold one. */
 const FANTASY_CHAR_EM = 0.5;
-/** The same for the title face. */
 const FANTASY_TITLE_CHAR_EM = 0.55;
-/** The same for a name in the narrow tag of the one big row, where a word must never break (Zilla Slab runs wider). */
+// Tag names must never break a word; Zilla Slab runs wider.
 const FANTASY_TAG_CHAR_EM = 0.66;
 
-/**
- * True inside a card whose own button already reads it all out (see CardButton in game.tsx): the faces then hide their
- * inner nodes from TalkBack and VoiceOver, so the card is one focus stop, with no duplicate to swipe through.
- */
+/** True inside a card whose own button already reads it out: the faces hide their nodes so the card is one focus stop. */
 export const CardAnnounced = createContext(false);
-/** The props that take a view and everything in it out of the screen reader; touches are unaffected. */
 export const HIDDEN_FROM_READER = { accessible: false, accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' } as const;
 
-/*
- * Card fronts follow the printed ones (Invader rulebook, pages 28 and 29). Positions are shares of the card's width
- * and height, measured on the printed card: the four count tabs (Red, Orange, Yellow, Blue from the top) lie over the
- * picture on the right and run out past the card edge; Extra Activation tabs start further left to hold a sentence.
- */
-/** Top of each count tab, Red first, in % of the card height. */
+// Positions follow the printed Invader card (rulebook pp. 28-29), in % of the card.
 const INVADER_TAB_TOPS = [28, 44, 59, 74];
-/** Top of the lone tab of the "current level" display, in % of the card height: the middle of where the four were. */
 const INVADER_SINGLE_TAB_TOP = 46;
-/**
- * Left edge and width of a count tab, in % of the card width (the tab is cut by the card edge). Its height follows from
- * `INVADER_TAB_RATIO`, so the hexagon is never stretched: tabs are placed by their top only.
- */
+// Tab height follows INVADER_TAB_RATIO so the hexagon is never stretched; the tab is cut by the card edge.
 const INVADER_TAB_LEFT = 68;
 const INVADER_TAB_WIDTH = 46;
-/** The same for an Extra Activation tab ("All Workers", "No one"): wider and starting further left, hence taller. */
 const INVADER_WIDE_TAB_LEFT = 55;
 const INVADER_WIDE_TAB_WIDTH = 59;
-/** The same for the lone tab of the "current level" display, larger than the four. */
 const INVADER_SINGLE_TAB_LEFT = 62;
 const INVADER_SINGLE_TAB_WIDTH = 56;
-/** Width over height of count-tab.png (520 x 150). */
+// count-tab.png is 520 x 150.
 const INVADER_TAB_RATIO = 520 / 150;
-/** Width over height of number-badge.png (170 x 110), and the badge width in % of the card width. */
+// number-badge.png is 170 x 110.
 const INVADER_BADGE_RATIO = 170 / 110;
-/**
- * The rule is set as large as fits its box: web ignores adjustsFontSizeToFit, so the size comes from the text length.
- * Text space of the box in design units squared (about 199 x 92, minus 10 % spare), width of a letter in em (Barlow
- * Condensed Italic, then Play for Cyrillic), line height over font size, and the largest and smallest sizes.
- */
+// Web ignores adjustsFontSizeToFit, so the rule size comes from the text length: box area (~199 x 92 design units, minus 10 %) and letter width in em (Barlow Condensed Italic, Play for Cyrillic).
 const INVADER_RULE_AREA = 16000;
 const INVADER_RULE_CHAR_EM = { latin: 0.52, cyrillic: 0.62 };
 const INVADER_RULE_LINE = 1.1;
 const INVADER_RULE_SIZE = { max: 14, min: 7 };
-/** Lines of a rule on native, where the text shrinks to fit (more than the box holds at the smallest size). */
 const INVADER_RULE_LINES = 12;
-/** Inset of the rule text inside the box, in % of the box: clear of the rim of text-box.png, which is opaque to its edges. */
+/** Clear of the opaque rim of text-box.png. */
 const INVADER_RULE_INSET = '4%';
-/** The count tint over the white tab keeps its bevel visible; an inactive tab is a little dimmer than the current one. */
+// Keeps the bevel of the white tab visible.
 const INVADER_TAB_TINT_OPACITY = 0.76;
 const INVADER_TAB_DIM_OPACITY = 0.85;
-/** Veils over the card: the red backdrop over the navy grid, and over the picture (the official renders sit on navy). */
 const INVADER_BACKDROP_OPACITY = 0.88;
 const INVADER_ART_VEIL_OPACITY = 0.4;
-/**
- * The faded stamp of a zombie on a Fantasy Danger Level row, as shares of the row: it was 22 % wide with 6 % above and
- * below, too small. Now 26 % wide with 2 % margins (about +10 % taller, +18 % wider); the text cell gives up the same
- * width on the right so the count and name stay clear of it.
- */
 const FANTASY_STAMP = { width: '26%', margin: '2%', right: '1.5%', cellRight: '25%' } as const;
-/** Shadow behind a count so it reads on the pale tab, and how far its font may shrink on native. */
 const INVADER_COUNT_SHADOW_RADIUS = 2;
 const INVADER_COUNT_MIN_SCALE = 0.45;
 const INVADER_TITLE_MIN_SCALE = 0.5;
-/** Gap between the hexagon of a wide tab and the sentence, and the width of the sentence (the part of the bar still inside the card). */
+/** The part of the bar still inside the card. */
 const INVADER_ACTIVATION_WIDTH = '44%';
-/** Width of a capital of Barlow Condensed in em, for an Extra Activation sentence that must not break a word. */
 const INVADER_ACTIVATION_CHAR_EM = 0.6;
-/** Width of an uppercase letter of Play (Cyrillic titles), in em: wider than Barlow Condensed, so a long word shrinks sooner. */
 const INVADER_CYRILLIC_CHAR_EM = 0.85;
-/** Characters that fit on the two lines of the title plate at full size (web ignores adjustsFontSizeToFit): Latin, Cyrillic. */
+/** Characters on the two lines of the title plate at full size (web has no shrink-to-fit). */
 const INVADER_TITLE_CAPACITY = { latin: 34, cyrillic: 22 };
-/**
- * Uppercase Barlow Condensed has no descenders, so its capitals sit below the middle of their line box: the block is
- * lifted by this share of the font size (measured on the web preview, about 2 px on a 31 px title) to centre them.
- */
+/** Capitals of uppercase Barlow Condensed sit low (no descenders); lifted by this share of the font size (~2 px on a 31 px title). */
 const INVADER_TITLE_LIFT = 0.08;
-/** Smallest share of the title size a long title is shrunk to. */
 const INVADER_MIN_TITLE_SCALE = 0.6;
 
-/** The Modern kinds and what each is printed with: the banner, and (Rush, Extra Activation, Abomination) the footer band. */
 type ModernKind = 'spawn' | 'rush' | 'extra' | 'abomination';
 const MODERN_HEADERS: Record<ModernKind, ImageSourcePropType> = {
   spawn: MODERN_PARTS.headerSpawn,
@@ -273,88 +179,56 @@ const MODERN_HEADERS: Record<ModernKind, ImageSourcePropType> = {
 };
 const MODERN_FOOTERS = { rush: MODERN_PARTS.footerRush, extra: MODERN_PARTS.footerExtra, abomination: MODERN_PARTS.footerAbomination };
 
-/** One printed Danger Level: a count, on an Extra Activation card a sentence ("All Walkers"), on a SPAM card a letter (the same at every level). */
 type ModernLabelSpec = { level: DangerLevel; count?: number; sentence?: string; letter?: string };
 
-/** The text panel of a Trejo or SPAM card, at the bottom: its colour, its ink, an optional heading and its lines; `spam` lays it out left of the four letters, over the band with white dashes. */
-type ModernBody = { background: string; ink: string; heading?: string; lines: string[]; spam?: boolean; /** The printed SPAM Abomination card: yellow dashes under the text, no letters beside it. */ abomination?: boolean; /** Index of the line that applies (the others are dimmed); all lines read the same without it. */ applies?: number };
+// `spam`: left of the four letters, over the white dashes; `abomination`: the printed SPAM Abomination card (yellow dashes, no letters); `applies`: the line not dimmed.
+type ModernBody = { background: string; ink: string; heading?: string; lines: string[]; spam?: boolean; abomination?: boolean; applies?: number };
 
-/*
- * The Modern card, rebuilt from the printed 2nd Edition one (references in .art-sources/modern/references/): the picture
- * runs edge to edge under everything, the banner lies over its top with its slanted dashes, the four count labels run
- * off the right edge, a footer band closes Rush, Extra Activation and Abomination cards. Sizes are in design px for a
- * card DESIGN_WIDTH (230) wide, 63:88, multiplied by the card scale; positions were measured on the printed cards.
- */
+// Rebuilt from the printed 2nd Edition card (references in .art-sources/modern/references/); design px for a card DESIGN_WIDTH wide, measured on the printed cards.
 const MODERN_CARD_HEIGHT = (DESIGN_WIDTH * 88) / 63;
-/** The title: its box in the banner's black part (above the dashes, 6 to 55 px), the size it starts at, and the share of the width kept free for the number and the "i" on its right. */
+/** Title box in the banner's black part; `reserve` is the width share kept free for the number and the "i". */
 const MODERN_TITLE = { left: 11, top: 5, height: 50, size: 22, reserve: 0.22 } as const;
-/** The title never goes over this many lines nor under this size (design px): it shrinks, it is not cut. */
 const MODERN_TITLE_LINES = 2;
 const MODERN_TITLE_MIN_SIZE = 10;
-/** Width of a capital in em to size a title; Play (Cyrillic) is wider than Barlow Condensed. */
 const MODERN_TITLE_CHAR_EM = { latin: 0.45, cyrillic: 0.75 };
-/** Capitals of Barlow Condensed sit below the middle of their line box: text is lifted by this share of its size. */
 const MODERN_TEXT_LIFT = 0.08;
-/** The number at the top right (design px from the top and the right edge, size, dimness) and the "i" badge under it. */
 const MODERN_NUMBER = { top: 4, right: 11, size: 11, opacity: 0.55 };
 const MODERN_BADGE = { top: 19, right: 11 };
-/** The expansion symbol, over the banner's right end above the first label: design px from the top and the right edge, and its size share. */
-const MODERN_SYMBOL = { top: 54, right: 7, size: 56, shrink: 0.6875 }; // shrink 0.55 x 1.25
-/**
- * Count labels, in design px. The four of them: top of the first (Red), distance from one to the next, height of a
- * label and of the current one (taller, and starting further left); then the lone label of the "current level only"
- * display, and the longer ones of an Extra Activation card. `torn` is the part of a label's height its torn end shows
- * inside the card, `veil` the opacity of a label that is not the current level, `overflow` how far the colour runs
- * past the card's edge, `shadow` the thin dark line under a label.
- */
+const MODERN_SYMBOL = { top: 54, right: 7, size: 56, shrink: 0.6875 };
+// `torn`: share of a label's height its torn end shows; `veil`: opacity of a non-current label; `overflow`: how far the colour runs past the card edge; `shadow`: dark line under a label.
 const MODERN_LABEL = {
-  top: 94, // 91 + half of the 6 px the plates lost, so each plate keeps its centre
+  top: 94,
   pitch: 44,
-  height: 24, // 30 x 0.8
-  activeHeight: 32, // 40 x 0.8
-  singleHeight: 49.6, // 62 x 0.8
-  singleDrop: 60, // the lone label sits this much below the middle of the stack, lower on the picture
-  // Count plates: 230 - 0.7 x (230 - old left), 30 % narrower than before (old lefts 154, 142, 104). Sentence plates
-  // (Extra Activation) keep their full width: "Todos los Caminantes descarnados" must stay readable on two lines.
+  height: 24,
+  activeHeight: 32,
+  singleHeight: 49.6,
+  singleDrop: 60, // below the middle of the stack of four
+  // Sentence plates stay wide: "Todos los Caminantes descarnados" must stay readable on two lines.
   left: { count: 176.8, activeCount: 168.4, singleCount: 141.8, sentence: 107, activeSentence: 97, singleSentence: 60 },
   torn: 0.85,
   veil: 0.8,
   overflow: 40,
   shadow: 2,
 };
-/** Text of a label, as shares of its height: a count, a SPAM letter, the smaller "x" of a count, and the largest and smallest size of a sentence. */
 const MODERN_LABEL_FONT = { count: 0.95, letter: 1.15, x: 0.6, sentence: 0.5, sentenceMin: 0.2 };
-/** A count of two digits is set this much smaller to stay on its white part. */
 const MODERN_TWO_DIGITS = 0.85;
-/** A sentence on a label: its most lines, its line height over its size, and the design px kept free on each side of it. */
 const MODERN_SENTENCE = { lines: 2, line: 1.05, inset: 5 };
-/** Width of a letter of Barlow Condensed (capitals and lowercase) in em, to size the footer text; Play (Cyrillic) is wider. */
 const MODERN_TEXT_CHAR_EM = { latin: 0.44, cyrillic: 0.62 };
-/**
- * Footers: the band is the part at its own ratio, except under four labels, where a tall Abomination band would cover
- * the last one: it is then squashed to this share of the card's height. The text starts at the largest size (design px)
- * that fits its box (web has no shrink-to-fit) and goes down to the smallest; `line` is the line height over the size.
- */
+// Under four labels a tall Abomination band would cover the last one, so it is squashed to this share of the card's height.
 const MODERN_FOOTER = { squashed: 0.2, maxSize: 13, minSize: 7, line: 1.1 };
-/** The Trejo or SPAM text panel: its most share of the card's height, its padding and gap, and its text and heading sizes (design px). */
-const MODERN_BODY = { share: 0.6, paddingX: 10, paddingY: 8, gap: 4, maxSize: 12, minSize: 6, line: 1.2, heading: 0.95, dim: 0.5 }; // dim: opacity of a printed line that does not apply
-/** The SPAM panel: its text is clear of the dashes on the left and at the bottom and of the letters on the right (design px). */
+const MODERN_BODY = { share: 0.6, paddingX: 10, paddingY: 8, gap: 4, maxSize: 12, minSize: 6, line: 1.2, heading: 0.95, dim: 0.5 };
+// Keeps the SPAM text clear of the dashes and the letters.
 const MODERN_SPAM = { letters: ['S', 'P', 'A', 'M'], left: 21, right: 82, bottom: 14 };
-/** Lines of a footer on native, where the text shrinks to fit (more than the band holds at the smallest size). */
 const MODERN_FOOTER_LINES = 6;
 
 type CardStyles = ReturnType<typeof makeStyles>;
 const CardStyle = createContext<{ styles: CardStyles; scale: number }>({ styles: makeStyles(1), scale: 1 });
 
-/**
- * The boss a card revealed from its deck (Dead Men Tales rules), its kind and how it arrives; `boss` is empty when
- * every boss of the deck was already on display.
- */
+/** The boss a card revealed from its deck; `boss` is empty when every boss of the deck was already on display. */
 export type Reveal = {
   kind: BossKind;
   boss: string;
   rule: BossRule;
-  /** Modern Abomination powers: SPAMs set aside, bosses brought along, bosses gained, a choice still to make (Gozer). */
   spam?: readonly string[];
   along?: readonly string[];
   gained?: readonly string[];
@@ -371,36 +245,20 @@ export type Reveal = {
   gone?: readonly string[];
 };
 
-/** The boss a group shows has been removed by the players. */
 export const isGone = (reveal?: Reveal): boolean => !!reveal && isBoss(reveal) && !!reveal.gone?.includes(reveal.boss);
 
-/**
- * Longest text, in characters of the translated string, a card keeps under its picture. Longer, it goes to the back.
- * The footer is drawn at 11 design px, bold, in a 230 px card: about 33 characters a line, so 60 is two lines (the
- * footer is capped at 40% of the card). Counting characters of the current language, not a key, keeps the rule
- * independent of the card size (text and card scale together) and of the language ("Spawn, then activate" stays on
- * the front, the German or Russian long form of the same rule may not).
- */
+// About two lines of footer (11 design px, ~33 characters a line in a 230 px card). Counted on the translated string, so long German or Russian forms go to the back.
 const SHORT_TEXT_MAX_CHARS = 60;
 
-/** A text short enough to stay on the front of the card. */
 const isShort = (text: string) => text.length <= SHORT_TEXT_MAX_CHARS;
 
-/**
- * Average width of a bold capital-heavy character, as a share of the font size (Cyrillic and uppercase run wide). Used
- * to size the longest word of a wide Danger Level so that it never breaks in the middle.
- */
+/** Width of a bold capital-heavy character as a share of the font size (Cyrillic runs wide), to keep the longest word of a wide level on one line. */
 const CHAR_WIDTH_EM = 0.68;
 
-/** Smallest share of its size a text is shrunk to so that its longest word fits (the same floor as `minimumFontScale`). */
+/** Same floor as `minimumFontScale`. */
 const MIN_WORD_FIT = 0.4;
 
-/**
- * A sentence wraps between words but a word must not break: caps the font size so that the longest word of `text`
- * fits the width measured by `onLayout`, less `inset` (padding that the measured box does not account for). Attach
- * `onLayout` to a box whose width does not depend on the text (a stretched box, never one that shrinks to its
- * content), and spread `style` last on the Text. `text` undefined turns the cap off.
- */
+// Caps the font size so the longest word fits the `onLayout` width less `inset`: a word must not break. Attach `onLayout` to a box whose width does not depend on the text; spread `style` last.
 function useWordFit(text: string | undefined, textStyle: StyleProp<TextStyle>, inset: number, charEm: number = CHAR_WIDTH_EM) {
   const [width, setWidth] = useState(0);
   const longest = text ? Math.max(...text.split(/\s+/).map((word) => word.length)) : 0;
@@ -412,14 +270,9 @@ function useWordFit(text: string | undefined, textStyle: StyleProp<TextStyle>, i
   };
 }
 
-/** Width taken by the "+1" Horde badge next to a name: its minimum width and its two margins. */
 const HORDE_BADGE_RESERVE = 30;
 
-/**
- * Zombie or boss name above a count: one word never breaks, several wrap between words, and the text shrinks before
- * it is cut. Without `row` it is stretched across its parent (and measures itself); with `row` it is a pill centred
- * in a row that also holds `badge`, and the row is measured.
- */
+// Without `row` it stretches across its parent and measures itself; with `row` it is a pill in a row that also holds `badge`, and the row is measured.
 function NameLabel(props: { style: StyleProp<TextStyle>; minimumFontScale: number; padding?: number; row?: boolean; badge?: React.ReactNode; text: string; charEm?: number }) {
   const { styles, scale } = useContext(CardStyle);
   const fit = useWordFit(props.text, props.style, ((props.padding ?? 0) * 2 + (props.badge ? HORDE_BADGE_RESERVE : 0)) * scale, props.charEm);
@@ -446,10 +299,7 @@ function NameLabel(props: { style: StyleProp<TextStyle>; minimumFontScale: numbe
 /** A card shows its spawn on the front; a long rule and the boss it revealed are on the back, a short one stays under the picture. */
 export type CardSide = 'front' | 'back';
 
-/**
- * `width` is the width the card is drawn at: text, symbols and Danger Levels grow with it. The front keeps to the spawn
- * (picture, name, count); whatever the card says in words goes to the back.
- */
+// `width` scales text, symbols and Danger Levels.
 export function CardFace({
   card,
   danger,
@@ -467,9 +317,8 @@ export function CardFace({
   /** A Trejo card on display: which of its three printed lines applies (unknown in the discard: all three read the same). */
   trejoOutcome?: TrejoChoice;
   side?: CardSide;
-  /** Taps on the back (its text and header) turn the card over again. */
   onFlip?: () => void;
-  /** The enlarge button sits over the bottom-left corner of this card: the back's text scrolls clear of it, and so does a text panel on the front. */
+/** The enlarge button covers the bottom-left corner. */
   zoomButton?: boolean;
 }) {
   const scale = Math.max(0.5, width / DESIGN_WIDTH);
@@ -483,27 +332,22 @@ export function CardFace({
 
 type CardText = { title: string; footer?: string; spoken: string };
 
-/** The reveal names a boss (neither an exhausted deck nor a deck the game never had). */
 const isBoss = (reveal: Reveal) => reveal.boss !== NO_BOSS && reveal.boss !== NO_DECK;
 
-/** A Necromancer card shows the Necromancer it revealed: its name, picture and rules (an Orc one keeps no Horde banner). */
+// An Orc Necromancer keeps no Horde banner.
 const asRevealed = (card: ZombieCard, reveal?: Reveal): ZombieCard =>
   card.kind === 'necromancer' && reveal?.kind === 'necromancer' && isBoss(reveal)
     ? { ...card, zombie: reveal.boss as FantasyNecromancer }
     : card;
 
-/** A Modern or Western card whose Abomination comes from the Abomination deck (see `bossTrigger`). */
 const callsAbominationDeck = (card: ZombieCard): card is Extract<ModernCard, { kind: 'spawn' }> | Extract<WesternCard, { kind: 'westernAbomination' }> =>
   (card.kind === 'spawn' && card.zombie === 'abomination') || card.kind === 'westernAbomination';
 
-/** The named Abomination a Modern or Western card revealed, to draw in place of the generic one. */
 const revealedAbomination = (card: ZombieCard, reveal?: Reveal): NamedModernAbomination | WesternAbomination | undefined =>
   callsAbominationDeck(card) && reveal?.kind === 'abomination' && isBoss(reveal) && isModernAbomination(reveal.boss) ? reveal.boss : undefined;
 
-/** The name of the boss a reveal holds, if it names one the decks know. */
 const revealedName = (reveal?: Reveal): BossName | undefined => (reveal && isBoss(reveal) && isBossName(reveal.boss) ? reveal.boss : undefined);
 
-/** What a reveal without a boss says: the deck is missing, a boss in play activates again, or every boss is already out. */
 function noBossText(reveal: Reveal, t: Translate): string {
   const isNecromancer = reveal.kind === 'necromancer';
   if (reveal.boss === NO_DECK) return t(isNecromancer ? 'boss.necromancerNoDeck' : 'boss.abominationNoDeck');
@@ -519,10 +363,8 @@ function noBossText(reveal: Reveal, t: Translate): string {
   return t(isNecromancer ? 'boss.necromancerNone' : 'boss.abominationNone');
 }
 
-/** The name of a boss as written in a sentence (an id the decks do not know is written as it is). */
 const bossTitle = (id: string, t: Translate) => (isBossName(id) ? t(`zombie.${id}.one`) : id);
 
-/** A modern Abomination with its rule, as written under a card: "Gozer: When Gozer spawns...". */
 const ruleLine = (id: string, t: Translate) => (isModernAbomination(id) ? `${t(`zombie.${id}.one`)}: ${t(`card.${id}Rule`)}` : undefined);
 
 /**
@@ -550,7 +392,6 @@ function groupLines(reveal: Reveal, t: Translate): { before: string[]; after: st
   };
 }
 
-/** The footer of a card with the powers of its boss around it; unchanged without any (Fantasy). */
 function withPowers(text: CardText, reveal: Reveal | undefined, t: Translate): CardText {
   if (!reveal) return text;
   const { before, after } = groupLines(reveal, t);
@@ -595,10 +436,7 @@ function cardText(card: ZombieCard, danger: DangerLevel, t: Translate, reveal?: 
   }
 }
 
-/**
- * What an Abomination drawn by hand shows: its name, then its rule and what its powers add. A modern Abomination
- * always prints a rule, a fantasy one only if its boss card does.
- */
+// A modern Abomination always prints a rule, a fantasy one only if its boss card does.
 function bossFaceText(reveal: Reveal, t: Translate): CardText {
   const named = revealedName(reveal);
   const rule = named && (isModernAbomination(named) || hasRule(named)) ? t(`card.${named}Rule`) : '';
@@ -611,7 +449,6 @@ function bossFaceText(reveal: Reveal, t: Translate): CardText {
   };
 }
 
-/** The face of a Western Abomination drawn by hand: its own card when it is named, the plain text card when not. */
 function WesternBoss({ reveal, text, footerOnFront }: { reveal: Reveal; text: CardText; footerOnFront: boolean }) {
   const { t } = useApp();
   const named = revealedName(reveal);
@@ -621,7 +458,6 @@ function WesternBoss({ reveal, text, footerOnFront }: { reveal: Reveal; text: Ca
   return <WesternPrinted art={westernTextCardArt} layout="text" text={{ ...text, title: t('card.westernAbomination') }} footerOnFront={footerOnFront} />;
 }
 
-/** An Abomination drawn by hand, as a screen reader says it. */
 export function bossLabel(reveal: Reveal, t: Translate): string {
   const { title, footer } = bossFaceText(reveal, t);
   return sentences([title, footer]);
@@ -680,14 +516,12 @@ export function cardHasBack(card: ZombieCard, danger: DangerLevel, t: Translate,
   const shown = asRevealed(card, reveal);
   const { footer } = cardText(shown, danger, t, reveal);
   const printed = isFantasyCard(shown) && revealedName(reveal) && (shown.kind === 'bossCall' || shown.kind === 'necromancer');
-  // An Invader Abomination, Mold or Pit Spawn prints its rule in the red box on the front, as the printed card does.
   if (isInvaderCard(shown) && shown.kind !== 'xeno' && shown.kind !== 'xenoExtra') return false;
   // A Western rule stays on the front as long as it fits its panel; an Extra Activation line is short anyway.
   if (isWesternCard(shown) && shown.kind !== 'westernExtra') return !!footer && !westernFits(footer, t, westernBossOf(shown, reveal));
   return !!footer && (!isShort(footer) || !!printed);
 }
 
-/** An Abomination drawn by hand has its rule (or what is missing from its deck) on the back, unless that is short. */
 export const bossHasBack = (reveal: Reveal, t: Translate): boolean => {
   const { footer } = bossFaceText(reveal, t);
   const named = revealedName(reveal);
@@ -706,7 +540,6 @@ const trejoChoices = (isRush: boolean) => ['card.trejo1', 'card.trejo2', isRush 
 /** The rule a Xeno prints under its levels (the Seeker Workers: every Seeker Xeno card activates those on the board). */
 const XENO_RULES: Partial<Record<InvaderXeno, TranslationKey>> = { seekerWorker: 'card.seekerWorkerRule' };
 
-/** Title, footer and spoken body of a sci-fi card: Xeno counts, an Abomination's order, a Mold or Pit Spawn, an Extra Activation. */
 function invaderText(card: InvaderCard, danger: DangerLevel, t: Translate): CardText {
   const level = t(`danger.${danger}`);
   switch (card.kind) {
@@ -730,11 +563,7 @@ function invaderText(card: InvaderCard, danger: DangerLevel, t: Translate): Card
 /** Abominations whose title has no word Abomination in it. */
 const BARE_TITLES: readonly InvaderAbomination[] = ['synkrasis'];
 
-/**
- * The order an Abomination card gives: the Spoiler and Driller ones have their own sentence, a card with a third step
- * (`spawnZone`, the Stepmother) has its own, every other named Abomination reads "Spawn a <name> (if any)".
- * A title without the word Abomination (Synkrasis) gets a sentence without article, which no gender can break.
- */
+// Spoiler and Driller Abominations have their own sentence, a card with a third step (`spawnZone`, the Stepmother) another, the rest "Spawn a <name> (if any)". A title without the word Abomination (Synkrasis) gets no article, which no gender can break.
 function abominationRule(card: Extract<InvaderCard, { kind: 'xenoAbomination' }>, t: Translate): string {
   const name = t(`zombie.${card.zombie}.other`);
   if (card.spawnZone) return t('card.zoneStepAbominationRule', { name });
@@ -743,14 +572,12 @@ function abominationRule(card: Extract<InvaderCard, { kind: 'xenoAbomination' }>
   return t(BARE_TITLES.includes(card.zombie) ? 'card.bareAbominationRule' : 'card.namedAbominationRule', { name });
 }
 
-/** Title, footer and spoken body of a Wild West card: counts, the Abomination text card, an Extra Activation. */
 function westernText(card: WesternCard, danger: DangerLevel, t: Translate, reveal?: Reveal): CardText {
   const level = t(`danger.${danger}`);
   switch (card.kind) {
     case 'westernSpawn':
       return { title: t(`zombie.${card.zombie}.other`), spoken: `${level}: ${card.counts[DANGER_LEVELS.indexOf(danger)]}` };
     case 'westernAbomination':
-      // The printed text, or the Abomination the deck revealed with its own rule (an Abomination card has no levels).
       return withReveal({ title: t('card.westernAbomination'), footer: t('card.westernAbominationRule'), spoken: '' }, reveal, t, true, isModernAbomination);
     case 'westernExtra':
       return { title: t('card.extra'), footer: t('card.extraRule'), spoken: `${level}: ${extraLine(card.zombie, danger, t)}` };
@@ -798,7 +625,6 @@ function ModernCardFace({ card, danger, text, reveal, footerOnFront, zoomButton,
     const labels = levels.map((level) => ({ level, sentence: extraLine(card.zombie, level, t) }));
     return <ModernFace {...common} kind="extra" title={text.title} subject={artSubject(card)} labels={labels} />;
   }
-  // A spawn card whose Abomination was revealed is the named Abomination's card: its banner and its name.
   const abomination = revealedAbomination(card, reveal);
   const labels = levels.map((level) => ({ level, count: card.counts[DANGER_LEVELS.indexOf(level)] }));
   return (
@@ -812,13 +638,11 @@ function ModernCardFace({ card, danger, text, reveal, footerOnFront, zoomButton,
   );
 }
 
-/** The face of a Modern Abomination drawn by hand: the Abomination banner, its picture, its rule in the footer band. */
 function ModernBoss({ reveal, text, footerOnFront }: { reveal: Reveal; text: CardText; footerOnFront: boolean }) {
   return <ModernFace kind="abomination" title={text.title} subject={revealedName(reveal) ?? 'abomination'} text={text} footerOnFront={footerOnFront} labels={[]} current={false} symbol={null} />;
 }
 
 function ModernFace(props: {
-  /** Absent on the face of an Abomination drawn by hand, which has no card number. */
   card?: ModernCard;
   kind: ModernKind;
   title: string;
@@ -826,7 +650,6 @@ function ModernFace(props: {
   text: CardText;
   footerOnFront: boolean;
   labels: ModernLabelSpec[];
-  /** Only the current Danger Level is shown: one big label and a larger picture. */
   current: boolean;
   danger?: DangerLevel;
   symbol: SymbolKind | null;
@@ -912,7 +735,6 @@ function ModernFace(props: {
         </View>
       )}
       {props.labels.map((label) => (
-        // The letters of a SPAM card are the same at every level: always the four of them.
         <ModernLabel key={label.level} spec={label} slot={props.current && !label.letter ? undefined : PRINTED_LEVELS.indexOf(label.level)} active={!label.letter && label.level === props.danger} />
       ))}
       {onFront && (
@@ -957,11 +779,7 @@ function ModernFace(props: {
   );
 }
 
-/**
- * One printed Danger Level label: a level-coloured rectangle with the white paper over its left part (the plain white
- * stretched to its width, the torn end drawn at its own ratio), a thin dark line under it, and the count or sentence on
- * the white. `slot` is its place in the stack of four (none: the lone label of the current level, in the middle).
- */
+// `slot` is the label's place in the stack of four; none means the lone label of the current level, in the middle.
 function ModernLabel({ spec, slot, active }: { spec: ModernLabelSpec; slot: number | undefined; active: boolean }) {
   const { styles, scale: s } = useContext(CardStyle);
   const { language } = useApp();
@@ -1004,7 +822,6 @@ function ModernLabel({ spec, slot, active }: { spec: ModernLabelSpec; slot: numb
     <View pointerEvents="none" style={[styles.modernLabel, { left: left * s, top: (centre - height / 2) * s, height: height * s, right: -MODERN_LABEL.overflow * s }, veiled && { opacity: MODERN_LABEL.veil }]}>
       <View style={{ position: 'absolute', top: 0, bottom: 0, left: whiteWidth * s, right: 0, backgroundColor: MODERN_COLORS.levels[spec.level] }} />
       <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: whiteWidth * s, backgroundColor: MODERN_COLORS.paper }} />
-      {/* The torn end, cropped from where the white is still plain, at the ratio of its file. */}
       <View style={{ position: 'absolute', top: 0, bottom: 0, left: (whiteWidth - MODERN_PAPER_SEAM * k) * s, width: (paper.width - crop) * k * s, overflow: 'hidden' }}>
         <Image source={wide ? MODERN_PARTS.activationPaper : MODERN_PARTS.countPaper} style={{ position: 'absolute', top: 0, left: -crop * k * s, width: paper.width * k * s, height: '100%' }} resizeMode="stretch" />
       </View>
@@ -1026,10 +843,8 @@ function ModernLabel({ spec, slot, active }: { spec: ModernLabelSpec; slot: numb
   );
 }
 
-/** A Danger Level tab: the neutral tab picture tinted with the level colour, with its count or sentence on it. */
 function InvaderTab(props: { style: StyleProp<ViewStyle>; tint: string; textStyle: StyleProp<TextStyle>; wide: boolean; children: string }) {
   const { styles } = useContext(CardStyle);
-  // An Extra Activation sentence never breaks inside a word: it shrinks first.
   const fit = useWordFit(props.wide ? props.children : undefined, props.textStyle, 0, INVADER_ACTIVATION_CHAR_EM);
   return (
     <View style={props.style}>
@@ -1135,13 +950,7 @@ function InvaderFace({ card, danger, text, footerOnFront }: { card: InvaderCard;
   );
 }
 
-/**
- * Wild West card: the art of the card behind everything (the official picture in the printed card's frame, with no
- * printed text), then what the app draws in the player's language where the printed card had it: the wooden title
- * plank and title, the number, the counts on cream torn-paper labels with the colour of their Danger Level at the
- * end (the four of them, or only the current one, larger), a short rule. An Abomination revealed by the deck has its
- * own card, see `WesternWindowCard`.
- */
+// The official picture sits behind everything; the app writes its own title, number, counts and rule over it. An Abomination revealed by the deck uses `WesternWindowCard`.
 function WesternFace({ card, danger, text, reveal, footerOnFront }: { card: WesternCard; danger: DangerLevel; text: CardText; reveal?: Reveal; footerOnFront: boolean }) {
   const { t, cardDisplay } = useApp();
   const current = cardDisplay === 'current';
@@ -1159,7 +968,6 @@ function WesternFace({ card, danger, text, reveal, footerOnFront }: { card: West
         levels.map((shown, index) => (
           <WesternLabel
             key={shown}
-            // Only the current Danger Level: one larger label in the middle of where the four were.
             row={current ? 1.5 : index}
             left={left}
             level={shown}
@@ -1172,12 +980,8 @@ function WesternFace({ card, danger, text, reveal, footerOnFront }: { card: West
   );
 }
 
-/**
- * A Western card with the app's own text over its art. `text.title` is the title (the heading of the text card),
- * `text.footer` the rule, written under the picture when it fits and on the back when it does not.
- */
+// `text.footer` goes under the picture when it fits, else on the back.
 function WesternPrinted(props: {
-  /** Absent on the face of an Abomination drawn by hand, which has no card number. */
   card?: WesternCard;
   art: ImageSourcePropType;
   layout: keyof typeof WESTERN_LAYOUTS;
@@ -1236,19 +1040,12 @@ function WesternPrinted(props: {
   );
 }
 
-/**
- * A count label of the printed cards, redrawn over the art: cream torn paper with a slab "x10" (the "x" smaller) and the
- * colour of its Danger Level on a torn strip at the end. `row` is its place in the stack of four (1.5: the middle).
- * Everything is laid out in absolute boxes of fixed size: no flex, no font shrinking, so the count cannot collapse on
- * any platform.
- */
+// Absolute boxes of fixed size, no flex and no font shrinking, so the count cannot collapse on any platform. `row` is the label's place in the stack of four (1.5: the middle).
 function WesternLabel(props: {
   row: number;
   left: number;
   level: DangerLevel;
-  /** The only label of the card (the current Danger Level alone): set larger. */
   big?: boolean;
-  /** A count ("x10") or, on an Extra Activation card, a sentence ("All Walkers"). */
   count?: number;
   sentence?: string;
 }) {
@@ -1274,8 +1071,7 @@ function WesternLabel(props: {
       style={[styles.westernLabel, { top: `${top * 100}%`, height: `${height * 100}%`, left: `${left * 100}%` }]}
     >
       {picture !== undefined ? (
-        // The hand-drawn label: its cream part is as wide as the printed paper, its white strip is tinted with the Danger
-        // Level colour (white times a colour is the colour) and a plain block of that colour runs on to the card's edge.
+        // Cream part as wide as the printed paper; the white strip is tinted by the level colour (white times a colour is the colour) and a plain block runs to the card's edge.
         <>
           <View style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: `${(1 - paper / (1 - COUNT_LABEL_STRIP)) * 100}%`, backgroundColor: colour }} />
           <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: `${(paper / (1 - COUNT_LABEL_STRIP)) * 100}%` }}>
@@ -1286,7 +1082,6 @@ function WesternLabel(props: {
       ) : (
         <>
           <View style={[styles.westernLabelPaperFill, { width: `${(paper + strip) * 100}%` }]} />
-          {/* Torn colour strip: its ragged left edge lets the paper show through. */}
           <Svg style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: `${strip * 100}%`, height: '100%' }} viewBox="0 0 20 34" preserveAspectRatio="none">
             <Polygon points="7,0 20,0 20,34 4,34 8,27 3,20 9,13 4,6" fill={colour} />
           </Svg>
@@ -1306,7 +1101,6 @@ function WesternLabel(props: {
   );
 }
 
-/** Plank of light wood: a few grain lines (fixed, so a card never changes between two renders) over the plank colour. */
 const GRAIN: readonly (readonly [top: number, left: number, width: number])[] = [
   [0.16, 0.02, 0.62],
   [0.34, 0.3, 0.68],
@@ -1315,11 +1109,7 @@ const GRAIN: readonly (readonly [top: number, left: number, width: number])[] = 
   [0.86, 0.1, 0.7],
 ];
 
-/**
- * A hand-drawn plank of any size without distorting its grain or its nails: the picture is scaled to the width of the
- * box, its top and bottom rims (`cap` rows of the source) keep their proportions and only the wood between them is
- * stretched to the height left.
- */
+// Scaled to the box width; the top and bottom rims (`cap` source rows) keep their proportions and only the wood between is stretched.
 function SlicedPlank({ source, size, cap }: { source: ImageSourcePropType; size: { width: number; height: number }; cap: number }) {
   const [box, setBox] = useState({ width: 0, height: 0 });
   const k = box.width / size.width;
@@ -1346,10 +1136,8 @@ function SlicedPlank({ source, size, cap }: { source: ImageSourcePropType; size:
   );
 }
 
-/** Size of the hand-drawn planks and how much of their rim stays unstretched (rows of the source). */
 const PLANK_PICTURES = { header: { width: 1200, height: 260, cap: 70 }, footer: { width: 1200, height: 420, cap: 110 } } as const;
 
-/** `part` names the hand-drawn picture that replaces the drawn wood when it exists (see `WESTERN_PARTS`). */
 function Plank({ style, part, children }: { style?: StyleProp<ViewStyle>; part?: 'header' | 'footer'; children?: React.ReactNode }) {
   const { styles } = useContext(CardStyle);
   const picture = part === 'header' ? WESTERN_PARTS.headerPlank : part === 'footer' ? WESTERN_PARTS.footerPlank : undefined;
@@ -1367,16 +1155,11 @@ function Plank({ style, part, children }: { style?: StyleProp<ViewStyle>; part?:
   );
 }
 
-/** Height over width of a full Abomination illustration (a 63:88 card). */
 const WESTERN_PICTURE_RATIO = 88 / 63;
-/** Eddie cut-outs in an Abomination window were too small: 15 % larger, from the top edge so the head and hair stay (their PNG touches it); an Eddie with its own `cutoutZoom` (Trooper, 1.3) keeps that total. */
+/** Eddie cut-outs are 15 % larger, from the top edge so the head stays; an Eddie with its own `cutoutZoom` (Trooper, 1.3) keeps that total. */
 const WESTERN_CUTOUT_ZOOM = 1.15;
 
-/**
- * Where a full illustration sits in a window of `ratio`, in shares of the window's height (an absolute `top` and
- * `height` in percent are relative to the parent's height): it fills the width, and the point `center` (share of the
- * illustration's height) comes to the middle of the window without the window leaving the picture.
- */
+// Shares of the window's height: fills the width, and `center` (share of the illustration's height) comes to the middle without the window leaving the picture.
 const framing = (ratio: number, center: number): ImageStyle => {
   // In window widths: the picture's height, the window's height and how far the picture moves up.
   const picture = WESTERN_PICTURE_RATIO;
@@ -1385,10 +1168,7 @@ const framing = (ratio: number, center: number): ImageStyle => {
   return { position: 'absolute', left: 0, width: '100%', top: `${(-100 * shift) / window}%`, height: `${(100 * picture) / window}%` };
 };
 
-/**
- * The illustration of a named Abomination framed on `center` in its picture area: a window of `ratio`, or (no `ratio`)
- * whatever room the card leaves under its header, measured once laid out.
- */
+// Without `ratio`: whatever room the card leaves under its header, measured once laid out.
 const pictureFill = { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' } as const;
 
 function FramedPicture({ source, ratio, center, style, cutout, cutoutAspectRatio, cutoutZoom }: { source: ImageSourcePropType; ratio?: number; center: number; style: StyleProp<ViewStyle>; cutout?: true; cutoutAspectRatio?: number; cutoutZoom?: number }) {
@@ -1420,13 +1200,8 @@ function FramedPicture({ source, ratio, center, style, cutout, cutoutAspectRatio
   );
 }
 
-/**
- * A named Western Abomination with a title plank, an illustration window and a wooden rule panel. A full illustration
- * fills the width of the window and slides vertically so the creature's head and body stay in view.
- */
 function WesternWindowCard(props: {
   text: CardText;
-  /** The printed rule of the Abomination, written on the panel when it fits. */
   rule: string;
   title: string;
   subtitle: string;
@@ -1456,7 +1231,6 @@ function WesternWindowCard(props: {
   );
 }
 
-// Symbols printed above the Danger Levels: an image for most, a small drawing for the rest.
 type ImageSymbol = 'toxic' | 'berserker' | 'skinner' | 'dog' | 'crow' | 'seeker' | 'lostZombivor' | 'shooter';
 type DrawnSymbol = 'vip';
 type SymbolKind = ImageSymbol | DrawnSymbol;
@@ -1554,19 +1328,15 @@ const sentences = (parts: (string | false | undefined)[]) =>
     .map((part) => (/[.!?:]$/.test(part) ? part : `${part}.`))
     .join(' ');
 
-/** What a card's face tells a screen reader: the whole card in one stop, or nothing when the card's own button reads it. */
 const readerProps = (text: CardText, announced: boolean) =>
   // The rule on the back is read with the front: a screen reader never needs to turn the card.
   announced ? HIDDEN_FROM_READER : { accessible: true, accessibilityLabel: sentences([text.title, text.spoken, text.footer]) };
 
 function Frame(props: {
-  /** Absent on the face of an Abomination drawn by hand, which has no card number. */
   card?: ZombieCard;
   text: CardText;
   headerColor: { background: string; text: string };
-  /** The card stock: orange for the modern cards, parchment for the fantasy ones. */
   faceColor?: string;
-  /** The footer is short: it stays under the picture, with no "i" and no back. */
   footerOnFront?: boolean;
   children: React.ReactNode;
 }) {
@@ -1588,7 +1358,6 @@ function Frame(props: {
 
 type Colors = { background: string; text: string };
 
-/** Title and number of a card; the "i" says there is a rule on the back, shown only on the front. */
 function CardHeader(props: { card?: ZombieCard; title: string; color: Colors; badge?: boolean; western?: boolean; subtitle?: string }) {
   const { styles } = useContext(CardStyle);
   const fonts = westernFonts(useApp().language);
@@ -1627,7 +1396,6 @@ function CardHeader(props: { card?: ZombieCard; title: string; color: Colors; ba
   );
 }
 
-/** The header colour of each kind of card: Rush and Extra Activation have their own. */
 function headerFor(card: ZombieCard): Colors {
   if (isFantasyCard(card)) return FANTASY_HEADER;
   if (isInvaderCard(card)) return card.kind === 'xenoExtra' ? CARD_COLORS.extra : INVADER_COLORS.header;
@@ -1638,7 +1406,6 @@ function headerFor(card: ZombieCard): Colors {
 
 const universeOf = (card: ZombieCard): UniverseId => (isFantasyCard(card) ? 'fantasy' : isInvaderCard(card) ? 'invader' : isWesternCard(card) ? 'western' : 'modern');
 
-/** The panel the back's text sits on, per universe: its frame, the box under the text and the ink on it. */
 const SIDE_PANEL: Record<UniverseId, { frame: string; box: string; ink: string }> = {
   modern: { frame: CARD_COLORS.back, box: CARD_COLORS.spawn.background, ink: CARD_COLORS.spawn.text },
   fantasy: { frame: CARD_COLORS.fantasyFrame, box: CARD_COLORS.parchmentRow, ink: CARD_COLORS.parchmentInk },
@@ -1646,10 +1413,7 @@ const SIDE_PANEL: Record<UniverseId, { frame: string; box: string; ink: string }
   western: { frame: WESTERN_COLORS.panel, box: WESTERN_COLORS.panel, ink: WESTERN_COLORS.header.text },
 };
 
-/**
- * The boss or zombie a card shows and, when a printed Abomination or Necromancer was swapped for a named boss, why:
- * "Tainted Abomination → Siege Breaker".
- */
+// When a printed Abomination or Necromancer was swapped for a named boss, says why: "Tainted Abomination → Siege Breaker".
 function backHeading(printed: ZombieCard, card: ZombieCard, danger: DangerLevel, text: CardText, reveal: Reveal | undefined, t: Translate) {
   const boss = revealedName(reveal);
   const swapped = (from: string) => (boss ? t('card.revealedAs', { printed: from, boss: t(`zombie.${boss}.one`) }) : undefined);
@@ -1672,7 +1436,6 @@ function backHeading(printed: ZombieCard, card: ZombieCard, danger: DangerLevel,
   return abomination ? { name: t(`zombie.${abomination}.one`), revealedAs: swapped(text.title) } : {};
 }
 
-/** The back of a card: its header again, then its name and its rule, large enough to read and scrolling when long. */
 function RuleSide(props: {
   card?: ZombieCard;
   text: CardText;
@@ -1680,11 +1443,8 @@ function RuleSide(props: {
   universe: UniverseId;
   name?: string;
   revealedAs?: string;
-  /** What the card itself prints, when its front shows a revealed boss instead: before the boss's own rule. */
   printedText?: string[];
-  /** Turns the card back to its front. */
   onFlip?: () => void;
-  /** The enlarge button covers the bottom-left corner: the text can scroll up clear of it. */
   zoomButton?: boolean;
 }) {
   const { styles } = useContext(CardStyle);
@@ -1693,10 +1453,7 @@ function RuleSide(props: {
   const face = BOSS_LOOK[props.universe].face;
   // The back is only for sighted taps: the card's button reads the rule, so the header and the text are no stop.
   const announced = useContext(CardAnnounced);
-  // Not accessible itself: an accessible View groups its children on Android and can swallow the scroll gesture. The
-  // card's own button (in game.tsx) carries the label that reads the front and the rule.
-  // The ScrollView is the parent and the tap target sits inside it (the canonical pattern): a Pressable around a
-  // ScrollView would take the touch first and the text would never scroll on Android, in a modal especially.
+  // Not accessible itself: an accessible View groups its children on Android and swallows the scroll. The ScrollView must be the parent of the tap target: a Pressable around it takes the touch first, so the text would not scroll on Android (in a modal especially).
   return (
     <View style={[styles.face, face !== undefined && { backgroundColor: face }]} {...(announced ? HIDDEN_FROM_READER : {})}>
       <Pressable style={({ pressed }) => pressed && PRESSED} onPress={props.onFlip} accessible={false}>
@@ -1721,7 +1478,6 @@ function RuleSide(props: {
 
 const FANTASY_HEADER = { background: CARD_COLORS.parchment, text: CARD_COLORS.parchmentInk };
 
-/** Header and stock of a hand-drawn Abomination, per universe: a new UniverseId must pick its own. */
 const BOSS_LOOK: Record<UniverseId, { header: { background: string; text: string }; face: string | undefined }> = {
   modern: { header: MODERN_COLORS.abomination, face: undefined },
   fantasy: { header: FANTASY_HEADER, face: CARD_COLORS.parchment },
@@ -1729,11 +1485,9 @@ const BOSS_LOOK: Record<UniverseId, { header: { background: string; text: string
   western: { header: WESTERN_COLORS.header, face: WESTERN_COLORS.face },
 };
 
-/** The Horde symbol applies to every zombie a level spawns, but not to an Abomination. */
 const feedsHorde = (card: FantasyCard, level: FantasyLevel) =>
   card.kind === 'levels' && !!card.horde && !!level && !ABOMINATIONS.has(level.zombie);
 
-/** The rule printed on a card without Danger Levels, one paragraph per line. */
 function fantasyRule(card: FantasyCard, t: Translate): string[] {
   switch (card.kind) {
     case 'necromancer':
@@ -1758,7 +1512,6 @@ function fantasyRule(card: FantasyCard, t: Translate): string[] {
   }
 }
 
-/** What one Danger Level of a fantasy spawn or Extra Activation card says. */
 function fantasyLine(card: FantasyCard, at: DangerLevel, t: Translate): { label?: string; value: string; spoken: string } {
   if (card.kind === 'activation') {
     const text = at === 'blue' ? t('card.extraNobody') : t(`zombie.${card.zombie}.all`);
@@ -1770,7 +1523,6 @@ function fantasyLine(card: FantasyCard, at: DangerLevel, t: Translate): { label?
     const nothing = t(card.plural ? 'card.nothing' : 'card.nothingInSight');
     return { value: nothing, spoken: nothing };
   }
-  // Named Abominations are printed as a picture across the levels, without a count.
   if (NAMED_ZOMBIES.has(level.zombie)) {
     const name = t(`zombie.${level.zombie}.${card.plural ? 'other' : 'one'}`);
     return { value: name, spoken: name };
@@ -1785,13 +1537,11 @@ function fantasyLine(card: FantasyCard, at: DangerLevel, t: Translate): { label?
 
 const isNamedNecromancer = (zombie: FantasyNecromancer): zombie is NamedNecromancer => NAMED_NECROMANCERS.has(zombie);
 
-/** The boss a call card shows while none is revealed: the one of its core box. */
 function bossCallArt(card: Extract<FantasyCard, { kind: 'bossCall' }>): ArtSubject {
   if (card.boss === 'necromancer') return card.setId === 'eternalEmpire' ? 'necromancer' : 'defilerNecromancer';
   return card.setId === 'eternalEmpire' ? 'godEaterAbomination' : 'khanAbomination';
 }
 
-/** The picture of a card without Danger Levels: its Necromancer, the boss a White Death card revealed, or a horde. */
 function ruleArt(card: FantasyCard, reveal?: Reveal): ArtSubject {
   switch (card.kind) {
     case 'necromancer':
@@ -1807,14 +1557,11 @@ function ruleArt(card: FantasyCard, reveal?: Reveal): ArtSubject {
   }
 }
 
-/** The Horde banner under the rule: the zombies the Orc Necromancer adds to the Horde. */
 const hordeRule = (card: FantasyCard, t: Translate) =>
   card.kind === 'necromancer' && card.zombie === 'orcNecromancer' ? t('card.necromancerHorde') : undefined;
 const spokenRule = (card: FantasyCard, t: Translate) => [...fantasyRule(card, t), hordeRule(card, t) ?? ''].join(' ').trim();
-/** The text a card without Danger Levels prints, paragraph by paragraph, Horde banner included. */
 const ruleParagraphs = (card: FantasyCard, t: Translate): string[] => [...fantasyRule(card, t), hordeRule(card, t) ?? ''].filter(Boolean);
 
-/** The title printed on a card with Danger Levels: its own, a named zombie's, or the one of its core box. */
 function levelsTitle(card: Extract<FantasyCard, { kind: 'levels' }>, t: Translate): string {
   if (card.title === 'named') {
     const named = card.boss ?? card.levels.find((level) => level !== null)?.zombie;
@@ -1856,12 +1603,10 @@ function fantasyText(card: FantasyCard, danger: DangerLevel, t: Translate): Card
   }
 }
 
-/** Bosses with a rule of their own, printed on their boss card (Frozen Fortress, White Death, Eternal Empire). */
 const BOSS_RULED: ReadonlySet<string> = new Set(BOSS_RULE_IDS);
 const hasRule = (boss: string): boss is BossRuleId => BOSS_RULED.has(boss);
 type RuledBoss = BossRuleId | NamedModernAbomination | WesternAbomination;
 
-/** The boss revealed from its deck, named under the card with the way it arrives. */
 function withReveal(text: CardText, reveal: Reveal | undefined, t: Translate, withRule = true, ruled: (boss: BossName) => boss is RuledBoss = hasRule): CardText {
   return withPowers(revealedText(text, reveal, t, withRule, ruled), reveal, t);
 }
@@ -1871,7 +1616,6 @@ function revealedText(
   reveal: Reveal | undefined,
   t: Translate,
   withRule = true,
-  // Whether the boss prints a rule of its own: the fantasy ones are listed, every modern Abomination has one.
   ruled: (boss: BossName) => boss is RuledBoss = hasRule,
 ): CardText {
   if (!reveal) return text;
@@ -1881,17 +1625,13 @@ function revealedText(
   if (!boss) return text;
   const name = t(`zombie.${boss}.one`);
   const rule = isNecromancer ? 'boss.necromancer' : reveal.rule === 'fest' ? 'boss.abominationFest' : 'boss.abomination';
-  // A Necromancer card already reads as the Necromancer it revealed, its rule included.
   const own = withRule && ruled(boss) ? ` ${t(`card.${boss}Rule`)}` : '';
   // With the bosses in play named ("Extra Activation for X, then:" comes from groupLines), only the new one is left to say.
   const intro = reveal.rule === 'fest' && (reveal.activated?.length || reveal.trejo) ? name : t(rule, { name });
   return { ...text, footer: `${intro}${own}` };
 }
 
-/**
- * One Danger Level of a fantasy card as drawn: the zombie printed there, or the Abomination revealed from its deck in
- * its place (drawn for the current Danger Level only, so the other levels keep the Abomination printed).
- */
+// Drawn for the current Danger Level only, so the other levels keep the printed Abomination.
 function revealedLevel(card: FantasyCard, at: DangerLevel, danger: DangerLevel, reveal: Reveal | undefined, t: Translate) {
   const line = fantasyLine(card, at, t);
   const level = card.kind === 'levels' ? card.levels[DANGER_LEVELS.indexOf(at)] : null;
@@ -1906,10 +1646,7 @@ function revealedLevel(card: FantasyCard, at: DangerLevel, danger: DangerLevel, 
   };
 }
 
-/**
- * What the modern layout shows for the current level of a fantasy card: the zombie to draw large, its type above the
- * count (none for an Extra Activation, which prints a sentence). Empty for "Nothing in sight!" and the rule cards.
- */
+// Empty for "Nothing in sight!" and the rule cards; no type for an Extra Activation, which prints a sentence.
 function bigLevel(card: FantasyCard, danger: DangerLevel, reveal: Reveal | undefined, t: Translate) {
   if (card.kind !== 'levels' && card.kind !== 'activation') return undefined;
   const { line, level, subject, label } = revealedLevel(card, danger, danger, reveal, t);
@@ -1918,12 +1655,10 @@ function bigLevel(card: FantasyCard, danger: DangerLevel, reveal: Reveal | undef
   return { subject, label, value: line.value, horde: feedsHorde(card, level) };
 }
 
-/** Shared backdrop for Fantasy figures. */
 function FantasyBackdrop() {
   return FANTASY_PARTS.artBackground ? <Image source={FANTASY_PARTS.artBackground} style={FILL} resizeMode="cover" /> : <View style={[FILL, { backgroundColor: FANTASY_COLORS.smokeDark }]} />;
 }
 
-/** A boss picture on its smoke backdrop. */
 function FantasyPicture({ subject, style, lowered }: { subject: ArtSubject; style: StyleProp<ViewStyle>; lowered?: boolean }) {
   const { styles } = useContext(CardStyle);
   return (
@@ -1937,10 +1672,7 @@ function FantasyPicture({ subject, style, lowered }: { subject: ArtSubject; styl
   );
 }
 
-/**
- * The scroll of a special card at any height without squashing its rolled ends: the picture is scaled to the height of
- * the box, its two rolls keep their proportions and only the paper between them is stretched to the width left.
- */
+// Scaled to the box height; the rolls keep their proportions and only the paper between them is stretched.
 function FantasyScrollPaper({ source }: { source: ImageSourcePropType }) {
   const [box, setBox] = useState({ width: 0, height: 0 });
   const k = box.height / FANTASY_SCROLL.height;
@@ -1967,7 +1699,6 @@ function FantasyScrollPaper({ source }: { source: ImageSourcePropType }) {
   );
 }
 
-/** The painted flame of a Danger Level: its picture, or a drawn flame in the level colour with a dark ink stroke. */
 function FantasyFlame({ level, style }: { level: DangerLevel; style?: StyleProp<ViewStyle> }) {
   const { styles } = useContext(CardStyle);
   const part = FANTASY_FLAMES[level];
@@ -1990,7 +1721,6 @@ function FantasyFlame({ level, style }: { level: DangerLevel; style?: StyleProp<
   );
 }
 
-/** The iron bar under the title, its plate holding the card number: the part, or a drawn bar with a ring at each end. */
 function FantasyNumberBar({ number }: { number: string }) {
   const { styles } = useContext(CardStyle);
   const fonts = fantasyFonts(useApp().language);
@@ -2011,7 +1741,6 @@ function FantasyNumberBar({ number }: { number: string }) {
   );
 }
 
-/** The scroll of a special card with its rule, one paragraph per line, scrolling when it is long. */
 function FantasyScroll({ rules, horde }: { rules: string[]; horde?: string }) {
   const { styles } = useContext(CardStyle);
   const fonts = fantasyFonts(useApp().language);
@@ -2030,11 +1759,6 @@ function FantasyScroll({ rules, horde }: { rules: string[]; horde?: string }) {
   );
 }
 
-/**
- * What every Fantasy card shares: the parchment and the red ground, the body given as children, then over it the title
- * plate and the number bar, and the thin light edge of the card; the "i" when the card has a rule on its back. Reads
- * out the whole card as one stop.
- */
 function FantasyShell({ text, number, footerOnFront, children }: { text: CardText; number: string; footerOnFront: boolean; children: React.ReactNode }) {
   const { styles, scale } = useContext(CardStyle);
   const announced = useContext(CardAnnounced);
@@ -2063,7 +1787,6 @@ function FantasyShell({ text, number, footerOnFront, children }: { text: CardTex
   );
 }
 
-/** An Abomination or Necromancer drawn by hand ("Draw an Abomination"): the picture on red smoke and its rule on a scroll. */
 function FantasyBossFace({ reveal, text, footerOnFront }: { reveal: Reveal; text: CardText; footerOnFront: boolean }) {
   const { styles } = useContext(CardStyle);
   const rule = text.footer && footerOnFront ? text.footer.split('\n') : [];
@@ -2075,11 +1798,6 @@ function FantasyBossFace({ reveal, text, footerOnFront }: { reveal: Reveal; text
   );
 }
 
-/**
- * Fantasy era card, after the printed one: parchment, red border, the title plate and number bar, then the Danger Levels
- * red first (a flame, the zombie's name and count, its faded silhouette), or a boss picture on red smoke over a scroll
- * with the rule. With only the current level shown, that level is one big row with the zombie drawn large.
- */
 function FantasyFace({ card, danger, text, reveal, footerOnFront }: { card: FantasyCard; danger: DangerLevel; text: CardText; reveal?: Reveal; footerOnFront: boolean }) {
   const { t, cardDisplay, language } = useApp();
   const { styles } = useContext(CardStyle);
@@ -2140,22 +1858,14 @@ function FantasyFace({ card, danger, text, reveal, footerOnFront }: { card: Fant
   );
 }
 
-/**
- * One Danger Level strip: the flame of its colour low on the left, the zombie's name in italic above its count on the
- * right-centre, its faded silhouette on the far right. Alone on the card (`large`, only the current level shown) the
- * zombie is drawn large on the right, the name and count small on the left, so nothing covers the figure.
- */
+// Alone on the card (`large`) the zombie is drawn large on the right and the name and count small on the left, so nothing covers the figure.
 function FantasyRow(props: {
   subject?: ArtSubject;
   level: DangerLevel;
   active: boolean;
-  /** Alone on the card, when only the current Danger Level is shown. */
   large: boolean;
-  /** Short under a named boss picture. */
   compact?: boolean;
-  /** Slides under the strip above it. */
   overlap?: boolean;
-  /** The zombie type, above its count; none for "Nothing in sight!" and the Extra Activations. */
   label?: string;
   value: string;
   horde: boolean;
@@ -2183,8 +1893,6 @@ function FantasyRow(props: {
       )}
     </View>
   );
-  // One big row with a picture: the zombie on the left, whole, and a small parchment tag on the right edge with its name,
-  // its count (or the sentence of an Extra Activation) and its flame at the base, like the labels of the Western cards.
   if (bigPicture && props.subject) {
     return (
       <View style={styles.fantasyRow}>
@@ -2211,7 +1919,6 @@ function FantasyRow(props: {
           <ZombieFigure subject={props.subject} anchor="full" silhouette />
         </View>
       )}
-      {/* The Danger Levels the players are not at are veiled, so the current one stands out with no box round it. */}
       {!props.active && !props.large && <View pointerEvents="none" style={[FILL, styles.fantasyDim]} />}
       <View style={[styles.fantasyCell, !counted && styles.fantasyCellNote]}>
         {props.label !== undefined && (
@@ -2243,33 +1950,25 @@ function FantasyRow(props: {
   );
 }
 
-// Sizes for a card DESIGN_WIDTH wide, multiplied by `s`.
 function makeStyles(s: number) {
   return StyleSheet.create({
-    // The printed card, as shares of its width and height (measured as described above FANTASY_FLAME_RATIO).
-    // The red ground starts under the title plate and shows only at the sides and under the strips; the parchment part is
-    // drawn 10 % larger than the card so that the red border painted on it falls outside.
+    // Shares of the card, measured as described above FANTASY_FLAME_RATIO. The parchment is drawn 10 % larger so its painted red border falls outside.
     fantasyParchment: { position: 'absolute', top: '-5%', left: '-5%', width: '110%', height: '110%' },
     fantasyGround: { position: 'absolute', top: '15%', bottom: 0, left: 0, right: 0, backgroundColor: CARD_COLORS.fantasyFrame },
-    // The thin light edge of the card, over everything.
     fantasyBorder: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderWidth: 1.5 * s, borderColor: FANTASY_COLORS.edge, borderRadius: FANTASY_RADIUS * s },
-    // The plate is drawn 6 % wider than the card and a little above it, so that its outline falls outside: parchment
-    // edge to edge. Its lower edge is at 17 % of the card.
+    // Drawn 6 % wider than the card and a little above it so its outline falls outside; its lower edge is at 17 %.
     fantasyPlate: { position: 'absolute', top: '-1.3%', left: '-3%', width: '106%', aspectRatio: FANTASY_PLATE_RATIO },
     fantasyPlatePaper: { backgroundColor: FANTASY_COLORS.plate, borderBottomLeftRadius: 4 * s, borderBottomRightRadius: 4 * s },
-    // Up to two lines of title fill the plate between 6 and 43 design units from the top of the card (the plate starts 4 above
-    // it, the number bar's metal at 44), with a margin at the top; the side margins keep it off the rat emblem (top right).
+    // Two lines of title fill the plate between 6 and 43 design units (the plate starts 4 above, the number bar's metal at 44); side margins keep it off the rat emblem.
     fantasyTitleArea: { position: 'absolute', top: 10 * s, height: 33 * s, left: '15%', right: '15%', justifyContent: 'center' },
     fantasyTitle: { color: CARD_COLORS.parchmentInk, fontSize: 16 * s, lineHeight: 17 * s, textAlign: 'center' },
-    // The bar (56 % of the card wide, at its own ratio) straddles the lower edge of the plate; the top quarter of its file
-    // is empty, so its metal sits in the lower three quarters of the box.
+    // The bar's file is empty in its top quarter, so its metal sits in the lower three quarters of the box.
     fantasyBar: { position: 'absolute', left: '22%', width: '56%', top: '12.2%', aspectRatio: FANTASY_BAR_RATIO },
     fantasyBarRod: { position: 'absolute', left: '4%', right: '4%', top: '45%', bottom: '10%', backgroundColor: FANTASY_COLORS.iron, borderWidth: 1 * s, borderColor: FANTASY_COLORS.ironLight },
     fantasyBarRing: { position: 'absolute', bottom: '5%', height: '75%', aspectRatio: 1, borderRadius: 999, backgroundColor: FANTASY_COLORS.iron, borderWidth: 2.5 * s, borderColor: FANTASY_COLORS.ironLight },
     fantasyBarPlate: { position: 'absolute', left: '20%', width: '62%', top: '38%', bottom: '8%', backgroundColor: FANTASY_COLORS.ironPlate, borderWidth: 1.5 * s, borderColor: FANTASY_COLORS.iron, borderRadius: 3 * s },
     // The number sits on the metal plate in the middle of the bar (x 20-82 %, y 36-85 % of the file).
     fantasyNumber: { position: 'absolute', left: '20%', width: '62%', top: '36%', bottom: '15%', color: CARD_COLORS.parchmentInk, fontSize: 9 * s, lineHeight: 11 * s, textAlign: 'center', textAlignVertical: 'center', includeFontPadding: false },
-    // Under the plate and bar, a thin red margin each side and under the last strip.
     fantasyBody: { position: 'absolute', top: '20.5%', bottom: '3.2%', left: '3.4%', right: '3.4%' },
     fantasyRows: { flex: 1.4 },
     fantasyNamedArt: { flex: 1, overflow: 'hidden', marginBottom: 2 * s },
@@ -2281,51 +1980,37 @@ function makeStyles(s: number) {
     fantasyRowImage: { position: 'absolute', top: 0, left: '-3%', width: '106%', height: '100%' },
     fantasyRowPaper: { backgroundColor: FANTASY_COLORS.row, borderBottomWidth: 1 * s, borderColor: FANTASY_COLORS.rowEdge },
     fantasyDim: { backgroundColor: FANTASY_COLORS.dim },
-    // The flame: a third of the strip, low on its left, under the text.
     fantasyFlame: { position: 'absolute', left: 0, bottom: 0, width: FANTASY_FLAME_WIDTH, aspectRatio: FANTASY_FLAME_RATIO },
-    // The faded zombie stamp on the right of a strip, and the large picture of the one-row mode.
     fantasySilhouette: { position: 'absolute', right: FANTASY_STAMP.right, width: FANTASY_STAMP.width, top: FANTASY_STAMP.margin, bottom: FANTASY_STAMP.margin, overflow: 'hidden' },
-    // The one big row: the zombie takes the left two thirds, whole; the tag on the right edge keeps clear of it.
     fantasyLargeFigure: { position: 'absolute', left: 0, top: 0, bottom: 0, width: '64%', overflow: 'hidden' },
     fantasyTag: { position: 'absolute', right: '2%', bottom: '12%', width: '35%', alignItems: 'center', paddingHorizontal: 3 * s, paddingTop: 5 * s, paddingBottom: 7 * s, backgroundColor: FANTASY_COLORS.row, borderWidth: 1 * s, borderColor: FANTASY_COLORS.rowEdge, overflow: 'hidden' },
     fantasyTagNote: { fontSize: 11 * s },
     fantasyTagFlame: { width: '55%' },
-    // The name above the count sit right of the flame, left of the silhouette; beside the large picture they take the left.
     fantasyCell: { position: 'absolute', left: '38%', right: FANTASY_STAMP.cellRight, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2 * s },
-    // A sentence (Extra Activation, Nothing in sight) has more room: no silhouette-sized column to keep clear.
     fantasyCellNote: { left: '28%' },
     fantasyCountLine: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 * s, maxWidth: '100%' },
     fantasyLabel: { alignSelf: 'stretch', textAlign: 'center', color: CARD_COLORS.parchmentInk, fontSize: 12 * s },
     fantasyLabelLarge: { fontSize: 14 * s },
     fantasyCompactLabel: { fontSize: 9 * s },
-    // The count is about two and a half times the height of the name, as printed.
     fantasyCount: { flexShrink: 1, color: CARD_COLORS.parchmentInk, fontSize: 27 * s },
     fantasyCountLarge: { fontSize: 32 * s },
     fantasyCompactCount: { fontSize: 17 * s },
     fantasyNote: { flexShrink: 1, color: CARD_COLORS.parchmentInk, fontSize: 14 * s, textAlign: 'center' },
     fantasyNoteLarge: { fontSize: 16 * s },
     fantasyCompactNote: { fontSize: 10 * s },
-    // The "i" under the title, left of the bar.
     fantasyInfo: { position: 'absolute', left: '4%', top: '12%' },
-    // The picture of a special card: edge to edge under the title, behind the text scroll.
     fantasyArt: { position: 'absolute', top: '15%', bottom: 0, left: 0, right: 0, overflow: 'hidden' },
-    // On a full-height picture the head starts under the number bar.
     fantasyFigureLowered: { position: 'absolute', top: '9%', left: 0, right: 0, bottom: 0 },
-    // The scroll with the rule: sized by its text, up to 40 % of the card, then the text scrolls.
     fantasyScroll: { position: 'absolute', bottom: '4.5%', left: '6%', right: '6%', minHeight: 64 * s, maxHeight: '40%', justifyContent: 'center', paddingHorizontal: '12%', paddingVertical: 12 * s },
     fantasyScrollPaper: { backgroundColor: FANTASY_COLORS.row, borderWidth: 1 * s, borderColor: FANTASY_COLORS.rowEdge, borderRadius: 3 * s },
     fantasyScrollText: { flexGrow: 0 },
     fantasyRuleCaption: { gap: 4 * s },
     fantasyRule: { color: CARD_COLORS.parchmentInk, fontSize: 12 * s, lineHeight: 16 * s, textAlign: 'center' },
     fantasyHordeRule: { color: '#ffffff', backgroundColor: CARD_COLORS.horde, borderRadius: 4 * s, padding: 5 * s, fontSize: 10 * s, fontWeight: '800', textAlign: 'center' },
-    // Type of the zombie above its large count, on a parchment strip so it reads on the red frame.
     fantasyBigLabelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 * s, minWidth: 0 },
-    // The count of a Mold / Pit Spawn card, which has no Danger Levels: alone in the dark panel.
     invaderFace: { backgroundColor: INVADER_COLORS.backdrop },
     invaderLayer: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
-    // The navy grid darkened and reddened: the printed picture sits on a dark red backdrop.
     invaderBackdrop: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: INVADER_COLORS.backdrop, opacity: INVADER_BACKDROP_OPACITY },
-    // The picture fills the whole card under the title, inside the frame; tabs and rule box lie over it.
     invaderArt: { position: 'absolute', top: '15%', bottom: '2%', left: '3%', right: '3%', overflow: 'hidden' },
     // The official renders sit on a navy backdrop; a red veil makes them read like the printed card's red picture.
     invaderArtTint: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: INVADER_COLORS.backdrop, opacity: INVADER_ART_VEIL_OPACITY },
@@ -2344,14 +2029,10 @@ function makeStyles(s: number) {
     // Two digits (x10) in the hexagon: smaller, or Play (Cyrillic) cuts it short.
     invaderCountWide: { fontSize: 19 * s },
     invaderCountSingleWide: { fontSize: 23 * s },
-    // The sentence of an Extra Activation tab sits in the part of the bar that stays inside the card.
     invaderActivation: { width: '100%', fontSize: 12 * s, lineHeight: 12 * s },
-    // Starts after the hexagon (COUNT_TAB_HEXAGON of the tab) and stays inside the card.
     invaderActivationBox: { marginLeft: COUNT_TAB_HEXAGON, width: INVADER_ACTIVATION_WIDTH },
-    // Dark red rule box over the bottom of the picture, nearly the full width of the card.
     invaderRule: { position: 'absolute', top: '60%', bottom: '9%', left: '3%', right: '3%' },
     invaderRuleInner: { position: 'absolute', top: INVADER_RULE_INSET, bottom: INVADER_RULE_INSET, left: INVADER_RULE_INSET, right: INVADER_RULE_INSET, justifyContent: 'center' },
-    // Sized by `InvaderFace` from the length of the rule; this scale only applies the card width to it.
     invaderRuleText: { color: INVADER_COLORS.ruleInk, fontStyle: 'italic', textAlign: 'left' },
     invaderInfo: { position: 'absolute', left: '6%', top: '18.5%' },
     fantasyBigLabel: {
@@ -2378,35 +2059,28 @@ function makeStyles(s: number) {
       borderColor: '#ffffff',
     },
     hordeText: { color: '#ffffff', fontSize: 10 * s, fontWeight: '900' },
-    // Western planks: wood colour, grain lines, a darker edge.
     plank: { backgroundColor: WESTERN_COLORS.header.background, overflow: 'hidden', borderBottomWidth: 2 * s, borderBottomColor: WESTERN_COLORS.plankDark },
     grain: { position: 'absolute', height: 1 * s, backgroundColor: WESTERN_COLORS.grain, opacity: 0.55 },
     westernHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 6 * s, paddingHorizontal: 10 * s, paddingTop: 9 * s, paddingBottom: 6 * s, minHeight: 62 * s },
-    // The red brush stroke along the top edge of a printed header.
     westernBrush: { position: 'absolute', top: 0, left: 0, width: '58%', height: 5 * s, backgroundColor: WESTERN_COLORS.brush, borderBottomRightRadius: 8 * s },
     westernTitleBox: { flex: 1, minWidth: 0 },
     westernTitle: { color: WESTERN_COLORS.header.text, fontSize: 23 * s, lineHeight: 23 * s, fontWeight: 'normal', textTransform: 'uppercase', ...westernGlow(s) },
     westernTitleRule: { height: 2 * s, marginTop: 2 * s, backgroundColor: WESTERN_COLORS.header.text, opacity: 0.8 },
     westernSubtitle: { color: WESTERN_COLORS.header.text, fontSize: 10 * s, lineHeight: 12 * s, fontWeight: 'normal', textTransform: 'uppercase', ...westernGlow(s) },
     westernBody: { flex: 1 },
-    // The picture of an Abomination card: the printed window is landscape (the official art is cut to this ratio).
+    // The printed window is landscape; the official art is cut to this ratio.
     westernWindow: { width: '100%', overflow: 'hidden', borderBottomWidth: 2 * s, borderBottomColor: WESTERN_COLORS.plankDark },
     westernPictureOnly: { flex: 1, width: '100%', overflow: 'hidden' },
     westernPanel: { flex: 1, justifyContent: 'center', paddingHorizontal: 10 * s, paddingVertical: 6 * s, borderBottomWidth: 0 },
-    // What the app writes over a printed card (see WESTERN_LAYOUTS): the title sits on the bottom edge of its box.
     westernTitleSlot: { position: 'absolute', justifyContent: 'flex-end' },
     westernCenteredBox: { alignItems: 'center' },
     westernCenteredText: { textAlign: 'center' },
     westernPrintedTitle: { fontSize: WESTERN_TITLE_SIZE * s, lineHeight: (WESTERN_TITLE_SIZE + 1) * s, fontWeight: 'normal', textTransform: 'uppercase', ...westernGlow(s) },
-    // Two lines of this fill the title box (0.096 of the card): for a title of several words that does not fit on one
-    // line at the size above (`westernOneLine`).
     westernPrintedTitleTwoLines: { fontSize: 15 * s, lineHeight: 15 * s },
     westernExtraTitle: { fontSize: 18 * s, lineHeight: 17 * s, fontWeight: 'normal', textTransform: 'uppercase', ...westernGlow(s) },
     westernNumber: { color: WESTERN_COLORS.header.text, opacity: 0.9, fontSize: 11 * s, fontWeight: 'normal', textAlign: 'right', lineHeight: 11.5 * s, ...westernGlow(s) },
     westernFooterBox: { alignItems: 'center', justifyContent: 'center' },
-    // Count label: cream paper, a dark edge on its left and underside as on the printed one, the strip at its end.
     westernLabel: { position: 'absolute', right: 0, overflow: 'hidden' },
-    // With the hand-drawn label under it, the drawn edge and paper are not needed.
     plankPicture: { backgroundColor: 'transparent', borderBottomWidth: 0 },
     westernLabelPaperFill: { position: 'absolute', top: 0, bottom: 0, left: 0, backgroundColor: WESTERN_COLORS.paper, borderLeftWidth: 2 * s, borderBottomWidth: 3 * s, borderColor: WESTERN_COLORS.labelEdge },
     westernLabelText: { position: 'absolute', top: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
@@ -2419,7 +2093,6 @@ function makeStyles(s: number) {
     westernFooterText: { color: WESTERN_COLORS.header.text, fontSize: 11 * s, fontWeight: 'normal', textAlign: 'center' },
     westernExtraFooterText: { color: WESTERN_COLORS.header.text, fontSize: 12 * s, textAlign: 'center', fontWeight: 'normal' },
     westernPanelText: { color: WESTERN_COLORS.header.text, fontSize: 10 * s, lineHeight: 12.5 * s, textAlign: 'center', fontWeight: 'normal' },
-    // The Modern card (see MODERN_* above): banner over the top, labels, footer band, all absolutely placed on the picture.
     modernHeader: { position: 'absolute', top: 0, left: 0, width: '100%', aspectRatio: MODERN_HEADER_SIZE.width / MODERN_HEADER_SIZE.height },
     modernTitleBox: { position: 'absolute', left: MODERN_TITLE.left * s, top: MODERN_TITLE.top * s, height: MODERN_TITLE.height * s, right: `${MODERN_TITLE.reserve * 100}%`, justifyContent: 'center' },
     modernTitle: { textTransform: 'uppercase', textAlign: 'left', includeFontPadding: false },
@@ -2457,7 +2130,6 @@ function makeStyles(s: number) {
     number: { fontSize: 10 * s, fontWeight: '700', opacity: 0.8 },
     body: { flex: 1 },
     artShort: { flex: 1, minHeight: 72 * s, overflow: 'hidden' },
-    // A short rule under the picture (the longer ones are on the back).
     footer: { paddingHorizontal: 8 * s, paddingVertical: 5 * s },
     footerText: { fontSize: 11 * s, fontWeight: '700', textAlign: 'center' },
     infoBadge: {
@@ -2471,7 +2143,6 @@ function makeStyles(s: number) {
       borderColor: '#ffffff',
     },
     infoBadgeText: { color: '#ffffff', fontSize: 12 * s, lineHeight: 14 * s, fontWeight: '900', fontStyle: 'italic' },
-    // The back: the text takes the whole card under the header and scrolls when it is longer.
     sideFrame: { flex: 1, padding: 6 * s },
     sideBox: { flex: 1, borderRadius: 4 * s },
     sideContent: { gap: 8 * s, padding: 10 * s },

@@ -13,7 +13,6 @@ import type { TranslationKey } from './fr.ts';
 
 export type { TranslationKey };
 
-// To add a language: add its file in this folder, then add it to TRANSLATIONS and LANGUAGE_NAMES.
 export const TRANSLATIONS = { fr, en, de, es, it, pl, pt, ru, uk, cs };
 export type Language = keyof typeof TRANSLATIONS;
 export const LANGUAGE_NAMES: Record<Language, string> = {

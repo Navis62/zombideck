@@ -18,7 +18,6 @@ const ZONE_DISPLAYS: { value: ZoneDisplay; label: TranslationKey }[] = [
   { value: 'sequence', label: 'options.zoneSequence' },
 ];
 
-/** The card numbers and what sets each part apart differ per universe: Invader has its own details. */
 const DECK_PARTS: {
   part: keyof DeckParts;
   label: TranslationKey;
@@ -29,7 +28,7 @@ const DECK_PARTS: {
   { part: 'extra', label: 'options.extra', detail: { modern: 'options.extraDetail', invader: 'options.extraDetailInvader' } },
 ];
 
-/** The deck needs easier or harder cards: switching off the last of them switches on the other. */
+// Switching off the last of easy/hard switches the other on.
 function switchPart(parts: DeckParts, part: keyof DeckParts, on: boolean): DeckParts {
   const next = { ...parts, [part]: on };
   if (part === 'easy' && !on && !next.hard) next.hard = true;
@@ -60,7 +59,6 @@ export default function OptionsScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={['left', 'right', 'bottom']}>
       <AppBackground universe={universe} />
-      {/* One scroll for the whole page: two columns side by side, the app on the left, the game on the right. */}
       <ScrollView contentContainerStyle={styles.columns}>
         <View style={styles.column}>
           <Text style={styles.heading}>{t('options.language')}</Text>
@@ -94,7 +92,6 @@ export default function OptionsScreen() {
   );
 }
 
-/** Only for a universe whose rulebook sorts the deck into easier and harder cards. */
 function DeckPartsOptions({ universe }: { universe: UniverseId }) {
   const { deckParts, setDeckParts, t } = useApp();
   return (
@@ -142,7 +139,7 @@ function Choices<T extends string>(props: {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  // No flex on the scroll content: it grows with the taller column, so the page scrolls as a whole.
+  // No flex: grows with the taller column so the page scrolls as a whole.
   columns: { flexDirection: 'row', alignItems: 'flex-start', padding: 12, gap: 16 },
   column: { flex: 1, gap: 8 },
   heading: { color: COLORS.muted, fontSize: 14, fontWeight: '700', textTransform: 'uppercase' },

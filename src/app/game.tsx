@@ -21,7 +21,7 @@ import { CardBack } from '@/components/card-back';
 import { BossFace, bossHasBack, CardAnnounced, bossLabel, CardFace, cardHasBack, cardLabel, isGone, type Reveal, SpamFace, spamLabel } from '@/components/card-face';
 import { abominationName, ChoiceSheet } from '@/components/choice-sheet';
 import { DiscardSheet } from '@/components/discard-sheet';
-import { FlipCard } from '@/components/flip-card';
+import { FlipCard, PERSPECTIVE } from '@/components/flip-card';
 import { scrolledRecently } from '@/components/scroll-guard';
 import { ZoomButton } from '@/components/zoom-button';
 import { bossTrigger, CARDS_BY_ID, cardEffect, isTrejoCard, UNIVERSES } from '@/data/universes';
@@ -58,65 +58,56 @@ import { COLORS, DANGER_COLORS, PRESSED } from '@/theme';
 
 const CARD_RATIO = 63 / 88;
 const TABLE_GAP = 16;
-/** Height of the "Zone 2" line above each card, once there is more than one Spawn Zone. */
+const DEAL_FLIP_MS = 260;
+const SHAKE_MS = 450;
+/** Height of the "Zone 2" line above each card (more than one Spawn Zone). */
 const ZONE_LABEL = 22;
-/** Height of the zone line above the card when the zones are dealt one at a time. */
+/** Height of the zone line when zones are dealt one at a time. */
 const SEQUENCE_HEADER = 48;
-/** Below this width the cards stop shrinking on one row: they go on several rows, or the row scrolls. */
+/** Below this width, cards go on several rows or the row scrolls. */
 const MIN_CARD_WIDTH = 150;
-/** Smallest cards on several rows (the zombie counts stay readable); below it, one row that scrolls. */
+/** Smallest card on several rows (counts stay readable); below it, one row that scrolls. */
 const MIN_GRID_WIDTH = 95;
-/** Share of the screen height a card takes once tapped to be read up close. */
 const ZOOM_HEIGHT = 0.9;
-/** Distance of the close button of the enlarged card from the edges of the screen (plus the safe area). */
+/** Distance of the enlarged card's close button from the screen edges, plus the safe area. */
 const CLOSE_MARGIN = 12;
-/** Side of the close button of the enlarged card: a large target, the phone lies on a table. */
 const CLOSE_SIZE = 44;
-/** Time to tap "Reshuffle all" a second time before it goes back to normal. */
+/** Time to confirm a destructive tap before the button resets. */
 const CONFIRM_MS = 3000;
-/** Wait before Gozer's choice opens: the card flips (260 ms) and is read out first, so the players see Gozer arrive. */
+/** Lets the deal flip and the card's announcement finish before Gozer's choice opens. */
 const CHOICE_DELAY_MS = 700;
-/** Share of its colours a card keeps once the players removed its boss from the board. */
+/** Opacity of a card whose boss was removed. */
 const GONE_OPACITY = 0.4;
-/** Smallest a board button gets: room for the name on two lines and the action line, a large target for a phone on a table. */
+/** Room for the name on two lines and the action line. */
 const BOARD_BUTTON_MIN_HEIGHT = 56;
-/** Border of the framed "On the board" panel: thick enough to catch the eye from across a table. */
 const BOARD_FRAME_WIDTH = 2;
-/** Size of the "On the board" heading: larger than the other headings so the panel reads from across the table. */
 const BOARD_HEADING_SIZE = 15;
-/** Letter spacing of that heading, which is in capitals. */
 const BOARD_HEADING_SPACING = 1;
-/** Size of a boss name on the board: big enough to read at table distance. */
 const BOARD_NAME_SIZE = 17;
-/** Width of the coloured bar that tells a Necromancer from an Abomination on a board button. */
 const KIND_BAR_WIDTH = 6;
 
 export default function GameScreen() {
   const { game, setGame, haptics, zoneDisplay, t, trejoChoice, removeTrejo, trejoOnBoard } = useApp();
   const drawnKey = game?.piles.drawn.join('|') ?? '';
-  // The phone lies on the table for the whole game: keep the screen on.
   useKeepAwake();
 
   const [table, setTable] = useState({ width: 0, height: 0 });
   const [flip] = useState(() => new Animated.Value(1));
-  // Restarted once the table is measured too: the cards may move to a grid then, and on web the remounted cards
-  // would miss an animation already under way and stay edge-on.
+  // Also restarts once the table is measured: cards may remount in a grid, and on web remounted cards would stay edge-on.
   const measured = table.width > 0;
   useEffect(() => {
     flip.setValue(0);
-    Animated.timing(flip, { toValue: 1, duration: 260, useNativeDriver: Platform.OS !== 'web' }).start();
+    Animated.timing(flip, { toValue: 1, duration: DEAL_FLIP_MS, useNativeDriver: Platform.OS !== 'web' }).start();
   }, [drawnKey, measured, flip]);
 
-  // Shakes the deck for a moment each time it is shuffled.
   const [shuffles, setShuffles] = useState(0);
   const [shake] = useState(() => new Animated.Value(0));
   useEffect(() => {
     if (shuffles === 0) return;
     shake.setValue(0);
-    Animated.timing(shake, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }).start();
+    Animated.timing(shake, { toValue: 1, duration: SHAKE_MS, useNativeDriver: Platform.OS !== 'web' }).start();
   }, [shuffles, shake]);
 
-  // Reshuffling everything breaks the game's rhythm: it takes a second tap, undo can still bring the cards back.
   const [confirmingShuffle, setConfirmingShuffle] = useState(false);
   useEffect(() => {
     if (!confirmingShuffle) return;
@@ -124,7 +115,7 @@ export default function GameScreen() {
     return () => clearTimeout(timer);
   }, [confirmingShuffle]);
 
-  // A boss leaves the board on a second tap, like "Reshuffle all": the key of the button waiting for it.
+  // Key of the board button waiting for its second tap.
   const [confirmingRemove, setConfirmingRemove] = useState('');
   useEffect(() => {
     if (!confirmingRemove) return;
@@ -133,12 +124,11 @@ export default function GameScreen() {
   }, [confirmingRemove]);
 
   const [showDiscard, setShowDiscard] = useState(false);
-  // One zone at a time: the place looked at (`tableSlots`), the last card dealt unless another was tapped since.
+  // Sequence mode: the place looked at, the last card dealt unless another was tapped since.
   const [viewed, setViewed] = useState<{ step: string; ref: SlotRef } | null>(null);
-  // Several cards side by side are small: one tapped is shown full screen, until the next draw.
-  // `slot` is the place on the table (see `tableSlots`), SPAM cards included.
+  // Enlarged place on the table (SPAM cards included), until the next draw.
   const [zoomed, setZoomed] = useState<{ step: string; slot: number } | null>(null);
-  // The cards turned over to their back (by position), until the next draw: each card has its own side.
+  // Positions turned to their back, until the next draw.
   const [flips, setFlips] = useState<{ step: string; open: readonly number[] }>({ step: '', open: [] });
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -157,22 +147,18 @@ export default function GameScreen() {
   const zoneCount = game?.zones;
   const revealed = game?.piles.bosses?.revealed;
   const bossRule = game?.bossRule;
-  // Gozer's choice opens by itself; closing it leaves the choice pending, tapping Gozer's card opens it again.
   const pending = game ? pendingChoice(game) : undefined;
-  // The key is the choice itself (where it lives and the cards it offers): drawing or undoing something else leaves
-  // a closed sheet closed, while a new or restored choice opens it.
+  // Keyed by the choice itself, so unrelated draws or undos leave a closed sheet closed.
   const pendingKey = pending && game ? `${pendingPlace(game)}|${pending.boss}|${pending.offered.join('|')}` : '';
   const pendingBoss = pending?.boss ?? '';
   const pendingKeep = pending?.keep ?? 0;
   const [dismissed, setDismissed] = useState('');
-  // The choice whose sheet may show: set once the delay is over.
   const [opened, setOpened] = useState('');
-  // Once the choice is made (or undone away) a later one offering the same cards must open again.
+  // Reset once the choice is resolved, so a later one offering the same cards opens again.
   if (!pendingKey && (dismissed || opened)) {
     setDismissed('');
     setOpened('');
   }
-  // Says why the sheet opens, once the drawn card has been read out.
   useEffect(() => {
     if (!pendingKey || opened === pendingKey) return;
     const timer = setTimeout(() => {
@@ -224,9 +210,7 @@ export default function GameScreen() {
     setShuffles((count) => count + 1);
   };
   const bossDecks = UNIVERSES[game.universe].bosses;
-  // Without the powers of the era's bosses, SPAM, Gozer and Batman Who Laughs would do nothing.
   const bossPowers = bossDecks?.bossPowers ?? noPowers;
-  // Abominations drawn by hand, each with its reveal; they only exist with a boss rule (boss decks and rule go together).
   const manualRule = game.bossRule;
   const manualGroups = manualRule
     ? (game.piles.bosses?.manual ?? []).map((group) => ({ group, reveal: groupReveal(group, manualRule) }))
@@ -274,17 +258,13 @@ export default function GameScreen() {
     const next = drawAbomination(game, Math.random, bossPowers);
     if (next === game) return;
     if (haptics) drawFeedback();
-    // The new Abomination comes into view, whichever card of the step was looked at.
-    // The boss drawn is the first group added; a bringer's escorts come after it, so the step key counts all of them.
-    // It opens on the first SPAM set aside before it, if any.
+    // The key counts the escorts a bringer adds after the boss; the view opens on its first SPAM, if any.
     const hasSpam = (next.piles.bosses?.manual[extra]?.spam?.length ?? 0) > 0;
     setViewed({ step: `${drawnKey}#${next.piles.bosses?.manual.length ?? extra + 1}`, ref: hasSpam ? { kind: 'spam', of: { kind: 'manual', index: extra }, n: 0 } : { kind: 'manual', index: extra } });
     update(() => next);
-    // The Abomination drawn, then the escorts it brought (each its own group appended after it).
     say(arrivedAfter(game, next, 'manual'));
   };
   const changeDanger = (level: DangerLevel) => {
-    // The level already chosen changes nothing: nothing to read out.
     if (level === game.danger) return;
     const next = setDanger(game, level, bossTrigger, Math.random, bossPowers);
     update(() => next);
@@ -295,7 +275,6 @@ export default function GameScreen() {
     const next = chooseGained(game, picked);
     if (next === game) return;
     update(() => next);
-    // The group just resolved is the one that is new.
     say(arrivedAfter(game, next, 'all'));
   };
   const reveal = revealOf(game.piles.bosses?.revealed, game.bossRule, danger, trejoOnBoard);
@@ -308,10 +287,8 @@ export default function GameScreen() {
       return { step: drawnKey, open: open.includes(index) ? open.filter((i) => i !== index) : [...open, index] };
     });
   };
-  // A card whose boss the players removed stays on the table, greyed out.
   const fade = (face: React.ReactNode, faceReveal?: Reveal) => (isGone(faceReveal) ? <View style={styles.gone}>{face}</View> : face);
-  // A card with words on its back turns over; one without stays a plain face.
-  // `onTap` is what a tap on the face does (turn it, or reopen Gozer's choice): the faces take it themselves.
+  // `onTap`: what a tap on the face does (turn it, or reopen Gozer's choice); the faces take it themselves.
   const cardFace = (card: ZombieCard, index: number, faceWidth: number, onTap: () => void, zoomButton?: boolean) => {
     const shownReveal = reveal(card.id);
     const front = <CardFace card={card} danger={danger} width={faceWidth} reveal={shownReveal} zoomButton={zoomButton} trejoOutcome={trejoChoice(card.id)} />;
@@ -326,7 +303,6 @@ export default function GameScreen() {
       shownReveal,
     );
   };
-  // An Abomination drawn by hand, at the same place in the flips as the cards of the step.
   const bossFace = (faceReveal: Reveal, index: number, faceWidth: number, onTap: () => void, zoomButton?: boolean) => {
     const front = <BossFace reveal={faceReveal} width={faceWidth} universe={game.universe} />;
     if (!bossHasBack(faceReveal, t)) return fade(front, faceReveal);
@@ -342,10 +318,8 @@ export default function GameScreen() {
   };
   const flipHint = (flipped: boolean) => t(flipped ? 'card.flipBackHint' : 'card.flipHint');
   const draw = () => {
-    // No card left to deal (the rest are on display for this step): no vibration, no draw counted.
     const next = deal(game);
     if (next === game) return;
-    // The rating prompt counts Spawn steps, however the zones are dealt.
     if (!sequence || startsNewStep(game, cardEffect)) countDraw();
     // The announcement (cards, then the escorts a bringer brought) is made once the state is applied, by the effect on `drawn`.
     dealtRef.current = { fresh: !sequence || startsNewStep(game, cardEffect) };
@@ -364,8 +338,7 @@ export default function GameScreen() {
 
   const shown = sequence ? 1 : Math.max(1, slots.length);
   const label = zones > 1 || slots.length > 1 ? (sequence ? SEQUENCE_HEADER : ZONE_LABEL) : 0;
-  // The step being looked at: drawing an Abomination by hand brings it into view. The place looked at is remembered by its
-  // owner, so a SPAM appearing or moving (a new Danger Level) does not move the view to another card.
+  // Remembered by its owner, so a SPAM appearing or moving does not move the view to another card.
   const viewKey = `${drawnKey}#${extra}`;
   // The enlarged card is remembered by position, so it closes when the places change.
   const zoomKey = `${viewKey}#${slots.length}`;
@@ -395,12 +368,11 @@ export default function GameScreen() {
     const zoomable = shown > 1;
     const flippable = !!card && cardHasBack(card, danger, t, reveal(id));
     const flipped = flippable && isFlipped(index);
-    // A button hides what it holds from TalkBack: it carries the whole card.
+    // A button hides its content from TalkBack, so it carries the whole card.
     const asButton = zoomable || waiting || flippable;
     return (
       <View key={`${id}-${index}`} style={{ width: column, alignItems: 'center' }}>
         {label > 0 && (
-          // The zone is read with the card of its button below.
           <Text style={[styles.zone, styles.zoneLine]} numberOfLines={1} importantForAccessibility={asButton ? 'no' : 'auto'}>
             {t('game.zone', { n: cardZones[index] })}
           </Text>
@@ -411,10 +383,9 @@ export default function GameScreen() {
             disabled={!card || !asButton}
             // A card that turns over takes its taps in its faces: nothing touchable wraps the scrolling rule.
             faces={flippable}
-            // Gozer's choice first; then the card turns over to its rule; a card with none enlarges, as it always did.
+            // Gozer's choice first, then turn over to the rule, else enlarge.
             onPress={waiting ? reopenChoice : flippable ? () => toggleFlip(index) : () => zoom({ kind: 'card', index })}
             button={asButton}
-            // One announcement per card: a button hides what it holds from TalkBack, so it carries the whole card.
             label={
               asButton && card
                 ? `${label > 0 ? `${t('game.zone', { n: cardZones[index] })}: ` : ''}${cardLabel(card, danger, t, reveal(id), trejoChoice(id))}`
@@ -425,7 +396,7 @@ export default function GameScreen() {
           >
             {card && (
               <Animated.View
-                style={[styles.drawn, { transform: [{ perspective: 800 }, { rotateY }] }]}
+                style={[styles.drawn, { transform: [{ perspective: PERSPECTIVE }, { rotateY }] }]}
                 accessibilityElementsHidden={asButton}
                 importantForAccessibility={asButton ? 'no-hide-descendants' : 'auto'}
               >
@@ -439,7 +410,6 @@ export default function GameScreen() {
     );
   });
 
-  // Abominations drawn by hand sit after the cards of the step, under a line of their own.
   const manualCards = manualGroups.map(({ group, reveal: groupFace }, i) => {
     const index = drawn.length + i;
     const waiting = !!group.choice;
@@ -712,15 +682,14 @@ export default function GameScreen() {
         <Modal
           transparent
           animationType="fade"
-          // iOS shows modals in portrait unless told otherwise; the app is landscape only.
+          // iOS opens modals in portrait unless told otherwise.
           supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
           onRequestClose={() => setZoomed(null)}
-          // Android: the dimmed overlay reaches under the system bars and the camera cutout too.
+          // Android: the overlay also covers the system bars and the camera cutout.
           statusBarTranslucent
           navigationBarTranslucent
         >
           <View style={styles.zoom}>
-            {/* Behind the card: a tap beside it closes, a tap on it turns it over. */}
             <Pressable
               style={StyleSheet.absoluteFill}
               onPress={() => setZoomed(null)}
@@ -783,7 +752,6 @@ export default function GameScreen() {
   );
 }
 
-/** Every place of the table of a game, in draw order (see `tableSlots`). */
 const slotsOf = (state: GameState): TableSlot[] =>
   tableSlots(
     state.piles.drawn.map((id) => state.piles.bosses?.revealed[id]?.spam),
@@ -791,26 +759,19 @@ const slotsOf = (state: GameState): TableSlot[] =>
     (state.bossRule ? state.piles.bosses?.manual ?? [] : []).map((group) => group.spam),
   );
 
-/** What a screen reader says of an Abomination drawn by hand: the SPAMs it set aside first, then the boss. */
 const groupLabel = (group: Revealed, rule: BossRule, t: Translate): string => [...(group.spam ?? []).map(() => spamLabel(t)), bossLabel(groupReveal(group, rule), t)].join(' ');
 
-/** A tapped card as large as the screen allows, below its zone line. */
 const zoomWidth = (window: { width: number; height: number }) =>
   Math.min((window.height * ZOOM_HEIGHT - ZONE_LABEL) * CARD_RATIO, window.width * ZOOM_HEIGHT);
 
-/**
- * Sizes the cards so the deck and `shown` cards fit the table, as large as possible: on one row, or on two or three
- * when the height allows clearly larger, still readable cards (tablets). On one row past a few Spawn Zones, the cards
- * keep a readable size and the row scrolls. Beside a single card the deck takes the whole height, so the zone line
- * above the card never resizes it.
- */
+// Sizes the deck and `shown` cards to fit the table: one row, or two or three when clearly larger.
+// Beside a single card the deck takes the whole height, so the zone line never resizes it.
 function tableLayout(table: { width: number; height: number }, shown: number, label: number) {
   const tallest = (rows: number) => Math.max(0, ((table.height - (rows - 1) * TABLE_GAP) / rows - label) * CARD_RATIO);
   if (shown === 1) {
     const half = Math.max(0, (table.width - TABLE_GAP) / 2);
     return { width: Math.min(tallest(1), half), deckWidth: Math.min(table.height * CARD_RATIO, half), columns: 1, rows: 1 };
   }
-  // The deck takes one more column, beside the cards, at their size.
   const fit = (rows: number) => {
     const columns = Math.ceil(shown / rows);
     const width = Math.min(tallest(rows), (table.width - TABLE_GAP * columns) / (columns + 1));
@@ -838,11 +799,6 @@ function tableLayout(table: { width: number; height: number }, shown: number, la
   return best;
 }
 
-/**
- * What a screen reader says once cards are dealt: every card of the step, or only the last one when the zones are
- * dealt one at a time; each with its Spawn Zone once there is more than one.
- */
-/** The boss each card on display revealed from its deck, with the Dead Men Tales rules. */
 const revealOf =
   (revealed: Record<string, Revealed> | undefined, rule: BossRule | null | undefined, danger: DangerLevel | undefined, trejoOnBoard: (cardId: string) => boolean) =>
   (cardId: string): Reveal | undefined => {
@@ -858,10 +814,6 @@ const revealOf =
 
 type BoardEntry = { key: string; kind: BossKind; boss: string; target: BossTarget } | { key: string; kind: 'trejo'; stage: 'walker' | 'abomination' };
 
-/**
- * Every boss the players can remove: the ones left on the board by earlier Spawn steps, then those of the current step
- * (on its cards and drawn by hand), which are on the board too from where they sit.
- */
 function bossesInPlay(game: GameState): BoardEntry[] {
   const { stage } = game.piles.trejo;
   // The Trejo of the board is not a boss of `Piles.bosses`: it comes after them and exists without any boss deck.
@@ -879,7 +831,6 @@ function bossesInPlay(game: GameState): BoardEntry[] {
   return [...board, ...step, ...manual, ...trejo];
 }
 
-/** A revealed group with its powers: the SPAMs, the bosses brought along or gained, a choice still to make. */
 const groupReveal = (group: Revealed, rule: BossRule): Reveal => ({
   kind: group.kind,
   boss: group.boss,
@@ -895,17 +846,13 @@ const groupReveal = (group: Revealed, rule: BossRule): Reveal => ({
   gone: group.gone,
 });
 
-/** Where the choice Gozer waits on lives: a card of the step, else the Abomination drawn by hand at that position. */
 function pendingPlace(game: GameState): string {
   const bosses = game.piles.bosses;
   const card = game.piles.drawn.find((id) => bosses?.revealed[id]?.choice);
   return card ? `card:${card}` : `manual:${bosses?.manual.findIndex((group) => group.choice) ?? -1}`;
 }
 
-/**
- * A card face that can be tapped (turn over, enlarge, or Gozer's choice again). As a button it carries the whole card for the screen
- * reader: a button hides what it holds from TalkBack.
- */
+// As a button it carries the whole card for the screen reader: TalkBack hides what a button holds.
 function CardButton(props: {
   style: object;
   onPress: () => void;
@@ -913,12 +860,8 @@ function CardButton(props: {
   disabled?: boolean;
   label?: string;
   hint?: string;
-  /** For a card that turns over: whether it shows its back. */
   expanded?: boolean;
-  /**
-   * The card turns over and its faces take the taps themselves (see FlipCard and RuleSide): the button is then a plain
-   * accessible View, since a touchable around the scrolling rule would hold the gesture and the text would not scroll.
-   */
+  // Faces take the taps (see FlipCard, RuleSide): a touchable around the scrolling rule would hold the gesture.
   faces?: boolean;
   children?: React.ReactNode;
 }) {
@@ -981,7 +924,6 @@ function announcement(
     .join(' ');
 }
 
-/** One place per tap: the card of one zone (or a SPAM, or an Abomination drawn by hand) in full size, the places of the step as chips above it. */
 function OneAtATime(props: {
   slots: readonly TableSlot[];
   drawn: readonly string[];
@@ -990,19 +932,15 @@ function OneAtATime(props: {
   /** The zone of each card still to come in this step: twice for a zone owed two cards by a Double Spawn. */
   pending: readonly number[];
   extraLabel: string;
-  /** What the chip of an Abomination drawn by hand says. */
   chipLabel: string;
-  /** What the chip of a SPAM says: its name on the card. */
   spamLabel: string;
-  /** The SPAM chip: the name cut short, a long one ("SPAM (mielonka)") would squash the title. */
+  /** Cut short: a long name ("SPAM (mielonka)") would squash the title. */
   spamChip: string;
   renderSlot: (slot: TableSlot, position: number) => React.ReactNode;
-  /** The position, among the slots, of the place on display. */
   viewedIndex: number;
   onView: (index: number) => void;
   header: number;
   width: number;
-  /** Width of the column the card is centred in. */
   column: number;
   flip: Animated.AnimatedInterpolation<string>;
   emptyText: string;
@@ -1047,7 +985,6 @@ function OneAtATime(props: {
               </View>
             ))}
           </View>
-          {/* Says what the faded chips mean: cards of this step still in the deck. */}
           {drawn.length > 0 && (
             <Text style={styles.sequenceHint} numberOfLines={1}>
               {pending.length === 0
@@ -1061,7 +998,7 @@ function OneAtATime(props: {
       )}
       {viewed ? (
         <View style={slot}>
-          <Animated.View style={[styles.drawn, isLast && { transform: [{ perspective: 800 }, { rotateY: props.flip }] }]}>
+          <Animated.View style={[styles.drawn, isLast && { transform: [{ perspective: PERSPECTIVE }, { rotateY: props.flip }] }]}>
             {props.renderSlot(viewed, viewedIndex)}
           </Animated.View>
         </View>

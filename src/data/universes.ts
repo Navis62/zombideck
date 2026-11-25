@@ -40,45 +40,32 @@ import {
 
 export type Universe = {
   id: UniverseId;
-  /** Every set of the era: core boxes, expansions and promos. */
   sets: readonly CardSet[];
-  /** Expansions and promos the players switch on for the next game. */
   optionalSets: readonly CardSet[];
-  /** The core boxes replace each other (Modern: core deck or Fort Hendrix) instead of being combined (Fantasy). */
+  /** Core boxes replace each other (Modern) instead of combining (Fantasy). */
   exclusiveCores: boolean;
-  /** Switched on until the players choose: the core box most players start with. */
   defaultExpansions: readonly string[];
-  /** The core rulebook sorts the deck into easier and harder cards, which the options can leave out. */
+  /** The core rulebook sorts cards into easier and harder parts. */
   deckParts: boolean;
-  /** Under the title of the universe's menu. */
   tagline: TranslationKey;
-  /** Zombies of the era, on its carousel card and its menu. */
   heroes: readonly ArtSubject[];
-  /** The era picks its bosses one by one, in boss decks of their own (see `threat.ts`); `null` where it has none. */
+  /** Boss decks of the era (see `threat.ts`); `null` where it has none. */
   bosses: BossDecks | null;
 };
 
-/** What an era's boss decks are made of, and how its deck is tailored around them. */
 export type BossDecks = {
-  /** The Abominations the players switch on and off one by one, each one in the box that holds it. */
   abominations: readonly Boss[];
-  /** Likewise for the Necromancers; none in the modern era. */
   necromancers: readonly Boss[];
-  /** Every boss a saved boss deck of the era may hold. */
   ids: ReadonlySet<string>;
-  /** How many cards of a boss a saved boss deck may hold at most, for the bosses whose count is known. */
+  /** Most cards of a boss a save may hold, where known. */
   copies: ReadonlyMap<string, number>;
-  /** How the Abominations arrive in this era: one at a time, and where the rulebooks have it, the Abomination Fest. */
   rules: readonly BossRule[];
-  /** The deck of a new game, with its boss decks if the sets in play bring bosses. */
   tailor: (cards: readonly ZombieCard[], threat: Threat, setIds: ReadonlySet<string>) => Deck;
-  /** The special powers of the bosses of the era, read when one is revealed. */
   bossPowers: BossPowers;
-  /** The players draw Abominations by hand, besides the cards that call on the deck (both eras). */
+  /** Players may also draw Abominations by hand. */
   manualDraw: boolean;
 };
 
-/** The cards of a new deck once the era has set its bosses apart, as the players chose them. */
 export function tailorDeck(universe: UniverseId, threat: Threat, setIds: readonly string[]): Tailor {
   const { bosses } = UNIVERSES[universe];
   return bosses ? (cards) => bosses.tailor(cards, threat, new Set(setIds)) : (cards) => ({ cards });
@@ -158,16 +145,13 @@ export const UNIVERSES: Readonly<Record<UniverseId, Universe>> = {
   },
 };
 
-/** Shown in the carousel, in this order, after the playable universes. */
 export type UpcomingUniverse = never;
 export const UPCOMING_UNIVERSES: readonly UpcomingUniverse[] = [];
 
-/** Every card of every universe: saves and the game screen find a card by its id, whatever its era. */
 export const CARDS_BY_ID: ReadonlyMap<string, ZombieCard> = new Map(
   Object.values(UNIVERSES).flatMap((universe) => universe.sets.flatMap((set) => set.cards.map((card) => [card.id, card] as const))),
 );
 
-/** The card ids of each universe: a saved game only holds cards of its own era. */
 const CARD_IDS: Readonly<Record<UniverseId, ReadonlySet<string>>> = {
   modern: new Set(UNIVERSES.modern.sets.flatMap((set) => set.cards.map((card) => card.id))),
   fantasy: new Set(UNIVERSES.fantasy.sets.flatMap((set) => set.cards.map((card) => card.id))),
@@ -175,9 +159,7 @@ const CARD_IDS: Readonly<Record<UniverseId, ReadonlySet<string>>> = {
   western: new Set(UNIVERSES.western.sets.flatMap((set) => set.cards.map((card) => card.id))),
 };
 export const cardIdsOf = (universe: UniverseId): ReadonlySet<string> => CARD_IDS[universe];
-/** The bosses a saved boss deck of each universe may hold: a fantasy boss in a modern save rejects it. */
 export const bossIdsOf = (universe: UniverseId): ReadonlySet<string> => UNIVERSES[universe].bosses?.ids ?? new Set();
-/** The most cards of each boss a saved game of the universe may hold, for the bosses whose count is known. */
 export const bossCopiesOf = (universe: UniverseId): ReadonlyMap<string, number> => UNIVERSES[universe].bosses?.copies ?? new Map();
 
 /** What a card does to the Spawn step: SPAM draws again, Double Spawn doubles the next zone, Enter the Horde ends it. */
@@ -200,16 +182,10 @@ export const isTrejoCard = (cardId: string): boolean => {
   return kind === 'trejo' || kind === 'trejoRush';
 };
 
-/**
- * With boss decks (Dead Men Tales rules): a Necromancer card reveals its Necromancer, a card that spawns an
- * Abomination at the current Danger Level reveals which one.
- */
 export const bossTrigger: BossTrigger = (cardId, danger) => {
   const card = CARDS_BY_ID.get(cardId);
-  // Western: the Abomination text card has no levels, so it always calls on the Abomination deck.
   if (card?.kind === 'westernAbomination') return 'abomination';
-  // Modern: a card spawning the generic Abomination calls on the Abomination deck (rulebook p.17).
-  if (card?.kind === 'spawn') return card.zombie === 'abomination' && card.counts[DANGER_LEVELS.indexOf(danger)] > 0 ? 'abomination' : undefined;
+  if (card?.kind === 'spawn') return card.zombie === 'abomination' && card.counts[DANGER_LEVELS.indexOf(danger)] > 0 ? 'abomination' : undefined; // rulebook p.17
   if (card?.kind === 'necromancer') return 'necromancer';
   if (card?.kind === 'bossCall') return card.boss;
   if (card?.kind !== 'levels') return undefined;
@@ -219,18 +195,11 @@ export const bossTrigger: BossTrigger = (cardId, danger) => {
 
 const coreIds = (universe: Universe) => universe.optionalSets.filter((set) => set.core).map((set) => set.id);
 
-/**
- * The sets the players switch on and off one by one, the ones the menu counts: expansions and promos, and the core
- * boxes when they can be combined.
- */
+/** The sets the menu lists: expansions and promos, plus the core boxes when they can be combined. */
 export const switchableSets = (universe: Universe): readonly CardSet[] =>
   universe.exclusiveCores ? universe.optionalSets.filter((set) => !set.core) : universe.optionalSets;
 
-/**
- * Keeps at least one core box: switching off the last one switches on the first other core box, as the deck parts
- * do in the options. Where core boxes replace each other, only one stays: the changed switch wins, and old
- * preferences keep Fort Hendrix when it was enabled.
- */
+/** Keeps one core box on (exclusive cores: exactly one, the changed switch winning). */
 export function withCoreBox(universe: Universe, storedExpansions: readonly string[], switchedOff?: string): string[] {
   const expansions = universe.id === 'western' ? mergeWesternIronMaidenPacks(storedExpansions) : storedExpansions;
   const cores = coreIds(universe);
@@ -244,13 +213,11 @@ export function withCoreBox(universe: Universe, storedExpansions: readonly strin
   return [...expansions, cores.find((id) => id !== switchedOff) ?? cores[0]];
 }
 
-/** "Select all": every switchable set; where core boxes replace each other, the one chosen stays. */
 export function allExpansions(universe: Universe, expansions: readonly string[]): string[] {
   const all = switchableSets(universe).map((set) => set.id);
   return withCoreBox(universe, [...all, ...expansions.filter((id) => !all.includes(id))]);
 }
 
-/** "Deselect all": nothing left but one core box, the one in use (the first of them when several are combined). */
 export function noExpansions(universe: Universe, expansions: readonly string[]): string[] {
   const cores = coreIds(universe);
   const inUse = universe.exclusiveCores

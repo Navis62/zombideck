@@ -9,25 +9,17 @@ import { useApp } from '@/game/store';
 import type { Translate } from '@/i18n/translations';
 import { COLORS, PRESSED } from '@/theme';
 
-/** Share of the screen height the three candidates take; the title and the buttons get the rest. */
-const TILE_HEIGHT = 0.62;
-/** Widest a candidate gets on a tablet: three of them side by side stay readable. */
+/** Share of the screen height the candidates take. */
+const TILE_HEIGHT_SHARE = 0.62;
 const TILE_MAX_WIDTH = 260;
 const TILE_GAP = 12;
-/** Share of a candidate's height its picture takes; its name and rule (which scrolls) get the rest. */
 const ART_SHARE = 0.45;
-/** Width of the column showing the Abomination that absorbs the others, its rule under its picture. */
 const BOSS_WIDTH = 160;
 
-/** The name of an Abomination, or the generic one for a card that is not a named boss of either era. */
 export const abominationName = (id: string, t: Translate) => (isBossName(id) ? t(`zombie.${id}.one`) : t('game.manualBoss'));
 
-/**
- * Gozer draws candidates and the players keep some of them: tap `keep` of the `offered` Abominations, then confirm.
- * Closing the sheet leaves the choice pending (tap Gozer's card to come back).
- */
+/** Gozer's choice: tap `keep` of the `offered` Abominations, then confirm. Closing leaves it pending. */
 export function ChoiceSheet(props: {
-  /** The Abomination that absorbs the chosen ones (Gozer). */
   boss: string;
   offered: readonly string[];
   keep: number;
@@ -41,8 +33,7 @@ export function ChoiceSheet(props: {
   const toggle = (index: number) =>
     setPicked((now) => (now.includes(index) ? now.filter((i) => i !== index) : now.length < props.keep ? [...now, index] : now));
   const ready = picked.length === props.keep;
-  const height = Math.round(window.height * TILE_HEIGHT);
-  // The boss column and the tiles share the row, a gap between each.
+  const height = Math.round(window.height * TILE_HEIGHT_SHARE);
   const width = Math.min(TILE_MAX_WIDTH, Math.floor((window.width - 32 - BOSS_WIDTH - TILE_GAP * props.offered.length) / props.offered.length));
   const bossId = isModernAbomination(props.boss) ? props.boss : undefined;
   const bossName = abominationName(props.boss, t);
@@ -51,10 +42,10 @@ export function ChoiceSheet(props: {
     <Modal
       transparent
       animationType="fade"
-      // iOS shows modals in portrait unless told otherwise; the app is landscape only.
+      // iOS opens modals in portrait unless told otherwise.
       supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
       onRequestClose={props.onClose}
-      // Android: the dimmed overlay reaches under the system bars and the camera cutout too.
+      // Android: the overlay also covers the system bars and the camera cutout.
       statusBarTranslucent
       navigationBarTranslucent
     >

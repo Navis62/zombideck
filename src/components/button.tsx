@@ -2,16 +2,13 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { CARD_COLORS, COLORS, PRESSED } from '@/theme';
 
-/** Plain button of the game and side screens; `warning` turns it red while it waits for a confirmation. */
 export function Button(props: {
   label: string;
   detail?: string;
   onPress: () => void;
   disabled?: boolean;
   warning?: boolean;
-  /** Less padding, for the crowded game controls. */
   compact?: boolean;
-  /** Read instead of the label, for buttons that only show a symbol. */
   accessibilityLabel?: string;
   accessibilityHint?: string;
 }) {

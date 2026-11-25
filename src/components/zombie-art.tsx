@@ -6,16 +6,13 @@ import { variantFor } from '@/data/card-number';
 import { FANTASY_COLORS } from '@/theme';
 import type { FantasyNecromancer, FantasyZombie, InvaderAbomination, InvaderXeno, ModernCard, NamedModernAbomination, WesternAbomination, WesternCard, WesternZombie, ZombieType } from '@/game/types';
 
-/**
- * The Western zombies that stand alone (menu and carousel; on the cards they come with the whole printed card, see
- * `westernCardArt`) and the named Abominations (their picture is the window of their card, see `westernWindow`).
- */
+// Zombies shown alone (menu, carousel; on cards see `westernCardArt`) and named Abominations (see `westernWindow`).
 export type WesternSubject = Exclude<WesternZombie, 'longDeadWalker'> | WesternAbomination;
 const MODERN_RUNNER_ART = ['runnerCoat', 'runnerKneePads'] as const;
 const MODERN_WALKER_ART = ['walkerArgyle', 'walkerSign', 'walkerDenim'] as const;
 const MODERN_FATTY_ART = ['fattySecurity', 'fattyDangerSign'] as const;
 const TOXIC_WALKER_ART = ['toxicWalkerJacket', 'toxicWalkerSunglasses'] as const;
-/** Zombies with several official pictures: the card number picks one (see `artSubject`). */
+// Several official pictures per type: the card number picks one (see `artSubject`).
 const MODERN_VARIANTS: Partial<Record<ZombieType, readonly (keyof typeof MODERN_OFFICIAL)[]>> = {
   skinnerWalker: ['skinnerWalker', 'skinnerWalkerParka'],
   berserkerWalker: ['berserkerWalker', 'berserkerWalkerJacket'],
@@ -29,17 +26,17 @@ export type ArtSubject = (typeof TOXIC_WALKER_ART)[number] | (typeof MODERN_FATT
 
 type OfficialArt = {
   source: ImageSourcePropType;
-  /** Width over height of the file (a test checks it): the cut-out is framed by it. */
+  /** Width over height of the file (a test checks it). */
   ratio: number;
-  /** A transparent PNG cut-out: it can be tinted into a faded silhouette and sits on any backdrop. */
+  /** Transparent PNG: can be tinted into a silhouette. */
   cutout?: true;
-  /** `center` anchor: fit the figure whole in the panel instead of covering it (a landscape picture whose head is at one end). */
+  /** Fit the figure whole in a `center` panel instead of covering it. */
   whole?: true;
-  /** Enlargement of a `center` cut-out on a card, instead of CUTOUT_ZOOM / CUTOUT_WIDE_ZOOM. */
+  /** Replaces CUTOUT_ZOOM / CUTOUT_WIDE_ZOOM; 1 keeps the sides of a group. */
   zoom?: number;
-  /** Share of the width (0 left, 1 right) brought to the middle of a tall panel when the cut-out is wider than it (default 0.5): the head or main figure, kept inside the panel. */
+  /** Share of the width (0 left, 1 right) brought to the middle of a tall panel the cut-out is wider than (default 0.5). */
   focus?: number;
-  /** The picture ends flat (cut at the waist or the knees): on a Modern card it stands on the bottom edge instead of floating. */
+  /** Cut flat at the waist or knees: stands on the bottom edge of a Modern card. */
   bust?: true;
   /** Widest this figure gets on a Modern card, as a share of the card's width, instead of CARD_FIGURE.width: a wide group runs under the count labels on the right to stand taller. */
   cardWidth?: number;
@@ -49,16 +46,9 @@ type OfficialArt = {
   fill?: true;
 };
 
-/** Generic horde behind every Modern official cut-out (the drawings keep the background they were printed with). */
 const MODERN_BACKDROP = require('../../assets/modern/backgrounds/generic-horde.jpg');
 
-/**
- * Official cut-outs of the Modern zombies and Abominations (assets/modern/<zombies|abominations>/<name>-official.png, plus
- * the Eddies shared with Fantasy and Western). `ratio` is the file's width over height (a test checks it). A subject missing
- * here uses MODERN_ART (cartoon JPEG). `whole`: landscape figure whose head is at one end, never cropped; `zoom`: card
- * enlargement replacing the default (1 keeps the sides of a group); `focus`: the head or main figure brought to the middle
- * of a tall panel where the centre of the picture would cut it.
- */
+// A subject missing here uses MODERN_ART (cartoon JPEG).
 const MODERN_OFFICIAL = {
   nudeOrganist: { source: require('../../assets/modern/abominations/nude-organist-official.png'), ratio: 1.061, cutout: true, whole: true },
   stayPuft: { source: require('../../assets/modern/abominations/stay-puft-official.png'), ratio: 0.914, cutout: true, whole: true },
@@ -165,16 +155,10 @@ const MODERN_ART = {
 
 const SAMURAI_EDDIE_ART = require('../../assets/invader/abominations/samurai-eddie-abomination-official.png');
 
-// Every Fantasy subject has official art now; a new one without it would go here.
 const FANTASY_ART = {} satisfies Record<Exclude<FantasyZombie | FantasyNecromancer, keyof typeof FANTASY_OFFICIAL>, ImageSourcePropType>;
 
 
-/**
- * Official art of the Fantasy zombies and bosses (assets/fantasy/<zombies|abominations|necromancers>/<base>-official.png
- * or .jpg). Subjects without usable official art use FANTASY_ART. Add a line only once its
- * file exists (a `require` of a missing file breaks the bundle); `ratio` is the file's width over height, `cutout: true`
- * marks a transparent PNG.
- */
+// Add a line only once its file exists: a `require` of a missing file breaks the bundle.
 const FANTASY_OFFICIAL = {
   fumaKotaro: { source: require('../../assets/fantasy/necromancers/fuma-kotaro-official.png'), ratio: 1.374, cutout: true },
   dongZhuo: { source: require('../../assets/fantasy/abominations/dong-zhuo-official.png'), ratio: 0.834, cutout: true },
@@ -198,7 +182,7 @@ const FANTASY_OFFICIAL = {
   necromanticDragon: { source: require('../../assets/fantasy/abominations/necromantic-dragon-official.png'), ratio: 0.702, cutout: true },
   feralDragon: { source: require('../../assets/fantasy/abominations/feral-dragon-official.png'), ratio: 0.807, cutout: true },
   crowz: { source: require('../../assets/fantasy/zombies/crowz-official.png'), ratio: 1.486, cutout: true },
-  // The Divine Beasts cards print the Vermillion Bird, the first beast to spawn.
+  // The Divine Beasts card prints the Vermillion Bird, the first beast to spawn.
   divineBeast: { source: require('../../assets/fantasy/abominations/vermillion-bird-official.png'), ratio: 0.744, cutout: true },
   vermillionBird: { source: require('../../assets/fantasy/abominations/vermillion-bird-official.png'), ratio: 0.744, cutout: true },
   whiteTiger: { source: require('../../assets/fantasy/abominations/white-tiger-official.png'), ratio: 1.312, cutout: true },
@@ -311,10 +295,9 @@ export function npcWalkerArt(cardId: string): NpcWalkerArt {
 const OFFICIAL: Partial<Record<ArtSubject, OfficialArt>> = { ...FANTASY_OFFICIAL, ...MODERN_OFFICIAL };
 const officialOf = (subject: ArtSubject): OfficialArt | undefined => OFFICIAL[subject];
 
-/** Share of its colour a cut-out silhouette keeps on a Danger Level row: a faded stamp, as printed. */
 const SILHOUETTE_OPACITY = 0.5;
 
-// Official Eddie silhouettes extracted from the larger card illustrations in the CMON pack previews.
+// Extracted from the larger card illustrations in the CMON pack previews.
 const INVADER_EDDIE_ART = {
   cyborgEddieAbomination: require('../../assets/invader/abominations/cyborg-eddie-abomination-official.png'),
   samuraiEddieAbomination: SAMURAI_EDDIE_ART,
@@ -322,11 +305,7 @@ const INVADER_EDDIE_ART = {
   bountyHunterEddieAbomination: require('../../assets/invader/abominations/bounty-hunter-eddie-abomination-official.png'),
 } satisfies Partial<Record<InvaderAbomination, ImageSourcePropType>>;
 
-/*
- * The pictures of the Invader cards: the official Zombicide Xeno renders (zombicide.com, cut inside their frame, the
- * logo rubbed out) or, for the Xenos the site has no render of, the art of the printed card cut to the picture. They are
- * padded to the shape of the picture window of a card (a Xeno one is portrait, an Abomination one landscape).
- */
+// zombicide.com Xeno renders (cut inside their frame, logo rubbed out), or the printed card's art where the site has none.
 const INVADER_XENO_ART = {
   biter: require('../../assets/invader/zombies/biter-official.png'), // restored from the French printed card
   worker: require('../../assets/invader/zombies/xeno-worker-official.jpg'),
@@ -367,21 +346,16 @@ const INVADER_ABOMINATION_ART = {
 
 const INVADER_OFFICIAL: Partial<Record<ArtSubject, ImageSourcePropType>> = { ...INVADER_XENO_ART, ...INVADER_ABOMINATION_ART };
 
-// The Abomination windows and the transparent Eddie canvases are approximately 6:5.
+// Abomination windows and Eddie canvases are about 6:5.
 const INVADER_ABOMINATION_RATIO = 6 / 5;
 
-/**
- * The Abomination pictures cut from a printed card (840 x 700) are sharp in their top 63 % and filled with a blurred
- * dark red below, meant to sit behind the rule box. In the window the sharp part would end above the box, so they are
- * enlarged (`scale`, centred) and moved down (`down`, share of the window height) until the edge falls behind the box;
- * the head stays under the title plate.
- */
+// Pictures cut from a printed card (840 x 700) are sharp in their top 63 % and blurred dark red below, meant to sit behind
+// the rule box: `scale` them and move them `down` until the sharp edge falls behind the box.
 const INVADER_BLURRED_FILL: Partial<Record<ArtSubject, { scale: number; down: `${number}%` }>> = {
   shaila: { scale: 1.15, down: '5%' },
   dimbutcher: { scale: 1.15, down: '5%' },
 };
 
-// The same artwork is used in the carousel and menu.
 const INVADER_ART: Record<InvaderXeno | InvaderAbomination, ImageSourcePropType> = {
   ...INVADER_XENO_ART,
   ...INVADER_ABOMINATION_ART,
@@ -395,12 +369,7 @@ const WESTERN_HEROES: Record<Exclude<WesternSubject, WesternAbomination>, ImageS
 
 const ART: Partial<Record<Exclude<ArtSubject, WesternAbomination>, ImageSourcePropType>> = { ...MODERN_ART, ...FANTASY_ART, ...INVADER_ART, ...WESTERN_HEROES };
 
-/*
- * The Western cards are the printed cards themselves, scanned from the owner's Tabletop Simulator mod and cut to the
- * 63:88 card ratio, with the printed title, number, footer and rule text rubbed out (the app writes its own, in the
- * player's language, at the same place) and the count labels left under the app's own. Cards with the same art share
- * a file, so ten files serve the 45 cards.
- */
+// Scans of the printed cards (Tabletop Simulator mod) cut to 63:88, with title, number, footer and rule rubbed out. Cards with the same art share a file.
 const WESTERN_CARD_ART = {
   walkerMan: require('../../assets/western/zombies/walker-man-card.jpg'),
   walkerWoman: require('../../assets/western/zombies/walker-woman-card.jpg'),
@@ -414,11 +383,7 @@ const WESTERN_CARD_ART = {
   abomination: require('../../assets/western/zombies/abomination-text-card.jpg'),
 } satisfies Record<string, ImageSourcePropType>;
 
-/**
- * The printed card of a Western card. The deck alternates two pictures in pairs of cards: the old man then the woman
- * for the Walkers (#001-#002 man, #003-#004 woman, #017-#018 man...), the red then the bandaged Brute (#005-#006 red,
- * #007-#008 white, #021-#022 red...); every 16th card starts the cycle again.
- */
+// The printed deck alternates two pictures in pairs of cards (#001-#002 man, #003-#004 woman, ...); the cycle restarts every 16th card.
 export const westernCardArt = (card: WesternCard): ImageSourcePropType => {
   const first = Math.floor((Number(card.id.slice(-3)) - 1) / 2) % 2 === 0;
   switch (card.kind) {
@@ -443,12 +408,7 @@ export const westernCardArt = (card: WesternCard): ImageSourcePropType => {
 export const westernWhiteBruteArt = WESTERN_CARD_ART.bruteWhite;
 export const WESTERN_BACKDROP = require('../../assets/western/backgrounds/dusty-town-backdrop.jpg');
 
-/**
- * The picture of each named Western Abomination, shown in a window between the app's title plank and rule panel.
- * `ratio` is the window's own width over height, kept between 1.25 and 1.75 (the printed window grows or shrinks with
- * the length of the rule). A full illustration is framed by `center`, the vertical point brought to the middle
- * of the window. A cutout is fitted over the shared Western backdrop.
- */
+// `ratio` is the window's width over height, between 1.25 and 1.75 (the printed window follows the rule's length); `center` is the vertical point brought to the middle.
 const WESTERN_WINDOWS: Record<WesternAbomination, { source: ImageSourcePropType; ratio: number; center: number; cutout?: true; cutoutAspectRatio?: number; cutoutZoom?: number }> = {
   bowlerHat: { source: require('../../assets/western/abominations/bowler-hat-card.jpg'), ratio: 1.25, center: 0.38 },
   nightmareHorse: { source: require('../../assets/western/abominations/nightmare-horse-card.jpg'), ratio: 1.25, center: 0.4 },
@@ -480,7 +440,6 @@ const WESTERN_WINDOWS: Record<WesternAbomination, { source: ImageSourcePropType;
   westernFearEddie: { source: require('../../assets/western/abominations/fear-eddie.png'), ratio: 1.25, center: 0.5, cutout: true, cutoutAspectRatio: 840 / 672 },
   westernWickerEddie: { source: require('../../assets/western/abominations/wicker-eddie.png'), ratio: 1.4, center: 0.5, cutout: true },
 };
-/** The card the text-only Abomination draws on (also the face of an Abomination drawn by hand with no name). */
 export const westernTextCardArt = WESTERN_CARD_ART.abomination;
 export const westernWindow = (boss: WesternAbomination) => WESTERN_WINDOWS[boss];
 const isWesternBoss = (subject: ArtSubject): subject is WesternAbomination => subject in WESTERN_WINDOWS;
@@ -492,61 +451,45 @@ export function artSubject(card: ModernCard): ArtSubject {
   return variants ? variantFor(card, variants) : card.zombie;
 }
 
-/** Height over width of the Modern drawings (576 x 1280, a hair taller: they are stretched to it on a card). */
+// Modern drawings are 576 x 1280, stretched a hair taller on a card.
 const ART_RATIO = 2.25;
-/** Height over width of the fantasy illustrations (640 × 1280). */
+// Fantasy illustrations are 640 x 1280.
 const FIGURE_RATIO = 2;
-/**
- * The players found the pictures too small: a cut-out that covers its panel (`center`, on the cards) is drawn 18 % larger,
- * from the top so no head is cut. The `upper` anchor is not enlarged: its cut-outs were just trimmed of their transparent
- * margins (0-2 % left), so 1.18 would cut 8.5 % of the figure on each side (arms, weapons, wings) and show only ~40 % of a
- * tall one's height, while the trimmed file already fills the width, larger than before.
- */
+// Only `center` cut-outs are enlarged, from the top so no head is cut. `upper` ones are trimmed to their margins already:
+// 1.18 would cut 8.5 % off each side.
 const CUTOUT_ZOOM = 1.18;
-/** Width over height above which a cut-out is landscape (wings, tails, mounts). */
+/** Width over height above which a cut-out is landscape. */
 const WIDE_RATIO = 1;
-/** Landscape cut-outs grow less: more would trim their sides. */
 const CUTOUT_WIDE_ZOOM = 1.08;
-/** Drawn illustrations (Modern, Fantasy without a cut-out) are 12 % larger, centred on their column, head kept at the top. */
 const DRAWN_ZOOM = 1.12;
-/** Official Invader Xeno pictures cover their window; enlarged 12 % from the top edge, under the title plate. */
 const INVADER_XENO_ZOOM = 1.12;
-/** Invader Abominations hang from the top at the full card width; 10 % wider, centred, when no blurred-fill rule sets its own scale. */
+/** Used when `INVADER_BLURRED_FILL` sets no scale. */
 const INVADER_ABOMINATION_ZOOM = 1.1;
-/** Share of the window width a drawn illustration overflows on each side in an Invader card, to hide its torn border. */
+/** Share of the window width a drawn illustration overflows on each side, to hide its torn border. */
 const FILL_BLEED = 0.06;
-/**
- * A Modern card is the picture edge to edge, under the title banner (`anchor="card"`: the panel is the whole card, 63:88).
- * The figure stands in the space left of the count labels, its head just under the banner's slanted lower edge (22 to
- * 19 % of the card's height from left to right), its feet near the bottom of the card; it is never cropped, so a wide
- * group shows whole. Shares of the card's width (x) and height (y).
- */
 const CARD_RATIO = 88 / 63;
+// Modern `anchor="card"` figure, as shares of the card's width (x) and height (y): left of the count labels, never cropped.
 const CARD_FIGURE = {
-  /** Top of the head: the banner's edge is at 23 % on the left and 19.5 % on the right, the figure stands left of centre. */
+  /** Top of the head; the banner's slanted edge is at 23 % on the left and 19.5 % on the right. */
   top: 0.225,
-  /** Feet may run this far under the card's bottom edge (or behind a Rush / Extra Activation footer), as printed. */
+  /** Feet may run this far under the card's bottom edge, as printed. */
   feetBleed: 0.03,
-  /** Widest a figure gets: the count labels overlap its right side. */
+  /** Widest a figure gets, the count labels overlap its right side. */
   width: 0.92,
-  /** The same when the current Danger Level is shown alone: one label leaves more room. */
+  /** Same, with the current Danger Level shown alone. */
   widthLarger: 1,
-  /** Height factor of a figure when the current Danger Level is shown alone ("the picture larger"), head kept in place. */
+  /** Height factor with the current Danger Level shown alone, head kept in place. */
   largerZoom: 1.12,
   /** Where the middle of a figure narrower than its room stands. */
-  centerX: 0.29, // was 0.38: 9 % of the card's width further left, clear of the count labels (never past the left edge, see cardCutoutLayout)
+  centerX: 0.29, // clear of the count labels
 };
-/**
- * A Modern drawing (no official cut-out) is this much wider than the card so that its printed border falls outside; the
- * border at its top (this share of its height, rounded corners included) is tucked under the banner, whose lower edge is
- * highest on the right (`top`, share of the card's height).
- */
+// A Modern drawing is wider than the card so its printed border falls outside; `border` (share of its height) is tucked under the banner.
 const CARD_DRAWING = { oversize: 1.14, border: 0.035, top: 0.19 };
-/** What a `card` figure leaves to the card: share of its height covered at the bottom by a footer or text panel, and a larger picture. */
+/** `reserve`: share of the height covered at the bottom by a footer or text panel. */
 export type CardFrame = { reserve?: number; larger?: boolean };
-/** Share of the illustration above the head (border and halo) left out when showing its upper part. */
+/** Share of the illustration above the head (border and halo) left out. */
 const UPPER_OFFSET = 0.1;
-/** Illustrations drawn with the head close to the top edge: cut 10 % away and most of them lose their head. */
+/** Illustrations whose head is close to the top edge: the default offset would cut it. */
 const HIGH_HEADS: readonly ArtSubject[] = [
   'abominalpha', 'abominarat', 'toMeKuPa', 'blackheart', 'ostokar', 'evilTroy', 'queenMedea', 'grin', 'erikSummoner',
   'innsmouth', 'faolan', 'lordOfSkulls', 'spectralWalker', 'ratz', 'ratKing', 'swampTroll', 'necromanticDragon',
@@ -559,7 +502,7 @@ const HIGH_HEADS: readonly ArtSubject[] = [
   'pharaohEddie', 'samuraiEddie', 'mummyEddie', 'wickerManEddie', 'fearEddie', 'reaperEddie', 'shamanEddie',
   'bebop', 'rocksteady', 'mummRa', 'footNinja',
 ];
-/** Creatures whose head sits higher (tall ears, horn, a giant filling the frame) or lower (a maw in the belly). */
+/** Per-subject override of UPPER_OFFSET, where the head sits higher or lower than usual. */
 const UPPER_OFFSETS: Partial<Record<ArtSubject, number>> = {
   ...Object.fromEntries(HIGH_HEADS.map((subject) => [subject, 0.03])),
   zombieGiant: 0.03,
@@ -572,7 +515,6 @@ const UPPER_OFFSETS: Partial<Record<ArtSubject, number>> = {
   magentaCovfefe: 0.18,
 };
 
-/** Where a cut-out stands on a Modern card (`CARD_FIGURE`): full height under the banner, or fitted to the width left. */
 function cardCutoutLayout(art: OfficialArt, box: { width: number; height: number }, frame: CardFrame) {
   const reserve = frame.reserve ?? 0;
   const top = CARD_FIGURE.top * box.height;
@@ -596,12 +538,7 @@ function cardCutoutLayout(art: OfficialArt, box: { width: number; height: number
   };
 }
 
-/**
- * A transparent cut-out in its panel. A stamp on a Danger Level row (`full`) is shown whole. Otherwise the figure is
- * framed from the top so that its head stays in view: in a tall panel (`center`: carousel, menu, the one big row) it
- * covers the panel (`whole` fits the figure in it instead); in a wide or low one (`upper`: a boss picture, a window above the rows) it takes the full
- * width, head and chest, and a figure too short for the panel is centred in it.
- */
+// Framed from the top so the head stays in view: `center` covers a tall panel (`whole` fits it), `upper` takes the full width of a wide one.
 function Cutout({ art, anchor, silhouette, zoomed, frame }: { art: OfficialArt; anchor: string; silhouette?: boolean; zoomed: boolean; frame?: CardFrame }) {
   const [box, setBox] = useState({ width: 0, height: 0 });
   const tint = silhouette ? { tintColor: FANTASY_COLORS.silhouette, opacity: SILHOUETTE_OPACITY } : undefined;
@@ -611,12 +548,11 @@ function Cutout({ art, anchor, silhouette, zoomed, frame }: { art: OfficialArt; 
     layout = cardCutoutLayout(art, box, frame ?? {});
   } else if (box.width > 0 && box.height > 0) {
     const byWidth = box.width / art.ratio;
-    // Only a `center` cut-out on a card is enlarged, from the top: the head stays and only the sides and feet are trimmed.
     const zoom = zoomed && anchor === 'center' && !art.whole ? (art.zoom ?? (art.ratio > WIDE_RATIO ? CUTOUT_WIDE_ZOOM : CUTOUT_ZOOM)) : 1;
     const fit = anchor === 'center' && art.whole ? 'whole' : anchor;
     const height = (fit === 'center' ? Math.max(byWidth, box.height) : fit === 'whole' ? Math.min(byWidth, box.height) : byWidth) * zoom;
     const width = height * art.ratio;
-    // A cut-out wider than its panel is slid so that `focus` sits in the middle, without leaving a gap on either side.
+    // Slides a too-wide cut-out so `focus` sits in the middle without a gap on either side.
     const left = fit === 'center' && width > box.width ? Math.min(0, Math.max(box.width - width, box.width / 2 - (art.focus ?? 0.5) * width)) : (box.width - width) / 2;
     layout = { width, height, left, top: fit !== 'center' && height < box.height ? (box.height - height) / 2 : 0 };
   }
@@ -627,7 +563,6 @@ function Cutout({ art, anchor, silhouette, zoomed, frame }: { art: OfficialArt; 
   );
 }
 
-/** A subject's picture in its panel, framed by `anchor` (see `Cutout` for the cut-outs). */
 export function ZombieFigure({
   subject,
   anchor = 'center',
@@ -638,25 +573,23 @@ export function ZombieFigure({
 }: {
   subject: ArtSubject;
   anchor?: 'center' | 'upper' | 'full' | 'fill' | 'whole' | 'card';
-  /** A faded stamp of the zombie (a Danger Level row): a cut-out is tinted, a drawing keeps its colours. */
+  /** Faded stamp for a Danger Level row: a cut-out is tinted, a drawing keeps its colours. */
   silhouette?: boolean;
-  /** Lay a Fantasy cut-out on the backdrop of the Fantasy cards (carousel, menu), where nothing else is behind it (Modern ones bring theirs). */
+  /** Lay a Fantasy cut-out on the Fantasy backdrop (carousel, menu). */
   backdrop?: boolean;
-  /** No enlargement: the carousel and the menu show the pictures at their own size, only the cards are enlarged. */
+  /** No enlargement (carousel, menu). */
   plain?: boolean;
-  /** With `anchor="card"`: what the card covers at the bottom, and whether the picture is larger (see `CardFrame`). */
   frame?: CardFrame;
 }) {
   const [width, setWidth] = useState(0);
   const official = officialOf(subject);
   const drawnZoom = plain ? 1 : DRAWN_ZOOM;
-  // `whole`: a cut-out in full, head to feet, in its panel; a drawing has its border to crop and covers the panel as ever.
+  // A drawing has a border to crop, so it cannot be `whole`.
   if (anchor === 'whole' && !official?.cutout) anchor = 'center';
   const source = official?.source ?? (isWesternBoss(subject) ? WESTERN_WINDOWS[subject].source : ART[subject]);
-  // A cut-out has no border to crop and sits on whatever is behind it.
   if (official?.cutout) {
     const cutout = <Cutout art={official} anchor={anchor} silhouette={silhouette} zoomed={!plain} frame={frame} />;
-    // A Modern cut-out always lies on the generic horde (never behind a silhouette); a Fantasy one only where `backdrop` asks.
+    // Modern cut-outs always lie on the generic horde, except as silhouettes.
     const behind = silhouette ? undefined : subject in MODERN_OFFICIAL ? MODERN_BACKDROP : backdrop ? FANTASY_PARTS.artBackground : undefined;
     if (!behind) return cutout;
     return (
@@ -667,7 +600,6 @@ export function ZombieFigure({
     );
   }
   if (subject === 'translucent') return <Image source={source} style={styles.fullFigure} resizeMode="cover" />;
-  // A Modern drawing covers the card with its own background, its head just under the banner.
   if (anchor === 'card') {
     const scaled = width * CARD_DRAWING.oversize;
     const top = CARD_DRAWING.top * width * CARD_RATIO - CARD_DRAWING.border * scaled * ART_RATIO;
@@ -679,16 +611,13 @@ export function ZombieFigure({
       </View>
     );
   }
-  // The Western heroes are cut for their panel: cover, whatever its shape.
   if ((isWesternBoss(subject) || subject in WESTERN_HEROES) && anchor !== 'full') return <Image source={source} style={styles.fullFigure} resizeMode="cover" />;
-  // The official Invader pictures are framed renders, not cut-outs: they cover their panel too (carousel, menu).
+  // Invader pictures are framed renders, not cut-outs.
   if (subject in INVADER_OFFICIAL && anchor !== 'full' && anchor !== 'fill') return <Image source={source} style={styles.fullFigure} resizeMode="cover" />;
   if (anchor === 'fill') {
-    // The face of an Invader card: its official picture covers the window, which spans the whole card under the title.
     const official = INVADER_OFFICIAL[subject];
     if (official) {
-      // A landscape picture (an Abomination) hangs from the top at the full width of the card, the rest of the window
-      // being the red backdrop behind the rule box; a portrait one (a Xeno) covers the window.
+      // A landscape Abomination hangs from the top over the red backdrop; a portrait Xeno covers the window.
       if (subject in INVADER_ABOMINATION_ART) {
         const fit = INVADER_BLURRED_FILL[subject];
         const wide = fit?.scale ?? INVADER_ABOMINATION_ZOOM;
@@ -702,7 +631,6 @@ export function ZombieFigure({
       }
       return <Image source={official} style={[styles.fullFigure, { transform: [{ scale: INVADER_XENO_ZOOM }], transformOrigin: 'center top' }]} resizeMode="cover" />;
     }
-    // No official picture: the drawn illustration, wider than the window so its cream torn border is cut off.
     return (
       <View style={StyleSheet.absoluteFill} onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
         {width > 0 && (
@@ -717,8 +645,6 @@ export function ZombieFigure({
 
   if (anchor === 'full') return <Image source={source} style={styles.fullFigure} resizeMode="contain" />;
   if (anchor === 'center') return <Image source={source} style={[styles.figure, !plain && { transform: [{ scale: drawnZoom }], transformOrigin: 'center top' }]} resizeMode="cover" />;
-  // `upper`: head and chest of a full-length figure in a wide panel: the width fills the panel, the halo above the head and
-  // the legs are cropped.
   return (
     <View style={StyleSheet.absoluteFill} onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
       {width > 0 && (
@@ -731,7 +657,7 @@ export function ZombieFigure({
   );
 }
 
-// Slightly larger than its panel so the overflow trims the printed cream border.
+// `figure` overflows its panel so the printed cream border is trimmed.
 const styles = StyleSheet.create({
   fullFigure: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
   topFigure: { position: 'absolute', top: 0, left: 0, width: '100%', height: 'auto' },

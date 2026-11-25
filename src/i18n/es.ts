@@ -801,7 +801,7 @@ export const es: Record<TranslationKey, string> = {
   'zombie.wickerManEddie.other': 'Wicker Eddie',
   'zombie.fearEddie.one': 'Fear Eddie',
   'zombie.fearEddie.other': 'Fear Eddie',
-  // Invader: official Edge Entertainment terms (Invader booklet); Dark Side has no known Spanish edition: "Driller" and "Pit" kept in English; composed: card.pitSpawnTitle/Rule, card.drillerAbominationRule
+  // Invader: official Edge Entertainment terms (Invader booklet); Dark Side: Driller and Pit kept in English
   'universe.invader': 'Invader',
   'universe.invaderGame': 'Invader · Dark Side',
   'menu.taglineInvader': 'Compañero no oficial para Zombicide: Invader y Dark Side',
@@ -833,7 +833,6 @@ export const es: Record<TranslationKey, string> = {
   'card.moldSpawnRule': 'Coloca {count} {zombies} en cada Zona de Moho activo. Si no hay ninguna Zona de Moho activo, robad otra carta.',
   'card.pitSpawnTitle': '¡Aparición en Pit: {count} {zombies}!',
   'card.pitSpawnRule': 'Coloca {count} {zombies} en cada Zona de Pit abierto.',
-  // Invader expansions: set names are product names kept in English; the new Xenos keep their English names (no known edition), with the official Worker / Driller terms where the language has them; named Abominations keep their names after the language’s Abomination word
   'set.blackOps': 'Black Ops',
   'set.darkSideExtras': 'Dark Side Extras',
   'set.civilianExtras': 'Civilian Extras',
@@ -884,7 +883,6 @@ export const es: Record<TranslationKey, string> = {
   'zombie.samuraiEddieAbomination.other': 'Abominación Samurai Eddie',
   'zombie.bassistEddieAbomination.other': 'Abominación Bassist Eddie',
   'zombie.bountyHunterEddieAbomination.other': 'Abominación Bounty Hunter Eddie',
-  // Western (Zombicide: Undead or Alive)
   'universe.western': 'Western',
   'universe.westernGame': 'Zombicide: Undead or Alive',
   'menu.taglineWestern': 'Compañero no oficial para Zombicide: Undead or Alive',

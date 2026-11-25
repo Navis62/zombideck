@@ -13,19 +13,16 @@ import { useApp } from '@/game/store';
 import { CARD_COLORS, COLORS, PRESSED } from '@/theme';
 
 const HORDE_GAP = 8;
-/** Width over height of the zombie illustrations. */
 const ART_RATIO = 0.5;
-/** Lets the screen settle before the store's rating prompt can show up. */
+/** Lets the screen settle before the store's rating prompt shows. */
 const REVIEW_DELAY_MS = 1000;
 
 export default function MenuScreen() {
   const { game, setGame, universe, expansions, threat, deckParts, t } = useApp();
   const { sets, deckParts: hasDeckParts, tagline, heroes } = UNIVERSES[universe];
-  // Each universe keeps its own game: this menu only sees, resumes and replaces its own.
   const resumable = game;
   const parts = hasDeckParts ? deckParts : ALL_PARTS;
   const [confirming, setConfirming] = useState(false);
-  // The illustrations keep their shape: as wide as the row allows, as tall as the space left under the title.
   const [horde, setHorde] = useState({ width: 0, height: 0 });
   const zombieWidth = Math.max(0, Math.min((horde.width - HORDE_GAP * 2) / 3, horde.height * ART_RATIO));
 
@@ -39,12 +36,10 @@ export default function MenuScreen() {
 
   const setIds = useMemo(() => activeSetIds(sets, expansions), [sets, expansions]);
   const tailor = tailorDeck(universe, threat, setIds);
-  // Built once per choice, not on every render: the count does not depend on the shuffle.
   const deckSize = useMemo(
     () => tailorDeck(universe, threat, setIds)(selectCards(sets, setIds, parts), Math.random).cards.length,
     [universe, threat, sets, setIds, parts],
   );
-  // A core box that replaces another is not an expansion: the counter leaves it out.
   const expansionSets = switchableSets(UNIVERSES[universe]);
   const enabledExpansions = expansionSets.filter((set) => setIds.includes(set.id)).length;
 
@@ -53,7 +48,6 @@ export default function MenuScreen() {
       setConfirming(true);
       return;
     }
-    // Same board as last time until the players change it: keep its Spawn Zones.
     setGame(() => newGame(sets, setIds, parts, Math.random, game?.zones, universe, tailor));
     setConfirming(false);
     router.push('/game');
@@ -81,7 +75,6 @@ export default function MenuScreen() {
           </View>
         </View>
 
-        {/* Scrolls when the buttons do not fit: a short screen, a large system font size. */}
         <ScrollView style={styles.menu} contentContainerStyle={styles.menuContent}>
           {resumable && (
             <Pressable
@@ -112,7 +105,6 @@ export default function MenuScreen() {
               </Text>
             )}
           </Pressable>
-          {/* Set up before starting: the expansions apply to the next game. */}
           {!confirming && (
             <Pressable
               style={({ pressed }) => [styles.secondary, pressed && PRESSED]}
@@ -132,11 +124,9 @@ export default function MenuScreen() {
           >
             <Text style={styles.secondaryText}>{t(confirming ? 'menu.cancel' : 'options.title')}</Text>
           </Pressable>
-          {/* Side by side: the menu column stays as short as before the carousel. */}
           <View style={styles.links}>
             <Pressable
               style={({ pressed }) => [styles.link, pressed && PRESSED]}
-              // Opened from the carousel, so going back is going there.
               onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
               accessibilityRole="button"
             >
@@ -166,7 +156,7 @@ const styles = StyleSheet.create({
   tagline: { color: '#fff0ce', fontSize: 13, fontWeight: '700' },
   horde: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: HORDE_GAP, marginTop: 10 },
   zombie: { borderRadius: 8, overflow: 'hidden', borderWidth: 2, borderColor: CARD_COLORS.ink },
-  // A ScrollView grows by default: without flexGrow 0 it would take the width of the illustrations.
+  // flexGrow 0: a ScrollView would otherwise take the width of the illustrations.
   menu: { width: 260, flexGrow: 0, alignSelf: 'stretch' },
   menuContent: { flexGrow: 1, justifyContent: 'center', gap: 10, paddingVertical: 12 },
   primary: { backgroundColor: '#a51f22', borderColor: CARD_COLORS.ink, borderWidth: 2, borderRadius: 8, paddingVertical: 12, paddingHorizontal: 16, alignItems: 'center' },

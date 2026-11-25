@@ -14,9 +14,8 @@ import type {
   ZombieCard,
 } from '../game/types';
 
-// Fantasy era cards, transcribed from the printed cards (checked card by card against pictures of the decks).
-// Levels are in Danger Level order: blue, yellow, orange, red (the cards print them top-down, red first).
-// Each level is written as a zombie letter and a count ("W5"), "A" for the Abomination, "-" for "Nothing in sight!".
+// Checked card by card against the printed cards. Levels run Blue to Red (printed Red first):
+// a zombie letter and a count ("W5"), "A" for the Abomination, "-" for "Nothing in sight!".
 
 const BLACK_PLAGUE = 'blackPlague';
 const GREEN_HORDE = 'greenHorde';
@@ -30,14 +29,11 @@ const ZOMBIE_BOSSES = 'zombieBosses';
 const FRIENDS_AND_FOES = 'friendsAndFoes';
 const HORDE_BOX = 'hordeBox';
 const NO_REST = 'noRestForTheWicked';
-// The Kickstarter packs and Special Guest boxes, several of them sold apart too: one entry, each boss picked alone.
 const SPECIAL_GUESTS = 'specialGuests';
 const RAT_KING = 'ratKingSwampTroll';
 const WHITE_DEATH = 'whiteDeath';
 const ETERNAL_EMPIRE = 'eternalEmpire';
-// Kickstarter packs and Special Guest boxes printed after Eternal Empire, one entry each. Their printed
-// numbers overlap (the Massive Darkness 2 Crossover, Compagnia della Forca and Iron Maiden cards all start in the #360s-#370s),
-// which the set prefix of the ids keeps apart.
+// Printed after Eternal Empire; their numbers overlap, which the set prefix of the ids keeps apart.
 const MASSIVE_DARKNESS_2 = 'massiveDarkness2';
 const THUNDERCATS = 'thundercats';
 const COMPAGNIA = 'compagniaDellaForca';
@@ -67,13 +63,12 @@ const CROWZ: Zombies = { W: 'crowz' };
 const TAINTED: Zombies = { W: 'taintedWalker', A: 'taintedAbomination' };
 const SPECTRAL: Zombies = { W: 'spectralWalker' };
 const RATZ: Zombies = { W: 'ratz' };
-// White Death prints "Brutes" where the earlier boxes print "Fatty".
+// White Death prints "Brutes" for "Fatty".
 const WHITE_DEATH_ZOMBIES: Zombies = { W: 'wdWalker', R: 'wdRunner', F: 'wdBrute' };
 
 function level(spec: string, zombies: Zombies): FantasyLevel {
   if (spec === '-') return null;
   if (spec === 'A' && zombies.A) return { zombie: zombies.A, count: 1 };
-  // A Walker, Runner or Fatty level always prints its count: a missing one is a transcription slip.
   const match = /^([WRF])([1-9]\d*)$/.exec(spec);
   if (!match) throw new Error(`Unreadable level "${spec}"`);
   const [, letter, count] = match;
@@ -153,8 +148,7 @@ const BLACK_PLAGUE_TWINS: readonly Specs[] = [
   ['F1', 'W3', 'W5', 'R3'], // 024 and 036
 ];
 
-// The levels as printed: the Horde symbol beside each one stands for the extra zombie set aside for the Horde, not
-// counted here (the fan wiki adds it to most counts). Green Horde #179-#190 come back as #191-#202.
+// As printed: the Horde symbol's extra zombie is not counted (the fan wiki adds it). #179-#190 come back as #191-#202.
 const GREEN_HORDE_SPAWNS: readonly Specs[] = [
   ['-', 'R4', 'W5', 'F2'], // 167
   ['-', 'F2', 'W5', 'W5'],
@@ -219,8 +213,7 @@ const wulfsburgCards: ZombieCard[] = [
   ...copies(61, 2, (id) => levels(WULFSBURG, id, ['-', 'A', 'A', 'A'], WOLFZ, { title: 'named' })),
 ];
 
-// N.P.C. 1 (purple border) and N.P.C. 2 (green border) print the same four cards in turn, three times each.
-// The fan wiki has #064 and #065 wrong; checked on the printed cards.
+// N.P.C. 1 and 2 print the same four cards in turn, three times each (the fan wiki has #064 and #065 wrong).
 const NPC_SPAWNS: readonly Specs[] = [
   ['-', 'W4', 'W4', 'W5'], // 063, 067, 071; 075, 079, 083
   ['W1', 'W1', 'W6', 'W7'],
@@ -245,10 +238,7 @@ const crowzCards: ZombieCard[] = copies(105, 12, (id) =>
   levels(FANTASY_CROWZ, id, ['W2', 'W3', 'W4', 'W5'], CROWZ, { title: 'murderOfCrowz' }),
 );
 
-/**
- * Named Abominations: their picture across Yellow to Red, "Nothing in sight!" at Blue, and their name as the title.
- * Some cards print no text at Blue: the picture covers it, and the boss spawns at every level.
- */
+/** Named Abominations spawn at Yellow to Red; `atBlue` cards print no Blue text and spawn at every level. */
 const namedAbomination = (setId: string, id: string, zombie: NamedAbomination, atBlue = false): FantasyCard =>
   levels(setId, id, [atBlue ? 'A' : '-', 'A', 'A', 'A'], { A: zombie }, { title: 'named' });
 /** Boss, set, first printed number, copies, and how many of the first copies spawn at Blue too. */
@@ -292,32 +282,23 @@ const namedCards = (setId: string) =>
 const namedNecromancers = (setId: string, first: number, zombie: NamedNecromancer, count = 6) =>
   copies(first, count, (id) => necromancer(setId, id, zombie));
 
-/**
- * The Iron Maiden Eddies printed as one picture: they are not in the table above (see `eddie` below), but they are
- * named Abominations all the same.
- */
+// Not in the table above (see `eddie`).
 const IRON_MAIDEN_ABOMINATIONS: readonly NamedAbomination[] = [
   'pharaohEddie', 'samuraiEddie', 'mummyEddie', 'wickerManEddie', 'fearEddie',
 ];
-/** The zombies printed without a count: their picture stands for one. */
+/** Zombies printed without a count: their picture stands for one. */
 export const NAMED_ZOMBIES: ReadonlySet<FantasyZombie> = new Set([
   'wolfbomination',
   ...NAMED_ABOMINATIONS.map(([zombie]) => zombie),
   ...IRON_MAIDEN_ABOMINATIONS,
-  // The Divine Beasts card (`divineBeasts-card`, unnumbered) prints a picture too; it is no entry of the table above.
   'divineBeast',
 ]);
-/**
- * Abominations, named or not: the Horde symbol never adds one to the Horde. The Horde Box makes Fatty Bursters
- * Fatties, and gives the Feral Dragon and the Zombie Giant rules of their own.
- */
+/** Named zombies that are not Abominations by the rules. */
 const NOT_ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
   'fattyBurster',
   'feralDragon',
   'zombieGiant',
   'necromanticDragon',
-  // The Zombie card of the pack prints "Divine Beasts" with a picture, not an Abomination card; the Abomination card
-  // (rule "Spawn Vermillion Bird") is in the boss deck, where the beasts spawn in turn (`DIVINE_BEASTS`, threat.ts).
   'divineBeast',
 ]);
 export const ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
@@ -328,11 +309,7 @@ export const ABOMINATIONS: ReadonlySet<FantasyZombie> = new Set([
   'godEaterAbomination',
   ...[...NAMED_ZOMBIES].filter((zombie) => !NOT_ABOMINATIONS.has(zombie)),
 ]);
-/**
- * Bosses with a rule of their own (`card.<id>Rule`), shown when they are revealed from their deck: the boss cards of
- * Frozen Fortress, White Death and Eternal Empire, and the named Necromancers. The rules of the groups at the end are
- * not printed on their cards: they come from other sources, listed next to them.
- */
+/** Bosses with a rule (`card.<id>Rule`) shown when revealed; the groups at the end come from the sources noted. */
 export const BOSS_RULE_IDS = [
   'fantasyAbomination',
   'orcAbomination',
@@ -403,7 +380,7 @@ export const BOSS_RULE_IDS = [
   'dongZhuo',
   'zhangJiao',
   'fumaKotaro',
-  // Rules written from the printed Massive Darkness 2 "Heroes and Enemies in Zombicide Fantasy" sheet (owner's photo).
+  // Massive Darkness 2 "Heroes and Enemies in Zombicide Fantasy" sheet.
   'reaper',
   'baalberith',
   'horseman',
@@ -411,7 +388,7 @@ export const BOSS_RULE_IDS = [
   'hugBear',
   'banshee',
   'cerberus',
-  // Rules from the Zombicide fan wiki (zombicide.fandom.com), read on 2026-11-22.
+  // Fan wiki.
   'lordJanas',
   'marike',
   'bebop',
@@ -421,25 +398,18 @@ export const BOSS_RULE_IDS = [
   'mummyEddie',
   'wickerManEddie',
   'fearEddie',
-  // (The Pharaoh and Mummy Eddie rules match the owner's previews of the Modern Pharaoh and Mummy cards, a second source.)
-  // Doom and Gloom have no card: their rule comes with the Lord of Skulls (fan wiki, 2026-11-22).
+  // Doom and Gloom have no card: their rule comes with the Lord of Skulls (fan wiki).
   'doom',
   'gloom',
-  // The Divine Beasts: the owner's reference cards and the Divine Beasts rulebook. The White Tiger's free action is a
-  // "Combat Action" as printed on the reference card; the rulebook says "Melee Action" (the card is followed). Its
-  // elimination reads "2 hits in a single Melee Action" as printed on the owner's reference card (the rulebook says
-  // "Attack Action": the card is followed).
+  // Divine Beasts reference cards, which win over the rulebook ("Combat Action" and "2 hits in a single Melee Action" for the White Tiger).
   'vermillionBird',
   'whiteTiger',
   'blackTortoise',
   'azureDragon',
-  // Timecrash rulebook p.3 and p.8 (printed card, unnumbered).
+  // Timecrash rulebook p.3 and p.8.
   'shredder',
 ] as const;
-/**
- * Bosses with no rule to show when they are revealed: only the Divine Beasts card, which is no boss itself (it stands for
- * the chain of the four beasts, each with its own rule above) and never appears on its own.
- */
+/** The Divine Beasts card stands for the chain of beasts, each with its own rule above. */
 export const BOSSES_WITHOUT_RULE = ['divineBeast'] as const;
 export type BossRuleId = (typeof BOSS_RULE_IDS)[number];
 /** Necromancers with a name: the normal Necromancer rules, plus one of their own. */
@@ -473,13 +443,10 @@ export const NAMED_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<Named
   'fumaKotaro',
   'shredder',
 ]);
-/**
- * Necromancers whose card does not start with "Normal Necromancer rules": the Mumm-Ra, Zhang Jiao and Fūma Kotarō cards
- * print their own rule alone, and so does Shredder's (it also tells how he plays in Black Plague and Green Horde).
- */
+/** Necromancers whose card does not start with "Normal Necromancer rules". */
 export const PLAIN_RULE_NECROMANCERS: ReadonlySet<FantasyNecromancer> = new Set<NamedNecromancer>(['mummRa', 'zhangJiao', 'fumaKotaro', 'shredder']);
 
-// Friends and Foes: the levels as printed (the fan wiki adds the Horde zombie to most counts, not to Red on #253).
+// Friends and Foes: as printed (the fan wiki adds the Horde zombie to most counts).
 const TAINTED_SPAWNS: readonly Specs[] = [
   ['A', 'W1', 'W5', 'W2'], // 253
   ['W2', 'A', 'W1', 'W3'],
@@ -501,15 +468,13 @@ const friendsAndFoesCards: ZombieCard[] = [
   ...copies(265, 2, (id) => special(FRIENDS_AND_FOES, id, 'enterHorde')),
 ];
 
-// The two Necromancers come between Werezombie (#331-#334) and Chromatiz (#347-#350): the cards go in printed order.
+// Sorted by id: the Necromancers fall between Werezombie (#331-#334) and Chromatiz (#347-#350).
 const hordeBoxCards: ZombieCard[] = [
   ...namedCards(HORDE_BOX),
   ...namedNecromancers(HORDE_BOX, 335, 'countTemeraire'),
   ...namedNecromancers(HORDE_BOX, 341, 'queenSevera'),
 ].sort((a, b) => a.id.localeCompare(b.id));
 
-// No Rest for the Wicked: the Necromantic Dragon, twelve Spectral Walkers cards (checked one by one), twelve Swarms of
-// Ratz cards alike.
 const SPECTRAL_SPAWNS: readonly Specs[] = [
   ['W1', 'W1', 'W5', 'W2'], // 229
   ['W2', 'W1', 'W1', 'W3'],
@@ -530,7 +495,6 @@ const noRestCards: ZombieCard[] = [
   ...copies(241, 12, (id) => levels(NO_REST, id, ['W2', 'W3', 'W4', 'W5'], RATZ, { title: 'swarmOfRatz' })),
 ];
 
-// Abominalpha and Abominarat, then the named Necromancers: #117-#166 and #267-#284.
 const specialGuestCards: ZombieCard[] = [
   ...namedCards(SPECIAL_GUESTS),
   ...namedNecromancers(SPECIAL_GUESTS, 125, 'toMeKuPa'),
@@ -545,15 +509,12 @@ const specialGuestCards: ZombieCard[] = [
   ...namedNecromancers(SPECIAL_GUESTS, 279, 'lordOfSkulls'),
 ];
 
-// The Rat King, a Necromancer, comes with his Swarms of Ratz, his picture above their counts; the Swamp Troll is an
-// Abomination.
 const ratKingCards: ZombieCard[] = [
   ...copies(351, 6, (id) => levels(RAT_KING, id, ['W1', 'W2', 'W4', 'W6'], RATZ, { title: 'named', boss: 'ratKing' })),
   ...namedCards(RAT_KING),
 ];
 
-// White Death: one zombie type per spawn card, its picture beside the counts. The Abomination and Necromancer cards
-// draw from their boss decks, which start with the Khan Abomination and the Defiler Necromancer.
+// White Death: its Abomination and Necromancer cards draw from the boss decks (Khan, Defiler).
 const bossCall = (id: string, boss: BossKind): FantasyCard => ({ id: `${WHITE_DEATH}-${id}`, setId: WHITE_DEATH, kind: 'bossCall', boss });
 const whiteDeathSpawns = (first: number, count: number, specs: Specs) =>
   copies(first, count, (id) => levels(WHITE_DEATH, id, specs, WHITE_DEATH_ZOMBIES, { title: 'zombies' }));
@@ -573,8 +534,7 @@ const whiteDeathCards: ZombieCard[] = [
   activation(WHITE_DEATH, '484', 'wdRunner'),
 ];
 
-// Eternal Empire: the same cards as White Death, 56 numbers later, with zombies of its own. Its Brutes bring a Warden Brute
-// along, its Abominations cost each Survivor 1 Chi, and its Abomination deck starts with the God-Eater Abomination.
+// Eternal Empire: White Death's cards 56 numbers later; Brutes bring a Warden Brute, Abominations cost each Survivor 1 Chi.
 const EE_ZOMBIES: Zombies = { W: 'eeWalker', R: 'eeRunner', F: 'eeBrute' };
 const eeSpawns = (first: number, count: number, specs: Specs, adds?: FantasyZombie) =>
   copies(first, count, (id) => levels(ETERNAL_EMPIRE, id, specs, EE_ZOMBIES, { title: 'zombies', ...(adds && { adds }) }));
@@ -594,14 +554,12 @@ const eternalEmpireCards: ZombieCard[] = [
   activation(ETERNAL_EMPIRE, '540', 'eeRunner'),
 ];
 
-// Frozen Fortress prints boss cards only, for the Abomination and Necromancer decks: no spawn card.
+// Boss cards only, no spawn card: Frozen Fortress and the Warlords boxes.
 const FROZEN_FORTRESS = 'frozenFortress';
-// Warlords of the Middle Kingdom (Dong Zhuo, Zhang Jiao) and of the Rising Sun (Fūma Kotarō) print boss cards only too.
 const WARLORDS_MIDDLE_KINGDOM = 'warlordsMiddleKingdom';
 const WARLORDS_RISING_SUN = 'warlordsRisingSun';
 
-// The packs below are transcribed from the printed cards (sheets of 12 cards, checked card by card). Spawn cards print
-// one zombie type, Red first, so the counts here are Blue to Red.
+// The packs below are sheets of 12 cards, one zombie type each.
 const spawned = (setId: string, first: number, specs: readonly Specs[], zombie: SpawnedZombie, extra: { note?: FantasyNote } = {}) =>
   specs.map((spec, i) => levels(setId, number(first + i), spec, { W: zombie }, { title: 'zombies', ...extra }));
 const SPAWNS_2468: Specs = ['W2', 'W4', 'W6', 'W8'];
@@ -642,13 +600,12 @@ const compagniaCards: ZombieCard[] = [
 ];
 const thundercatsCards: ZombieCard[] = namedNecromancers(THUNDERCATS, 367, 'mummRa', 4);
 const bebopRocksteadyCards: ZombieCard[] = namedCards(BEBOP_ROCKSTEADY);
-// The Divine Beasts pack has one spawn card, printed without a number (hence the id): "Divine Beasts" as title and in
-// the boxes of Yellow to Red, and "Nothing" at Blue.
+// The Divine Beasts card is printed without a number (hence the id `divineBeasts-card`).
 const divineBeastCards: ZombieCard[] = [
   levels(DIVINE_BEASTS, 'card', ['-', 'A', 'A', 'A'], { A: 'divineBeast' }, { title: 'zombies', plural: true }),
 ];
 
-// Iron Maiden: the official Fantasy Eddies (Iron Maiden packs 1 to 3), #371-#402. The ids keep the printed number.
+// Iron Maiden packs 1 to 3: #371-#402.
 const eddie = (first: number, zombie: NamedAbomination | NamedNecromancer, count: number): ZombieCard[] =>
   copies(first, count, (id) =>
     NAMED_NECROMANCERS.has(zombie as NamedNecromancer)
@@ -656,7 +613,6 @@ const eddie = (first: number, zombie: NamedAbomination | NamedNecromancer, count
       : namedAbomination(IRON_MAIDEN, id, zombie as NamedAbomination),
   );
 const ironMaidenCards: ZombieCard[] = [
-  // Reaper, Pharaoh, Samurai, Shaman, Mummy, Wicker, Fear.
   ...eddie(371, 'reaperEddie', 6),
   ...eddie(377, 'pharaohEddie', 4),
   ...eddie(381, 'samuraiEddie', 4),
@@ -668,10 +624,7 @@ const ironMaidenCards: ZombieCard[] = [
 
 const noHardCards = () => false;
 
-/**
- * Two core boxes, each playable alone; "all fantasy Zombicide contents are compatible", so both can be mixed. The
- * expansions add their cards to either.
- */
+// "All fantasy Zombicide contents are compatible": the core boxes can be mixed.
 export const FANTASY_SETS: readonly CardSet[] = [
   { id: BLACK_PLAGUE, optional: true, core: true, isHard: noHardCards, cards: blackPlagueCards },
   { id: GREEN_HORDE, optional: true, core: true, isHard: noHardCards, cards: greenHordeCards },

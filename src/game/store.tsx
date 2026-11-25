@@ -27,7 +27,6 @@ const DECK_PARTS_KEY = 'zombideck.deckParts';
 const HAPTICS_KEY = 'zombideck.haptics';
 const ZONE_DISPLAY_KEY = 'zombideck.zoneDisplay';
 const UNIVERSE_KEY = 'zombideck.universe';
-/** The bosses and Threat of each universe that doses them (see `Universe.bosses`). */
 const threatKey = (universe: UniverseId) => `zombideck.threat.${universe}`;
 
 /** Each universe has its own list; the modern one keeps the key it had before there were universes. */
@@ -47,16 +46,13 @@ const noGames = (): ByUniverse<GameState | null> =>
 const defaultThreats = (): ByUniverse<Threat> =>
   Object.fromEntries(UNIVERSE_IDS.map((universe) => [universe, DEFAULT_THREAT])) as unknown as ByUniverse<Threat>;
 
-/** Spawn cards show every Danger Level, or only the current one. */
 export type CardDisplay = 'all' | 'current';
 const isCardDisplay = (value: string | null): value is CardDisplay => value === 'all' || value === 'current';
 
-/** With several Spawn Zones: every zone's card at once, side by side, or one zone per tap. */
 export type ZoneDisplay = 'row' | 'sequence';
 const isZoneDisplay = (value: string | null): value is ZoneDisplay => value === 'row' || value === 'sequence';
 
 type AppContextValue = {
-  /** The game of the current universe. */
   game: GameState | null;
   /** The game of every universe, for the carousel. */
   games: ByUniverse<GameState | null>;
@@ -74,7 +70,6 @@ type AppContextValue = {
   /** The era picked in the carousel: its sets fill the menu, the expansions and the next game. */
   universe: UniverseId;
   setUniverse: (universe: UniverseId) => void;
-  /** Expansions switched on in the current universe. */
   expansions: string[];
   /** Takes the new list or, for changes made in quick succession, a function of the current one. */
   setExpansions: Dispatch<SetStateAction<string[]>>;
@@ -85,12 +80,10 @@ type AppContextValue = {
   setCardDisplay: (cardDisplay: CardDisplay) => void;
   deckParts: DeckParts;
   setDeckParts: (deckParts: DeckParts) => void;
-  /** Vibrate when a card is drawn. */
   haptics: boolean;
   setHaptics: (haptics: boolean) => void;
   zoneDisplay: ZoneDisplay;
   setZoneDisplay: (zoneDisplay: ZoneDisplay) => void;
-  /** Translates the interface and what is printed on the cards alike. */
   t: Translate;
 };
 
@@ -110,7 +103,6 @@ function parseSave(raw: string | null, universe: UniverseId): GameState | null {
   }
 }
 
-/** Nothing stored yet: the universe's default expansions. */
 function parseExpansions(raw: string | null, fallback: readonly string[]): string[] {
   if (!raw) return [...fallback];
   try {

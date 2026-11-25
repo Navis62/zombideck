@@ -4,18 +4,13 @@ import { AccessibilityInfo, Animated, Platform, Pressable, StyleSheet } from 're
 import { CardAnnounced, HIDDEN_FROM_READER } from '@/components/card-face';
 import { PRESSED } from '@/theme';
 
-/** Each half of the turn: the card goes edge-on, then comes back showing its other side (about 0.3 s in all). */
+/** One half of the turn: edge-on, then back with the other side. */
 const FLIP_HALF_MS = 150;
-/** Same perspective as the card dealt from the deck, so both turns look alike. */
-const PERSPECTIVE = 800;
+export const PERSPECTIVE = 800;
 
-/**
- * A card that turns over to show its other side. The turn is two halves: the shown side goes edge-on, the sides swap,
- * the other one comes back. With "reduce motion" on, the sides swap at once.
- */
 export function FlipCard({ flipped, front, back, onPress }: { flipped: boolean; front: React.ReactNode; back: React.ReactNode; onPress: () => void }) {
   const [shown, setShown] = useState(flipped);
-  // The side on display, readable from the effect without restarting it when the sides swap mid-turn.
+  // A ref, so the effect reads the side on display without restarting when sides swap mid-turn.
   const shownRef = useRef(flipped);
   const [turn] = useState(() => new Animated.Value(0));
   const announced = useContext(CardAnnounced);
@@ -53,7 +48,7 @@ export function FlipCard({ flipped, front, back, onPress }: { flipped: boolean; 
   const rotateY = turn.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-90deg', '0deg', '90deg'] });
   return (
     <Animated.View style={[styles.card, { transform: [{ perspective: PERSPECTIVE }, { rotateY }] }]}>
-      {/* The front is the touchable; the back handles its own taps inside its ScrollView (see RuleSide). */}
+      {/* The back handles its own taps inside its ScrollView (see RuleSide). */}
       {shown ? (
         back
       ) : (

@@ -10,7 +10,7 @@ import { deviceLanguage } from '@/i18n/device-language';
 import { translator } from '@/i18n/translations';
 import { COLORS, FANTASY_FONT_FILES, INVADER_FONT_FILES, WESTERN_FONT_FILES } from '@/theme';
 
-// The splash screen stays up until the Western, Invader and Fantasy fonts are in, so no card ever flashes in a fallback face.
+// Splash stays up until the card fonts load, so no card flashes in a fallback face.
 SplashScreen.preventAutoHideAsync();
 
 function Navigator() {
@@ -23,10 +23,9 @@ function Navigator() {
         contentStyle: { backgroundColor: COLORS.background },
       }}
     >
-      {/* The universe carousel opens the app; each universe has its own menu. */}
       <Stack.Screen name="index" options={{ title: t('appName'), headerShown: false }} />
       <Stack.Screen name="menu" options={{ title: t('appName'), headerShown: false }} />
-      {/* No header during the game: the height goes to the cards, the Menu button sits with the controls. */}
+      {/* No header in game: the height goes to the cards. */}
       <Stack.Screen name="game" options={{ title: t('game.title'), headerShown: false }} />
       <Stack.Screen name="expansions" options={{ title: t('expansions.title') }} />
       <Stack.Screen name="options" options={{ title: t('options.title') }} />
@@ -51,9 +50,8 @@ export default function RootLayout() {
   );
 }
 
-/** Shown instead of a blank screen if rendering crashes; the saved game is untouched. */
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
-  // Outside AppProvider: the chosen language is not loaded, the device language stands in.
+  // Outside AppProvider, so the device language stands in.
   const t = translator(deviceLanguage());
   return (
     <View style={styles.error}>

@@ -33,10 +33,8 @@ export type RushZombie =
 export type ExtraZombie = 'walker' | 'runner' | 'fatty' | 'skinnerWalker' | 'skinnerRunner' | 'skinnerFatty';
 export type DangerLevel = 'blue' | 'yellow' | 'orange' | 'red';
 
-/** A Zombicide era with its own boxes, zombies and cards, chosen when the app opens. */
 export type UniverseId = 'modern' | 'fantasy' | 'invader' | 'western';
 
-/** Named Abominations transcribed for the modern era (see `MODERN_ABOMINATIONS`). */
 export type NamedModernAbomination =
   | 'hobomination'
   | 'abominawild'
@@ -116,7 +114,6 @@ type SpawnCard<Kind, Zombie> = {
   shooter?: true;
 };
 
-/** Cards of the modern era: one zombie type per card, a count per Danger Level. */
 export type ModernCard =
   | SpawnCard<'spawn', ZombieType>
   | SpawnCard<'rush', RushZombie>
@@ -125,7 +122,6 @@ export type ModernCard =
   | { id: string; setId: string; kind: 'trejoRush' }
   | { id: string; setId: string; kind: 'spam' };
 
-/** Zombies of the fantasy era (Black Plague, Green Horde). */
 export type FantasyZombie =
   | 'fantasyWalker'
   | 'fantasyRunner'
@@ -225,7 +221,6 @@ export type NamedAbomination =
   // Lord of Skulls' escort: no card of their own (`LORD_OF_SKULLS_ESCORT`, threat.ts).
   | 'doom'
   | 'gloom';
-/** Zombies an Extra Activation card can name. */
 export type FantasyActivated =
   | 'fantasyWalker'
   | 'fantasyRunner'
@@ -291,11 +286,7 @@ export type FantasyNote = 'terrorcottaNote' | 'footNinjasNote';
 export type FantasyLevel = { zombie: FantasyZombie; count: number } | null;
 
 type FantasyBase = { id: string; setId: string };
-/**
- * Cards of the fantasy era. Unlike the modern ones, each Danger Level of a spawn card can bring a different zombie
- * type. `horde` is the Horde symbol of Green Horde: each level also sets one more zombie of its type aside for the
- * Horde (not for an Abomination).
- */
+/** `horde`: Green Horde sets one more zombie of the type aside at each level (not for an Abomination). */
 export type FantasyCard =
   | (FantasyBase & {
       kind: 'levels';
@@ -319,7 +310,6 @@ export type FantasyCard =
   | (FantasyBase & { kind: 'bossCall'; boss: BossKind; chi?: true })
   | (FantasyBase & { kind: 'zombieSiege' });
 
-/** Xenos of the sci-fi era (Invader and its Dark Side box). */
 export type InvaderXeno =
   | 'worker'
   | 'tank'
@@ -327,13 +317,11 @@ export type InvaderXeno =
   | 'drillerWorker'
   | 'drillerTank'
   | 'drillerHunter'
-  // Expansions: Persephone (Driller Blitzer), Civilian Pack (Flinger, Seeker Worker, Xenomoth), Project: ELITE (Biter).
   | 'drillerBlitzer'
   | 'flinger'
   | 'seekerWorker'
   | 'xenomoth'
   | 'biter';
-/** Abominations of the sci-fi era: one per core box, then the named ones of the expansions. */
 export type InvaderAbomination =
   | 'spoilerAbomination'
   | 'drillerAbomination'
@@ -353,38 +341,26 @@ export type InvaderAbomination =
   | 'shaila'
   | 'dimbutcher'
   | 'synkrasis'
-  // Iron Maiden Packs 1 and 2 (the same Eddies as the other eras, as Abominations of this one).
   | 'cyborgEddieAbomination'
   | 'samuraiEddieAbomination'
   | 'bassistEddieAbomination'
   | 'bountyHunterEddieAbomination';
-/** Where a Mold Spawn (Invader) or Pit Spawn (Dark Side) card spawns its Xenos. */
 export type InvaderZone = 'mold' | 'pit';
 
 type InvaderBase = { id: string; setId: string };
-/**
- * Cards of the sci-fi era. Card ids are `<setId>-<printed number on 3 digits>`: `invader-001`..`invader-054`,
- * `darkSide-061`..`darkSide-114`, then the expansions (`blackOps-055`..`blackOps-060`, `promoXenos-184`..): the
- * number is the one printed on the card, so two sets may share a number (the id still differs).
- */
+/** Card ids are `<setId>-<printed number on 3 digits>`; two sets may share a number. */
 export type InvaderCard =
-  /** One Xeno type, a count per Danger Level: the Modern spawn card. */
   | (InvaderBase & { kind: 'xeno'; zombie: InvaderXeno; counts: SpawnCounts })
-  /**
-   * No levels: all Abominations on the board get one Activation, then this Abomination spawns (if any).
-   * `spawnZone`: a third step follows (Comic Book Extras Stepmother: "Spawn the Stepmother's Zone").
-   */
+  /** No levels: Abominations on the board get an Activation, then this one spawns; `spawnZone` adds a third step. */
   | (InvaderBase & { kind: 'xenoAbomination'; zombie: InvaderAbomination; spawnZone?: true })
   /** No levels: `count` Xenos on each Active Mold Zone / in each Open Pit Zone. */
   | (InvaderBase & { kind: 'zoneSpawn'; zone: InvaderZone; zombie: InvaderXeno; count: number })
   /** All Xenos of this type on Red, Orange and Yellow get an Activation; no one on Blue. */
   | (InvaderBase & { kind: 'xenoExtra'; zombie: InvaderXeno });
 
-/** Zombies of the Wild West era (Undead or Alive); the ids are prefixed so no other era shares one. */
 export type WesternZombie = 'westernWalker' | 'westernRunner' | 'westernBrute' | 'longDeadWalker';
-/** Zombies an Extra Activation card can name. */
 export type WesternActivated = 'westernWalker' | 'westernRunner' | 'westernBrute';
-/** Named Abominations of the Wild West era (see `WESTERN_ABOMINATIONS`); `westernWendigo` is not the Modern `wendigo`. */
+/** `westernWendigo` is not the Modern `wendigo`. */
 export type WesternAbomination =
   | 'bowlerHat'
   | 'nightmareHorse'
@@ -417,12 +393,8 @@ export type WesternAbomination =
   | 'westernWickerEddie';
 
 type WesternBase = { id: string; setId: string };
-/**
- * Cards of the Wild West era. Card ids are `<setId>-<printed number on 3 digits>`: `undeadOrAlive-001`..`-037`,
- * `longDeadWalkers-038`..`-045`.
- */
+/** Card ids are `<setId>-<printed number on 3 digits>`. */
 export type WesternCard =
-  /** One zombie type, a count per Danger Level: the Modern spawn card. */
   | (WesternBase & { kind: 'westernSpawn'; zombie: WesternZombie; counts: SpawnCounts })
   /** The text card, no levels: it calls on the Abomination deck (the generic Abomination of the core box). */
   | (WesternBase & { kind: 'westernAbomination' })
@@ -458,54 +430,34 @@ export type CardSet = {
   replaces?: string;
   /** Zombie expansion that dilutes the Abominations of the deck (see `scaled`). */
   addsZombies?: true;
-  /**
-   * Abomination cards of the upgrade kit: never switched on by hand, the deck takes as many of them as the share of
-   * zombie expansions switched on (all of them: every card).
-   */
+  /** Upgrade kit Abominations: never switched on by hand, the deck takes the share of zombie expansions in play. */
   scaled?: true;
   /** Harder part of the set, as the core rulebook sorts its deck; the other cards are the easier part. */
   isHard: (card: ZombieCard) => boolean;
   cards: readonly ZombieCard[];
 };
 
-/** Which part of the deck a card belongs to: the easier or harder spawn cards, or the Extra Activations. */
 export type CardPart = 'easy' | 'hard' | 'extra';
 export type DeckParts = { easy: boolean; hard: boolean; extra: boolean };
 
-/** Which boss deck a drawn card calls on: the Abomination it spawns, or the Necromancer. */
 export type BossKind = 'abomination' | 'necromancer';
-/** A deck of bosses (zombie ids), one card per boss, drawn and reshuffled like the Zombie deck. */
 export type BossDeck = { draw: string[]; discard: string[] };
-/**
- * The Abomination and Necromancer decks of the Dead Men Tales rules: a drawn card that spawns one of them reveals
- * which, from its deck. `revealed` holds the boss revealed for each card of `drawn`.
- */
+/** Dead Men Tales boss decks; `revealed` holds the boss revealed for each card of `drawn`. */
 /** `boss` is empty when every boss of the deck is already on display: the ones on the board get an Extra Activation. */
 export type Revealed = {
   kind: BossKind;
   boss: string;
-  /**
-   * With `boss` empty in the one-at-a-time rule: the boss on display that gets the Extra Activation, named, since no
-   * card was drawn for this one (the Abomination or Necromancer of an earlier card of the step, or drawn by hand).
-   */
+  /** One at a time, with `boss` empty: the boss in play that gets the Extra Activation (no card was drawn). */
   activates?: string;
   /** Cantrip cards (SPAM) drawn on the way to `boss`: they leave with it. Absent in Fantasy. */
   spam?: string[];
-  /** Bosses the revealed one brings along (Batman Who Laughs and The Robins). */
   along?: string[];
   /** Candidates of a boss that absorbs others (Gozer): `keep` of the `offered` ones stay, until the players choose. */
   choice?: { offered: string[]; keep: number };
-  /** Bosses a boss absorbed (Gozer); they leave with it. */
   gained?: string[];
-  /**
-   * Abomination Fest: the bosses of this kind already on the board (and on display) that get an Extra Activation
-   * before this card draws its own. Empty or absent when there were none.
-   */
+  /** Abomination Fest: the bosses in play that get an Extra Activation before this card draws its own. */
   activated?: string[];
-  /**
-   * The group names no boss because none of its kind is left on the board or on display any more (the one it named
-   * was removed): `boss` is empty and `activates`, `activated` are absent. Not the same as every boss being out.
-   */
+  /** No boss of this kind is left on the board or on display (the one named was removed); not the same as the deck being out. */
   none?: true;
   /**
    * The Trejobomination (Danny Trejo, `Piles.trejo`) also gets the Extra Activation of this Abomination card: alone, with
@@ -515,7 +467,6 @@ export type Revealed = {
   /** Bosses of this group (`boss`, `along`, `gained`) the players removed during the Spawn step: they are already in the discard. */
   gone?: string[];
 };
-/** A boss that stays on the board across Spawn steps until the players remove it. */
 export type BoardBoss = { kind: BossKind; boss: string };
 export const NO_BOSS = '';
 /** `boss` when the game never had a boss of that kind (an empty deck from the start, not an exhausted one). */
@@ -526,13 +477,9 @@ export type BossPiles = {
   revealed: Record<string, Revealed>;
   /** Abominations drawn by hand, not by a card: they leave with the next Spawn step. Empty in Fantasy. */
   manual: Revealed[];
-  /**
-   * The bosses of the earlier Spawn steps still alive, oldest first, each on its own (a boss brought along or
-   * absorbed is listed apart from its leader). They are in no deck: removing one sends it to the discard of its deck.
-   */
+  /** Bosses of earlier Spawn steps still alive, oldest first, each on its own; none is in a deck. */
   onBoard: BoardBoss[];
 };
-/** Dead Men Tales: one Abomination at a time (the one on the board gets an Extra Activation), or the Abomination Fest. */
 export type BossRule = 'oneAtATime' | 'fest';
 
 /**
@@ -548,7 +495,6 @@ export type TrejoPiles = { stage: TrejoStage; resolved: Record<string, TrejoChoi
 export type Piles = {
   draw: string[];
   discard: string[];
-  /** Cards of the last Spawn step, in Spawn Zone order; they go to the discard on the next draw. */
   drawn: string[];
   reshuffled: boolean;
   /** Only with boss decks (`GameState.bossRule`); `null` when the deck holds its bosses. */
@@ -561,14 +507,11 @@ export type GameState = {
   version: 9;
   /** Boss decks in play and how their bosses arrive; `null`: the bosses are cards of the Zombie deck. */
   bossRule: BossRule | null;
-  /** The game's era: its sets, its cards and the menu it is resumed from. */
   universe: UniverseId;
   setIds: string[];
   piles: Piles;
   /** Piles before each recent draw or shuffle, oldest first, for undo: a whole Spawn step undoes at once. */
   history: Piles[];
-  /** Chosen by the players, who track their own XP. */
   danger: DangerLevel;
-  /** Spawn Zones on the board: each draw deals one card to each of them. */
   zones: number;
 };

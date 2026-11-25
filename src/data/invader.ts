@@ -15,24 +15,14 @@ export const COMIC_BOOK_2_ANDROID = 'comicBook2Android';
 export const IRON_MAIDEN_1 = 'ironMaiden1';
 export const IRON_MAIDEN_2 = 'ironMaiden2';
 
-/**
- * Card ids are `<setId>-<printed number>`: `invader-001`..`invader-054`, `darkSide-061`..`darkSide-114`.
- * Easy cards are #1-25 and #61-85, hard ones #26-50 and #86-110, Extra Activations #51-54 and #111-114: the
- * number within its box (the printed number modulo 60) tells the part, `cardPart` spots the extra kind. This
- * applies to the two core boxes only: each expansion below sorts its own cards (`HARD_IDS`).
- */
+// Core boxes only (rulebook p.37): in each, #1-25 are easy, #26-50 hard, #51-54 Extra Activations; Dark Side starts at 61.
+const CORE_BOX_NUMBERS = 60;
 const isHardCard = (card: ZombieCard) => {
-  const number = numberOf(card) % 60;
-  return number >= 26 && number <= 50;
+  const numberInBox = numberOf(card) % CORE_BOX_NUMBERS;
+  return numberInBox >= 26 && numberInBox <= 50;
 };
 
-/*
- * Transcribed on 2026-11-16 from the printed card images published on the Atomic Asteroidz site
- * (zombicide.atomic-asteroidz.fr, sci-fi deck config). The printed numbers are not visible on those images:
- * they come from the image file names, and the 25 easy / 25 hard / 4 extra split matches the rulebooks (p.37).
- * Photos of the owner's own cards may correct this later.
- * The card lists Red first; `counts` is Blue, Yellow, Orange, Red, so each row below is reversed.
- */
+// Transcribed from the Atomic Asteroidz card images; numbers come from their file names. Rows are reversed (printed Red first).
 
 const ids = (setId: string, from: number, to: number) =>
   Array.from({ length: to - from + 1 }, (_, i) => `${setId}-${String(from + i).padStart(3, '0')}`);
@@ -59,7 +49,6 @@ const extra = (setId: string, number: number, zombie: InvaderXeno): InvaderCard 
 });
 
 const INVADER_CARDS: InvaderCard[] = [
-  // Easy: 001-025
   ...xeno(INVADER, 1, 6, 'worker', [2, 4, 6, 8]),
   ...xeno(INVADER, 7, 10, 'tank', [2, 2, 6, 8]),
   ...xeno(INVADER, 11, 15, 'hunter', [2, 2, 6, 8]),
@@ -68,12 +57,10 @@ const INVADER_CARDS: InvaderCard[] = [
   ...zoneSpawn(INVADER, [23, 48], 'mold', 'worker', 2),
   ...zoneSpawn(INVADER, [24, 49], 'mold', 'tank', 1),
   ...zoneSpawn(INVADER, [25, 50], 'mold', 'hunter', 1),
-  // Hard: 026-050
   ...xeno(INVADER, 26, 31, 'worker', [4, 6, 8, 10]),
   ...xeno(INVADER, 32, 35, 'tank', [4, 4, 6, 8]),
   ...xeno(INVADER, 36, 40, 'hunter', [4, 4, 6, 8]),
   ...abomination(INVADER, 41, 46, 'spoilerAbomination'),
-  // Extra Activation: 051-054 (all on Red, Orange and Yellow; no one on Blue)
   extra(INVADER, 51, 'worker'),
   extra(INVADER, 52, 'worker'),
   extra(INVADER, 53, 'tank'),
@@ -81,7 +68,6 @@ const INVADER_CARDS: InvaderCard[] = [
 ].sort((a, b) => a.id.localeCompare(b.id));
 
 const DARK_SIDE_CARDS: InvaderCard[] = [
-  // Easy: 061-085
   ...xeno(DARK_SIDE, 61, 66, 'drillerWorker', [2, 4, 6, 8]),
   ...xeno(DARK_SIDE, 67, 70, 'drillerTank', [2, 2, 6, 8]),
   ...xeno(DARK_SIDE, 71, 75, 'drillerHunter', [2, 2, 6, 8]),
@@ -90,37 +76,22 @@ const DARK_SIDE_CARDS: InvaderCard[] = [
   ...zoneSpawn(DARK_SIDE, [83, 108], 'pit', 'drillerWorker', 2),
   ...zoneSpawn(DARK_SIDE, [84, 109], 'pit', 'drillerTank', 1),
   ...zoneSpawn(DARK_SIDE, [85, 110], 'pit', 'drillerHunter', 1),
-  // Hard: 086-110
   ...xeno(DARK_SIDE, 86, 91, 'drillerWorker', [4, 6, 8, 10]),
   ...xeno(DARK_SIDE, 92, 95, 'drillerTank', [4, 4, 6, 8]),
   ...xeno(DARK_SIDE, 96, 100, 'drillerHunter', [4, 4, 6, 8]),
   ...abomination(DARK_SIDE, 101, 106, 'drillerAbomination'),
-  // Extra Activation: 111-114
   extra(DARK_SIDE, 111, 'drillerWorker'),
   extra(DARK_SIDE, 112, 'drillerWorker'),
   extra(DARK_SIDE, 113, 'drillerTank'),
   extra(DARK_SIDE, 114, 'drillerHunter'),
 ].sort((a, b) => a.id.localeCompare(b.id));
 
-/*
- * Expansions. Source: the owner's transcription of 2026-11-17 from the card images of the same Atomic Asteroidz page;
- * the printed numbers come from the image file names (and are printed on the Comic Book cards). Product names are
- * those of https://zombicide.fandom.com/wiki/SciFi_Products. No rulebook sorts these cards into easier and harder
- * halves (the Persephone, Black Ops, Civilian, Soldier and Project: ELITE booklets only say to shuffle them into the
- * Xeno pile). The split is the owner's choice (2026-11-17), following the core boxes: the higher counts are the
- * harder Xenos (Driller Blitzer 2/2/4/6, Biters 4/6/8/10 as the core hard Workers), the 2/4/6/8 cards and the Mold
- * Spawn are easy, and each named Abomination's cards are split half and half within its printed range (the lower
- * numbers easy, the higher ones hard), like the core Spoiler 16-21 easy / 41-46 hard.
- * Printed numbers seen on real cards in two unboxing videos (2026-11-17): Civilian Extras 121, 123, 127, 130, 134, 141,
- * 148, 151, 157, 162, 166 and 169, all within the ranges below. Promo Xenos: 184 (Driller Blitzer 1/2/3/4), 187
- * (Driller Blitzer 2/2/4/6), 205 (Mold Spawn Seeker Worker), 207 and 210 (Xenomoths), but its Flingers and Seeker
- * Workers carry the Civilian Extras numbers (152 and 163 seen): CMON reused that print. By the owner's choice the app
- * numbers them as the gap implies (Flingers 190-195, Seeker Workers 196-204), so every card of both boxes has an id of
- * its own and a player who owns both shuffles both prints together (no `replaces`).
- * The Seeker Workers' rule ("All Seeker Workers already on the board get an extra Activation each time a Seeker Xeno
- * card is drawn", from the box's Seeker reference card) is shown as a footer on their spawn cards (`XENO_RULES` in
- * card-face.tsx), not on their Mold Spawn cards: "a Seeker Xeno card" does not name those.
- */
+// Expansions: same source; product names from the fandom wiki "SciFi Products". The booklets give no easier / harder split.
+// Chosen like the core boxes: higher counts hard (Driller Blitzer 2/2/4/6, Biters 4/6/8/10), 2/4/6/8 and Mold Spawn easy,
+// each named Abomination's range halved (lower half easy).
+// The Promo Xenos' Flingers and Seeker Workers reuse the Civilian Extras numbers, so they are numbered 190-204 to keep ids unique;
+// no `replaces` between the two: owners of both shuffle both in.
+// The Seeker Workers' rule (Seeker reference card) is a footer on their spawn cards only (`XENO_RULES`), not on Mold Spawn.
 /** Ids of the harder cards of the expansions, filled as the cards are built so a range cannot drift from its split. */
 const HARD_IDS = new Set<string>();
 const isHardExpansionCard = (card: ZombieCard) => HARD_IDS.has(card.id);
@@ -196,11 +167,7 @@ const COMIC_BOOK_2_CARDS = [
 
 const COMIC_BOOK_2_ANDROID_CARDS = abominationHalves(COMIC_BOOK_2_ANDROID, 129, 134, 'synkrasis');
 
-/*
- * Iron Maiden Packs 1 and 2: photos of the printed cards from the CMON unboxing video "Iron Maiden Packs 1, 2, & 3"
- * (seen 2026-11-17), matching https://zombicide.fandom.com/wiki/Iron_Maiden_Pack_1 and _2 (sci-fi sections). Both packs
- * print the same numbers 121-128, hence two sets. Named Abominations split half and half like the others.
- */
+// Iron Maiden Packs 1 and 2 (wiki sci-fi sections) print the same numbers 121-128, hence two sets.
 const IRON_MAIDEN_1_CARDS = [
   ...abominationHalves(IRON_MAIDEN_1, 121, 124, 'cyborgEddieAbomination'),
   ...abominationHalves(IRON_MAIDEN_1, 125, 128, 'samuraiEddieAbomination'),
@@ -218,7 +185,6 @@ const expansion = (id: string, cards: InvaderCard[]): CardSet => ({
   cards,
 });
 
-/** The two core boxes combine; the expansions are switched on one by one. */
 export const INVADER_SETS: readonly CardSet[] = [
   { id: INVADER, optional: true, core: true, isHard: isHardCard, cards: INVADER_CARDS },
   { id: DARK_SIDE, optional: true, core: true, isHard: isHardCard, cards: DARK_SIDE_CARDS },

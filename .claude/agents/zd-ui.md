@@ -21,7 +21,8 @@ joueurs posent le téléphone en paysage sur la table et piochent d'un toucher p
 
 1. Textes via `t(...)`, y compris les libellés d'accessibilité. Aucune chaîne en dur ; une clé nouvelle va dans les
    10 langues (`src/i18n/`).
-2. Couleurs et retour `PRESSED` depuis `theme.ts`. Tailles et délais en constantes nommées commentées.
+2. Couleurs et retour `PRESSED` depuis `theme.ts`. Tailles et délais en constantes dont le nom dit le rôle (commentaire seulement pour une
+   origine que le nom ne dit pas).
 3. Accessibilité : rôle, libellé et état sur chaque contrôle ; la carte piochée reste annoncée.
 4. Pas d'action destructive en un seul toucher. Écran de jeu sans en-tête : la hauteur va aux cartes.
 5. Web : pas de `useNativeDriver`, pas de vibration ; protège par `Platform.OS`.

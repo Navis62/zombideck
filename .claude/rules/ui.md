@@ -16,8 +16,9 @@ paths:
   libellé, un choix a `accessibilityState` (`selected`). Ne casse pas l'annonce de la carte.
 - Le téléphone reste posé sur la table pendant la partie : gros boutons, `useKeepAwake` sur l'écran de jeu, pas
   d'action destructive en un seul toucher (« Tout remélanger » demande un second toucher, `CONFIRM_MS`).
-- Les tailles et délais sont des constantes nommées en tête de fichier (`MIN_CARD_WIDTH`, `CONFIRM_MS`…), avec un
-  commentaire qui dit pourquoi.
+- Les tailles et délais sont des constantes nommées en tête de fichier (`MIN_CARD_WIDTH`, `CONFIRM_MS`…) dont le
+  nom dit le rôle ; un commentaire d'une ligne seulement pour une origine que le nom ne dit pas (mesure sur un scan,
+  contournement de plateforme).
 - Le web (react-native-web) sert d'aperçu : `useNativeDriver` est désactivé sur web, les vibrations n'existent pas
   (`feedback.ts` l'ignore). Une API absente sur web se protège par `Platform.OS`.
 - Vérifier une modification visible dans l'aperçu web (`.claude/launch.json`, configuration `web`, port 8081), en

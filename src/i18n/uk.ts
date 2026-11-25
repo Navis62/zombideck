@@ -833,7 +833,6 @@ export const uk: Record<TranslationKey, string> = {
   'card.moldSpawnRule': '{count} {zombies} у кожній активній зоні Mold. Якщо немає активної зони Mold, візьміть іншу карту.',
   'card.pitSpawnTitle': 'Поява Pit: {count} {zombies}!',
   'card.pitSpawnRule': '{count} {zombies} у кожній відкритій зоні Pit.',
-  // Invader expansions: set names are product names kept in English; the new Xenos keep their English names (no known edition), with the official Worker / Driller terms where the language has them; named Abominations keep their names after the language’s Abomination word
   'set.blackOps': 'Black Ops',
   'set.darkSideExtras': 'Dark Side Extras',
   'set.civilianExtras': 'Civilian Extras',
@@ -884,7 +883,6 @@ export const uk: Record<TranslationKey, string> = {
   'zombie.samuraiEddieAbomination.other': 'Потвора Samurai Eddie',
   'zombie.bassistEddieAbomination.other': 'Потвора Bassist Eddie',
   'zombie.bountyHunterEddieAbomination.other': 'Потвора Bounty Hunter Eddie',
-  // Western (Zombicide: Undead or Alive)
   'universe.western': 'Western',
   'universe.westernGame': 'Zombicide: Undead or Alive',
   'menu.taglineWestern': 'Неофіційний помічник до гри Zombicide: Undead or Alive',

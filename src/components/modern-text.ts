@@ -1,6 +1,6 @@
-/** Text fit of the Modern cards, computed from the length of the text: no React here, so the tests can import it. */
+// No React here, so the tests can import it.
 
-/** Lines `text` (one paragraph per line) takes when `chars` characters fit on one, breaking between words only; none when a word is longer. */
+/** Lines `text` takes when `chars` fit on one; Infinity when a word is longer. */
 export function wrappedLines(text: string, chars: number): number {
   let lines = 0;
   for (const paragraph of text.split('\n')) {
@@ -19,10 +19,10 @@ export function wrappedLines(text: string, chars: number): number {
   return lines;
 }
 
-/** A box in design px: the sizes tried (`max` down to `min`), the line height over the size, the width of a letter in em, the most lines. */
+/** Design px box; `line` is line height over size, `charEm` a letter's width in em. */
 export type TextBox = { width: number; height: number; max: number; min: number; line: number; charEm: number; lines?: number };
 
-/** Largest size, in design px, at which `text` (one paragraph per line) fits a box of this size (web has no shrink-to-fit). */
+/** Largest size at which `text` fits (web has no shrink-to-fit). */
 export function modernTextSize(text: string, box: TextBox): number {
   for (let size = box.max; size > box.min; size -= 0.5) {
     const lines = wrappedLines(text, Math.floor(box.width / (box.charEm * size)));

@@ -374,7 +374,7 @@ export const fr = {
   'zombie.runner.other': 'Forcenés',
   'zombie.fatty.other': 'Balèzes',
   'zombie.abomination.other': 'Abominations',
-  // The zombie names in a Rush title, as printed ("Walker Rush!", "Zryw Szwendaczy").
+  // Zombie names in a Rush title.
   'zombie.walker.rush': 'Rôdeurs',
   'zombie.fatty.rush': 'Balèzes',
   'zombie.toxicWalker.rush': 'Rôdeurs toxiques',
@@ -383,7 +383,7 @@ export const fr = {
   'zombie.berserkerFatty.rush': 'Balèzes berserkers',
   'zombie.skinnerWalker.rush': 'Rôdeurs décharnés',
   'zombie.skinnerFatty.rush': 'Balèzes décharnés',
-  // "All Walkers" on Extra Activation cards; the word for "all" agrees with the zombie name ("Wszyscy Szwendacze").
+  // "All Walkers" on Extra Activation cards: "all" agrees with the zombie name ("Tous les Rôdeurs").
   'zombie.walker.all': 'Tous les Rôdeurs',
   'zombie.runner.all': 'Tous les Forcenés',
   'zombie.fatty.all': 'Tous les Balèzes',
@@ -801,7 +801,7 @@ export const fr = {
   'zombie.wickerManEddie.other': 'Eddie le Dieu d’Osier',
   'zombie.fearEddie.one': 'Eddie la Peur',
   'zombie.fearEddie.other': 'Eddie la Peur',
-  // Invader: terms of the official French Operation Persephone booklet; Spoiler = Abomination Putrescente (likely, official site); composed: card titles and rules
+  // Invader: terms of the official French Operation Persephone booklet; Spoiler = Abomination Putrescente (likely, official site)
   'universe.invader': 'Invader',
   'universe.invaderGame': 'Invader · Dark Side',
   'menu.taglineInvader': 'Compagnon non officiel pour Zombicide Invader et Dark Side',
@@ -833,7 +833,6 @@ export const fr = {
   'card.moldSpawnRule': '{count} {zombies} dans chaque Zone de Fonge Active. S’il n’y a aucune Zone de Fonge Active, piochez une autre carte.',
   'card.pitSpawnTitle': 'Invasion de Tunnel : {count} {zombies} !',
   'card.pitSpawnRule': '{count} {zombies} dans chaque Zone de Tunnel Béant.',
-  // Invader expansions: set names are product names kept in English; the new Xenos keep their English names (no known edition), with the official Worker / Driller terms where the language has them; named Abominations keep their names after the language’s Abomination word
   'set.blackOps': 'Black Ops',
   'set.darkSideExtras': 'Dark Side Extras',
   'set.civilianExtras': 'Civilian Extras',
@@ -884,7 +883,6 @@ export const fr = {
   'zombie.samuraiEddieAbomination.other': 'Abomination Samurai Eddie',
   'zombie.bassistEddieAbomination.other': 'Abomination Bassist Eddie',
   'zombie.bountyHunterEddieAbomination.other': 'Abomination Bounty Hunter Eddie',
-  // Western (Zombicide: Undead or Alive)
   'universe.western': 'Western',
   'universe.westernGame': 'Zombicide: Undead or Alive',
   'menu.taglineWestern': 'Compagnon non officiel pour Zombicide: Undead or Alive',

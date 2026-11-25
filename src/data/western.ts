@@ -2,30 +2,22 @@ import type { CardSet, SpawnCounts, WesternActivated, WesternCard, WesternZombie
 
 export const UNDEAD_OR_ALIVE = 'undeadOrAlive';
 export const LONG_DEAD_WALKERS = 'longDeadWalkers';
-/** Boxes that only bring named Abominations: they have no Zombie card, so their sets are empty. */
 export const RUNNING_WILD = 'runningWild';
 export const ABOMINAPE_VS_CROCOSAUR = 'abominapeVsCrocosaur';
 export const DEADSTOCK_ABOMINATIONS = 'deadstockAbominations';
 export const DEAD_WEST_ABOMINATIONS = 'deadWestAbominations';
 export const GEARS_AND_GUNS = 'gearsAndGuns';
-/** Promo figures given out at events (the official Western promo gallery lists the Wendigo among them), not sold at retail. */
 export const WESTERN_PROMOS = 'westernPromos';
 export const WESTERN_IRON_MAIDEN = 'westernIronMaiden';
 
 const LEGACY_IRON_MAIDEN_PACKS = new Set(['westernIronMaiden1', 'westernIronMaiden2', 'westernIronMaiden3']);
 
-/** Preserve the Western expansion preference across the Iron Maiden pack merge. */
+/** Old saved preferences name three Iron Maiden packs; they are now one box. */
 export const mergeWesternIronMaidenPacks = (expansions: readonly string[]): string[] =>
   [...new Set(expansions.map((id) => LEGACY_IRON_MAIDEN_PACKS.has(id) ? WESTERN_IRON_MAIDEN : id))];
 
-/*
- * Transcribed on 2026-11-19 from the owner's photos of the printed cards (the Undead or Alive core box, #001-#037,
- * and the Long-Dead Walkers of the Kickstarter, #038-#045); the core box has 37 cards (rulebook p.4).
- * The cards print their counts Red first; `counts` is Blue, Yellow, Orange, Red, so each row below is reversed.
- * #012 was not photographed (the photo showed #011 twice); the owner has since checked it online (2026-11-22): identical to #011.
- * #045 is identical to #044 (checked online by the owner).
- * No rulebook sorts these cards into easier and harder halves: every card is easy (`deckParts` is off).
- */
+// Checked on photos of the printed cards (core box #001-#037, rulebook p.4; Long-Dead Walkers #038-#045).
+// #012 is identical to #011 and #045 to #044 (checked online). No easier / harder split: every card is easy.
 const ids = (setId: string, from: number, to: number) =>
   Array.from({ length: to - from + 1 }, (_, i) => `${setId}-${String(from + i).padStart(3, '0')}`);
 
@@ -65,7 +57,7 @@ const LONG_DEAD_WALKERS_CARDS: WesternCard[] = [
 
 const easy = () => false;
 
-/** An optional box with no Zombie card: it only brings its Abominations (see `WESTERN_ABOMINATIONS`). */
+/** An optional box that only brings Abominations (see `WESTERN_ABOMINATIONS`). */
 const abominationBox = (id: string): CardSet => ({ id, optional: true, isHard: easy, cards: [] });
 
 export const WESTERN_SETS: readonly CardSet[] = [

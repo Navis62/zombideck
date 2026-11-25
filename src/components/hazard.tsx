@@ -4,12 +4,10 @@ import { StyleSheet, View } from 'react-native';
 import { CARD_COLORS, INVADER_COLORS, WESTERN_COLORS } from '@/theme';
 import type { UniverseId } from '@/game/types';
 
-/** Decorative border matching the selected era. */
 export const Hazard = memo(function Hazard({ universe, stripes }: { universe: UniverseId; stripes: number }) {
   return BORDERS[universe](stripes);
 });
 
-/** One border per universe: a new UniverseId must pick its own. */
 const BORDERS: Record<UniverseId, (stripes: number) => ReactElement> = {
   fantasy: () => (
     <View style={styles.medieval} pointerEvents="none" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
@@ -20,7 +18,6 @@ const BORDERS: Record<UniverseId, (stripes: number) => ReactElement> = {
   ),
   invader: (stripes) => (
     <View style={styles.scifi} pointerEvents="none" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      {/* Teal stripes with a red warning stripe every fourth one. */}
       {Array.from({ length: stripes }, (_, index) => (
         <View key={index} style={[styles.stripe, { backgroundColor: index % ALERT_EVERY === ALERT_EVERY - 1 ? INVADER_COLORS.hazardAlert : INVADER_COLORS.hazardStripe }]} />
       ))}
@@ -40,7 +37,6 @@ const BORDERS: Record<UniverseId, (stripes: number) => ReactElement> = {
   ),
 };
 
-/** One stripe in this many is red on the sci-fi border. */
 const ALERT_EVERY = 4;
 
 const styles = StyleSheet.create({

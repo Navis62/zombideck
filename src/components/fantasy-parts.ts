@@ -4,15 +4,9 @@ import type { DangerLevel } from '@/game/types';
 
 export type FantasyPart = 'parchment' | 'titlePlate' | 'numberBar' | 'levelRow' | 'textScroll' | 'artBackground';
 
-/**
- * Blank parts of the printed Black Plague Zombie card (briefs in docs/art/fantasy-card-parts-prompts.md), layered by
- * `FantasyFace` over the parchment, plates and flames it draws itself. (`frame.png` is not used: the printed card has no frame all round.) A part with no entry keeps its
- * drawn fallback, so the card works with none of them.
- *
- * A new part: put its file in assets/fantasy/cards/ and add its line (a `require` of a file that does not exist breaks
- * the whole bundle). The layout (the FANTASY_* constants in card-face.tsx) uses each at the ratio of its file: the plate,
- * the bar and the flames are sized by width, so a file of another ratio only needs those constants changed.
- */
+// Briefs: docs/art/fantasy-card-parts-prompts.md. A part with no entry keeps its drawn fallback.
+// A `require` of a missing file breaks the whole bundle, so add a line only with its file.
+// The FANTASY_* layout constants in card-face.tsx assume each file's ratio.
 export const FANTASY_PARTS: Partial<Record<FantasyPart, ImageSourcePropType>> = {
   parchment: require('../../assets/fantasy/cards/parchment.jpg'), // 720x1006 JPEG (same master): the card body, its red border already painted on it
   titlePlate: require('../../assets/fantasy/cards/title-plate.png'), // 820x200, sized by width (ratio 4.1)

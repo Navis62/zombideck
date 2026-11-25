@@ -801,7 +801,7 @@ export const de: Record<TranslationKey, string> = {
   'zombie.wickerManEddie.other': 'Wicker Eddie',
   'zombie.fearEddie.one': 'Fear Eddie',
   'zombie.fearEddie.other': 'Fear Eddie',
-  // Invader: official Asmodee Deutschland terms (Dark Side and Black Ops booklets; Spoiler likely); composed: card.moldSpawnTitle, card.spoilerAbominationRule
+  // Invader: official Asmodee Deutschland terms (Dark Side and Black Ops booklets; Spoiler likely)
   'universe.invader': 'Invader',
   'universe.invaderGame': 'Invader · Dark Side',
   'menu.taglineInvader': 'Inoffizieller Begleiter für Zombicide: Invader und Dark Side',
@@ -833,7 +833,6 @@ export const de: Record<TranslationKey, string> = {
   'card.moldSpawnRule': 'Stelle {count} {zombies} in jede aktive Fäulnis-Zone. Gibt es keine aktive Fäulnis-Zone, zieht eine weitere Karte.',
   'card.pitSpawnTitle': 'Schacht-Brut: {count} {zombies}!',
   'card.pitSpawnRule': 'Stelle {count} {zombies} in jede offene Schacht-Zone.',
-  // Invader expansions: set names are product names kept in English; the new Xenos keep their English names (no known edition), with the official Worker / Driller terms where the language has them; named Abominations keep their names after the language’s Abomination word
   'set.blackOps': 'Black Ops',
   'set.darkSideExtras': 'Dark Side Extras',
   'set.civilianExtras': 'Civilian Extras',
@@ -884,7 +883,6 @@ export const de: Record<TranslationKey, string> = {
   'zombie.samuraiEddieAbomination.other': 'Samurai-Eddie-Monstrum',
   'zombie.bassistEddieAbomination.other': 'Bassist-Eddie-Monstrum',
   'zombie.bountyHunterEddieAbomination.other': 'Bounty-Hunter-Eddie-Monstrum',
-  // Western (Zombicide: Undead or Alive)
   'universe.western': 'Western',
   'universe.westernGame': 'Zombicide: Undead or Alive',
   'menu.taglineWestern': 'Inoffizieller Begleiter für Zombicide: Undead or Alive',

@@ -25,11 +25,10 @@ import type { UniverseId } from '@/game/types';
 import type { TranslationKey } from '@/i18n/translations';
 import { CARD_COLORS, COLORS, PRESSED } from '@/theme';
 
-/** Room between two universe cards. */
 const GAP = 16;
 /** A universe card never grows wider than this, so a tablet still shows its neighbours. */
 const MAX_CARD_WIDTH = 420;
-/** Minimum ms between two scroll events (iOS only, Android ignores it): about one per frame, so the centred card is spotted as it passes the middle. */
+/** ms between scroll events, about one per frame (iOS only; Android ignores it). */
 const SCROLL_EVENT_THROTTLE = 16;
 /** Share of the screen width one card takes: the next one peeks in, which tells the row scrolls. */
 const CARD_SHARE = 0.46;
@@ -40,7 +39,6 @@ type Slide =
       id: UniverseId;
       name: TranslationKey;
       detail: TranslationKey;
-      /** Scenery of the era. */
       art: ImageSourcePropType;
     }
   | { kind: 'upcoming'; id: UpcomingUniverse; name: TranslationKey };
@@ -74,13 +72,12 @@ const SLIDES: readonly Slide[] = [
   ...UPCOMING_UNIVERSES.map((id): Slide => ({ kind: 'upcoming', id, name: UPCOMING[id] })),
 ];
 
-/** Opens the app: the players pick the era of the game on the table, then reach its menu. */
 export default function UniverseScreen() {
   const { universe, setUniverse, games, t } = useApp();
   const window = useWindowDimensions();
   const cardWidth = Math.min(MAX_CARD_WIDTH, Math.round(window.width * CARD_SHARE));
   const interval = cardWidth + GAP;
-  // Centres a card: the space beside the first and last card equals the space around a centred one.
+  // Lets the first and last card sit centred.
   const inset = Math.max(0, (window.width - cardWidth) / 2);
   const startIndex = Math.max(0, SLIDES.findIndex((slide) => slide.id === universe));
   const [index, setIndex] = useState(startIndex);
@@ -99,7 +96,6 @@ export default function UniverseScreen() {
     scroller.current?.scrollTo({ x: startIndex * interval, y: 0, animated: false });
   };
 
-  // Follows the card nearest the middle while scrolling (setState bails out when the index is unchanged).
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) =>
     setIndex(Math.min(SLIDES.length - 1, Math.max(0, Math.round(event.nativeEvent.contentOffset.x / interval))));
 
@@ -166,7 +162,6 @@ export default function UniverseScreen() {
                     </Text>
                     <Text style={styles.detail}>{t(slide.detail)}</Text>
                   </View>
-                  {/* In the caption, clear of the illustrations. */}
                   {games[slide.id] !== null && (
                     <View style={styles.badge}>
                       <Text style={styles.badgeText}>{t('universe.inProgress')}</Text>
@@ -226,7 +221,7 @@ const styles = StyleSheet.create({
   },
   shade: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(9, 14, 12, 0.35)' },
   heroes: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, padding: 12 },
-  // Same shape as the zombie illustrations (width over height 0.5), as tall as the card allows.
+  // Width over height 0.5, like the zombie illustrations.
   hero: { height: '100%', aspectRatio: 0.5, borderRadius: 8, overflow: 'hidden', borderWidth: 2, borderColor: CARD_COLORS.ink },
   caption: { padding: 14, backgroundColor: 'rgba(9, 14, 12, 0.72)' },
   name: { color: '#ffffff', fontSize: 22, fontWeight: '900', textTransform: 'uppercase' },

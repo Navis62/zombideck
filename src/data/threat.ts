@@ -13,30 +13,24 @@ import type {
 import { CARD_SETS } from './decks.ts';
 import { WESTERN_IRON_MAIDEN, WESTERN_SETS } from './western.ts';
 
-// The fantasy deck and its bosses, as White Death prints it and Dead Men Tales (work-in-progress rulebook) extends it
-// to every fantasy box; Frozen Fortress gives each Black Plague and Green Horde boss a card of that kind.
-// - The Zombie deck keeps the Abominations and Necromancers of its core boxes, and the named ones leave it.
-// - "If there is no Abomination on the board: Draw an Abomination card, then spawn it. If there is already an
-//   Abomination: It gets an extra Activation." (White Death #457-#462; the Necromancer! cards say the same.)
-// - "The Abomination deck adds diversity and maintains the balance of the Zombie deck": one card for each Abomination
-//   players want. In the Abomination Fest, all of them get an Extra Activation, then one more arrives.
-// - "Playing with several Necromancers is done in the same way as playing with several Abominations."
+// Fantasy bosses follow White Death, extended to every box by Dead Men Tales; the core Abominations and Necromancers stay in the Zombie deck.
+// "If there is no Abomination on the board: Draw an Abomination card, then spawn it. If there is already an
+// Abomination: It gets an extra Activation." (White Death #457-#462)
+// "Playing with several Necromancers is done in the same way as playing with several Abominations."
 
 export const BOSS_RULES: readonly BossRule[] = ['oneAtATime', 'fest'];
-/** Western rulebooks have no Abomination Fest: its Abominations arrive one at a time. */
+/** No Abomination Fest in the Western rulebooks. */
 export const WESTERN_BOSS_RULES: readonly BossRule[] = ['oneAtATime'];
 
-/** The players' choices for the fantasy deck: how Abominations arrive, and the bosses they leave out (none by default). */
 export type Threat = { bossRule: BossRule; off: string[] };
 export const DEFAULT_THREAT: Threat = { bossRule: 'oneAtATime', off: [] };
 
-/** Bosses picked one by one, in the order of the expansions menu. */
-/** `copies`: how many identical cards of this boss the box holds in its boss deck (one by default). */
-/** The bosses the players switch on and off one by one. */
+
 export type ListedBoss = NamedAbomination | NamedNecromancer | NamedModernAbomination | WesternAbomination;
 export type Boss<Zombie extends string = ListedBoss> = {
   zombie: Zombie;
   setId: string;
+  /** How many identical cards of this boss the box holds in its boss deck (one by default). */
   copies?: number;
   /** What the boss does when revealed (SPAM, Batman Who Laughs, Gozer): see `BossPower`. */
   power?: BossPower<Zombie>;
@@ -93,18 +87,15 @@ export const ABOMINATION_BOSSES: readonly Boss[] = [
   // "Upon drawing their Abomination card, remove it from the game and spawn the Vermillion Bird first."
   { zombie: 'divineBeast', setId: 'divineBeasts', power: { kind: 'chain', first: 'vermillionBird' } },
 ];
-/**
- * The four Divine Beasts (Divine Beasts rulebook): each spawns once per game, in this order, when the previous one is
- * eliminated; "When the Azure Dragon is eliminated, they are gone for good." They are in no menu and no deck: the
- * Divine Beasts card spawns the first, and each one calls the next.
- */
+// Divine Beasts rulebook: each spawns when the previous one is eliminated; "When the Azure Dragon is eliminated, they are gone for good."
+// In no menu and no deck: the Divine Beasts card spawns the first.
 export const DIVINE_BEASTS: readonly Boss[] = [
   { zombie: 'vermillionBird', setId: 'divineBeasts', power: { kind: 'chained', card: 'divineBeast', next: 'whiteTiger' } },
   { zombie: 'whiteTiger', setId: 'divineBeasts', power: { kind: 'chained', card: 'divineBeast', next: 'blackTortoise' } },
   { zombie: 'blackTortoise', setId: 'divineBeasts', power: { kind: 'chained', card: 'divineBeast', next: 'azureDragon' } },
   { zombie: 'azureDragon', setId: 'divineBeasts', power: { kind: 'chained', card: 'divineBeast' } },
 ];
-/** Not Abominations by the rules, but they join the Abomination deck all the same. */
+/** Not Abominations by the rules, yet they join the Abomination deck. */
 export const BIG_BOSSES: readonly Boss[] = [
   { zombie: 'feralDragon', setId: 'hordeBox' },
   { zombie: 'zombieGiant', setId: 'hordeBox' },
@@ -122,10 +113,9 @@ export const NECROMANCER_BOSSES: readonly Boss[] = [
   { zombie: 'erikSummoner', setId: 'specialGuests' },
   { zombie: 'innsmouth', setId: 'specialGuests' },
   { zombie: 'faolan', setId: 'specialGuests' },
-  // "Spawns with both Doom and Gloom, if they are in the Zombie reserve" (Special Guest Adrian Smith 2, Lord of Skulls #279-#284;
-  // fan wiki, read 2026-11-22).
+  // "Spawns with both Doom and Gloom, if they are in the Zombie reserve" (Lord of Skulls #279-#284, fan wiki).
   { zombie: 'lordOfSkulls', setId: 'specialGuests', power: { kind: 'brings', bosses: ['doom', 'gloom'], bossKind: 'abomination' } },
-  // A Necromancer printed as a spawn card: his picture over the Swarms of Ratz he brings.
+  // Printed as a spawn card: his picture over the Swarms of Ratz.
   { zombie: 'ratKing', setId: 'ratKingSwampTroll' },
   { zombie: 'bomoh', setId: 'frozenFortress' },
   { zombie: 'deathNotes', setId: 'frozenFortress' },
@@ -140,16 +130,11 @@ export const NECROMANCER_BOSSES: readonly Boss[] = [
   { zombie: 'shamanEddie', setId: 'ironMaiden' },
   { zombie: 'erinn', setId: 'comicBookExtras2' },
   { zombie: 'zhangJiao', setId: 'warlordsMiddleKingdom' },
-  // Three identical cards, all in the Necromancer deck.
   { zombie: 'fumaKotaro', setId: 'warlordsRisingSun', copies: 3, power: { kind: 'single' } },
-  // Timecrash rulebook p.3 and p.8: the printed, unnumbered "Shredder" Necromancer card ("1 Necromancer Card"), with the
-  // Necromancer card back, meant for White Death's Necromancer deck or as a reference card in Black Plague / Green Horde.
+  // Timecrash rulebook p.3 and p.8: the unnumbered "Shredder" Necromancer card, for White Death's Necromancer deck.
   { zombie: 'shredder', setId: 'timecrash' },
 ];
-/**
- * Doom and Gloom (Special Guest Adrian Smith 2): two Abominations with no card of their own, which the Lord of Skulls brings
- * when they are in the Zombie reserve (fan wiki, read 2026-11-22). In no deck and no menu: each leaves the game when removed.
- */
+/** Doom and Gloom have no card: the Lord of Skulls brings them (fan wiki); in no deck and no menu. */
 export const LORD_OF_SKULLS_ESCORT: readonly Boss[] = [
   { zombie: 'doom', setId: 'specialGuests', power: { kind: 'escort' } },
   { zombie: 'gloom', setId: 'specialGuests', power: { kind: 'escort' } },
@@ -160,7 +145,7 @@ const CORE_NECROMANCERS: readonly { zombie: FantasyNecromancer; setId: string }[
   { zombie: 'orcNecromancer', setId: 'greenHorde' },
   { zombie: 'defilerNecromancer', setId: 'whiteDeath' },
 ];
-/** The Abominations of a box, which the Abomination deck starts with (White Death: its Khan Abomination card). */
+/** The Abominations of a box, which the Abomination deck starts with. */
 const SET_ABOMINATIONS: readonly { zombie: FantasyZombie; setId: string }[] = [
   { zombie: 'fantasyAbomination', setId: 'blackPlague' },
   { zombie: 'orcAbomination', setId: 'greenHorde' },
@@ -170,44 +155,36 @@ const SET_ABOMINATIONS: readonly { zombie: FantasyZombie; setId: string }[] = [
   { zombie: 'wolfbomination', setId: 'wulfsburg' },
 ];
 
-/** Every boss a boss deck can hold: its cards leave the Zombie deck. */
 const DECK_BOSSES = new Set<string>(
   [...SET_ABOMINATIONS, ...ABOMINATION_BOSSES, ...BIG_BOSSES, ...CORE_NECROMANCERS, ...NECROMANCER_BOSSES].map((boss) => boss.zombie),
 );
-/** The bosses a saved fantasy boss deck may hold. */
 export const FANTASY_BOSS_IDS: ReadonlySet<string> = new Set([
   ...DECK_BOSSES,
   ...DIVINE_BEASTS.map((boss) => boss.zombie),
   ...LORD_OF_SKULLS_ESCORT.map((boss) => boss.zombie),
 ]);
 
-/** How many cards of each boss the boxes can hold at most; a boss absent from the map has no known bound. */
+/** Most cards of each boss the boxes hold; absent from the map means unknown. */
 function copiesOf(bosses: readonly Boss[]): ReadonlyMap<string, number> {
   const total = new Map<string, number>();
   for (const boss of bosses) total.set(boss.zombie, (total.get(boss.zombie) ?? 0) + (boss.copies ?? 1));
   return total;
 }
-// The generic Abominations and Necromancers of the core boxes are not bounded here: their cards are those of the deck.
+// The core boxes' generic bosses are limited by their cards in the deck, not by a count.
 const GENERIC_BOSSES = new Set<string>([...SET_ABOMINATIONS, ...CORE_NECROMANCERS].map((boss) => boss.zombie));
 export const FANTASY_BOSS_COPIES: ReadonlyMap<string, number> = new Map(
   [...copiesOf([...ABOMINATION_BOSSES, ...DIVINE_BEASTS, ...LORD_OF_SKULLS_ESCORT, ...BIG_BOSSES, ...NECROMANCER_BOSSES])].filter(([boss]) => !GENERIC_BOSSES.has(boss)),
 );
 
-// A named card, or a card of the pack printed "Divine Beasts" (title 'zombies', plural): both name their boss in a level.
 const namedZombie = (card: ZombieCard) =>
   card.kind === 'levels' && (card.title === 'named' || card.plural)
     ? (card.boss ?? card.levels.find((level) => level)?.zombie)
     : undefined;
 
-/**
- * Builds the fantasy deck from the cards of the sets switched on: it keeps the cards of its core boxes, Necromancers
- * and Abominations included, and loses every named boss (the Wolfbomination too); each boss of the sets switched on
- * is one card of its deck, Frozen Fortress's too though it prints no spawn card (hence `setIds`).
- */
+/** The fantasy deck of the sets switched on: named bosses leave it for their boss decks (Frozen Fortress's too, hence `setIds`). */
 export function tailorFantasyDeck(cards: readonly ZombieCard[], threat: Threat, setIds: ReadonlySet<string>): Deck {
   const inPlay = (boss: { setId: string }) => setIds.has(boss.setId);
   const chosen = (boss: Boss) => inPlay(boss) && !threat.off.includes(boss.zombie);
-  // The named bosses leave the Zombie deck for their own; the rest stays, Fatty Bursters too.
   const named = (card: ZombieCard) => {
     const zombie = card.kind === 'necromancer' ? card.zombie : namedZombie(card);
     return zombie !== undefined && DECK_BOSSES.has(zombie) && !CORE_NECROMANCERS.some((core) => core.zombie === zombie);
@@ -230,12 +207,10 @@ export function tailorFantasyDeck(cards: readonly ZombieCard[], threat: Threat, 
 }
 
 /**
- * The named Abominations of the modern era (Zombicide 2nd edition rulebook p.17: "If there is no Abomination on the
+ * Named modern Abominations, each in the set whose box holds it (rulebook p.17: "If there is no Abomination on the
  * board, draw a card from the Abomination deck. Then, place the corresponding Abomination in the Spawn Zone. If there
- * is already an Abomination on the board, it gets an extra Activation."; p.30 for the Abomination Fest). Each one
- * belongs to the set whose box holds it; the ones of the core box belong to `core2e`, and stay when Fort Hendrix
- * replaces it. Only transcribed bosses are available. The card text is in the translations
- * (`card.<id>Rule`); the Kit's Abominations belong to `abomination` (its box is always in play).
+ * is already an Abomination on the board, it gets an extra Activation."; p.30 for the Abomination Fest).
+ * Core ones belong to `core2e`; the Kit's to `abomination`. Rules are in `card.<id>Rule`.
  */
 export const MODERN_ABOMINATIONS: readonly Boss<NamedModernAbomination>[] = [
   { zombie: 'hobomination', setId: 'core2e' },
@@ -304,21 +279,14 @@ export const MODERN_ABOMINATIONS: readonly Boss<NamedModernAbomination>[] = [
   { zombie: 'batmanEarth52', setId: 'darkNightsMetal' },
 ];
 
-/**
- * The sets whose boxes are in play: those switched on, and the ones they replace (Fort Hendrix brings the core box's
- * Abominations along, though `activeSetIds` leaves the core set out). Menu and deck use it alike.
- */
+/** The sets whose boxes are in play: those switched on plus the ones they replace (Fort Hendrix keeps the core box's Abominations). */
 export function presentSetIds(sets: readonly CardSet[], setIds: Iterable<string>): Set<string> {
   const present = new Set(setIds);
   for (const set of sets) if (set.replaces && present.has(set.id)) present.add(set.replaces);
   return present;
 }
 
-/**
- * Builds the modern deck: no card leaves it (the generic Abomination cards, the upgrade kit's included, are the ones
- * that call on the Abomination deck). With no named Abomination available and switched on, there is no boss deck and
- * the game plays as the printed deck does. The Necromancer deck stays empty: the era has no Necromancers.
- */
+/** The modern deck: no card leaves it; without a named Abomination switched on there is no boss deck. */
 function abominationTailor(sets: readonly CardSet[], listed: readonly Boss<string>[], rules: readonly BossRule[] = BOSS_RULES) {
   return (
     cards: readonly ZombieCard[],
@@ -328,12 +296,10 @@ function abominationTailor(sets: readonly CardSet[], listed: readonly Boss<strin
   ): Deck => {
     const present = presentSetIds(sets, setIds);
     const chosen = abominations.filter((boss) => present.has(boss.setId) && !threat.off.includes(boss.zombie));
-    // Once the deck runs out, its discard is reshuffled as in Fantasy; the 2nd edition rulebook gives no rule for it.
     if (chosen.length === 0) return { cards: [...cards] };
     return {
       cards: [...cards],
       bosses: {
-        // A rule the era does not have (a choice saved by an older version) falls back to its first one.
         rule: rules.includes(threat.bossRule) ? threat.bossRule : rules[0],
         abomination: chosen.flatMap((boss) => Array<string>(boss.copies ?? 1).fill(boss.zombie)),
         necromancer: [],
@@ -344,11 +310,7 @@ function abominationTailor(sets: readonly CardSet[], listed: readonly Boss<strin
 
 export const tailorModernDeck = abominationTailor(CARD_SETS, MODERN_ABOMINATIONS);
 
-/**
- * The named Abominations of the Wild West era (Undead or Alive and its boxes), each one in the box that holds it,
- * as printed on its card (the rule is in the translations, `card.<id>Rule`). The core box's text cards (#013-#016,
- * #029-#033) call on this deck, which starts with the Bowler Hat of the core box. The Wendigo is an event promo (`westernPromos`).
- */
+/** Named Western Abominations, each in its box, as printed (rules in `card.<id>Rule`); the core text cards (#013-#016, #029-#033) call on this deck. */
 export const WESTERN_ABOMINATIONS: readonly Boss<WesternAbomination>[] = [
   { zombie: 'bowlerHat', setId: 'undeadOrAlive' },
   { zombie: 'nightmareHorse', setId: 'runningWild' },
@@ -383,14 +345,11 @@ export const WESTERN_ABOMINATIONS: readonly Boss<WesternAbomination>[] = [
 
 export const tailorWesternDeck = abominationTailor(WESTERN_SETS, WESTERN_ABOMINATIONS, WESTERN_BOSS_RULES);
 
-/** The bosses a saved modern boss deck may hold. */
 export const MODERN_BOSS_IDS: ReadonlySet<string> = new Set(MODERN_ABOMINATIONS.map((boss) => boss.zombie));
 export const MODERN_BOSS_COPIES: ReadonlyMap<string, number> = copiesOf(MODERN_ABOMINATIONS);
-/** The bosses a saved Western boss deck may hold. */
 export const WESTERN_BOSS_IDS: ReadonlySet<string> = new Set(WESTERN_ABOMINATIONS.map((boss) => boss.zombie));
 export const WESTERN_BOSS_COPIES: ReadonlyMap<string, number> = copiesOf(WESTERN_ABOMINATIONS);
 
-/** Every boss a boss deck can reveal: a card shows its name, picture and rule. */
 export type BossName = FantasyZombie | FantasyNecromancer | NamedModernAbomination | WesternAbomination;
 export const isBossName = (boss: string): boss is BossName =>
   FANTASY_BOSS_IDS.has(boss) || MODERN_BOSS_IDS.has(boss) || WESTERN_BOSS_IDS.has(boss);
@@ -398,15 +357,11 @@ export const isBossName = (boss: string): boss is BossName =>
 export const isModernAbomination = (boss: string): boss is NamedModernAbomination | WesternAbomination =>
   MODERN_BOSS_IDS.has(boss) || WESTERN_BOSS_IDS.has(boss);
 
-/** A named Western Abomination, the ones with their own card. */
 export const isWesternAbomination = (boss: string): boss is WesternAbomination => WESTERN_BOSS_IDS.has(boss);
 
 const isBossRule = (value: unknown): value is BossRule => BOSS_RULES.includes(value as BossRule);
 
-/**
- * Stored choices, checked: anything unreadable falls back to the defaults (every boss in, one at a time), and a rule
- * missing from the universe's `rules` to its first one.
- */
+/** Stored choices, checked: anything unreadable or unsupported falls back to the defaults. */
 export function parseThreat(raw: string | null, rules: readonly BossRule[] = BOSS_RULES): Threat {
   try {
     const parsed: unknown = raw ? JSON.parse(raw) : null;

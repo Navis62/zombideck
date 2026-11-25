@@ -11,7 +11,6 @@ import { COLORS } from '@/theme';
 const CARD_RATIO = 63 / 88;
 const GAP = 12;
 
-/** The discard pile laid out in a row, last card discarded first, to check what came out recently. */
 export function DiscardSheet(props: { discard: readonly string[]; danger: DangerLevel; onClose: () => void }) {
   const { t } = useApp();
   const window = useWindowDimensions();
@@ -22,15 +21,14 @@ export function DiscardSheet(props: { discard: readonly string[]; danger: Danger
     <Modal
       transparent
       animationType="fade"
-      // iOS shows modals in portrait unless told otherwise; the app is landscape only.
+      // iOS opens modals in portrait unless told otherwise.
       supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
       onRequestClose={props.onClose}
-      // Android: the dimmed overlay reaches under the system bars and the camera cutout too.
+      // Android: the overlay also covers the system bars and the camera cutout.
       statusBarTranslucent
       navigationBarTranslucent
     >
       <SafeAreaView style={styles.overlay} edges={['left', 'right', 'top', 'bottom']}>
-        {/* Tapping beside the cards closes the sheet too. */}
         <Pressable style={StyleSheet.absoluteFill} onPress={props.onClose} accessible={false} />
         <View style={styles.header}>
           <Text style={styles.title} accessibilityRole="header">
