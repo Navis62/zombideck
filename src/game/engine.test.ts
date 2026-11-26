@@ -582,6 +582,10 @@ test('the fantasy universe plays Black Plague, Green Horde or both, never neithe
   assert.deepEqual(withCoreBox(fantasy, [], 'blackPlague'), ['greenHorde']);
   assert.deepEqual(withCoreBox(fantasy, [], 'greenHorde'), ['blackPlague']);
   assert.deepEqual(withCoreBox(fantasy, ['greenHorde']), ['greenHorde']);
+  // Eternal Empire is played with White Death: switching it on brings White Death, switching White Death off takes it away.
+  assert.deepEqual(withCoreBox(fantasy, ['eternalEmpire']), ['eternalEmpire', 'whiteDeath']);
+  assert.deepEqual(withCoreBox(fantasy, ['blackPlague', 'eternalEmpire'], 'whiteDeath'), ['blackPlague']);
+  assert.deepEqual(withCoreBox(fantasy, ['eternalEmpire'], 'whiteDeath'), ['blackPlague']);
   assert.deepEqual(withCoreBox(UNIVERSES.modern, []), ['core2e']);
 });
 

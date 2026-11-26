@@ -199,9 +199,22 @@ const coreIds = (universe: Universe) => universe.optionalSets.filter((set) => se
 export const switchableSets = (universe: Universe): readonly CardSet[] =>
   universe.exclusiveCores ? universe.optionalSets.filter((set) => !set.core) : universe.optionalSets;
 
-/** Keeps one core box on (exclusive cores: exactly one, the changed switch winning). */
+function withRequiredBoxes(universe: Universe, expansions: readonly string[], switchedOff?: string): string[] {
+  let list = [...expansions];
+  for (const set of universe.optionalSets) {
+    if (!set.requires || !list.includes(set.id) || list.includes(set.requires)) continue;
+    list = switchedOff === set.requires ? list.filter((id) => id !== set.id) : [...list, set.requires];
+  }
+  return list;
+}
+
+/** Keeps one core box on (exclusive cores: exactly one, the changed switch winning) and the boxes an expansion requires. */
 export function withCoreBox(universe: Universe, storedExpansions: readonly string[], switchedOff?: string): string[] {
-  const expansions = universe.id === 'western' ? mergeWesternIronMaidenPacks(storedExpansions) : storedExpansions;
+  const expansions = withRequiredBoxes(
+    universe,
+    universe.id === 'western' ? mergeWesternIronMaidenPacks(storedExpansions) : storedExpansions,
+    switchedOff,
+  );
   const cores = coreIds(universe);
   if (universe.exclusiveCores) {
     const selected = cores.filter((id) => expansions.includes(id));

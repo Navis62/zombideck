@@ -426,6 +426,8 @@ export type CardSet = {
   optional: boolean;
   /** A core box that can be played alone: a universe made of several needs at least one switched on. */
   core?: true;
+  /** Box it cannot be played without: switched on with it, and switching it off switches this one off. */
+  requires?: string;
   /** Set taken out of the deck while this one is switched on. */
   replaces?: string;
   /** Zombie expansion that dilutes the Abominations of the deck (see `scaled`). */

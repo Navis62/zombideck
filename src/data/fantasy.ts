@@ -629,7 +629,7 @@ export const FANTASY_SETS: readonly CardSet[] = [
   { id: BLACK_PLAGUE, optional: true, core: true, isHard: noHardCards, cards: blackPlagueCards },
   { id: GREEN_HORDE, optional: true, core: true, isHard: noHardCards, cards: greenHordeCards },
   { id: WHITE_DEATH, optional: true, core: true, isHard: noHardCards, cards: whiteDeathCards },
-  { id: ETERNAL_EMPIRE, optional: true, core: true, isHard: noHardCards, cards: eternalEmpireCards },
+  { id: ETERNAL_EMPIRE, optional: true, requires: WHITE_DEATH, isHard: noHardCards, cards: eternalEmpireCards },
   { id: WULFSBURG, optional: true, isHard: noHardCards, cards: wulfsburgCards },
   { id: NPC_1, optional: true, isHard: noHardCards, cards: npcCards(NPC_1, 63) },
   { id: NPC_2, optional: true, isHard: noHardCards, cards: npcCards(NPC_2, 75) },
