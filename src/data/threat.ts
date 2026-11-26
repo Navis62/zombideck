@@ -26,7 +26,7 @@ export type Threat = { bossRule: BossRule; off: string[] };
 export const DEFAULT_THREAT: Threat = { bossRule: 'oneAtATime', off: [] };
 
 
-export type ListedBoss = NamedAbomination | NamedNecromancer | NamedModernAbomination | WesternAbomination;
+export type ListedBoss = FantasyZombie | FantasyNecromancer | NamedAbomination | NamedNecromancer | NamedModernAbomination | WesternAbomination;
 export type Boss<Zombie extends string = ListedBoss> = {
   zombie: Zombie;
   setId: string;
@@ -140,13 +140,14 @@ export const LORD_OF_SKULLS_ESCORT: readonly Boss[] = [
   { zombie: 'gloom', setId: 'specialGuests', power: { kind: 'escort' } },
 ];
 
-const CORE_NECROMANCERS: readonly { zombie: FantasyNecromancer; setId: string }[] = [
+/** The Necromancers of a box, which the Necromancer deck starts with. */
+export const CORE_NECROMANCERS: readonly Boss<FantasyNecromancer>[] = [
   { zombie: 'necromancer', setId: 'blackPlague' },
   { zombie: 'orcNecromancer', setId: 'greenHorde' },
   { zombie: 'defilerNecromancer', setId: 'whiteDeath' },
 ];
 /** The Abominations of a box, which the Abomination deck starts with. */
-const SET_ABOMINATIONS: readonly { zombie: FantasyZombie; setId: string }[] = [
+export const SET_ABOMINATIONS: readonly Boss<FantasyZombie>[] = [
   { zombie: 'fantasyAbomination', setId: 'blackPlague' },
   { zombie: 'orcAbomination', setId: 'greenHorde' },
   { zombie: 'khanAbomination', setId: 'whiteDeath' },
@@ -194,12 +195,12 @@ export function tailorFantasyDeck(cards: readonly ZombieCard[], threat: Threat, 
     bosses: {
       rule: threat.bossRule,
       abomination: [
-        ...SET_ABOMINATIONS.filter(inPlay),
+        ...SET_ABOMINATIONS.filter(chosen),
         ...ABOMINATION_BOSSES.filter(chosen),
         ...BIG_BOSSES.filter(chosen),
       ].map((boss) => boss.zombie),
       necromancer: [
-        ...CORE_NECROMANCERS.filter(inPlay),
+        ...CORE_NECROMANCERS.filter(chosen),
         ...NECROMANCER_BOSSES.filter(chosen).flatMap((boss) => Array<Boss>(boss.copies ?? 1).fill(boss)),
       ].map((boss) => boss.zombie),
     },

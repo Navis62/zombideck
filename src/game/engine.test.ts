@@ -3084,3 +3084,21 @@ test('table slots: a card with SPAMs in front comes into view on its first SPAM'
   assert.equal(entryPosition(tableSlots([['spam'], undefined], []), { kind: 'card', index: 1 }), 2);
   assert.equal(entryPosition([], { kind: 'card', index: 0 }), -1);
 });
+
+test('the boxes list their own Abominations and Necromancers in the boss menu, and each can be switched off', () => {
+  const fantasy = UNIVERSES.fantasy;
+  assert.equal(fantasy.sets.find((set) => set.id === 'eternalEmpire')?.core, undefined);
+  const listed = (setId: string) =>
+    [...(fantasy.bosses?.abominations ?? []), ...(fantasy.bosses?.necromancers ?? [])]
+      .filter((boss) => boss.setId === setId)
+      .map((boss) => boss.zombie);
+  assert.deepEqual(listed('blackPlague'), ['fantasyAbomination', 'necromancer']);
+  assert.deepEqual(listed('greenHorde'), ['orcAbomination', 'orcNecromancer']);
+  assert.deepEqual(listed('whiteDeath'), ['khanAbomination', 'defilerNecromancer']);
+  assert.deepEqual(listed('eternalEmpire'), ['godEaterAbomination']);
+  assert.deepEqual(listed('wulfsburg'), ['wolfbomination']);
+  assert.deepEqual(listed('friendsAndFoes'), ['taintedAbomination']);
+  const deck = fantasyDeck(['blackPlague', 'wulfsburg'], { ...DEFAULT_THREAT, off: ['fantasyAbomination', 'necromancer'] });
+  assert.deepEqual(deck.bosses?.abomination, ['wolfbomination']);
+  assert.deepEqual(deck.bosses?.necromancer, []);
+});
