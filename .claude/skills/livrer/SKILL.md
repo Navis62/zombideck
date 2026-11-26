@@ -1,13 +1,13 @@
 ---
-name: ship
-description: "Livre le travail en cours de Zombie Deck : vérifications, commits petits et ordonnés, push vers origin. Use only when the user runs /ship or explicitly asks to commit and push."
+name: livrer
+description: "Livre le travail en cours de Zombie Deck : vérifications, commits petits et ordonnés, push vers origin. Use only when the user runs /livrer or explicitly asks to commit and push."
 disable-model-invocation: true
 argument-hint: "[--no-push]"
 ---
 
-# ship
+# livrer
 
-Un seul développeur. `/ship` vaut accord pour commiter et pousser **ce** travail, pas les suivants. Il ne publie
+Un seul développeur. `/livrer` vaut accord pour commiter et pousser **ce** travail, pas les suivants. Il ne publie
 rien auprès des joueurs : c'est `/release`.
 
 Branche : !`git branch --show-current`

@@ -137,5 +137,5 @@ root if that folder exists. Otherwise, use the fallbacks below and say in the lo
 
 ## Commit
 
-* Commit only when asked (`/ship`), in small ordered commits.
+* Commit only when asked (`/livrer`), in small ordered commits.
 * Each commit says why, what changed, and how you proved it.

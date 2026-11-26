@@ -18,7 +18,7 @@ Depuis le dernier tag ou les 15 derniers commits : !`git log --oneline -15`
 ## Étapes
 
 1. **Propre** : rien de non commité, branche `master` à jour avec `origin`. Sinon, arrête-toi et dis-le
-   (`/ship` d'abord).
+   (`/livrer` d'abord).
 2. **Vérifier** avec `/check`. Ne continue pas si quelque chose échoue.
 3. **OTA ou build ?** Liste ce qui a changé depuis la dernière publication (demande la date ou le commit à
    l'utilisateur si tu ne la trouves pas). Changement natif = dépendance avec du code natif, plugin ou réglage

@@ -25,11 +25,11 @@ npx expo install <paquet>   # jamais npm install <paquet>
   Un id de carte existant ne change jamais.
 - Toute clé de traduction existe dans les 10 langues, avec les termes officiels de chaque édition.
 - `android/` est généré : configurer dans `app.json`. Un changement natif impose un build store (fingerprint).
-- Pas de publication (`eas update`, `eas build`, `eas submit`) ni de push sans demande : `/release`, `/ship`.
+- Pas de publication (`eas update`, `eas build`, `eas submit`) ni de push sans demande : `/release`, `/livrer`.
 
 ## Où regarder
 
 - Règles détaillées par zone : `.claude/rules/` (chargées selon les fichiers touchés).
 - Agents : `zd-architect` (conception, lecture seule), `zd-engine` (moteur, sauvegarde), `zd-content` (cartes,
   extensions, traductions), `zd-ui` (écrans), `zd-tester`, `zd-reviewer` (relecture, lecture seule).
-- Skills : `/check`, `/add-expansion`, `/add-language`, `/release`, `/ship`, `/ub-mode`, `/tech-debt-audit`.
+- Skills : `/check`, `/add-expansion`, `/add-language`, `/release`, `/livrer`, `/ub-mode`, `/tech-debt-audit`.
